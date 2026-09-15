@@ -19,6 +19,8 @@
   ::selection{background:var(--band-ink);color:var(--band)}
   :focus-visible{outline:2px solid var(--band-ink);outline-offset:4px}
   a{color:inherit;text-decoration:none}
+  button,input{font:inherit;color:inherit;background:none;border:0;padding:0;border-radius:0}
+  button{cursor:pointer}
 
   .wrap{width:100%;max-width:1180px;margin:0 auto;padding:22px 40px 40px;flex:1;display:flex;flex-direction:column}
   .row{display:flex;align-items:baseline;gap:26px;padding-bottom:16px;border-bottom:1px solid var(--band-rule)}
@@ -49,11 +51,12 @@
   .open:hover{border-color:currentColor}
   .open svg{width:18px;height:18px;transition:transform .15s}
   .open:hover svg{transform:translateX(3px)}
-  .gate{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
-  .gate input{font-family:var(--serif);font-size:17px;color:var(--band-ink);border-bottom:1px solid var(--band-rule);padding:4px 0;width:12ch;letter-spacing:.2em}
+  .gate{display:flex;align-items:baseline;gap:28px;flex-wrap:wrap}
+  .gate label{display:inline-flex;align-items:baseline;gap:12px;font-size:14px;color:var(--band-muted)}
+  .gate input{font-family:var(--serif);font-size:22px;line-height:1.2;color:var(--band-ink);border-bottom:1px solid var(--band-rule);padding:0 0 3px;width:11ch;letter-spacing:.28em;transition:border-color .15s}
   .gate input:focus{outline:none;border-bottom-color:var(--band-ink)}
-  .gate input::placeholder{font-style:italic;letter-spacing:0;color:var(--band-muted)}
-  .gate input[hidden]{display:none}
+  .gate input::placeholder{font-style:italic;letter-spacing:0;font-size:17px;color:var(--band-muted)}
+  .gate label[hidden]{display:none}
   .foot .hint{font-size:14px;color:var(--band-muted)}
   .foot .hint.no{color:var(--band-ink)}
   .foot .hint kbd{font:inherit;padding:1px 6px;border:1px solid var(--band-rule);border-radius:6px}
@@ -95,7 +98,7 @@
 
   <footer class="foot">
     <form class="gate" id="gate">
-      <input id="pass" type="password" placeholder="Passcode" autocomplete="current-password" aria-label="Passcode">
+      <label id="passl">Passcode<input id="pass" type="password" placeholder="type it here" autocomplete="current-password" aria-label="Passcode"></label>
       <button class="open" type="submit"><span id="openlbl">Open today</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
       <span class="hint" id="hint">or press <kbd>Enter</kbd></span>
     </form>
@@ -140,7 +143,8 @@
   document.getElementById('greet').textContent = (h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + ', Jacob.';
   // The front door. With the API present, the passcode sets the session cookie; on a plain static server it just opens.
   const gate = document.getElementById('gate'), pass = document.getElementById('pass'), hint = document.getElementById('hint');
-  const signedIn = () => { pass.hidden = true; document.getElementById('openlbl').textContent = 'Continue'; };
+  const passl = document.getElementById('passl');
+  const signedIn = () => { passl.hidden = true; pass.hidden = true; document.getElementById('openlbl').textContent = 'Continue'; };
   fetch('/api/login').then(r => r.ok ? r.json() : { authed: true }).then(j => { if (j.authed) signedIn(); }).catch(signedIn);
   gate.addEventListener('submit', async e => {
     e.preventDefault();
