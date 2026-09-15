@@ -39,6 +39,9 @@
     return r.ok;
   }
   const signOut = () => fetch('/api/login', { method: 'DELETE' });
+  // run a source's sync now; resolves to the ledger entry ({ ok, last, ... }) or null when there is no API
+  const sync = async name => { try { const r = await fetch(`/api/sync/${name}`, { method: 'POST' }); return await r.json(); } catch { return null; } };
+  const ledger = async () => (await load('sync')) || {};
 
-  window.store = { load, save, signIn, signOut, signedOut: false };
+  window.store = { load, save, signIn, signOut, sync, ledger, signedOut: false };
 })();

@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1F3A2E">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
 <title>HQ — School</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -129,6 +133,10 @@
   .addl input::placeholder{color:var(--ink-3);font-style:italic}
   .addl .textbtn{font-size:13.5px;grid-column:1/-1;justify-self:start;margin-top:4px}
   .sessions{margin-top:34px}
+  .syncline{margin:8px 0 2px;font-size:12.5px;color:var(--ink-3)}
+  .syncline .textbtn{font-size:12.5px;color:var(--ink-2);margin-left:8px} .syncline .textbtn:hover{color:var(--ink)}
+  .syncline .bad{color:var(--ox)}
+  .ledger .w a{border-bottom:1px solid var(--rule)} .ledger .w a:hover{border-color:var(--ink)}
   .foot{max-width:1180px;margin:0 auto;padding:0 40px 32px;font-size:12.5px;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
   .foot .textbtn{font-style:normal;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:8px} .foot .textbtn.ox{color:var(--ox)} .foot .textbtn:hover{color:var(--ink)}
 
@@ -186,6 +194,7 @@
 
   <aside>
     <h2>Due<small id="duen"></small></h2>
+    <p class="syncline" id="syncline" hidden></p>
     <form class="addl due" id="adddue">
       <input id="i-title" class="full" placeholder="Assignment, test, reading…" required>
       <select id="i-course"></select>
@@ -288,7 +297,7 @@
     // due ledger
     const dueList = [...S.items].sort((a,b)=>a.done!==b.done ? (a.done?1:-1) : (a.due<b.due?-1:1));
     F('duen').textContent = `${open.length} open`;
-    F('due').innerHTML = dueList.length ? dueList.map(i=>`<li class="${i.done?'done':''}" data-id="${i.id}"><input type="checkbox" ${i.done?'checked':''} aria-label="Done: ${esc(i.title)}"><span class="w">${esc(i.title)}<small>${esc(course(i.course)?.name||'—')} · ${i.type}</small></span><span class="d ${!i.done&&days(i.due)<=0?'ox':''}">${dmy(i.due)}<small>${i.done?'done':dueWord(i.due)}</small></span><button class="x" type="button" aria-label="Remove"><span class="w-">remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button></li>`).join('') : '<li class="empty">Nothing due.</li>';
+    F('due').innerHTML = dueList.length ? dueList.map(i=>`<li class="${i.done?'done':''}" data-id="${i.id}"><input type="checkbox" ${i.done?'checked':''} aria-label="Done: ${esc(i.title)}"><span class="w">${i.url?`<a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a>`:esc(i.title)}<small>${esc(course(i.course)?.name||'—')} · ${i.type}${i.source==='canvas'?' · Canvas':''}</small></span><span class="d ${!i.done&&days(i.due)<=0?'ox':''}">${dmy(i.due)}<small>${i.done?'done':dueWord(i.due)}</small></span><button class="x" type="button" aria-label="Remove"><span class="w-">remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button></li>`).join('') : '<li class="empty">Nothing due.</li>';
     const sel = S.courses.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
     const ic=F('i-course').value, sc=F('s-course').value; F('i-course').innerHTML=sel; F('s-course').innerHTML=sel; if(ic) F('i-course').value=ic; if(sc) F('s-course').value=sc;
 
@@ -311,21 +320,28 @@
     const d=e.target.closest('[data-conf]'); if(d){ c.conf=+d.dataset.conf; render(); return; }
     if(e.target.closest('[data-addlk]')){ const [t,u]=tile.querySelectorAll('.addlk input'); if(!t.value.trim()||!u.value.trim()) return t.value.trim()?u.focus():t.focus(); c.links.push({t:t.value.trim(), u:u.value.trim()}); render(); return; }
     const rm=e.target.closest('[data-lk]'); if(rm){ c.links.splice(+rm.dataset.lk,1); render(); return; }
-    if(e.target.closest('.x')){ if(S.items.some(i=>i.course===c.id)) return alert('Remove or move its due items first.'); S.courses=S.courses.filter(x=>x.id!==c.id); render(); }
+    if(e.target.closest('.x')){ if(S.items.some(i=>i.course===c.id)) return alert('Remove or move its due items first.'); if(c.source){ S.ignored=[...(S.ignored||[]), c.id]; } S.courses=S.courses.filter(x=>x.id!==c.id); render(); }
   });
   F('addc').addEventListener('submit', e=>{ e.preventDefault(); S.courses.push({id:'c'+Date.now(), name:F('c-name').value.trim(), conf:3, links:[]}); F('addc').reset(); render(); });
   F('adddue').addEventListener('submit', e=>{ e.preventDefault(); S.items.push({id:Date.now(), course:F('i-course').value, title:F('i-title').value.trim(), type:F('i-type').value, due:dayOf(F('i-date').value), done:false}); const k=F('i-course').value; F('adddue').reset(); F('i-course').value=k; render(); });
-  F('due').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ const it=S.items.find(i=>i.id===+e.target.closest('li').dataset.id); it.done=e.target.checked; render(); } });
-  F('due').addEventListener('click', e=>{ if(e.target.closest('.x')){ const id=+e.target.closest('li').dataset.id; S.items=S.items.filter(i=>i.id!==id); render(); } });
+  F('due').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ const raw=e.target.closest('li').dataset.id, it=S.items.find(i=>String(i.id)===raw); if(it){ it.done=e.target.checked; render(); } } });
+  F('due').addEventListener('click', e=>{ if(e.target.closest('.x')){ const raw=e.target.closest('li').dataset.id, id=isNaN(+raw)?raw:+raw; const it=S.items.find(i=>i.id===id); if(it&&it.source){ S.ignored=[...(S.ignored||[]), it.id]; } S.items=S.items.filter(i=>i.id!==id); render(); } });
   F('addsess').addEventListener('submit', e=>{ e.preventDefault(); const min=parseInt(F('s-min').value); if(!min) return F('s-min').focus(); S.sessions.push({id:Date.now(), date:dayOf(F('s-date').value), course:F('s-course').value, min}); const k=F('s-course').value; F('addsess').reset(); F('s-course').value=k; F('s-date').value=C.dayMonth(C.now); render(); });
   F('newitem').addEventListener('click', ()=>F('i-title').focus());
+  async function renderSync(){
+    const led = await store.ledger(), c = led.canvas; const el=F('syncline'); if(!c && !navigator.onLine){ el.hidden=true; return; }
+    const ago = c ? Math.round((Date.now()-new Date(c.last))/60000) : null;
+    el.hidden=false;
+    el.innerHTML = (c ? (c.ok ? `Canvas synced ${ago<1?'just now':ago<60?ago+' min ago':Math.round(ago/60)+' h ago'} · ${c.items} items` : `<span class="bad">Canvas sync failed: ${esc(c.error||'')}</span>`) : 'Canvas not synced yet') + ` <button class="textbtn" type="button" id="syncnow">Sync now</button>`;
+    F('syncnow').addEventListener('click', async ()=>{ F('syncnow').textContent='Syncing…'; const r = await store.sync('canvas'); if(r && r.ok){ const doc = await store.load('school'); if(doc){ S=doc; render(); } } renderSync(); });
+  }
   F('s-date').value=C.dayMonth(C.now);
   F('clear-ask').addEventListener('click', ()=>{ F('clear-ask').hidden=true; F('clear-sure').hidden=false; });
   F('clear-no').addEventListener('click', ()=>{ F('clear-ask').hidden=false; F('clear-sure').hidden=true; });
   F('clear-yes').addEventListener('click', ()=>{ S=seed(); F('clear-ask').hidden=false; F('clear-sure').hidden=true; render(); });
   F('i-date').placeholder = C.dayMonth(C.addDays(C.now, 2));
   render();
-  store.load('school').then(doc => { if (doc) { S = doc; render(); } else save(); });
+  store.load('school').then(doc => { if (doc) { S = doc; render(); } else save(); renderSync(); });
 </script>
 <script>document.getElementById('menubtn').addEventListener('click', e=>{ const b=document.querySelector('.band'); b.classList.toggle('nav-open'); e.currentTarget.setAttribute('aria-expanded', b.classList.contains('nav-open')); });</script>
 </body>
