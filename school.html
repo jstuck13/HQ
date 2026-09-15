@@ -195,7 +195,7 @@
       <form class="addl s" id="addsess">
         <select id="s-course"></select>
         <input id="s-min" inputmode="numeric" placeholder="min" aria-label="Minutes" required>
-        <input id="s-date" value="14 Sep" aria-label="Day" required>
+        <input id="s-date" aria-label="Day" required>
         <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Log a session</button>
       </form>
       <ul class="ledger sess" id="sess"></ul>
@@ -204,12 +204,14 @@
 </main>
 <p class="foot">Courses, items, links and sessions are saved to your HQ account (and cached in this browser).</p>
 
+<script src="clock.js"></script>
 <script src="store.js"></script>
 <script>
   // ---- state ----
   // ponytail: localStorage; becomes the school store later.
   const F = id => document.getElementById(id);
-  const TODAY = '2026-09-14', DAY = 14, DIM = 30;
+  const C = clock, TODAY = C.today;
+  const inDays = n => C.iso(C.addDays(C.now, n));
   const seed = () => ({
     courses: [
       {id:'net',name:'Networking',conf:3,links:[{t:'Cisco NetAcad — module 6',u:'https://www.netacad.com/'},{t:'Subnetting practice',u:'https://subnetipv4.com/'},{t:'Lecture 6 recording',u:'https://example.edu/lectures/net-6'}]},
@@ -218,17 +220,17 @@
       {id:'wri',name:'Writing',conf:4,links:[{t:'Purdue OWL — argument essays',u:'https://owl.purdue.edu/'}]},
     ],
     items: [
-      {id:1,course:'net',title:'Exam, chapters 1–7',type:'test',due:'2026-09-26',done:false},
-      {id:2,course:'net',title:'Lab 3: VLAN configuration',type:'assignment',due:'2026-09-18',done:false},
-      {id:3,course:'stat',title:'Problem set 4',type:'assignment',due:'2026-09-17',done:false},
-      {id:4,course:'db',title:'Chapter 5 reading',type:'reading',due:'2026-09-21',done:false},
-      {id:5,course:'db',title:'Normalisation quiz',type:'test',due:'2026-09-23',done:false},
-      {id:6,course:'wri',title:'Essay draft',type:'assignment',due:'2026-09-24',done:false},
-      {id:7,course:'stat',title:'Chapter 8 reading',type:'reading',due:'2026-09-12',done:true},
+      {id:1,course:'net',title:'Exam, chapters 1–7',type:'test',due:inDays(12),done:false},
+      {id:2,course:'net',title:'Lab 3: VLAN configuration',type:'assignment',due:inDays(4),done:false},
+      {id:3,course:'stat',title:'Problem set 4',type:'assignment',due:inDays(3),done:false},
+      {id:4,course:'db',title:'Chapter 5 reading',type:'reading',due:inDays(7),done:false},
+      {id:5,course:'db',title:'Normalisation quiz',type:'test',due:inDays(9),done:false},
+      {id:6,course:'wri',title:'Essay draft',type:'assignment',due:inDays(10),done:false},
+      {id:7,course:'stat',title:'Chapter 8 reading',type:'reading',due:inDays(-2),done:true},
     ],
     sessions: [
-      {id:11,date:'2026-09-08',course:'net',min:90},{id:12,date:'2026-09-09',course:'stat',min:60},{id:13,date:'2026-09-10',course:'net',min:60},
-      {id:14,date:'2026-09-11',course:'db',min:45},{id:15,date:'2026-09-12',course:'wri',min:60},{id:16,date:'2026-09-13',course:'stat',min:60},
+      {id:11,date:inDays(-6),course:'net',min:90},{id:12,date:inDays(-5),course:'stat',min:60},{id:13,date:inDays(-4),course:'net',min:60},
+      {id:14,date:inDays(-3),course:'db',min:45},{id:15,date:inDays(-2),course:'wri',min:60},{id:16,date:inDays(-1),course:'stat',min:60},
     ],
   });
   let S = seed();
@@ -236,10 +238,9 @@
 
   const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const course = id => S.courses.find(c=>c.id===id);
-  const days = iso => Math.round((new Date(iso) - new Date(TODAY)) / 864e5);
-  const dmy = iso => new Date(iso+'T12:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric'});
-  // '17', '17 Sep', 'Oct 3' → ISO in the current academic year
-  const dayOf = t => { const d=new Date(`${t} 2026`); if(!isNaN(d)) return d.toISOString().slice(0,10); const m=/\d{1,2}/.exec(t); return '2026-09-'+String(m?Math.min(DIM,Math.max(1,+m[0])):DAY).padStart(2,'0'); };
+  const days = iso => C.daysBetween(TODAY, iso);
+  const dmy = iso => C.short(C.fromISO(iso));
+  const dayOf = t => C.parseDay(t);
   const hrs = m => m>=60 ? (m%60 ? `${Math.floor(m/60)} h ${m%60}` : `${m/60} h`) : `${m} min`;
   const weekMin = cid => S.sessions.filter(s=>s.course===cid && days(s.date)>-7 && days(s.date)<=0).reduce((n,s)=>n+s.min,0);
   const dueWord = iso => { const d=days(iso); return d<0?'overdue':d===0?'due today':d===1?'due tomorrow':d<7?'due '+dmy(iso).split(' ')[0]:'due '+dmy(iso); };
@@ -254,7 +255,7 @@
   }
   function sentence(it){
     const c=course(it.course), d=days(it.due), m=weekMin(c.id);
-    const when = d<0?'It was due '+dmy(it.due):d===0?'It is due today':d===1?'It is due tomorrow':d<7?'It is due '+new Date(it.due+'T12:00').toLocaleDateString('en-GB',{weekday:'long'}):'It is due '+dmy(it.due);
+    const when = d<0?'It was due '+dmy(it.due):d===0?'It is due today':d===1?'It is due tomorrow':d<7?'It is due '+C.fromISO(it.due).toLocaleDateString('en-GB',{weekday:'long'}):'It is due '+dmy(it.due);
     const conf = c.conf<=2?'your confidence there is lowest':c.conf===3?'your confidence there is middling':'your confidence there is good';
     const time = m ? `you have put in ${hrs(m)} this week` : 'you have not studied it this week';
     return `${when}, ${conf}, and ${time}.`;
@@ -264,7 +265,7 @@
     const open = S.items.filter(i=>!i.done).sort((a,b)=>score(b)-score(a));
     const tests = S.items.filter(i=>i.type==='test' && !i.done).sort((a,b)=>a.due<b.due?-1:1)[0];
     const doneMin = S.courses.reduce((n,c)=>n+weekMin(c.id),0);
-    F('sub').innerHTML = `Autumn term · ${S.courses.length} courses${tests?` · <b>${esc(course(tests.course)?.name||'')} ${tests.title.toLowerCase().startsWith('exam')?'exam':'test'} in ${days(tests.due)} days</b>`:''} · ${hrs(doneMin)} studied this week`;
+    F('sub').innerHTML = `${C.now.getMonth()>=7||C.now.getMonth()<=0?'Autumn':'Spring'} term · ${S.courses.length} courses${tests?` · <b>${esc(course(tests.course)?.name||'')} ${tests.title.toLowerCase().startsWith('exam')?'exam':'test'} in ${days(tests.due)} days</b>`:''} · ${hrs(doneMin)} studied this week`;
 
     // study next
     const top = open[0];
@@ -331,10 +332,11 @@
   F('adddue').addEventListener('submit', e=>{ e.preventDefault(); S.items.push({id:Date.now(), course:F('i-course').value, title:F('i-title').value.trim(), type:F('i-type').value, due:dayOf(F('i-date').value), done:false}); const k=F('i-course').value; F('adddue').reset(); F('i-course').value=k; render(); });
   F('due').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ const it=S.items.find(i=>i.id===+e.target.closest('li').dataset.id); it.done=e.target.checked; render(); } });
   F('due').addEventListener('click', e=>{ if(e.target.closest('.x')){ const id=+e.target.closest('li').dataset.id; S.items=S.items.filter(i=>i.id!==id); render(); } });
-  F('addsess').addEventListener('submit', e=>{ e.preventDefault(); const min=parseInt(F('s-min').value); if(!min) return F('s-min').focus(); S.sessions.push({id:Date.now(), date:dayOf(F('s-date').value), course:F('s-course').value, min}); const k=F('s-course').value; F('addsess').reset(); F('s-course').value=k; F('s-date').value='14 Sep'; render(); });
+  F('addsess').addEventListener('submit', e=>{ e.preventDefault(); const min=parseInt(F('s-min').value); if(!min) return F('s-min').focus(); S.sessions.push({id:Date.now(), date:dayOf(F('s-date').value), course:F('s-course').value, min}); const k=F('s-course').value; F('addsess').reset(); F('s-course').value=k; F('s-date').value=C.dayMonth(C.now); render(); });
   F('newitem').addEventListener('click', ()=>F('i-title').focus());
+  F('s-date').value=C.dayMonth(C.now);
   render();
-  store.load('school').then(doc => { if (doc) { S = doc; render(); } });
+  store.load('school').then(doc => { if (doc) { S = doc; render(); } else save(); });
 </script>
 <script>document.getElementById('menubtn').addEventListener('click', e=>{ const b=document.querySelector('.band'); b.classList.toggle('nav-open'); e.currentTarget.setAttribute('aria-expanded', b.classList.contains('nav-open')); });</script>
 </body>

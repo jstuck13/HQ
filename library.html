@@ -190,12 +190,13 @@
 </main>
 <p class="foot">Books, ratings and notes are saved to your HQ account (and cached in this browser). Covers and book details come from Open Library.</p>
 
+<script src="clock.js"></script>
 <script src="store.js"></script>
 <script>
   // ---- state ----
   // One document, 'library', via store.js (server + localStorage cache). Cover art by ISBN from Open Library.
   const F = id => document.getElementById(id);
-  const TODAY = '2026-09-14';
+  const C = clock, TODAY = C.today;
   const seed = () => ({
     open: 1,
     books: [
@@ -223,14 +224,14 @@
   const save = () => store.save('library', S);
   const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const book = id => S.books.find(b=>b.id===id);
-  const dmy = iso => iso ? new Date(iso+'T12:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '';
+  const dmy = iso => iso ? C.fromISO(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '';
   const coverURL = b => b.coverId ? `https://covers.openlibrary.org/b/id/${b.coverId}-L.jpg?default=false` : b.isbn ? `https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg?default=false` : '';
   const cover = b => `<span class="cover">${coverURL(b)?`<img src="${coverURL(b)}" alt="" loading="lazy" onerror="this.dataset.missing=1">`:'<img data-missing=1 alt="">'}<span class="fb"><b>${esc(b.title)}</b><i>${esc(b.author)}</i></span></span>`;
   const dots = (n, live) => `<span class="dots">${[1,2,3,4,5].map(i=>live?`<button type="button" data-rate="${i}" class="${i<=n?'on':''}" aria-label="${i} of 5"></button>`:`<i class="${i<=n?'on':''}"></i>`).join('')}</span>`;
 
   function render(){
     const reading=S.books.filter(b=>b.shelf==='reading'), toread=S.books.filter(b=>b.shelf==='toread'), read=S.books.filter(b=>b.shelf==='read').sort((a,b)=>(b.finished||'')<(a.finished||'')?-1:1);
-    const thisYear = read.filter(b=>(b.finished||'').startsWith('2026')).length;
+    const thisYear = read.filter(b=>(b.finished||'').startsWith(String(C.now.getFullYear()))).length;
     F('sub').innerHTML = `<b>${reading.length} reading</b> · ${toread.length} to read · ${thisYear} read this year`;
     // the open book
     const o = book(S.open) || reading[0] || toread[0] || read[0];
@@ -310,7 +311,7 @@
     S.books.push(b); S.open=b.id; F('find').hidden=true; F('res').innerHTML=''; F('q').value=''; render(); F('open').scrollIntoView({behavior:'smooth',block:'start'});
   });
   render();
-  store.load('library').then(doc => { if (doc) { S = doc; render(); } });
+  store.load('library').then(doc => { if (doc) { S = doc; render(); } else save(); });
 </script>
 <script>document.getElementById('menubtn').addEventListener('click', e=>{ const b=document.querySelector('.band'); b.classList.toggle('nav-open'); e.currentTarget.setAttribute('aria-expanded', b.classList.contains('nav-open')); });</script>
 </body>

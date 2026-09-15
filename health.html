@@ -139,7 +139,7 @@
     </div>
     <div class="mast">
       <h1>Health</h1>
-      <span class="sub" id="sub">Logged <b>0 of 5</b> this morning.</span>
+      <span class="sub" id="sub">Logged <b>0 of 5</b> today.</span>
     </div>
   </div>
 </header>
@@ -147,7 +147,7 @@
 <main>
   <div class="log">
     <section>
-      <h2>Today<small>Monday 14 September</small></h2>
+      <h2>Today<small id="todayn"></small></h2>
 
 
       <ul class="ledger" id="ledger">
@@ -188,19 +188,21 @@
   </div>
 
   <section class="trends">
-    <h2>Last 30 days<small>16 August – 14 September</small></h2>
+    <h2>Last 30 days<small id="rangen"></small></h2>
     <div class="strip" id="strip"></div>
   </section>
 </main>
 <p class="foot">What you log is saved to your HQ account (and cached in this browser). Trend lines are sample data until readings accumulate.</p>
 
+<script src="clock.js"></script>
 <script src="store.js"></script>
 <script>
   // ---- state: today's log, kept in this browser ----
   // ponytail: localStorage; becomes the health store later.
   const F = id => document.getElementById(id);
+  const C = clock, KEY = 'health.' + C.today;
   let L = {};
-  const save = () => store.save('health.2026-09-14', L);
+  const save = () => store.save(KEY, L);
   L.pills ??= [];
 
   // readings
@@ -219,7 +221,7 @@
       const k=li.dataset.k; li.classList.toggle('logged', k==='bp' ? !!(L.bps&&L.bpd) : L[k]!=null);
     });
     const n = ['sleep','weight','hr'].filter(k=>L[k]!=null).length + (L.bps&&L.bpd?1:0) + (L.pills.length===4?1:0);
-    F('sub').innerHTML = `Logged <b>${n} of 5</b> this morning; on the month sleep is ${SLEEP_T}, weight is ${WEIGHT_T}.`;
+    F('sub').innerHTML = `Logged <b>${n} of 5</b> ${C.now.getHours()<12?'this morning':'today'}; on the month sleep is ${SLEEP_T}, weight is ${WEIGHT_T}.`;
     F('pillsn').textContent = `${L.pills.length} of 4`;
   }
 
@@ -227,7 +229,7 @@
   // Synthetic but plausible; a seeded walk so it is the same every load.
   let seedv = 7; const rnd = () => (seedv = (seedv * 16807) % 2147483647) / 2147483647;
   const walk = (start, step, min, max, n=30) => { let v=start; return Array.from({length:n},()=>{ v=Math.min(max,Math.max(min,v+(rnd()-.5)*step)); return v; }); };
-  const days = Array.from({length:30},(_,i)=>new Date(2026,7,16+i));
+  const days = Array.from({length:30},(_,i)=>C.addDays(C.now, i-29));
   const series = [
     {name:'Sleep', data:walk(6.4,1.6,5.2,8.4).map((v,i)=>v+i*0.02), fmt:v=>`${Math.floor(v)} h ${String(Math.round((v%1)*60)).padStart(2,'0')}`},
     {name:'Weight', data:walk(182.4,1.2,180.5,183.5), fmt:v=>`${v.toFixed(1)} lb`},
@@ -249,7 +251,7 @@
         <path class="wash" d="M${pts[0]} L${pts.slice(1).join(' L')} L${x(29).toFixed(1)},${H-P.b} L${x(0)},${H-P.b} Z"/>
         <path class="ln" d="M${pts.join(' L')}"/>
         <circle class="dot" r="4.5" cx="${x(29).toFixed(1)}" cy="${y(last).toFixed(1)}"/>
-        <text class="tk" x="${P.l}" y="${H-6}">16 Aug</text><text class="tk" x="${W-P.r}" y="${H-6}" text-anchor="end">today</text>
+        <text class="tk" x="${P.l}" y="${H-6}">${fmtDay(days[0])}</text><text class="tk" x="${W-P.r}" y="${H-6}" text-anchor="end">today</text>
         <line class="xh" y1="${P.t}" y2="${H-P.b}"/><circle class="hv" r="4.5"/>
         <rect x="0" y="0" width="${W}" height="${H}" fill="transparent" class="hit"/>
       </svg>
@@ -266,9 +268,11 @@
   cell('sleep', sl.fmt(sl.data[28]), 'yesterday', sl.fmt(sl.data.reduce((a,b)=>a+b,0)/30), SLEEP_T);
   cell('weight', wt.fmt(wt.data[27]), 'Saturday', wt.fmt(wt.data.reduce((a,b)=>a+b,0)/30), WEIGHT_T);
   cell('hr', hr.fmt(hr.data[28]), 'yesterday', hr.fmt(hr.data.reduce((a,b)=>a+b,0)/30), trend(hr.data, .5, v=>`${Math.round(v)}`));
+  F('todayn').textContent = C.now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+  F('rangen').textContent = `${C.addDays(C.now,-29).toLocaleDateString('en-GB',{day:'numeric',month:'long'})} – ${C.now.toLocaleDateString('en-GB',{day:'numeric',month:'long'})}`;
   renderLogged();
   F('newentry').onclick = ()=>F('sleep').focus();
-  store.load('health.2026-09-14').then(doc => { if (doc) { L = doc; L.pills ??= []; applyLog(); } });
+  store.load(KEY).then(doc => { if (doc) { L = doc; L.pills ??= []; applyLog(); } });
 
   // hover: crosshair + tooltip on the nearest day
   document.querySelectorAll('.chart').forEach(ch=>{

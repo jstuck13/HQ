@@ -175,7 +175,7 @@
     <div class="row">
       <a class="mark" href="today.html">HQ</a>
       <span class="date">Monday, 14 September 2026 · 8.40 am</span>
-      <nav aria-label="Areas"><a href="today.html">Today</a><a href="calendar.html" aria-current="page">Calendar</a><a href="finances.html">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="#">Health</a></nav>
+      <nav aria-label="Areas"><a href="today.html">Today</a><a href="calendar.html" aria-current="page">Calendar</a><a href="finances.html">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="health.html">Health</a></nav>
       <div class="right">
         <button class="textbtn" id="newentry"><svg class="ic"><use href="icons.svg#plus"/></svg>New entry</button>
         <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
@@ -184,9 +184,9 @@
       </div>
     </div>
     <div class="mast">
-      <h1>September 2026</h1>
-      <div class="nav" aria-label="Change week"><button><svg class="ic"><use href="icons.svg#chevron-left"/></svg>Previous</button><button>Today</button><button>Next<svg class="ic"><use href="icons.svg#chevron-right"/></svg></button></div>
-      <span class="week">Week of the 14th · 17 entries</span>
+      <h1 id="monthh">September 2026</h1>
+      <div class="nav" aria-label="Change week"><button type="button" id="prev"><svg class="ic"><use href="icons.svg#chevron-left"/></svg>Previous</button><button type="button" id="todaybtn">Today</button><button type="button" id="next">Next<svg class="ic"><use href="icons.svg#chevron-right"/></svg></button></div>
+      <span class="week"></span>
     </div>
   </div>
 </header>
@@ -194,15 +194,9 @@
 <main>
   <aside>
     <h2>Month</h2>
-    <table class="mini" aria-label="September 2026">
+    <table class="mini" id="mini" aria-label="Month">
       <thead><tr><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th><th>S</th><th>S</th></tr></thead>
-      <tbody>
-        <tr><td class="out"><button>31</button></td><td><button>1</button></td><td><button>2</button></td><td><button>3</button></td><td><button>4</button></td><td><button>5</button></td><td><button>6</button></td></tr>
-        <tr><td><button>7</button></td><td><button>8</button></td><td><button>9</button></td><td><button>10</button></td><td><button>11</button></td><td><button>12</button></td><td><button>13</button></td></tr>
-        <tr class="cur"><td class="today sel"><button data-d="0">14</button></td><td><button data-d="1">15</button></td><td><button data-d="2">16</button></td><td><button data-d="3">17</button></td><td><button data-d="4">18</button></td><td><button data-d="5">19</button></td><td><button data-d="6">20</button></td></tr>
-        <tr><td><button>21</button></td><td><button>22</button></td><td><button>23</button></td><td><button>24</button></td><td><button>25</button></td><td><button>26</button></td><td><button>27</button></td></tr>
-        <tr><td><button>28</button></td><td><button>29</button></td><td><button>30</button></td><td class="out"><button>1</button></td><td class="out"><button>2</button></td><td class="out"><button>3</button></td><td class="out"><button>4</button></td></tr>
-      </tbody>
+      <tbody id="minib"></tbody>
     </table>
 
     <div class="filters">
@@ -224,7 +218,7 @@
   </aside>
 
   <section>
-    <h2>The week<small>14 – 20 September · 8 am – 8 pm</small></h2>
+    <h2>The week<small id="weekh"></small></h2>
     <div class="card">
       <div class="days" id="days"><span></span></div>
       <div class="grid" id="grid">
@@ -242,7 +236,7 @@
     <form class="add" id="add">
       <h2 id="formh">Add an entry</h2>
       <div class="field"><label for="a-title">Title</label><input id="a-title" placeholder="What is it?" required></div>
-      <div class="field"><label for="a-day">Day</label><select id="a-day"><option>Monday 14</option><option>Tuesday 15</option><option>Wednesday 16</option><option>Thursday 17</option><option>Friday 18</option><option>Saturday 19</option><option>Sunday 20</option></select></div>
+      <div class="field"><label for="a-day">Day</label><input id="a-day" placeholder="17 Sep" aria-label="Day"></div>
       <div class="field"><label for="a-start">Time</label><div class="pair"><input id="a-start" value="5.00 pm" size="8" aria-label="Start"><span>to</span><input id="a-end" value="6.00 pm" size="8" aria-label="End"></div></div>
       <div class="field"><label for="a-area">Category</label><select id="a-area"></select></div>
       <div class="field"><span class="lbl" id="rep-l">Repeats</span><div class="dows" id="a-rep" role="group" aria-labelledby="rep-l"><label><input type="checkbox" value="0"><span>M</span></label><label><input type="checkbox" value="1"><span>T</span></label><label><input type="checkbox" value="2"><span>W</span></label><label><input type="checkbox" value="3"><span>T</span></label><label><input type="checkbox" value="4"><span>F</span></label><label><input type="checkbox" value="5"><span>S</span></label><label><input type="checkbox" value="6"><span>S</span></label></div></div>
@@ -254,49 +248,53 @@
     </form>
   </aside>
 </main>
-<p class="foot">Entries, categories and notes are saved to your HQ account (and cached in this browser). Week navigation and the mini month's other weeks are drawn states.</p>
+<p class="foot">Entries, categories and notes are saved to your HQ account (and cached in this browser).</p>
 
+<script src="clock.js"></script>
 <script src="store.js"></script>
 <script>
   // ---- data model ----
-  // A series repeats; an occurrence is one series on one day. Notes belong to the occurrence.
-  // ponytail: state lives in localStorage; swap the load/save pair for a real store later.
+  // A series is one entry. rep = weekdays it repeats on (Mon=0); an empty rep is a one-off on `date`.
+  // Notes belong to one occurrence: key `${id}@${ISO date}`.
   const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-  const TODAY = 0, NOW = 8.667;
-  const TINTS = ['#E9EEF3','#F6E6DC','#ECE6F3','#F5E4E6','#E2EBE2','#F4EDD5','#EDE4DA','#E6E9EC'];
   const SHORTD = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  const repDays = s => [...new Set([s.day, ...(s.rep||[])])].sort();
-  const repeats = s => repDays(s).length > 1;
-  const repLabel = s => { const d=repDays(s); if(d.length===7) return 'Every day'; if(d.join()==='0,1,2,3,4') return 'Weekdays'; if(d.length===1) return 'Once'; return d.map(i=>SHORTD[i]).join(' · '); };
+  const TINTS = ['#E9EEF3','#F6E6DC','#ECE6F3','#F5E4E6','#E2EBE2','#F4EDD5','#EDE4DA','#E6E9EC'];
+  const C = clock, TODAY = C.today;
+  const thisMon = C.iso(C.monday(C.now));
+  const onDay = (d, n) => C.iso(C.addDays(C.fromISO(d), n));
   const seed = () => ({
     cats: [ {id:'cal',name:'Appointments',tint:TINTS[0]}, {id:'fit',name:'Training',tint:TINTS[1]}, {id:'study',name:'Study',tint:TINTS[2]} ],
     series: [
-      {id:1,day:0,start:9,end:11,title:'Deep work — RPL value engine',cat:'cal',sub:'Two hours, uninterrupted',short:'Deep work',rep:[0,2,4]},
-      {id:2,day:0,start:11.5,end:12.5,title:'Gym — push day, upper A',cat:'fit',sub:'Bench, overhead press, dips',short:'Gym · push',rep:'none'},
-      {id:3,day:0,start:13,end:13.75,title:'Lunch',cat:'cal',sub:'',short:'Lunch',rep:'none'},
-      {id:4,day:0,start:14,end:15.5,title:'Study — Networking, chapter six',cat:'study',sub:'Subnetting',short:'Net. ch. 6',rep:'none'},
-      {id:5,day:0,start:16.5,end:17,title:'Telephone Mother',cat:'cal',sub:'',short:'Mother',rep:[]},
-      {id:6,day:0,start:19,end:20,title:'RPL scrim review',cat:'cal',sub:'',short:'Scrim review',rep:'none'},
-      {id:7,day:1,start:9,end:10.5,title:'Study — Networking, chapter seven',cat:'study',sub:'Routing',short:'Net. ch. 7',rep:'none'},
-      {id:8,day:1,start:17,end:18,title:'Gym — pull day',cat:'fit',sub:'Rows, pull-ups, curls',short:'Gym · pull',rep:'none'},
-      {id:9,day:1,start:19.5,end:20,title:'RPL sync',cat:'cal',sub:'Voice',short:'RPL sync',rep:[1,3]},
-      {id:10,day:2,start:14,end:14.75,title:'Dentist',cat:'cal',sub:'Check-up',short:'Dentist',rep:'none'},
-      {id:11,day:2,start:16,end:17.5,title:'Study — practice questions',cat:'study',sub:'',short:'Practice Qs',rep:'none'},
-      {id:12,day:3,start:11.5,end:12.5,title:'Gym — legs',cat:'fit',sub:'Squat, RDL, lunges',short:'Gym · legs',rep:'none'},
-      {id:13,day:3,start:19,end:20,title:'Dinner with Sam',cat:'cal',sub:'',short:'Dinner, Sam',rep:'none'},
-      {id:14,day:4,start:13,end:14.5,title:'Study — Networking, chapter eight',cat:'study',sub:'Switching',short:'Net. ch. 8',rep:'none'},
-      {id:15,day:4,start:17,end:18,title:'Gym — push day, upper B',cat:'fit',sub:'',short:'Gym · push B',rep:'none'},
-      {id:16,day:5,start:9,end:10,title:'Long run',cat:'fit',sub:'8 km, easy',short:'Long run',rep:'none'},
-      {id:17,day:5,start:11,end:13,title:'Errands',cat:'cal',sub:'',short:'Errands',rep:'none'},
-      {id:18,day:5,start:19,end:20,title:'RPL scrim',cat:'cal',sub:'',short:'Scrim',rep:'none'},
-      {id:19,day:6,start:10,end:11,title:'Review the week',cat:'cal',sub:'',short:'Review week',rep:'none'},
-      {id:20,day:6,start:14,end:16,title:'Study — mock exam',cat:'study',sub:'Timed',short:'Mock exam',rep:'none'},
+      {id:1,date:onDay(thisMon,0),start:9,end:11,title:'Deep work — RPL value engine',cat:'cal',sub:'Two hours, uninterrupted',short:'Deep work',rep:[0,2,4]},
+      {id:2,date:onDay(thisMon,0),start:11.5,end:12.5,title:'Gym — push day, upper A',cat:'fit',sub:'Bench, overhead press, dips',short:'Gym · push',rep:[]},
+      {id:3,date:onDay(thisMon,0),start:13,end:13.75,title:'Lunch',cat:'cal',sub:'',short:'Lunch',rep:[]},
+      {id:4,date:onDay(thisMon,0),start:14,end:15.5,title:'Study — Networking, chapter six',cat:'study',sub:'Subnetting',short:'Net. ch. 6',rep:[]},
+      {id:5,date:onDay(thisMon,0),start:16.5,end:17,title:'Telephone Mother',cat:'cal',sub:'',short:'Mother',rep:[0]},
+      {id:6,date:onDay(thisMon,0),start:19,end:20,title:'RPL scrim review',cat:'cal',sub:'',short:'Scrim review',rep:[]},
+      {id:7,date:onDay(thisMon,1),start:9,end:10.5,title:'Study — Networking, chapter seven',cat:'study',sub:'Routing',short:'Net. ch. 7',rep:[]},
+      {id:8,date:onDay(thisMon,1),start:17,end:18,title:'Gym — pull day',cat:'fit',sub:'Rows, pull-ups, curls',short:'Gym · pull',rep:[]},
+      {id:9,date:onDay(thisMon,1),start:19.5,end:20,title:'RPL sync',cat:'cal',sub:'Voice',short:'RPL sync',rep:[1,3]},
+      {id:10,date:onDay(thisMon,2),start:14,end:14.75,title:'Dentist',cat:'cal',sub:'Check-up',short:'Dentist',rep:[]},
+      {id:11,date:onDay(thisMon,2),start:16,end:17.5,title:'Study — practice questions',cat:'study',sub:'',short:'Practice Qs',rep:[]},
+      {id:12,date:onDay(thisMon,3),start:11.5,end:12.5,title:'Gym — legs',cat:'fit',sub:'Squat, RDL, lunges',short:'Gym · legs',rep:[]},
+      {id:13,date:onDay(thisMon,3),start:19,end:20,title:'Dinner with Sam',cat:'cal',sub:'',short:'Dinner, Sam',rep:[]},
+      {id:14,date:onDay(thisMon,4),start:13,end:14.5,title:'Study — Networking, chapter eight',cat:'study',sub:'Switching',short:'Net. ch. 8',rep:[]},
+      {id:15,date:onDay(thisMon,4),start:17,end:18,title:'Gym — push day, upper B',cat:'fit',sub:'',short:'Gym · push B',rep:[]},
+      {id:16,date:onDay(thisMon,5),start:9,end:10,title:'Long run',cat:'fit',sub:'8 km, easy',short:'Long run',rep:[]},
+      {id:17,date:onDay(thisMon,5),start:11,end:13,title:'Errands',cat:'cal',sub:'',short:'Errands',rep:[]},
+      {id:18,date:onDay(thisMon,5),start:19,end:20,title:'RPL scrim',cat:'cal',sub:'',short:'Scrim',rep:[]},
+      {id:19,date:onDay(thisMon,6),start:10,end:11,title:'Review the week',cat:'cal',sub:'',short:'Review week',rep:[]},
+      {id:20,date:onDay(thisMon,6),start:14,end:16,title:'Study — mock exam',cat:'study',sub:'Timed',short:'Mock exam',rep:[]},
     ],
-    notes: { '1@0':'Finish the pricing curve; ask Sam for the export before 11.', '2@0':'Bench felt heavy last week — keep 3×5 at the same weight.' },
+    notes: { [`1@${onDay(thisMon,0)}`]:'Finish the pricing curve; ask Sam for the export before 11.', [`2@${onDay(thisMon,0)}`]:'Bench felt heavy last week — keep 3×5 at the same weight.' },
     hidden: [],
   });
   let S = seed();
-  const migrate = () => S.series.forEach(x=>{ if(!Array.isArray(x.rep)) x.rep = ({mwf:[0,2,4],tt:[1,3],daily:[0,1,2,3,4,5,6],weekdays:[0,1,2,3,4]})[x.rep] || []; });
+  // older documents kept weekday indexes instead of dates; pin them to the week they were made in
+  const migrate = () => {
+    S.series.forEach(x=>{ if(!Array.isArray(x.rep)) x.rep = ({mwf:[0,2,4],tt:[1,3],daily:[0,1,2,3,4,5,6],weekdays:[0,1,2,3,4]})[x.rep] || []; if(!x.date){ x.date = onDay('2026-09-14', x.day||0); delete x.day; } });
+    Object.keys(S.notes).forEach(k=>{ const m=/^(\d+)@(\d)$/.exec(k); if(m){ S.notes[`${m[1]}@${onDay('2026-09-14',+m[2])}`]=S.notes[k]; delete S.notes[k]; } });
+  };
   const save = () => store.save('calendar', S);
 
   const cat = id => S.cats.find(c=>c.id===id) || S.cats[0];
@@ -305,11 +303,18 @@
   const dur = (a,b) => { const m=Math.round((b-a)*60); return m>=60 ? (m%60 ? `${Math.floor(m/60)} h ${m%60}` : `${m/60} h`) : `${m} min`; };
   const short = t => t.length>14 ? t.split(/ — |, /)[0].slice(0,16) : t;
   const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  const occurs = (s,d) => repDays(s).includes(d);
+  const wd = d => (C.fromISO(d).getDay()+6)%7;                     // Mon=0
+  const isWeekly = s => (s.rep||[]).length > 0;                    // any ticked day means it comes back every week
+  const repDays = s => [...new Set([wd(s.date), ...(s.rep||[])])].sort();
+  const repLabel = s => { const d=repDays(s); if(d.length===7) return 'Every day'; if(d.join()==='0,1,2,3,4') return 'Weekdays'; if(d.length===1) return 'Every week'; return d.map(i=>SHORTD[i]).join(' · '); };
+  const occurs = (s,d) => isWeekly(s) ? (d>=s.date && repDays(s).includes(wd(d))) : s.date===d;
   const occ = d => S.series.filter(s=>occurs(s,d) && !S.hidden.includes(s.cat)).sort((a,b)=>a.start-b.start);
   const key = (s,d) => `${s.id}@${d}`;
   const F = id => document.getElementById(id);
-  let selDay = TODAY, open = null; // open = {id, d}
+
+  let weekStart = thisMon, selDay = TODAY, open = null;   // open = {id, d}
+  const dateOf = i => onDay(weekStart, i);
+  const NOW = C.now.getHours() + C.now.getMinutes()/60;
 
   // ---- categories ----
   function renderCats(){
@@ -330,91 +335,115 @@
   });
   F('nc-name').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); F('nc-add').click(); } });
 
+  // ---- mini month (the month of the selected day) ----
+  function renderMini(){
+    const anchor = C.fromISO(selDay), y=anchor.getFullYear(), m=anchor.getMonth();
+    const start = C.monday(new Date(y, m, 1, 12)), last = new Date(y, m+1, 0, 12);
+    let html='';
+    for(let r=0;r<6;r++){
+      const rowStart = C.addDays(start, r*7);
+      if(rowStart > last) break;
+      html += `<tr class="${C.iso(rowStart)===weekStart?'cur':''}">` + [0,1,2,3,4,5,6].map(i=>{
+        const d = C.addDays(start, r*7+i), di=C.iso(d), out = d.getMonth()!==m;
+        return `<td class="${out?'out':''} ${di===TODAY?'today':''} ${di===selDay?'sel':''}"><button type="button" data-d="${di}">${d.getDate()}</button></td>`;
+      }).join('') + '</tr>';
+    }
+    F('minib').innerHTML = html;
+    F('mini').setAttribute('aria-label', C.month(anchor));
+  }
+
   // ---- week grid ----
   const days = F('days'), grid = F('grid');
   for(let h=0;h<=12;h++){ const l=document.createElement('div'); l.className='hl'; l.style.top=`calc(var(--hour)*${h})`; grid.appendChild(l); }
   DAYS.forEach((d,i)=>{
-    const b=document.createElement('button'); b.type='button'; b.dataset.d=i; b.className = i===TODAY?'today':'';
-    b.innerHTML = `${d.slice(0,3)}<b>${14+i}</b>`; days.appendChild(b);
-    const c=document.createElement('div'); c.className='col'+(i===TODAY?' today':''); c.dataset.d=i; grid.appendChild(c);
+    const b=document.createElement('button'); b.type='button'; b.dataset.i=i; days.appendChild(b);
+    const c=document.createElement('div'); c.className='col'; c.dataset.i=i; grid.appendChild(c);
   });
   function renderGrid(){
+    const ws=C.fromISO(weekStart), we=C.addDays(ws,6);
+    F('monthh').textContent = ws.getMonth()===we.getMonth() ? C.month(ws) : `${ws.toLocaleDateString('en-GB',{month:'long'})} – ${C.month(we)}`;
+    F('weekh').textContent = `${ws.getDate()} ${ws.toLocaleDateString('en-GB',{month:'short'})} – ${we.getDate()} ${we.toLocaleDateString('en-GB',{month:'short'})} · 8 am – 8 pm`;
+    let total=0;
+    document.querySelectorAll('#days button').forEach(b=>{
+      const i=+b.dataset.i, d=dateOf(i), dt=C.fromISO(d);
+      b.className = d===TODAY?'today':''; b.dataset.d=d; b.innerHTML=`${SHORTD[i]}<b>${dt.getDate()}</b>`; b.setAttribute('aria-pressed', d===selDay);
+    });
     document.querySelectorAll('.col').forEach(c=>{
-      const d=+c.dataset.d; c.innerHTML='';
-      occ(d).forEach(s=>{
+      const d=dateOf(+c.dataset.i); c.dataset.d=d; c.className='col'+(d===TODAY?' today':''); c.innerHTML='';
+      const list=occ(d); total+=list.length;
+      list.forEach(s=>{
         const a=document.createElement('a'); a.href='#'; a.dataset.id=s.id; a.className='ev'+(s.end-s.start<0.75?' short':'')+(open&&open.id===s.id&&open.d===d?' open':'');
         a.style.setProperty('--c', cat(s.cat).tint);
         a.style.top=`calc(var(--hour)*${s.start-8} + 2px)`; a.style.height=`calc(var(--hour)*${s.end-s.start} - 4px)`;
         a.title=`${s.title}, ${h12(s.start)} – ${h12(s.end)}`; a.innerHTML=`<b>${esc(s.short||short(s.title))}</b>`; c.appendChild(a);
       });
-      if(d===TODAY){ const n=document.createElement('div'); n.className='now'; n.style.top=`calc(var(--hour)*${NOW-8})`; c.appendChild(n); }
+      if(d===TODAY && NOW>=8 && NOW<=20){ const n=document.createElement('div'); n.className='now'; n.style.top=`calc(var(--hour)*${NOW-8})`; c.appendChild(n); }
     });
-    document.querySelectorAll('#days button').forEach(b=>b.setAttribute('aria-pressed', +b.dataset.d===selDay));
-    document.querySelectorAll('.mini td.sel').forEach(td=>td.classList.remove('sel'));
-    document.querySelector(`.mini button[data-d="${selDay}"]`).parentElement.classList.add('sel');
-    const total = DAYS.reduce((n,_,d)=>n+occ(d).length,0);
-    document.querySelector('.mast .week').textContent = `Week of the 14th · ${total} entries`;
+    document.querySelector('.mast .week').textContent = `${weekStart===thisMon?'This week':'Week of '+ws.getDate()+' '+ws.toLocaleDateString('en-GB',{month:'short'})} · ${total} ${total===1?'entry':'entries'}`;
   }
   function renderLedger(){
-    const list = occ(selDay);
-    F('dayh').innerHTML = `${DAYS[selDay]} ${14+selDay}<small>${list.length} ${list.length===1?'entry':'entries'}</small>`;
+    const list = occ(selDay), dt=C.fromISO(selDay);
+    F('dayh').innerHTML = `${DAYS[wd(selDay)]} ${dt.getDate()}<small>${selDay===TODAY?'today · ':''}${list.length} ${list.length===1?'entry':'entries'}</small>`;
     F('ledger').innerHTML = list.length ? list.map(s=>
-      `<li data-id="${s.id}" class="${open&&open.id===s.id&&open.d===selDay?'open':''}"><span class="t">${h12(s.start)}</span><span class="n">${esc(s.title)}${repeats(s)?`<span class="rep"><svg class="ic"><use href="icons.svg#repeat"/></svg>${repLabel(s)}</span>`:''}${s.sub?`<small>${esc(s.sub)}</small>`:''}</span><span class="d">${dur(s.start,s.end)}</span></li>`).join('')
+      `<li data-id="${s.id}" class="${open&&open.id===s.id&&open.d===selDay?'open':''}"><span class="t">${h12(s.start)}</span><span class="n">${esc(s.title)}${isWeekly(s)?`<span class="rep"><svg class="ic"><use href="icons.svg?v=3#repeat"/></svg>${repLabel(s)}</span>`:''}${s.sub?`<small>${esc(s.sub)}</small>`:''}</span><span class="d">${dur(s.start,s.end)}</span></li>`).join('')
       : '<li class="empty">Nothing on. A clear day.</li>';
-    F('a-day').selectedIndex = selDay;
+    if(!editing) F('a-day').value = C.dayMonth(dt);
   }
 
   // ---- the open entry (bottom-left) ----
   function renderEntry(){
     const el=F('entry');
-    if(!open){ el.innerHTML='<h2>Entry</h2><p class="empty">Click an entry in the week or the day\'s list to read it here.</p>'; return; }
+    if(!open){ el.innerHTML='<h2>Entry</h2><p class="empty">Click an entry in the week or the day&rsquo;s list to read it here.</p>'; return; }
     const s=S.series.find(x=>x.id===open.id); if(!s){ open=null; return renderEntry(); }
-    const c=cat(s.cat), k=key(s,open.d);
+    const c=cat(s.cat), k=key(s,open.d), dt=C.fromISO(open.d);
     el.innerHTML = `<h2>Entry</h2>
       <p class="title">${esc(s.title)}</p>
-      <p class="when">${DAYS[open.d]} ${14+open.d} · ${h12(s.start)} – ${h12(s.end)} · ${dur(s.start,s.end)}</p>
-      <p class="meta"><span><i class="sw" style="background:${c.tint}"></i>${esc(c.name)}</span><span>${repeats(s)?'<svg class="ic"><use href="icons.svg#repeat"/></svg>'+repLabel(s):'Once'}</span>${s.sub?`<span>${esc(s.sub)}</span>`:''}</p>
-      <div class="notes"><label for="note">Notes for this ${repeats(s)?'occurrence':'entry'}</label><textarea id="note" placeholder="Nothing noted yet.">${esc(S.notes[k]||'')}</textarea><p class="saved" id="saved"></p></div>
+      <p class="when">${DAYS[wd(open.d)]} ${dt.getDate()} ${dt.toLocaleDateString('en-GB',{month:'short'})} · ${h12(s.start)} – ${h12(s.end)} · ${dur(s.start,s.end)}</p>
+      <p class="meta"><span><i class="sw" style="background:${c.tint}"></i>${esc(c.name)}</span><span>${isWeekly(s)?'<svg class="ic"><use href="icons.svg?v=3#repeat"/></svg>'+repLabel(s):'Once'}</span>${s.sub?`<span>${esc(s.sub)}</span>`:''}</p>
+      <div class="notes"><label for="note">Notes for this ${isWeekly(s)?'occurrence':'entry'}</label><textarea id="note" placeholder="Nothing noted yet.">${esc(S.notes[k]||'')}</textarea><p class="saved" id="saved"></p></div>
       <div class="acts"><button class="textbtn" type="button" id="e-edit">Edit entry</button></div>`;
     let t; F('note').addEventListener('input', e=>{ S.notes[k]=e.target.value; save(); clearTimeout(t); F('saved').textContent='Saving…'; t=setTimeout(()=>F('saved').textContent='Saved.',600); });
     F('e-edit').addEventListener('click', ()=>edit(s, open.d));
   }
   function openEntry(id, d){ open={id,d}; selDay=d; renderAll(); F('entry').scrollIntoView({block:'nearest'}); }
-  grid.addEventListener('click', e=>{ const a=e.target.closest('a.ev'); if(a){ e.preventDefault(); openEntry(+a.dataset.id, +a.parentElement.dataset.d); } });
+  function goto(d){ selDay=d; weekStart=C.iso(C.monday(C.fromISO(d))); renderAll(); }
+  grid.addEventListener('click', e=>{ const a=e.target.closest('a.ev'); if(a){ e.preventDefault(); openEntry(+a.dataset.id, a.parentElement.dataset.d); } });
   F('ledger').addEventListener('click', e=>{ const li=e.target.closest('li[data-id]'); if(li) openEntry(+li.dataset.id, selDay); });
-  days.addEventListener('click', e=>{ const b=e.target.closest('button'); if(b){ selDay=+b.dataset.d; renderAll(); } });
-  document.querySelector('.mini').addEventListener('click', e=>{ const b=e.target.closest('button[data-d]'); if(b){ selDay=+b.dataset.d; renderAll(); } });
+  days.addEventListener('click', e=>{ const b=e.target.closest('button'); if(b){ selDay=b.dataset.d; renderAll(); } });
+  F('mini').addEventListener('click', e=>{ const b=e.target.closest('button[data-d]'); if(b) goto(b.dataset.d); });
+  F('prev').addEventListener('click', ()=>goto(onDay(selDay,-7)));
+  F('next').addEventListener('click', ()=>goto(onDay(selDay,7)));
+  F('todaybtn').addEventListener('click', ()=>goto(TODAY));
 
   const getRep = () => [...F('a-rep').querySelectorAll('input:checked')].map(i=>+i.value);
   const setRep = d => F('a-rep').querySelectorAll('input').forEach(i=>i.checked=d.includes(+i.value));
-  // the entry's own day is always part of its repeat set
-  F('a-day').addEventListener('change', ()=>setRep([...new Set([F('a-day').selectedIndex, ...getRep()])]));
   // ---- one form, two states ----
   let editing = null; // {id, d}
   function edit(s, d){
     editing={id:s.id, d};
     F('formh').textContent='Edit entry'; F('submit').querySelector('span').textContent='Save changes';
     F('remove').hidden=F('cancel').hidden=false;
-    F('a-title').value=s.title; F('a-day').selectedIndex=s.day; F('a-start').value=h12(s.start); F('a-end').value=h12(s.end);
-    F('a-area').value=s.cat; setRep(repDays(s)); F('a-sub').value=s.sub||''; F('a-notes').value=S.notes[key(s,d)]||'';
+    F('a-title').value=s.title; F('a-day').value=C.dayMonth(C.fromISO(s.date)); F('a-start').value=h12(s.start); F('a-end').value=h12(s.end);
+    F('a-area').value=s.cat; setRep(isWeekly(s)?repDays(s):[]); F('a-sub').value=s.sub||''; F('a-notes').value=S.notes[key(s,d)]||'';
     F('a-title').focus(); F('add').scrollIntoView({block:'nearest'});
   }
   function reset(){
     editing=null;
     F('formh').textContent='Add an entry'; F('submit').querySelector('span').textContent='Add to the day';
     F('remove').hidden=F('cancel').hidden=true;
-    F('add').reset(); F('a-day').selectedIndex=selDay; setRep([selDay]); F('a-start').value='5.00 pm'; F('a-end').value='6.00 pm';
+    F('add').reset(); F('a-day').value=C.dayMonth(C.fromISO(selDay)); setRep([]); F('a-start').value='5.00 pm'; F('a-end').value='6.00 pm';
   }
   F('add').addEventListener('submit', e=>{
     e.preventDefault();
     const start=parse(F('a-start').value), end=parse(F('a-end').value);
     if(start==null||end==null||end<=start){ F('a-start').focus(); return; }
     const s = editing ? S.series.find(x=>x.id===editing.id) : {id:Date.now()};
-    Object.assign(s, {title:F('a-title').value.trim(), day:F('a-day').selectedIndex, start, end, cat:F('a-area').value, rep:getRep(), sub:F('a-sub').value.trim()});
+    const date = C.parseDay(F('a-day').value);
+    Object.assign(s, {title:F('a-title').value.trim(), date, start, end, cat:F('a-area').value, rep:getRep(), sub:F('a-sub').value.trim()});
     if(!editing){ s.short=short(s.title); S.series.push(s); }
-    const d = editing ? editing.d : s.day; const note=F('a-notes').value.trim();
+    const d = editing ? editing.d : date; const note=F('a-notes').value.trim();
     if(note) S.notes[key(s,d)]=note; else delete S.notes[key(s,d)];
-    save(); open={id:s.id, d}; selDay=d; reset(); renderAll();
+    save(); open={id:s.id, d}; goto(d); reset();
   });
   F('remove').addEventListener('click', ()=>{
     S.series = S.series.filter(x=>x.id!==editing.id);
@@ -424,9 +453,9 @@
   F('cancel').addEventListener('click', reset);
   F('newentry').addEventListener('click', ()=>{ reset(); F('a-title').focus(); });
 
-  function renderAll(){ renderCats(); renderGrid(); renderLedger(); renderEntry(); }
+  function renderAll(){ renderCats(); renderMini(); renderGrid(); renderLedger(); renderEntry(); }
   renderAll(); reset();
-  store.load('calendar').then(doc => { if (doc) { S = doc; migrate(); renderAll(); reset(); } });
+  store.load('calendar').then(doc => { if (doc) { S = doc; migrate(); renderAll(); reset(); } else save(); });
 </script>
 <script>document.getElementById('menubtn').addEventListener('click', e=>{ const b=document.querySelector('.band'); b.classList.toggle('nav-open'); e.currentTarget.setAttribute('aria-expanded', b.classList.contains('nav-open')); });</script>
 </body>
