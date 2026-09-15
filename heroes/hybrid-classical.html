@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HQ — Classical-led</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Libre+Franklin:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --band:#1F3A2E; --band-ink:#F2ECDF; --band-muted:#B9C9BE;
+    --paper:#F5F0E6; --paper-2:#EDE6D8; --tint:#E9E1D0; --ink:#1E1B16; --ink-2:#4D463C; --ink-3:#6A6256; --rule:#D3C9B6; --ox:#7A2E2B;
+    --serif:"Libre Caslon Text",Georgia,serif; --sans:"Libre Franklin",system-ui,sans-serif; --hour:44px;
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:light}
+  body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;font-variant-numeric:oldstyle-nums tabular-nums}
+  ::selection{background:var(--band);color:var(--band-ink)}
+  :focus-visible{outline:2px solid var(--ox);outline-offset:3px}
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+  h1,h2{font-family:var(--serif);font-weight:400;margin:0}
+  .ic{width:16px;height:16px;flex:none}
+
+  .band{background:var(--band);color:var(--band-ink)}
+  .band .in{max-width:1180px;margin:0 auto;padding:16px 40px 22px}
+  .row{display:flex;align-items:center;gap:26px}
+  .mark{font-family:var(--serif);font-size:20px;letter-spacing:.14em;font-weight:700}
+  .date{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted)}
+  nav{display:flex;gap:20px;font-size:13.5px;letter-spacing:.04em;color:var(--band-muted);margin-left:10px}
+  nav a:hover{color:var(--band-ink)}
+  nav a[aria-current]{color:var(--band-ink);border-bottom:1px solid var(--band-ink);padding-bottom:2px}
+  .row .right{margin-left:auto;display:flex;gap:18px;align-items:center;font-size:13.5px}
+  .textbtn{display:inline-flex;align-items:center;gap:8px;letter-spacing:.04em;border-bottom:1px solid transparent;transition:border-color .15s}
+  .textbtn:hover{border-color:currentColor}
+  .ib{color:var(--band-muted)} .ib:hover{color:var(--band-ink)}
+  .mast{margin-top:20px;padding-top:18px;border-top:1px solid rgba(242,236,223,.28)}
+  h1{font-size:32px;line-height:1.3;text-wrap:balance;max-width:40ch}
+  h1 em{font-style:italic}
+
+  main{max-width:1180px;margin:0 auto;padding:34px 40px 40px;display:grid;grid-template-columns:1.1fr 1fr;gap:64px}
+  h2{font-size:22px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:4px;display:flex;align-items:baseline;gap:12px}
+  h2 small{font-family:var(--sans);font-size:12.5px;letter-spacing:.02em;color:var(--ink-3);margin-left:auto}
+  ul{list-style:none;margin:0;padding:0}
+
+  /* hour-ruled timeline (clean's donation, in ink and paper) */
+  .tl{position:relative;height:calc(var(--hour) * 12);margin-top:14px}
+  .hr{position:absolute;left:0;right:0;display:flex;gap:14px;align-items:flex-start;font-family:var(--serif);font-size:13px;color:var(--ink-3)}
+  .hr::after{content:"";flex:1;border-top:1px solid var(--rule);transform:translateY(9px)}
+  .hr span{width:42px;text-align:right}
+  .ev{position:absolute;left:60px;right:0;min-height:30px;background:var(--tint);border-radius:2px;padding:5px 12px;font-size:14.5px;line-height:1.3;border-left:1px solid var(--ink)}
+  .ev:hover{background:var(--paper-2)}
+  .ev b{display:block;font-family:var(--serif);font-weight:400}
+  .ev small{color:var(--ink-3);font-size:12.5px}
+  .now{position:absolute;left:46px;right:0;height:0;border-top:1.5px solid var(--ox);z-index:2;pointer-events:none}
+  .now::after{content:"now, 8.40";position:absolute;right:0;top:-20px;font-family:var(--serif);font-style:italic;font-size:12.5px;color:var(--ox)}
+
+  .affairs li{display:grid;grid-template-columns:1fr auto;gap:2px 20px;padding:13px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+  .affairs .n{grid-column:1;grid-row:1;font-family:var(--serif);font-size:17px}
+  .affairs .d{grid-column:1;grid-row:2;color:var(--ink-2);font-size:13.5px}
+  .affairs .v{grid-column:2;grid-row:1/3;font-family:var(--serif);font-size:24px;text-align:right;line-height:1.1}
+  .affairs .v small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3);margin-top:2px}
+  .affairs .v.flag small{color:var(--ox)}
+  .todo{margin-top:34px}
+  .todo li{display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px dotted var(--rule)}
+  .todo input{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px}
+  .todo input:checked{background:var(--band);border-color:var(--band)}
+  .todo input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+  .todo label{cursor:pointer;flex:1}
+  .todo input:checked + label{color:var(--ink-3);text-decoration:line-through}
+  .todo .w{font-size:12.5px;color:var(--ink-3)}
+  .todo .w.due{color:var(--ox)}
+  .foot{max-width:1180px;margin:0 auto;padding:0 40px 32px;font-size:12.5px;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
+
+  @media (max-width:900px){
+    .band .in{padding:14px 20px 20px} nav,.date{display:none} .row{gap:14px}
+    h1{font-size:26px}
+    main{grid-template-columns:1fr;gap:36px;padding:24px 20px 36px} .foot{padding:0 20px 28px}
+  }
+</style>
+</head>
+<body>
+<header class="band">
+  <div class="in">
+    <div class="row">
+      <a class="mark" href="#">HQ</a>
+      <span class="date">Monday, 14 September 2026 · 8.40</span>
+      <nav aria-label="Areas"><a href="#" aria-current="page">Today</a><a href="#">Calendar</a><a href="#">Accounts</a><a href="#">Training</a><a href="#">Study</a><a href="#">Health</a></nav>
+      <div class="right">
+        <button class="textbtn"><svg class="ic"><use href="icons.svg#plus"/></svg>New entry</button>
+        <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
+        <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
+      </div>
+    </div>
+    <div class="mast"><h1>Good morning, Jacob. <em>Deep work at nine, in twenty minutes; the gym at half past eleven makes it seven weeks.</em></h1></div>
+  </div>
+</header>
+
+<main>
+  <section>
+    <h2>The day<small>Six items · 8 to 8</small></h2>
+    <div class="tl">
+      <div class="hr" style="top:0"><span>8.00</span></div>
+      <div class="hr" style="top:calc(var(--hour)*1)"><span>9.00</span></div>
+      <div class="hr" style="top:calc(var(--hour)*2)"><span>10.00</span></div>
+      <div class="hr" style="top:calc(var(--hour)*3)"><span>11.00</span></div>
+      <div class="hr" style="top:calc(var(--hour)*4)"><span>12.00</span></div>
+      <div class="hr" style="top:calc(var(--hour)*5)"><span>13.00</span></div>
+      <div class="hr" style="top:calc(var(--hour)*6)"><span>14.00</span></div>
+      <div class="hr" style="top:calc(var(--hour)*7)"><span>15.00</span></div>
+      <div class="hr" style="top:calc(var(--hour)*8)"><span>16.00</span></div>
+      <div class="hr" style="top:calc(var(--hour)*9)"><span>17.00</span></div>
+      <div class="hr" style="top:calc(var(--hour)*10)"><span>18.00</span></div>
+      <div class="hr" style="top:calc(var(--hour)*11)"><span>19.00</span></div>
+      <a href="#" class="ev" style="top:calc(var(--hour)*1 + 9px);height:calc(var(--hour)*2 - 4px)"><b>Deep work — RPL value engine</b><small>Two hours, uninterrupted</small></a>
+      <a href="#" class="ev" style="top:calc(var(--hour)*3.5 + 9px);height:calc(var(--hour)*1 - 4px)"><b>Gym — push day, upper A</b><small>Bench, overhead press, dips</small></a>
+      <a href="#" class="ev" style="top:calc(var(--hour)*5 + 9px);height:calc(var(--hour)*.75 - 4px)"><b>Lunch</b></a>
+      <a href="#" class="ev" style="top:calc(var(--hour)*6 + 9px);height:calc(var(--hour)*1.5 - 4px)"><b>Study — Networking, chapter six</b><small>Subnetting</small></a>
+      <a href="#" class="ev" style="top:calc(var(--hour)*8.5 + 9px);height:calc(var(--hour)*.5 - 4px)"><b>Telephone Mother</b></a>
+      <a href="#" class="ev" style="top:calc(var(--hour)*11 + 9px);height:calc(var(--hour)*1 - 4px)"><b>RPL scrim review</b></a>
+      <div class="now" style="top:calc(var(--hour)*0.667 + 9px)"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>State of affairs<small>This morning</small></h2>
+    <ul class="affairs">
+      <li><span class="n">Accounts</span><span class="d">Rent of $1,450 due Thursday; $690 discretionary thereafter</span><span class="v">$2,140<small>of $3,200 remaining</small></span></li>
+      <li><span class="n">Health</span><span class="d">Seven hours twelve of sleep · resting pulse 58</span><span class="v flag">3 of 8<small>glasses of water</small></span></li>
+      <li><span class="n">Training</span><span class="d">Sixth consecutive week · next at 11.30</span><span class="v">3 of 4<small>sessions this week</small></span></li>
+      <li><span class="n">Study</span><span class="d">Examination in twelve days · next block 14.00</span><span class="v flag">4 of 8 h<small>this week</small></span></li>
+      <li><span class="n">Calendar</span><span class="d">Free from five until the scrim review at seven</span><span class="v">6<small>engagements</small></span></li>
+    </ul>
+    <div class="todo">
+      <h2>To do<small>One of five</small></h2>
+      <ul>
+        <li><input type="checkbox" id="a" checked><label for="a">Log weight</label><span class="w">morning</span></li>
+        <li><input type="checkbox" id="b"><label for="b">Take vitamins</label><span class="w">morning</span></li>
+        <li><input type="checkbox" id="c"><label for="c">Pay electric bill</label><span class="w due">due today</span></li>
+        <li><input type="checkbox" id="d"><label for="d">Review September budget</label><span class="w">15 min</span></li>
+        <li><input type="checkbox" id="e"><label for="e">Read thirty minutes</label><span class="w">evening</span></li>
+      </ul>
+    </div>
+  </section>
+</main>
+<p class="foot">Sample data, shown for design only.</p>
+</body>
+</html>

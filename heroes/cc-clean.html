@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HQ — Clean × Classical (clean-leaning)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3F4F6; --card:#FFFFFF; --ink:#111827; --ink-2:#4B5563; --ink-3:#5F6672; --line:#DDE0E6;
+    --accent:#2B4FD8; --a-cal:#2B4FD8; --a-fin:#0F766E; --a-fit:#C2410C; --a-study:#6D28D9; --a-health:#BE185D;
+    --ok:#15803D; --warn:#B45309;
+    --r:20px; --shadow:0 1px 2px rgba(17,24,39,.05), 0 6px 18px -6px rgba(17,24,39,.10); --hour:44px;
+    --serif:"Libre Caslon Text",Georgia,serif; --band:#1F3A2E; --band-ink:#F2ECDF; --band-muted:#B9C9BE;
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:light}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Figtree",system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+  ::selection{background:#E7ECFB;color:var(--ink)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  .ic{width:18px;height:18px;flex:none}
+
+  .top{display:flex;align-items:center;gap:22px;padding:14px 32px;background:var(--band);color:var(--band-ink)}
+  .mark{font-family:var(--serif);font-size:20px;letter-spacing:.14em;font-weight:700}
+  .date{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted)}
+  nav.tabs{display:flex;gap:18px;margin-left:8px;font-size:14px;color:var(--band-muted)}
+  nav.tabs a:hover{color:var(--band-ink)}
+  nav.tabs a[aria-current]{color:var(--band-ink);border-bottom:1px solid var(--band-ink);padding-bottom:2px}
+  .top .right{margin-left:auto;display:flex;align-items:center;gap:14px;font-size:14px}
+  .textbtn{display:inline-flex;align-items:center;gap:8px;border-bottom:1px solid transparent;transition:border-color .15s}
+  .textbtn:hover{border-color:currentColor}
+  .iconbtn{color:var(--band-muted)} .iconbtn:hover{color:var(--band-ink)}
+
+  main{max-width:1320px;margin:0 auto;padding:36px 32px 40px;display:grid;grid-template-columns:7fr 5fr;gap:56px}
+  h1{font-family:var(--serif);font-weight:400;font-size:40px;line-height:1.15;margin:0 0 10px;letter-spacing:-.005em;text-wrap:balance}
+  h1 .t{color:var(--accent)}
+  .insight{margin:0 0 26px;color:var(--ink-2);font-size:16px;max-width:58ch}
+  .insight b{color:var(--ink);font-weight:600}
+
+  .card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow)}
+  .card-h{display:flex;align-items:center;gap:12px;padding:18px 22px 12px}
+  .card-h h2{margin:0;font-family:var(--serif);font-weight:400;font-size:20px}
+  .card-h .sub{color:var(--ink-3);font-size:14px}
+  .btn{margin-left:auto;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;padding:8px 14px;border-radius:999px;font-weight:600;font-size:14px;background:var(--ink);color:#fff;transition:background .15s}
+  .btn:hover{background:#1F2937}
+
+  .tl{position:relative;padding:8px 22px 22px}
+  .tl-grid{position:relative;height:calc(var(--hour) * 12)}
+  .hr{position:absolute;left:0;right:0;display:flex;align-items:flex-start;gap:14px;color:var(--ink-3);font-size:12px;font-weight:500}
+  .hr::after{content:"";flex:1;border-top:1px solid var(--line);transform:translateY(8px)}
+  .hr span{width:40px;text-align:right}
+  .ev{position:absolute;left:58px;right:0;min-height:30px;border-radius:10px;padding:6px 12px;font-size:14px;line-height:1.3;color:var(--ink);transition:transform .15s,box-shadow .15s}
+  .ev:hover{transform:translateX(2px);box-shadow:var(--shadow)}
+  .ev b{display:block;font-weight:600}
+  .ev b::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c);margin-right:8px;vertical-align:1px}
+  .ev small{color:var(--ink-2);font-size:12.5px}
+  .ev.cal{--c:var(--a-cal);background:#EEF1FC} .ev.fit{--c:var(--a-fit);background:#FEF0E9}
+  .ev.health{--c:var(--a-health);background:#FCEEF4} .ev.study{--c:var(--a-study);background:#F1ECFC}
+  .now{position:absolute;left:44px;right:0;height:0;border-top:2px solid var(--accent);z-index:2;pointer-events:none}
+  .now::before{content:"";position:absolute;left:-5px;top:-5px;width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2.4s cubic-bezier(.2,.8,.2,1) infinite}
+  .now::after{content:attr(data-t);position:absolute;right:0;top:-22px;font-size:11.5px;font-weight:600;color:#fff;background:var(--accent);padding:2px 7px;border-radius:6px}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(43,79,216,.45)}70%{box-shadow:0 0 0 9px rgba(43,79,216,0)}100%{box-shadow:0 0 0 0 rgba(43,79,216,0)}}
+  @media (prefers-reduced-motion:reduce){.now::before{animation:none}.ev,.btn{transition:none}}
+
+  /* right column: ruled lists, no cards (minimal's donation) */
+  aside{padding-top:8px}
+  h2.rule{margin:0 0 4px;font-family:var(--serif);font-weight:400;font-size:20px;color:var(--ink);padding-bottom:10px;border-bottom:1px solid var(--ink);display:flex;gap:10px;align-items:baseline}
+  h2.rule span{margin-left:auto;font-family:"Figtree",system-ui,sans-serif;font-size:13px;color:var(--ink-3)}
+  ul{list-style:none;margin:0;padding:0}
+  .todo li{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .todo input{appearance:none;width:18px;height:18px;border:1.5px solid #B8BEC9;border-radius:5px;display:grid;place-items:center;margin:0;cursor:pointer;background:#fff;transition:background .15s,border-color .15s}
+  .todo input:checked{background:var(--accent);border-color:var(--accent)}
+  .todo input:checked::after{content:"";width:9px;height:5px;border:2px solid #fff;border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+  .todo label{flex:1;cursor:pointer}
+  .todo input:checked + label{color:var(--ink-3);text-decoration:line-through}
+  .todo .when{font-size:12.5px;color:var(--ink-3)}
+  .areas{margin-top:34px}
+  .area{display:grid;grid-template-columns:1fr auto;gap:0 16px;padding:12px 0;border-bottom:1px solid var(--line);align-items:baseline}
+  .area .n{font-weight:600;display:flex;align-items:center;gap:8px}
+  .area .n::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
+  .area .d{grid-column:1;font-size:13.5px;color:var(--ink-3)}
+  .area .v{grid-column:2;grid-row:1/3;text-align:right;font-weight:600;font-size:18px;letter-spacing:-.01em}
+  .area .v small{display:block;font-size:12px;font-weight:600}
+  .up{color:var(--ok)} .flag{color:var(--warn)}
+  .foot{max-width:1320px;margin:0 auto;padding:0 32px 24px;color:var(--ink-3);font-size:12.5px}
+
+  @media (max-width:980px){
+    main{grid-template-columns:1fr;padding:22px 16px 32px;gap:32px}
+    .top{padding:12px 16px;gap:12px} nav.tabs,.date,.textbtn span{display:none}
+    h1{font-size:30px}
+    .btn span{display:none}
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="mark" href="#">HQ</a>
+  <span class="date">Monday, 14 September 2026 · 08:40</span>
+  <nav class="tabs" aria-label="Areas"><a href="#" aria-current="page">Today</a><a href="#">Calendar</a><a href="#">Finances</a><a href="#">Fitness</a><a href="#">Study</a><a href="#">Health</a></nav>
+  <div class="right">
+    <button class="textbtn"><svg class="ic" style="width:16px;height:16px"><use href="icons.svg#plus"/></svg><span>New entry</span></button>
+    <button class="iconbtn" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
+    <button class="iconbtn" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
+  </div>
+</header>
+
+<main>
+  <section>
+    <h1>Good morning, Jacob. Next: deep work at <span class="t">09:00</span>, in 20 minutes.</h1>
+    <p class="insight">Six things on today. <b>Push day at 11:30</b> makes the gym streak seven weeks; water and the electric bill are the two open items.</p>
+
+    <div class="card">
+      <div class="card-h"><h2>The day</h2><span class="sub">6 items · 08:00–20:00</span>
+        <button class="btn"><svg class="ic" style="width:16px;height:16px"><use href="icons.svg#plus"/></svg><span>Add to today</span></button></div>
+      <div class="tl"><div class="tl-grid">
+        <div class="hr" style="top:0"><span>08:00</span></div>
+        <div class="hr" style="top:calc(var(--hour)*1)"><span>09:00</span></div>
+        <div class="hr" style="top:calc(var(--hour)*2)"><span>10:00</span></div>
+        <div class="hr" style="top:calc(var(--hour)*3)"><span>11:00</span></div>
+        <div class="hr" style="top:calc(var(--hour)*4)"><span>12:00</span></div>
+        <div class="hr" style="top:calc(var(--hour)*5)"><span>13:00</span></div>
+        <div class="hr" style="top:calc(var(--hour)*6)"><span>14:00</span></div>
+        <div class="hr" style="top:calc(var(--hour)*7)"><span>15:00</span></div>
+        <div class="hr" style="top:calc(var(--hour)*8)"><span>16:00</span></div>
+        <div class="hr" style="top:calc(var(--hour)*9)"><span>17:00</span></div>
+        <div class="hr" style="top:calc(var(--hour)*10)"><span>18:00</span></div>
+        <div class="hr" style="top:calc(var(--hour)*11)"><span>19:00</span></div>
+        <a href="#" class="ev cal" style="top:calc(var(--hour)*1 + 8px);height:calc(var(--hour)*2 - 4px)"><b>Deep work — RPL value engine</b><small>09:00 – 11:00</small></a>
+        <a href="#" class="ev fit" style="top:calc(var(--hour)*3.5 + 8px);height:calc(var(--hour)*1 - 4px)"><b>Gym — Push day (Upper A)</b><small>11:30 – 12:30</small></a>
+        <a href="#" class="ev health" style="top:calc(var(--hour)*5 + 8px);height:calc(var(--hour)*.75 - 4px)"><b>Lunch</b></a>
+        <a href="#" class="ev study" style="top:calc(var(--hour)*6 + 8px);height:calc(var(--hour)*1.5 - 4px)"><b>Study — Networking, ch. 6</b><small>14:00 – 15:30</small></a>
+        <a href="#" class="ev cal" style="top:calc(var(--hour)*8.5 + 8px);height:calc(var(--hour)*.5 - 4px)"><b>Call Mom</b></a>
+        <a href="#" class="ev cal" style="top:calc(var(--hour)*11 + 8px);height:calc(var(--hour)*1 - 4px)"><b>RPL scrim review</b><small>19:00 – 20:00</small></a>
+        <div class="now" data-t="08:40" style="top:calc(var(--hour)*0.667 + 8px)"></div>
+      </div></div>
+    </div>
+  </section>
+
+  <aside>
+    <h2 class="rule">Checklist<span>1 of 5 done</span></h2>
+    <ul class="todo">
+      <li><input type="checkbox" id="t1" checked><label for="t1">Log weight</label><span class="when">morning</span></li>
+      <li><input type="checkbox" id="t2"><label for="t2">Take vitamins</label><span class="when">morning</span></li>
+      <li><input type="checkbox" id="t3"><label for="t3">Pay electric bill</label><span class="when">due today</span></li>
+      <li><input type="checkbox" id="t4"><label for="t4">Review September budget</label><span class="when">15 min</span></li>
+      <li><input type="checkbox" id="t5"><label for="t5">Read 30 minutes</label><span class="when">evening</span></li>
+    </ul>
+
+    <div class="areas">
+      <h2 class="rule">State of affairs<span>this morning</span></h2>
+      <ul>
+        <li class="area" style="--c:var(--a-fin)"><span class="n">Finances</span><span class="d">Rent $1,450 due in 3 days; $690 flexible after</span><span class="v">$2,140<small class="up">67% of budget left</small></span></li>
+        <li class="area" style="--c:var(--a-health)"><span class="n">Health</span><span class="d">Sleep 7h 12m · resting HR 58</span><span class="v">3 / 8<small class="flag">glasses of water</small></span></li>
+        <li class="area" style="--c:var(--a-fit)"><span class="n">Fitness</span><span class="d">Next: Push day, 11:30</span><span class="v">3 / 4<small class="up">sessions this week</small></span></li>
+        <li class="area" style="--c:var(--a-study)"><span class="n">Study</span><span class="d">Exam in 12 days · next block 14:00</span><span class="v">4h / 8h<small class="flag">this week</small></span></li>
+        <li class="area" style="--c:var(--a-cal)"><span class="n">Calendar</span><span class="d">Free 17:00–19:00, then scrim review</span><span class="v">6<small class="up">items today</small></span></li>
+      </ul>
+    </div>
+  </aside>
+</main>
+<p class="foot">Sample data — shown for design only.</p>
+</body>
+</html>

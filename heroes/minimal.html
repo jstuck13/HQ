@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HQ — Minimal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#FAFAF8; --ink:#141414; --ink-2:#4F4F4B; --ink-3:#66665F; --rule:#DDDDD6; --now:#BE3E13; }
+  *{box-sizing:border-box}
+  html{color-scheme:light}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Schibsted Grotesk",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  ::selection{background:var(--ink);color:var(--bg)}
+  :focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:36px 40px 48px}
+  .top{display:flex;align-items:baseline;justify-content:space-between;padding-bottom:18px;border-bottom:1px solid var(--ink)}
+  .top .l{display:flex;gap:28px;align-items:baseline}
+  .mark{font-weight:600;letter-spacing:.02em}
+  .date{color:var(--ink-2)}
+  nav{display:flex;gap:22px;font-size:15px;color:var(--ink-2)}
+  nav a:hover,nav a[aria-current]{color:var(--ink)}
+  nav a[aria-current]{text-decoration:underline;text-underline-offset:6px;text-decoration-thickness:1px}
+
+  .lead{padding:52px 0 44px;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:end;border-bottom:1px solid var(--rule)}
+  h1{margin:0;font-size:56px;line-height:1.02;letter-spacing:-.03em;font-weight:500;max-width:18ch;text-wrap:balance}
+  h1 .t{color:var(--now)}
+  .lead .note{max-width:34ch;color:var(--ink-2);font-size:15px;margin:0;line-height:1.55}
+  .lead .note b{color:var(--ink);font-weight:500}
+
+  .cols{display:grid;grid-template-columns:1.15fr 1fr;gap:72px;padding-top:36px}
+  h2{margin:0 0 8px;font-size:15px;font-weight:500;color:var(--ink-3)}
+  ul{list-style:none;margin:0;padding:0}
+  .day li{display:grid;grid-template-columns:64px 1fr auto;gap:18px;padding:13px 0;border-top:1px solid var(--rule);align-items:baseline}
+  .day li:last-child{border-bottom:1px solid var(--rule)}
+  .day .t,.areas .v,.date{font-variant-numeric:tabular-nums}
+  .day .t{color:var(--ink-2)}
+  .day .dur{color:var(--ink-3);font-size:14px}
+  .day li.done{color:var(--ink-3)}
+  .day li.next{font-weight:500}
+  .day li.next .t{color:var(--now)}
+  .day li:hover{background:linear-gradient(90deg,transparent,rgba(20,20,20,.03),transparent)}
+  .add{display:inline-block;margin-top:14px;color:var(--ink-2);border-bottom:1px solid transparent;transition:border-color .15s,color .15s}
+  .add:hover{color:var(--ink);border-color:var(--ink)}
+
+  .areas li{display:grid;grid-template-columns:1fr auto;gap:12px 24px;padding:14px 0;border-top:1px solid var(--rule);align-items:baseline}
+  .areas li:last-child{border-bottom:1px solid var(--rule)}
+  .areas .n{font-weight:500}
+  .areas .d{display:block;color:var(--ink-2);font-size:14.5px;margin-top:2px}
+  .areas .v{font-size:22px;letter-spacing:-.02em;text-align:right;font-weight:500}
+  .areas .v small{display:block;font-size:13px;color:var(--ink-3);font-weight:400;letter-spacing:0}
+  .areas .v.flag small{color:var(--now)}
+
+  .todo{margin-top:40px}
+  .todo li{padding:9px 0;display:flex;gap:14px;align-items:center}
+  .todo input{appearance:none;width:16px;height:16px;border:1px solid var(--ink);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--bg)}
+  .todo input:checked{background:var(--ink)}
+  .todo input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--bg);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+  .todo label{cursor:pointer}
+  .todo input:checked + label{color:var(--ink-3);text-decoration:line-through}
+  .foot{margin:56px 0 0;font-size:13px;color:var(--ink-3)}
+
+  @media (max-width:860px){
+    .wrap{padding:24px 20px 40px} nav{display:none}
+    .lead{grid-template-columns:1fr;padding:36px 0 30px} h1{font-size:38px}
+    .cols{grid-template-columns:1fr;gap:40px;padding-top:26px}
+    .day li{grid-template-columns:56px 1fr auto;gap:12px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="l"><span class="mark">HQ</span><span class="date">Monday 14 September, 08:40</span></div>
+    <nav aria-label="Areas"><a href="#" aria-current="page">Today</a><a href="#">Calendar</a><a href="#">Money</a><a href="#">Fitness</a><a href="#">Study</a><a href="#">Health</a></nav>
+  </header>
+
+  <section class="lead">
+    <div>
+      <h1>Next: deep work on the RPL value engine, <span class="t">09:00</span> — in 20 minutes.</h1>
+    </div>
+    <p class="note"><b>Good morning, Jacob.</b> Everything is in order. Water is behind and the electric bill is due today; <b>push day at 11:30</b> makes it seven weeks straight.</p>
+  </section>
+
+  <div class="cols">
+    <section>
+      <h2>Today</h2>
+      <ul class="day">
+        <li class="next"><span class="t">09:00</span><span>Deep work — RPL value engine</span><span class="dur">2 h</span></li>
+        <li><span class="t">11:30</span><span>Gym — Push day, Upper A</span><span class="dur">1 h</span></li>
+        <li><span class="t">13:00</span><span>Lunch</span><span class="dur">45 min</span></li>
+        <li><span class="t">14:00</span><span>Study — Networking, chapter 6</span><span class="dur">90 min</span></li>
+        <li><span class="t">16:30</span><span>Call Mom</span><span class="dur">30 min</span></li>
+        <li><span class="t">19:00</span><span>RPL scrim review</span><span class="dur">1 h</span></li>
+      </ul>
+      <a class="add" href="#">+ Add to today</a>
+
+      <div class="todo">
+        <h2>To do</h2>
+        <ul>
+          <li><input type="checkbox" id="a" checked><label for="a">Log weight</label></li>
+          <li><input type="checkbox" id="b"><label for="b">Take vitamins</label></li>
+          <li><input type="checkbox" id="c"><label for="c">Pay electric bill — due today</label></li>
+          <li><input type="checkbox" id="d"><label for="d">Review September budget</label></li>
+          <li><input type="checkbox" id="e"><label for="e">Read 30 minutes</label></li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Areas</h2>
+      <ul class="areas">
+        <li><span><span class="n">Money</span><span class="d">Rent $1,450 in 3 days; $690 flexible after that</span></span><span class="v">$2,140<small>of $3,200 left</small></span></li>
+        <li><span><span class="n">Health</span><span class="d">Slept 7 h 12 m · resting HR 58</span></span><span class="v flag">3 / 8<small>glasses of water</small></span></li>
+        <li><span><span class="n">Fitness</span><span class="d">Six-week streak · next: 11:30</span></span><span class="v">3 / 4<small>sessions this week</small></span></li>
+        <li><span><span class="n">Study</span><span class="d">Exam in 12 days · next block 14:00</span></span><span class="v flag">4 / 8 h<small>this week</small></span></li>
+        <li><span><span class="n">Calendar</span><span class="d">Free 17:00–19:00, then scrim review</span></span><span class="v">6<small>items today</small></span></li>
+      </ul>
+    </section>
+  </div>
+  <p class="foot">Sample data — shown for design only.</p>
+</div>
+</body>
+</html>

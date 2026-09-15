@@ -1,0 +1,72 @@
+{
+  "title": "Finances — choose the composition",
+  "question": "A monthly budget: paychecks logged as they land, categories with limits, a transaction log, and three charts (cash left through the month, income vs expenses by month, spent vs limit). Same world. Lock one, steer, or re-roll.",
+  "options": [
+    {
+      "id": "category-table",
+      "label": "One ruled table, categories that open",
+      "kicker": "THE ROLL",
+      "lineage": "the household account book: one page per month, a row per heading",
+      "thesis": "The month is a single wide ruled table — one row per category with limit, spent, left and an ink bar; a row opens to reveal its transactions and an inline add line. Income sits as a short block above it (expected, landed so far, next expected). Charts run beneath.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#E9EEF3"],
+      "materials": ["ruled table rows with ink bars", "serif numerals", "expandable rows (no modal)", "one white card for the cash-left chart"],
+      "viewport": "Band: 'Finances', italic 'September · $2,140 left of $3,200 · 16 days'. Paper: 'Income' as two ruled rows (expected $4,200 · landed $2,900 · next paycheck Fri 25) with 'Log a paycheck'; then 'Categories' table: Rent, Groceries, Transport, Fun, Savings… each with limit / spent / left / bar; Groceries open showing its transactions and an add line. Below: cash-left card (line to month end, rent marked), then income vs expenses (6 months) beside spent vs limit bars.",
+      "risk": "Transactions are hidden until a row opens, so 'what did I buy yesterday' takes a click; the table needs care at 390px.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: Finances · left this month", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "Income: expected · landed · next  + Log a paycheck", "x": 0, "y": 1, "w": 12, "h": 1},
+        {"label": "Categories table: limit · spent · left · bar (Groceries open → its transactions + add line)", "x": 0, "y": 2, "w": 12, "h": 4, "accent": true},
+        {"label": "Cash left through the month (card)", "x": 0, "y": 6, "w": 6, "h": 4},
+        {"label": "Income vs expenses, 6 months", "x": 6, "y": 6, "w": 3, "h": 4},
+        {"label": "Spent vs limit", "x": 9, "y": 6, "w": 3, "h": 4}
+      ]},
+      "comp": ".impeccable/mocks/decision/category-table.webp"
+    },
+    {
+      "id": "balance-sheet",
+      "label": "Three numbers, then two columns",
+      "lineage": "the month's balance sheet: headline figures over the detail",
+      "thesis": "A headline row of three serif figures — Income so far, Spent, Left — sets the month; beneath, two columns: categories with limit bars on the left, the transaction log with an always-visible add line on the right. Charts sit at the bottom.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#E9EEF3"],
+      "materials": ["three ruled headline figures", "category rows with ink bars", "a ruled transaction ledger with inline add", "one white card for the cash-left chart"],
+      "viewport": "Band: 'Finances', italic date. Paper: three figures across the top (Income so far $2,900 of $4,200 expected · Spent $1,060 · Left $2,140), each with a one-line note; left 6/12 'Categories' ruled rows with bars and limits (editable); right 6/12 'This month' log — add line (what, amount, category, date) then transactions newest first; paychecks logged in the same ledger as income lines. Below: cash-left card, income vs expenses, spent vs limit.",
+      "risk": "Reads as a report at first glance; the add line must be obviously an input or the page feels read-only.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: Finances · date", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "Income so far", "x": 0, "y": 1, "w": 4, "h": 1},
+        {"label": "Spent", "x": 4, "y": 1, "w": 4, "h": 1},
+        {"label": "Left", "x": 8, "y": 1, "w": 4, "h": 1},
+        {"label": "Categories: limit bars (editable)", "x": 0, "y": 2, "w": 6, "h": 4},
+        {"label": "This month: add line + transactions (income and expenses)", "x": 6, "y": 2, "w": 6, "h": 4, "accent": true},
+        {"label": "Cash left through the month (card)", "x": 0, "y": 6, "w": 6, "h": 4},
+        {"label": "Income vs expenses, 6 months", "x": 6, "y": 6, "w": 3, "h": 4},
+        {"label": "Spent vs limit", "x": 9, "y": 6, "w": 3, "h": 4}
+      ]},
+      "comp": ".impeccable/mocks/decision/balance-sheet.webp"
+    },
+    {
+      "id": "double-entry",
+      "label": "Income page, expenses page",
+      "lineage": "a double-entry book lying open: money in on the left, money out on the right",
+      "thesis": "Two pages with a gutter. Left page is Income: expected for the month, each paycheck or gig logged as it lands, a running total and 'next expected'. Right page is Expenses: categories with limits and bars, and the transaction log beneath with its add line. Charts run across both pages at the bottom.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#E9EEF3"],
+      "materials": ["two paper pages with a centre gutter", "serif running totals", "ruled ledgers on both pages", "one white card for the cash-left chart"],
+      "viewport": "Band: 'Finances', italic 'September · $2,140 left'. Left page (5/12): 'Money in' — expected $4,200; paychecks: Fri 4 $1,450 · Fri 11 $1,450 · Sat 12 gig $120; 'Log a paycheck' line; landed $2,900, next expected Fri 25. Right page (7/12): 'Money out' — categories with limit bars, then the log with add line. Bottom, full width: cash-left card; income vs expenses; spent vs limit.",
+      "risk": "Income rarely has more than a few lines, so the left page can look empty mid-month; the gutter is decoration unless it carries the running balance.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: Finances · left this month", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "Money in: expected · paychecks logged · next expected · Log a paycheck", "x": 0, "y": 1, "w": 5, "h": 5},
+        {"label": "Money out: categories with limit bars", "x": 5, "y": 1, "w": 7, "h": 2, "accent": true},
+        {"label": "Money out: transaction log + add line", "x": 5, "y": 3, "w": 7, "h": 3},
+        {"label": "Cash left through the month (card)", "x": 0, "y": 6, "w": 6, "h": 4},
+        {"label": "Income vs expenses, 6 months", "x": 6, "y": 6, "w": 3, "h": 4},
+        {"label": "Spent vs limit", "x": 9, "y": 6, "w": 3, "h": 4}
+      ]},
+      "comp": ".impeccable/mocks/decision/double-entry.webp"
+    }
+  ],
+  "reroll": true,
+  "buildPath": {"value": "code", "toggle": false},
+  "canon": false,
+  "steer": true
+}

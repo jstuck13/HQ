@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HQ — Techy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E1116; --panel:#151A21; --panel-2:#1B212A; --line:#2A3140; --ink:#E6EAF0; --ink-2:#AEB6C3; --ink-3:#9AA3B2;
+    --amber:#FFB000; --amber-dim:rgba(255,176,0,.14); --cyan:#48C8E8; --red:#FF6B6B; --green:#5FD38D;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace; --r:6px;
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:dark}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.5 "Chivo",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  ::selection{background:var(--amber);color:#111}
+  :focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  .m{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .ic{width:16px;height:16px;flex:none}
+  ::-webkit-scrollbar{height:8px;width:8px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+
+  .top{display:flex;align-items:center;gap:22px;padding:12px 24px;border-bottom:1px solid var(--line);background:rgba(14,17,22,.85);backdrop-filter:blur(8px);position:sticky;top:0;z-index:5}
+  .mark{display:flex;align-items:center;gap:10px;font-weight:600;letter-spacing:.06em}
+  .mark i{width:26px;height:26px;border:1.5px solid var(--amber);color:var(--amber);border-radius:4px;display:grid;place-items:center;font-style:normal;font-size:11px;font-family:var(--mono)}
+  .clock{font-family:var(--mono);font-size:22px;letter-spacing:.02em;color:var(--amber);font-weight:500}
+  .clock small{font-size:12px;color:var(--ink-3);margin-left:8px;letter-spacing:.06em}
+  nav{display:flex;gap:2px;margin-left:8px}
+  nav a{padding:6px 10px;border-radius:4px;color:var(--ink-2);font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+  nav a[aria-current]{color:var(--amber);background:var(--amber-dim)}
+  nav a:hover:not([aria-current]){color:var(--ink);background:var(--panel-2)}
+  .top .right{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:4px;background:var(--amber);color:#14110A;font-weight:600;font-size:13px;letter-spacing:.02em;transition:filter .15s}
+  .btn:hover{filter:brightness(1.08)}
+  .ib{width:34px;height:34px;border:1px solid var(--line);border-radius:4px;display:grid;place-items:center;color:var(--ink-2)}
+  .ib:hover{color:var(--ink);background:var(--panel-2)}
+
+  .ticker{border-bottom:1px solid var(--line);background:var(--panel);overflow-x:auto;white-space:nowrap}
+  .ticker ul{display:inline-flex;gap:40px;padding:8px 24px;margin:0;list-style:none;font-family:var(--mono);font-size:12.5px}
+  .ticker li{display:inline-flex;gap:10px}
+  .ticker .k{color:var(--ink-3);letter-spacing:.08em}
+  .ticker .up{color:var(--green)} .ticker .dn{color:var(--red)} .ticker .a{color:var(--amber)}
+
+  main{padding:22px 24px 32px;max-width:1440px;margin:0 auto}
+  .lead{display:flex;align-items:baseline;gap:20px;margin-bottom:18px;flex-wrap:wrap}
+  h1{margin:0;font-size:28px;font-weight:500;letter-spacing:-.01em}
+  .lead p{margin:0;color:var(--ink-2);font-size:15px}
+  .lead p b{color:var(--amber);font-weight:500}
+  .grid{display:grid;grid-template-columns:1.2fr 1fr .9fr;gap:14px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
+  .ph{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+  .ph .st{margin-left:auto;font-family:var(--mono);text-transform:none;letter-spacing:0;color:var(--ink-3)}
+  .ph .st i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:6px;font-style:normal}
+
+  .sched{list-style:none;margin:0;padding:6px 0}
+  .sched li{display:grid;grid-template-columns:52px 1fr auto;gap:12px;padding:9px 14px;align-items:center;border-left:2px solid transparent}
+  .sched li:hover{background:var(--panel-2)}
+  .sched .t{font-family:var(--mono);color:var(--ink-2);font-size:13px}
+  .sched .n{font-weight:500}
+  .sched .n small{display:block;font-weight:400;color:var(--ink-3);font-size:12.5px}
+  .sched .tm{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+  .sched li.next{background:var(--amber-dim);border-left-color:var(--amber)}
+  .sched li.next .t,.sched li.next .tm{color:var(--amber)}
+  .tag{font-family:var(--mono);font-size:11px;letter-spacing:.08em;padding:2px 6px;border-radius:3px;border:1px solid var(--line);color:var(--ink-2);margin-left:8px;vertical-align:1px}
+
+  .stat{list-style:none;margin:0;padding:6px 0}
+  .stat li{display:grid;grid-template-columns:1fr auto;gap:4px 14px;padding:10px 14px}
+  .stat li + li{border-top:1px solid var(--line)}
+  .stat .n{font-weight:500;display:flex;align-items:center;gap:8px}
+  .stat .v{font-family:var(--mono);font-size:16px;text-align:right;font-weight:500}
+  .stat .bar{grid-column:1/-1;height:4px;background:var(--panel-2);border-radius:2px;overflow:hidden}
+  .stat .bar i{display:block;height:100%;background:var(--cyan);border-radius:2px}
+  .stat .bar i.a{background:var(--amber)}
+  .stat .d{grid-column:1/-1;color:var(--ink-3);font-size:12.5px;font-family:var(--mono)}
+  .stat .d b{color:var(--ink-2);font-weight:500}
+
+  .todo{list-style:none;margin:0;padding:6px 0}
+  .todo li{display:flex;align-items:center;gap:12px;padding:9px 14px}
+  .todo li:hover{background:var(--panel-2)}
+  .todo input{appearance:none;width:16px;height:16px;border:1px solid var(--ink-3);border-radius:3px;margin:0;display:grid;place-items:center;cursor:pointer;background:var(--bg)}
+  .todo input:checked{background:var(--amber);border-color:var(--amber)}
+  .todo input:checked::after{content:"";width:8px;height:4px;border:2px solid #14110A;border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+  .todo label{flex:1;cursor:pointer}
+  .todo input:checked + label{color:var(--ink-3);text-decoration:line-through}
+  .todo .w{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);letter-spacing:.04em}
+  .todo .w.due{color:var(--red)}
+  .foot{display:flex;gap:24px;padding:12px 24px;border-top:1px solid var(--line);font-family:var(--mono);font-size:12px;color:var(--ink-3);max-width:1440px;margin:12px auto 0}
+  .foot .ok{color:var(--green)}
+
+  @media (max-width:1100px){.grid{grid-template-columns:1fr 1fr}.grid .panel:first-child{grid-column:1/-1}}
+  @media (max-width:720px){
+    .top{padding:10px 16px;gap:12px} nav,.clock small{display:none} .clock{font-size:18px}
+    main{padding:16px 16px 24px} .grid{grid-template-columns:1fr} .foot{flex-wrap:wrap;gap:8px 18px}
+    .btn span{display:none}
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="mark" href="#"><i>HQ</i>HQ</a>
+  <div class="clock" aria-live="off"><span id="clk">08:40:12</span><small>MON 14 SEP 2026</small></div>
+  <nav aria-label="Areas"><a href="#" aria-current="page">Today</a><a href="#">Calendar</a><a href="#">Finance</a><a href="#">Fitness</a><a href="#">Study</a><a href="#">Health</a></nav>
+  <div class="right">
+    <button class="btn"><svg class="ic"><use href="icons.svg#plus"/></svg><span>Log entry</span></button>
+    <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
+    <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
+  </div>
+</header>
+<div class="ticker" aria-hidden="true">
+  <ul>
+    <li><span class="k">FIN</span><span>$2,140 left</span><span class="up">67%</span></li>
+    <li><span class="k">HEALTH</span><span>sleep 7h12</span><span class="up">HR 58</span></li>
+    <li><span class="k">WATER</span><span>3/8</span><span class="dn">−5</span></li>
+    <li><span class="k">FIT</span><span>3/4 wk</span><span class="a">streak 6w</span></li>
+    <li><span class="k">STUDY</span><span>4h/8h</span><span class="dn">exam T−12d</span></li>
+    <li><span class="k">CAL</span><span>5 events</span><span class="a">next T−20m</span></li>
+  </ul>
+</div>
+
+<main>
+  <div class="lead">
+    <h1>Morning, Jacob.</h1>
+    <p>All areas nominal. Next event in <b class="m">T−20m</b>. Push day at 11:30 extends the streak to <b>7 weeks</b>; water and the electric bill are the two open items.</p>
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <div class="ph"><svg class="ic"><use href="icons.svg#calendar"/></svg>Schedule<span class="st"><i></i>6 items · 08:00–20:00</span></div>
+      <ul class="sched">
+        <li class="next"><span class="t">09:00</span><span class="n">Deep work — RPL value engine<small>2h · focus block</small></span><span class="tm">T−20m</span></li>
+        <li><span class="t">11:30</span><span class="n">Gym — Push day<span class="tag">UPPER A</span><small>Bench, OHP, dips, lateral raises</small></span><span class="tm">T−2h50</span></li>
+        <li><span class="t">13:00</span><span class="n">Lunch<small>45 min</small></span><span class="tm">T−4h20</span></li>
+        <li><span class="t">14:00</span><span class="n">Study — Networking ch. 6<small>90 min · subnetting</small></span><span class="tm">T−5h20</span></li>
+        <li><span class="t">16:30</span><span class="n">Call Mom<small>30 min</small></span><span class="tm">T−7h50</span></li>
+        <li><span class="t">19:00</span><span class="n">RPL scrim review<small>1h · VOD</small></span><span class="tm">T−10h20</span></li>
+      </ul>
+    </section>
+
+    <section class="panel">
+      <div class="ph"><svg class="ic"><use href="icons.svg#heart"/></svg>Areas<span class="st"><i></i>5/5 reporting</span></div>
+      <ul class="stat">
+        <li><span class="n"><svg class="ic"><use href="icons.svg#wallet"/></svg>Finance</span><span class="v">$2,140</span><span class="bar"><i style="width:67%"></i></span><span class="d">67% of $3,200 · rent <b>$1,450</b> in 3d</span></li>
+        <li><span class="n"><svg class="ic"><use href="icons.svg#drop"/></svg>Health</span><span class="v">3 / 8</span><span class="bar"><i class="a" style="width:37%"></i></span><span class="d">water · sleep <b>7h12</b> · HR <b>58</b></span></li>
+        <li><span class="n"><svg class="ic"><use href="icons.svg#dumbbell"/></svg>Fitness</span><span class="v">3 / 4</span><span class="bar"><i style="width:75%"></i></span><span class="d">sessions · streak <b>6w</b> · next 11:30</span></li>
+        <li><span class="n"><svg class="ic"><use href="icons.svg#book"/></svg>Study</span><span class="v">4h / 8h</span><span class="bar"><i class="a" style="width:50%"></i></span><span class="d">this week · exam <b>T−12d</b></span></li>
+        <li><span class="n"><svg class="ic"><use href="icons.svg#calendar"/></svg>Calendar</span><span class="v">5</span><span class="bar"><i style="width:42%"></i></span><span class="d">events · busy 5h of 12 · free after 17:00</span></li>
+      </ul>
+    </section>
+
+    <section class="panel">
+      <div class="ph"><svg class="ic"><use href="icons.svg#check"/></svg>Checklist<span class="st">1/5</span></div>
+      <ul class="todo">
+        <li><input type="checkbox" id="t1" checked><label for="t1">Log weight</label><span class="w">AM</span></li>
+        <li><input type="checkbox" id="t2"><label for="t2">Take vitamins</label><span class="w">AM</span></li>
+        <li><input type="checkbox" id="t3"><label for="t3">Pay electric bill</label><span class="w due">DUE</span></li>
+        <li><input type="checkbox" id="t4"><label for="t4">Review September budget</label><span class="w">15m</span></li>
+        <li><input type="checkbox" id="t5"><label for="t5">Read 30 minutes</label><span class="w">PM</span></li>
+      </ul>
+    </section>
+  </div>
+</main>
+<footer class="foot"><span class="ok">● SYNCED 08:39:58</span><span>SAMPLE DATA — DESIGN ONLY</span><span>v0.1</span></footer>
+<script>
+  // live clock; the only moving part on the page
+  const el=document.getElementById('clk');
+  setInterval(()=>{const d=new Date();el.textContent=d.toTimeString().slice(0,8)},1000);
+</script>
+</body>
+</html>

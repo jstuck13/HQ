@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HQ — School</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --band:#1F3A2E; --band-ink:#F2ECDF; --band-muted:#B9C9BE;
+    --paper:#F5F0E6; --card:#FFFDF9; --ink:#1E1B16; --ink-2:#4D463C; --ink-3:#6A6256; --rule:#D3C9B6; --ox:#7A2E2B; --study:#ECE6F3;
+    --serif:"Libre Caslon Text",Georgia,serif; --sans:"Figtree",system-ui,sans-serif;
+    --shadow:0 1px 2px rgba(30,27,22,.05), 0 6px 18px -6px rgba(30,27,22,.12);
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:light}
+  body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;font-variant-numeric:oldstyle-nums tabular-nums}
+  ::selection{background:var(--band);color:var(--band-ink)}
+  :focus-visible{outline:2px solid var(--ox);outline-offset:3px}
+  a{color:inherit;text-decoration:none}
+  button,input,select{font:inherit;color:inherit;background:none;border:0;padding:0}
+  button{cursor:pointer}
+  [hidden]{display:none!important}
+  h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0}
+  ul{list-style:none;margin:0;padding:0}
+  .ic{width:16px;height:16px;flex:none}
+
+  .band{background:var(--band);color:var(--band-ink)}
+  .band .in{max-width:1180px;margin:0 auto;padding:16px 40px 22px}
+  .row{display:flex;align-items:center;gap:26px}
+  .mark{font-family:var(--serif);font-size:20px;letter-spacing:.14em;font-weight:700}
+  .date{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted)}
+  nav{display:flex;gap:20px;font-size:13.5px;letter-spacing:.04em;color:var(--band-muted);margin-left:10px}
+  nav a:hover{color:var(--band-ink)}
+  nav a[aria-current]{color:var(--band-ink);border-bottom:1px solid var(--band-ink);padding-bottom:2px}
+  .row .right{margin-left:auto;display:flex;gap:18px;align-items:center;font-size:13.5px}
+  .textbtn{display:inline-flex;align-items:center;gap:8px;letter-spacing:.04em;border-bottom:1px solid transparent;transition:border-color .15s;white-space:nowrap}
+  .textbtn:hover{border-color:currentColor}
+  .ib{color:var(--band-muted)} .ib:hover{color:var(--band-ink)}
+  .mast{margin-top:20px;padding-top:18px;border-top:1px solid rgba(242,236,223,.28);display:flex;align-items:baseline;gap:22px;flex-wrap:wrap}
+  h1{font-size:32px;line-height:1.3}
+  .mast .sub{font-family:var(--serif);font-style:italic;color:var(--band-muted)}
+  .mast .sub b{font-weight:400;color:var(--band-ink)}
+
+  main{max-width:1180px;margin:0 auto;padding:34px 40px 44px;display:grid;grid-template-columns:8fr 4fr;grid-template-rows:auto 1fr;gap:0 56px}
+  main > aside{grid-column:2;grid-row:1/3}
+  h2{font-size:22px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:4px;display:flex;align-items:baseline;gap:12px}
+  h2 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
+  h3{font-size:17px;display:flex;align-items:baseline;gap:10px}
+  h3 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
+
+  /* the one card */
+  .next{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:20px 24px 22px;margin-top:14px;display:grid;grid-template-columns:1fr auto;gap:8px 32px}
+  .next .t{grid-column:1}
+  .next .t{font-family:var(--serif);font-size:24px;line-height:1.2}
+  .next .t small{display:block;font-family:var(--sans);font-size:13.5px;color:var(--ink-2);margin-top:4px}
+  .next .why{grid-column:1;font-family:var(--serif);font-style:italic;font-size:17px;color:var(--ink-2);margin:4px 0 0;max-width:46ch}
+  .next .links{grid-column:1;margin-top:10px;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13.5px}
+  .next .links a{border-bottom:1px solid var(--rule)}
+  .next .links a:hover{border-color:var(--ink)}
+  .next .sess{grid-column:2;grid-row:1/4;align-self:start;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .next .clock{font-family:var(--serif);font-size:32px;line-height:1;min-height:34px}
+  .next .clock small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:6px}
+  .next .sess .textbtn{color:var(--ink);font-size:14px}
+  .next .sess .stop{color:var(--ox)}
+  .empty{padding:14px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
+
+  /* course tiles */
+  .courses{margin-top:40px}
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:0 40px}
+  .tile{padding:16px 0 18px;border-bottom:1px solid var(--rule);display:grid;grid-template-columns:1fr auto;gap:4px 16px;align-content:start}
+  .tile h3{grid-column:1;margin:0}
+  .tile .x{grid-column:2;grid-row:1;justify-self:end;color:var(--ink-3);font-size:12.5px;opacity:0}
+  .tile:hover .x,.tile:focus-within .x{opacity:1}
+  .tile .hrs{grid-column:1/-1;font-family:var(--serif);font-size:24px;line-height:1.1;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-top:2px}
+  .tile .hrs small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
+  .tile .due{grid-column:1/-1;font-size:13.5px;color:var(--ink-2)}
+  .tile .due.ox{color:var(--ox)}
+  .tile .conf{grid-column:1/-1;display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-3);margin-top:4px}
+  .tile .conf .dots{display:inline-flex;gap:5px}
+  .tile .conf button{width:14px;height:14px;border-radius:50%;border:1px solid var(--ink-2);background:var(--paper)}
+  .tile .conf button.on{background:var(--band);border-color:var(--band)}
+  .tile .conf .dots:hover button{background:var(--band);border-color:var(--band)}
+  .tile .conf .dots button:hover~button{background:var(--paper);border-color:var(--ink-2)}
+  .tile .lk{grid-column:1/-1;margin-top:10px;padding-top:8px;border-top:1px dotted var(--rule)}
+  .tile .lk li{display:flex;align-items:baseline;gap:10px;padding:4px 0;font-size:13.5px}
+  .tile .lk a{border-bottom:1px solid var(--rule);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tile .lk a:hover{border-color:var(--ink)}
+  .tile .lk .h{color:var(--ink-3);font-size:12px;white-space:nowrap}
+  .tile .lk .rm{margin-left:auto;color:var(--ink-3);font-size:12px;opacity:0}
+  .tile .lk li:hover .rm,.tile .lk li:focus-within .rm{opacity:1}
+  .tile .addlk{display:grid;grid-template-columns:1fr 1.2fr auto;gap:10px;padding-top:6px;align-items:baseline}
+  .tile .addlk input{width:100%;font-family:var(--serif);font-size:14px;border-bottom:1px dotted var(--ink-2);padding:2px 0}
+  .tile .addlk input:focus{outline:none;border-bottom-color:var(--ink)}
+  .tile .addlk input::placeholder{color:var(--ink-3);font-style:italic}
+  .tile .addlk .textbtn{font-size:12.5px;color:var(--ink-2)}
+  .addc{display:grid;grid-template-columns:1fr auto;gap:12px;padding:14px 0;border-bottom:1px dotted var(--rule);align-items:baseline}
+  .addc input{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0}
+  .addc input:focus{outline:none;border-bottom-color:var(--ink)}
+  .addc input::placeholder{color:var(--ink-3);font-style:italic}
+  .addc .textbtn{font-size:13.5px}
+
+  /* right column */
+  .ledger li{display:grid;grid-template-columns:auto 1fr auto;gap:12px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+  .ledger input[type=checkbox]{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px;align-self:center}
+  .ledger input:checked{background:var(--band);border-color:var(--band)}
+  .ledger input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+  .ledger .w{font-family:var(--serif);font-size:15.5px;min-width:0}
+  .ledger .w small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
+  .ledger li.done .w{color:var(--ink-3);text-decoration:line-through}
+  .ledger li.done .w small{text-decoration:none}
+  .ledger .d{font-family:var(--serif);color:var(--ink-2);font-size:14px;white-space:nowrap;text-align:right}
+  .ledger .d.ox{color:var(--ox)}
+  .ledger .d small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3)}
+  .ledger .x{color:var(--ink-3);font-size:12px;opacity:0;grid-column:3;justify-self:end}
+  .ledger .x .m-{display:none}
+  .ledger li:hover .x,.ledger li:focus-within .x{opacity:1}
+  .ledger.sess li{grid-template-columns:64px 1fr auto}
+  .ledger.sess .m{font-family:var(--serif);font-size:17px;white-space:nowrap}
+  .addl{display:grid;gap:10px;padding:12px 0;border-bottom:1px dotted var(--rule);align-items:baseline}
+  .addl.due{grid-template-columns:1fr 1fr}
+  .addl.due .full{grid-column:1/-1}
+  .addl.s{grid-template-columns:1fr 64px 64px}
+  .addl input,.addl select{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0}
+  .addl input:focus,.addl select:focus{outline:none;border-bottom-color:var(--ink)}
+  .addl input::placeholder{color:var(--ink-3);font-style:italic}
+  .addl .textbtn{font-size:13.5px;grid-column:1/-1;justify-self:start;margin-top:4px}
+  .sessions{margin-top:34px}
+  .foot{max-width:1180px;margin:0 auto;padding:0 40px 32px;font-size:12.5px;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
+
+  @media (prefers-reduced-motion:reduce){.textbtn{transition:none}}
+  @media (max-width:1000px){main{grid-template-columns:1fr;grid-template-rows:auto;gap:34px} main > aside{grid-column:1;grid-row:auto} .courses{order:3;margin-top:0} .tiles{grid-template-columns:1fr}}
+  @media (max-width:760px){
+    .band .in{padding:14px 20px 20px} nav,.date{display:none} .row{gap:14px} h1{font-size:26px}
+    main{padding:24px 20px 36px} .foot{padding:0 20px 28px}
+    .next{grid-template-columns:1fr} .next .sess{grid-column:1;grid-row:auto;align-items:flex-start;text-align:left}
+    h2{flex-wrap:wrap} h2 small{flex-basis:100%;margin-left:0}
+    .tile .x,.ledger .x,.tile .lk .rm{opacity:1} .ledger .x .w-{display:none} .ledger .x .m-{display:block}
+    .tile .addlk{grid-template-columns:1fr 1fr} .tile .addlk .textbtn{grid-column:1/-1}
+  }
+</style>
+</head>
+<body>
+<header class="band">
+  <div class="in">
+    <div class="row">
+      <a class="mark" href="index.html">HQ</a>
+      <span class="date">Monday, 14 September 2026 · 8.40 am</span>
+      <nav aria-label="Areas"><a href="index.html">Today</a><a href="calendar.html">Calendar</a><a href="finances.html">Finances</a><a href="library.html">Library</a><a href="school.html" aria-current="page">School</a><a href="health.html">Health</a></nav>
+      <div class="right">
+        <button class="textbtn" id="newitem"><svg class="ic"><use href="icons.svg#plus"/></svg>Add an item</button>
+        <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
+        <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
+      </div>
+    </div>
+    <div class="mast">
+      <h1>School</h1>
+      <span class="sub" id="sub">Autumn term</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="top">
+    <h2>Study next<small id="nextn"></small></h2>
+    <div class="next" id="next"></div>
+  </section>
+
+    <section class="courses">
+      <h2>Courses<small id="coursesn"></small></h2>
+      <div class="tiles" id="tiles"></div>
+      <form class="addc" id="addc">
+        <input id="c-name" placeholder="New course" required>
+        <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button>
+      </form>
+    </section>
+
+  <aside>
+    <h2>Due<small id="duen"></small></h2>
+    <form class="addl due" id="adddue">
+      <input id="i-title" class="full" placeholder="Assignment, test, reading…" required>
+      <select id="i-course"></select>
+      <select id="i-type"><option value="assignment">Assignment</option><option value="test">Test</option><option value="reading">Reading</option></select>
+      <input id="i-date" placeholder="17 Sep" aria-label="Due day" required>
+      <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add to due</button>
+    </form>
+    <ul class="ledger" id="due"></ul>
+
+    <div class="sessions">
+      <h2>Sessions<small id="sessn"></small></h2>
+      <form class="addl s" id="addsess">
+        <select id="s-course"></select>
+        <input id="s-min" inputmode="numeric" placeholder="min" aria-label="Minutes" required>
+        <input id="s-date" value="14 Sep" aria-label="Day" required>
+        <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Log a session</button>
+      </form>
+      <ul class="ledger sess" id="sess"></ul>
+    </div>
+  </aside>
+</main>
+<p class="foot">Sample data, shown for design only. Courses, items, links and sessions you add are kept in this browser.</p>
+
+<script>
+  // ---- state ----
+  // ponytail: localStorage; becomes the school store later.
+  const F = id => document.getElementById(id);
+  const TODAY = '2026-09-14', DAY = 14, DIM = 30;
+  const seed = () => ({
+    courses: [
+      {id:'net',name:'Networking',conf:3,links:[{t:'Cisco NetAcad — module 6',u:'https://www.netacad.com/'},{t:'Subnetting practice',u:'https://subnetipv4.com/'},{t:'Lecture 6 recording',u:'https://example.edu/lectures/net-6'}]},
+      {id:'db',name:'Databases',conf:2,links:[{t:'Textbook ch. 5 — normalisation',u:'https://example.edu/db/ch5'},{t:'SQLBolt exercises',u:'https://sqlbolt.com/'}]},
+      {id:'stat',name:'Statistics',conf:3,links:[{t:'Khan — hypothesis testing',u:'https://www.khanacademy.org/math/statistics-probability'},{t:'Problem set 4 (PDF)',u:'https://example.edu/stats/ps4.pdf'}]},
+      {id:'wri',name:'Writing',conf:4,links:[{t:'Purdue OWL — argument essays',u:'https://owl.purdue.edu/'}]},
+    ],
+    items: [
+      {id:1,course:'net',title:'Exam, chapters 1–7',type:'test',due:'2026-09-26',done:false},
+      {id:2,course:'net',title:'Lab 3: VLAN configuration',type:'assignment',due:'2026-09-18',done:false},
+      {id:3,course:'stat',title:'Problem set 4',type:'assignment',due:'2026-09-17',done:false},
+      {id:4,course:'db',title:'Chapter 5 reading',type:'reading',due:'2026-09-21',done:false},
+      {id:5,course:'db',title:'Normalisation quiz',type:'test',due:'2026-09-23',done:false},
+      {id:6,course:'wri',title:'Essay draft',type:'assignment',due:'2026-09-24',done:false},
+      {id:7,course:'stat',title:'Chapter 8 reading',type:'reading',due:'2026-09-12',done:true},
+    ],
+    sessions: [
+      {id:11,date:'2026-09-08',course:'net',min:90},{id:12,date:'2026-09-09',course:'stat',min:60},{id:13,date:'2026-09-10',course:'net',min:60},
+      {id:14,date:'2026-09-11',course:'db',min:45},{id:15,date:'2026-09-12',course:'wri',min:60},{id:16,date:'2026-09-13',course:'stat',min:60},
+    ],
+  });
+  let S; try { S = JSON.parse(localStorage.getItem('hq.school')) || seed(); } catch { S = seed(); }
+  const save = () => { try { localStorage.setItem('hq.school', JSON.stringify(S)); } catch {} };
+
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const course = id => S.courses.find(c=>c.id===id);
+  const days = iso => Math.round((new Date(iso) - new Date(TODAY)) / 864e5);
+  const dmy = iso => new Date(iso+'T12:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric'});
+  // '17', '17 Sep', 'Oct 3' → ISO in the current academic year
+  const dayOf = t => { const d=new Date(`${t} 2026`); if(!isNaN(d)) return d.toISOString().slice(0,10); const m=/\d{1,2}/.exec(t); return '2026-09-'+String(m?Math.min(DIM,Math.max(1,+m[0])):DAY).padStart(2,'0'); };
+  const hrs = m => m>=60 ? (m%60 ? `${Math.floor(m/60)} h ${m%60}` : `${m/60} h`) : `${m} min`;
+  const weekMin = cid => S.sessions.filter(s=>s.course===cid && days(s.date)>-7 && days(s.date)<=0).reduce((n,s)=>n+s.min,0);
+  const dueWord = iso => { const d=days(iso); return d<0?'overdue':d===0?'due today':d===1?'due tomorrow':d<7?'due '+dmy(iso).split(' ')[0]:'due '+dmy(iso); };
+
+  // ---- the mix: nearest due, weakest confidence, least studied lately ----
+  function score(it){
+    const c=course(it.course); if(!c) return 0;
+    const d=Math.max(0, days(it.due)), urgency = Math.max(0, 14-d)/14 * (it.type==='test'?3.5:3);
+    const neglected = Math.max(0, 180 - weekMin(c.id))/180 * 1;   // under 3 h this week nudges it up
+    const weak = (5-c.conf)/4 * 2;
+    return urgency + neglected + weak;
+  }
+  function sentence(it){
+    const c=course(it.course), d=days(it.due), m=weekMin(c.id);
+    const when = d<0?'It was due '+dmy(it.due):d===0?'It is due today':d===1?'It is due tomorrow':d<7?'It is due '+new Date(it.due+'T12:00').toLocaleDateString('en-GB',{weekday:'long'}):'It is due '+dmy(it.due);
+    const conf = c.conf<=2?'your confidence there is lowest':c.conf===3?'your confidence there is middling':'your confidence there is good';
+    const time = m ? `you have put in ${hrs(m)} this week` : 'you have not studied it this week';
+    return `${when}, ${conf}, and ${time}.`;
+  }
+
+  function render(){
+    const open = S.items.filter(i=>!i.done).sort((a,b)=>score(b)-score(a));
+    const tests = S.items.filter(i=>i.type==='test' && !i.done).sort((a,b)=>a.due<b.due?-1:1)[0];
+    const doneMin = S.courses.reduce((n,c)=>n+weekMin(c.id),0);
+    F('sub').innerHTML = `Autumn term · ${S.courses.length} courses${tests?` · <b>${esc(course(tests.course)?.name||'')} ${tests.title.toLowerCase().startsWith('exam')?'exam':'test'} in ${days(tests.due)} days</b>`:''} · ${hrs(doneMin)} studied this week`;
+
+    // study next
+    const top = open[0];
+    if(top){
+      const c=course(top.course);
+      F('nextn').textContent = `${open.length} open items, ranked by due date, confidence and time spent`;
+      F('next').innerHTML = `<div class="t">${esc(c.name)} — ${esc(top.title)}<small>${top.type==='test'?'Test':top.type==='reading'?'Reading':'Assignment'} · ${dmy(top.due)}</small></div>
+        <div class="sess">
+          <div class="clock" id="clock">${timer.on?hrs(Math.round(timer.sec/60))||'0 min':''}${timer.on?'<small>running</small>':''}</div>
+          ${timer.on ? `<button class="textbtn stop" type="button" id="stop">Stop and log</button>` : `<button class="textbtn" type="button" id="start"><svg class="ic"><use href="icons.svg#clock"/></svg>Start a session</button>`}
+        </div>
+        <p class="why">${esc(sentence(top))}${open[1]?` Then ${esc(course(open[1].course)?.name)}, ${esc(open[1].title)}.`:''}</p>
+        <div class="links">${c.links.map(l=>`<a href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.t)}</a>`).join('')}</div>`;
+      F('start')?.addEventListener('click', ()=>startTimer(c.id));
+      F('stop')?.addEventListener('click', stopTimer);
+    } else {
+      F('nextn').textContent=''; F('next').innerHTML='<p class="empty" style="grid-column:1/-1">Nothing open. Add an item on the right, or enjoy the evening.</p>';
+    }
+
+    // course tiles
+    F('coursesn').textContent = `${hrs(doneMin)} studied this week`;
+    F('tiles').innerHTML = S.courses.map(c=>{
+      const m=weekMin(c.id);
+      const nd=S.items.filter(i=>i.course===c.id && !i.done).sort((a,b)=>a.due<b.due?-1:1)[0];
+      return `<div class="tile" data-id="${c.id}">
+        <h3>${esc(c.name)}</h3><button class="x" type="button" aria-label="Remove ${esc(c.name)}">remove</button>
+        <div class="hrs">${m?hrs(m):'0 h'}<small>studied this week</small></div>
+        <div class="due ${nd && days(nd.due)<=0?'ox':''}">${nd?`Next: ${esc(nd.title)}, ${dueWord(nd.due)}`:'Nothing due'}</div>
+        <div class="conf">Confidence<span class="dots">${[1,2,3,4,5].map(n=>`<button type="button" class="${n<=c.conf?'on':''}" data-conf="${n}" aria-label="${n} of 5"></button>`).join('')}</span></div>
+        <ul class="lk">${c.links.map((l,i)=>`<li><a href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.t)}</a><span class="h">${esc(host(l.u))}</span><button class="rm" type="button" data-lk="${i}" aria-label="Remove link">remove</button></li>`).join('')}
+          <li class="addlk"><input placeholder="Link title" aria-label="Link title"><input placeholder="https://…" aria-label="Link URL"><button class="textbtn" type="button" data-addlk><svg class="ic" style="width:14px;height:14px"><use href="icons.svg#plus"/></svg>Add a link</button></li></ul>
+      </div>`;
+    }).join('');
+
+    // due ledger
+    const dueList = [...S.items].sort((a,b)=>a.done!==b.done ? (a.done?1:-1) : (a.due<b.due?-1:1));
+    F('duen').textContent = `${open.length} open`;
+    F('due').innerHTML = dueList.length ? dueList.map(i=>`<li class="${i.done?'done':''}" data-id="${i.id}"><input type="checkbox" ${i.done?'checked':''} aria-label="Done: ${esc(i.title)}"><span class="w">${esc(i.title)}<small>${esc(course(i.course)?.name||'—')} · ${i.type}</small></span><span class="d ${!i.done&&days(i.due)<=0?'ox':''}">${dmy(i.due)}<small>${i.done?'done':dueWord(i.due)}</small></span><button class="x" type="button" aria-label="Remove"><span class="w-">remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button></li>`).join('') : '<li class="empty">Nothing due.</li>';
+    const sel = S.courses.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+    const ic=F('i-course').value, sc=F('s-course').value; F('i-course').innerHTML=sel; F('s-course').innerHTML=sel; if(ic) F('i-course').value=ic; if(sc) F('s-course').value=sc;
+
+    // sessions
+    const ss=[...S.sessions].sort((a,b)=>a.date<b.date?1:(a.date>b.date?-1:b.id-a.id)).slice(0,8);
+    F('sessn').textContent = `${hrs(doneMin)} this week`;
+    F('sess').innerHTML = ss.length ? ss.map(s=>`<li data-id="${s.id}"><span class="d" style="text-align:left">${dmy(s.date)}</span><span class="w">${esc(course(s.course)?.name||'—')}</span><span class="m">${hrs(s.min)}</span></li>`).join('') : '<li class="empty">No sessions yet.</li>';
+    save();
+  }
+  const host = u => { try { return new URL(u).hostname.replace(/^www\./,''); } catch { return ''; } };
+
+  // ---- session timer on the card ----
+  const timer = {on:false, sec:0, course:null, iv:null};
+  function startTimer(cid){ timer.on=true; timer.sec=0; timer.course=cid; render(); timer.iv=setInterval(()=>{ timer.sec++; const el=F('clock'); if(el) el.innerHTML=`${Math.floor(timer.sec/60)} min<small>running</small>`; },1000); }
+  function stopTimer(){ clearInterval(timer.iv); const min=Math.max(1, Math.round(timer.sec/60)); S.sessions.push({id:Date.now(), date:TODAY, course:timer.course, min}); timer.on=false; render(); }
+
+  // ---- events ----
+  F('tiles').addEventListener('click', e=>{
+    const tile=e.target.closest('.tile'); if(!tile) return; const c=course(tile.dataset.id);
+    const d=e.target.closest('[data-conf]'); if(d){ c.conf=+d.dataset.conf; render(); return; }
+    if(e.target.closest('[data-addlk]')){ const [t,u]=tile.querySelectorAll('.addlk input'); if(!t.value.trim()||!u.value.trim()) return t.value.trim()?u.focus():t.focus(); c.links.push({t:t.value.trim(), u:u.value.trim()}); render(); return; }
+    const rm=e.target.closest('[data-lk]'); if(rm){ c.links.splice(+rm.dataset.lk,1); render(); return; }
+    if(e.target.closest('.x')){ if(S.items.some(i=>i.course===c.id)) return alert('Remove or move its due items first.'); S.courses=S.courses.filter(x=>x.id!==c.id); render(); }
+  });
+  F('addc').addEventListener('submit', e=>{ e.preventDefault(); S.courses.push({id:'c'+Date.now(), name:F('c-name').value.trim(), conf:3, links:[]}); F('addc').reset(); render(); });
+  F('adddue').addEventListener('submit', e=>{ e.preventDefault(); S.items.push({id:Date.now(), course:F('i-course').value, title:F('i-title').value.trim(), type:F('i-type').value, due:dayOf(F('i-date').value), done:false}); const k=F('i-course').value; F('adddue').reset(); F('i-course').value=k; render(); });
+  F('due').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ const it=S.items.find(i=>i.id===+e.target.closest('li').dataset.id); it.done=e.target.checked; render(); } });
+  F('due').addEventListener('click', e=>{ if(e.target.closest('.x')){ const id=+e.target.closest('li').dataset.id; S.items=S.items.filter(i=>i.id!==id); render(); } });
+  F('addsess').addEventListener('submit', e=>{ e.preventDefault(); const min=parseInt(F('s-min').value); if(!min) return F('s-min').focus(); S.sessions.push({id:Date.now(), date:dayOf(F('s-date').value), course:F('s-course').value, min}); const k=F('s-course').value; F('addsess').reset(); F('s-course').value=k; F('s-date').value='14 Sep'; render(); });
+  F('newitem').addEventListener('click', ()=>F('i-title').focus());
+  render();
+</script>
+</body>
+</html>

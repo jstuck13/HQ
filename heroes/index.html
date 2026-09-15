@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HQ — Hero options</title>
+<style>
+  :root{--bg:#EDEDEA;--ink:#161616;--ink-2:#5B5B57;--card:#fff}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+  header{padding:26px 32px 6px;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+  h1{margin:0;font-size:22px}
+  header p{margin:0;color:var(--ink-2)}
+  .round{margin:22px 32px 0;font-size:14px;font-weight:600;color:var(--ink-2);letter-spacing:.01em}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:22px;padding:18px 32px 40px}
+  .opt{background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 8px 24px -14px rgba(0,0,0,.25);display:flex;flex-direction:column}
+  .frame{position:relative;aspect-ratio:1440/900;overflow:hidden;background:#ddd}
+  .frame iframe{position:absolute;inset:0;width:1440px;height:900px;border:0;transform-origin:0 0;pointer-events:none}
+  .frame a{position:absolute;inset:0}
+  .meta{padding:14px 18px 16px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:baseline}
+  .meta h2{margin:0;font-size:17px}
+  .meta .n{color:var(--ink-2);font-size:13px;text-align:right}
+  .meta p{grid-column:1/-1;margin:2px 0 0;color:var(--ink-2);font-size:14px}
+  .meta a.open{grid-column:1/-1;justify-self:start;margin-top:8px;font-weight:600;color:var(--ink);text-decoration:none;border-bottom:1.5px solid var(--ink)}
+  @media (max-width:520px){.grid{grid-template-columns:1fr;padding:12px 16px 32px}header{padding:20px 16px 4px}}
+</style>
+</head>
+<body>
+<header><h1>HQ — hero directions</h1><p>Same content, different worlds. Click a preview to open it full size.</p></header>
+<h2 class="round">Round 3 — Clean × Classical</h2>
+<div class="grid">
+  <article class="opt">
+    <div class="frame"><iframe src="cc-clean.html" title="9 · Clean-leaning preview" loading="lazy"></iframe><a href="cc-clean.html" aria-label="Open 9 · Clean-leaning"></a></div>
+    <div class="meta"><h2>9 · Clean-leaning</h2><span class="n">Figtree + Caslon · gray + green band</span><p>Clean-led page with Classical’s bottle-green masthead in place of the white top bar; serif headline and section titles; cobalt now-line stays.</p><a class="open" href="cc-clean.html">Open →</a></div>
+  </article>
+  <article class="opt">
+    <div class="frame"><iframe src="cc-classical.html" title="10 · Classical-leaning preview" loading="lazy"></iframe><a href="cc-classical.html" aria-label="Open 10 · Classical-leaning"></a></div>
+    <div class="meta"><h2>10 · Classical-leaning</h2><span class="n">Caslon + Figtree · ivory + green band</span><p>Classical-led page with Clean’s timeline as a white rounded card: soft shadow, area-tinted blocks, now-badge; Figtree replaces Franklin for UI text.</p><a class="open" href="cc-classical.html">Open →</a></div>
+  </article>
+</div>
+<h2 class="round">Round 2 — hybrids</h2>
+<div class="grid">
+  <article class="opt">
+    <div class="frame"><iframe src="hybrid-clean.html" title="6 · Clean-led preview" loading="lazy"></iframe><a href="hybrid-clean.html" aria-label="Open 6 · Clean-led"></a></div>
+    <div class="meta"><h2>6 · Clean-led</h2><span class="n">Figtree + Caslon h1 · cobalt</span><p>Clean’s timeline and gray ground. Minimal donates the “Next:” headline and ruled lists instead of a second card; Classical donates the serif voice for that one line.</p><a class="open" href="hybrid-clean.html">Open →</a></div>
+  </article>
+  <article class="opt">
+    <div class="frame"><iframe src="hybrid-classical.html" title="7 · Classical-led preview" loading="lazy"></iframe><a href="hybrid-classical.html" aria-label="Open 7 · Classical-led"></a></div>
+    <div class="meta"><h2>7 · Classical-led</h2><span class="n">Caslon + Franklin · bottle green</span><p>Green masthead and ivory ledger. Clean donates the vertical hour timeline, redrawn in ink rules and paper tints; Minimal donates the restraint.</p><a class="open" href="hybrid-classical.html">Open →</a></div>
+  </article>
+</div>
+<h2 class="round">Round 1</h2>
+<div class="grid">
+  <article class="opt">
+    <div class="frame"><iframe src="clean.html" title="Clean preview" loading="lazy"></iframe><a href="clean.html" aria-label="Open Clean"></a></div>
+    <div class="meta"><h2>1 · Clean</h2><span class="n">Figtree · cobalt</span><p>Swiss product UI. Cool gray ground, white cards, one accent. The day as a vertical timeline with a live “now” line.</p><a class="open" href="clean.html">Open →</a></div>
+  </article>
+  <article class="opt">
+    <div class="frame"><iframe src="friendly.html" title="Friendly preview" loading="lazy"></iframe><a href="friendly.html" aria-label="Open Friendly"></a></div>
+    <div class="meta"><h2>2 · Friendly</h2><span class="n">Gabarito + Nunito Sans · pastels</span><p>Fridge-door planner. Warm ground; each area owns a colour; the day drawn as a horizontal strip of blocks.</p><a class="open" href="friendly.html">Open →</a></div>
+  </article>
+  <article class="opt">
+    <div class="frame"><iframe src="minimal.html" title="Minimal preview" loading="lazy"></iframe><a href="minimal.html" aria-label="Open Minimal"></a></div>
+    <div class="meta"><h2>3 · Minimal</h2><span class="n">Schibsted Grotesk · ink + rust</span><p>Typographic daybook. No cards, hairline rules, the next item set large. One accent, used for “now” only.</p><a class="open" href="minimal.html">Open →</a></div>
+  </article>
+  <article class="opt">
+    <div class="frame"><iframe src="classical.html" title="Classical preview" loading="lazy"></iframe><a href="classical.html" aria-label="Open Classical"></a></div>
+    <div class="meta"><h2>5 · Classical</h2><span class="n">Libre Caslon + Libre Franklin · bottle green</span><p>Leather agenda. Green masthead over ivory paper, serif headings, ruled ledger rows, oldstyle wording.</p><a class="open" href="classical.html">Open →</a></div>
+  </article>
+</div>
+<script>
+  // scale each 1440×900 iframe to its frame width
+  const fit=()=>document.querySelectorAll('.frame').forEach(f=>{f.querySelector('iframe').style.transform=`scale(${f.clientWidth/1440})`});
+  addEventListener('resize',fit);fit();
+</script>
+</body>
+</html>

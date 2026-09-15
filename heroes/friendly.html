@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HQ — Friendly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FFF4E6; --ink:#2A2420; --ink-2:#5C534C; --ink-3:#6E655D; --white:#FFFDFA;
+    --fin:#BFEBD0; --fin-ink:#0F5132;
+    --health:#FFD0C4; --health-ink:#8A2A17;
+    --fit:#C6DEFF; --fit-ink:#123E8A;
+    --study:#E1D6FF; --study-ink:#4A2C9C;
+    --cal:#FFE59C; --cal-ink:#6E4B00;
+    --r:28px; --shadow:0 6px 18px -8px rgba(80,50,20,.18);
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:light}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Nunito Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1}
+  ::selection{background:var(--cal);color:var(--ink)}
+  :focus-visible{outline:3px solid var(--fit-ink);outline-offset:3px;border-radius:12px}
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  h1,h2,h3{font-family:"Gabarito",system-ui,sans-serif;letter-spacing:-.01em}
+  .ic{width:20px;height:20px;flex:none}
+
+  .wrap{max-width:1280px;margin:0 auto;padding:22px 32px 40px}
+  .top{display:flex;align-items:center;gap:18px;margin-bottom:26px}
+  .mark{font-family:"Gabarito";font-weight:700;font-size:22px;display:flex;align-items:center;gap:10px}
+  .mark i{width:34px;height:34px;border-radius:12px;background:var(--ink);color:#FFE59C;display:grid;place-items:center;font-style:normal;font-size:13px}
+  nav{display:flex;gap:2px;margin-left:8px;background:var(--white);padding:4px;border-radius:999px;box-shadow:var(--shadow)}
+  nav a{padding:8px 16px;border-radius:999px;font-weight:600;color:var(--ink-2)}
+  nav a[aria-current]{background:var(--ink);color:#fff}
+  nav a:hover:not([aria-current]){background:var(--bg)}
+  .top .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .pill{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;background:var(--white);font-weight:600;box-shadow:var(--shadow)}
+  .avatar{width:38px;height:38px;border-radius:999px;background:radial-gradient(circle at 35% 30%,#FFD0C4,#8A2A17)}
+
+  .hello{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end;margin-bottom:22px}
+  h1{font-size:44px;line-height:1.05;margin:0 0 10px;font-weight:700}
+  h1 em{font-style:normal;color:var(--health-ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+  .chips li{display:inline-flex;align-items:center;gap:8px;padding:7px 12px 7px 9px;border-radius:999px;background:var(--white);font-weight:600;font-size:14px;color:var(--ink-2)}
+  .chips .dot{width:10px;height:10px;border-radius:50%}
+  .cta{display:inline-flex;align-items:center;gap:10px;padding:14px 22px;border-radius:999px;background:var(--ink);color:#fff;font-family:"Gabarito";font-weight:600;font-size:17px;transition:transform .15s cubic-bezier(.2,.8,.2,1),box-shadow .15s}
+  .cta:hover{transform:translateY(-1px);box-shadow:0 10px 24px -10px rgba(42,36,32,.5)}
+  .cta:active{transform:translateY(0)}
+
+  /* day strip */
+  .strip{background:var(--white);border-radius:var(--r);padding:18px 22px 20px;box-shadow:var(--shadow);margin-bottom:22px}
+  .strip-h{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
+  .strip-h h2{margin:0;font-size:20px}
+  .strip-h span{color:var(--ink-3);font-size:14px;font-weight:600}
+  .track{position:relative;height:72px;border-radius:16px;background:#F6EEE4}
+  .blk{position:absolute;top:6px;bottom:6px;border-radius:12px;padding:8px 10px;font-weight:700;font-size:13px;line-height:1.2;overflow:hidden;transition:transform .15s cubic-bezier(.2,.8,.2,1)}
+  .blk:hover{transform:scale(1.03);z-index:2}
+  .blk small{display:block;font-weight:600;opacity:.8;font-size:11.5px;white-space:nowrap}
+  .blk span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .blk.cal{background:var(--cal);color:var(--cal-ink)}
+  .blk.fit{background:var(--fit);color:var(--fit-ink)}
+  .blk.health{background:var(--health);color:var(--health-ink)}
+  .blk.study{background:var(--study);color:var(--study-ink)}
+  .ticks{display:flex;justify-content:space-between;margin-top:30px;color:var(--ink-3);font-size:12px;font-weight:700}
+  .nowm{position:absolute;top:-8px;bottom:-8px;width:3px;border-radius:2px;background:var(--ink);z-index:3}
+  .nowm::after{content:"now · 08:40";position:absolute;bottom:-26px;left:-6px;font-size:11.5px;font-weight:700;color:#fff;background:var(--ink);padding:2px 8px;border-radius:999px;white-space:nowrap}
+
+  /* tiles */
+  .tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
+  .tile{border-radius:var(--r);padding:22px 22px;min-height:210px;display:flex;flex-direction:column;gap:6px;position:relative;transition:transform .2s cubic-bezier(.2,.8,.2,1)}
+  .tile:hover{transform:translateY(-2px)}
+  .tile h3{margin:0;font-size:18px;display:flex;align-items:center;gap:8px}
+  .tile .big{font-family:"Gabarito";font-size:40px;font-weight:700;line-height:1;margin-top:auto;letter-spacing:-.02em}
+  .tile .big small{font-size:16px;font-weight:600;letter-spacing:0;margin-left:6px}
+  .tile p{margin:0;font-size:14.5px;font-weight:600;opacity:.85}
+  .tile .act{position:absolute;top:18px;right:18px;width:34px;height:34px;border-radius:999px;background:rgba(255,255,255,.65);display:grid;place-items:center;transition:background .15s}
+  .tile .act:hover{background:#fff}
+  .fin{background:var(--fin);color:var(--fin-ink);grid-column:span 2}
+  .health{background:var(--health);color:var(--health-ink)}
+  .fit{background:var(--fit);color:var(--fit-ink)}
+  .study{background:var(--study);color:var(--study-ink)}
+  .cal{background:var(--cal);color:var(--cal-ink)}
+  .todo{background:var(--white);color:var(--ink);grid-column:span 6;box-shadow:var(--shadow);min-height:0;flex-direction:row;align-items:center;gap:6px 18px;flex-wrap:wrap;padding:16px 22px}
+  .todo h3{margin-right:6px}
+  .todo label{display:inline-flex;align-items:center;gap:8px;padding:8px 14px 8px 10px;border-radius:999px;background:var(--bg);font-weight:600;cursor:pointer;font-size:15px}
+  .todo input{appearance:none;width:20px;height:20px;border:2px solid #C9B9A6;border-radius:999px;margin:0;display:grid;place-items:center;transition:background .15s}
+  .todo input:checked{background:var(--fin-ink);border-color:var(--fin-ink)}
+  .todo input:checked::after{content:"";width:9px;height:5px;border:2px solid #fff;border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+  .todo label:has(input:checked){color:var(--ink-3);text-decoration:line-through}
+  .foot{color:var(--ink-3);font-size:13px;margin:18px 0 0}
+
+  @media (prefers-reduced-motion:reduce){.cta,.blk,.tile,.tile .act{transition:none}}
+  @media (max-width:1000px){.tiles{grid-template-columns:repeat(2,1fr)}.fin{grid-column:span 2}.todo{grid-column:span 2}}
+  @media (max-width:720px){
+    .wrap{padding:16px 16px 32px} nav,.pill{display:none}
+    .hello{grid-template-columns:1fr} h1{font-size:34px}
+    .strip{padding:14px 16px} .track{height:auto;display:flex;flex-direction:column;gap:6px;padding:6px;background:transparent}
+    .blk{position:static;inset:auto;width:auto !important;left:auto !important} .nowm{display:none} .ticks{display:none}
+    .tiles{grid-template-columns:1fr} .fin,.todo{grid-column:auto}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="mark" href="#"><i>HQ</i>HQ</a>
+    <nav aria-label="Areas"><a href="#" aria-current="page">Today</a><a href="#">Calendar</a><a href="#">Money</a><a href="#">Fitness</a><a href="#">Study</a><a href="#">Health</a></nav>
+    <div class="right">
+      <span class="pill"><svg class="ic"><use href="icons.svg#calendar"/></svg>Mon 14 Sep</span>
+      <button class="pill" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
+      <span class="avatar" aria-hidden="true"></span>
+    </div>
+  </header>
+
+  <section class="hello">
+    <div>
+      <h1>Morning, Jacob. <em>Nice shape</em> of a day.</h1>
+      <ul class="chips">
+        <li><span class="dot" style="background:var(--cal-ink)"></span>6 items, first in 20 min</li>
+        <li><span class="dot" style="background:var(--fit-ink)"></span>Gym at 11:30 · week 7 of your streak</li>
+        <li><span class="dot" style="background:var(--study-ink)"></span>Exam in 12 days</li>
+        <li><span class="dot" style="background:var(--fin-ink)"></span>Rent in 3 days — already covered</li>
+      </ul>
+    </div>
+    <button class="cta">Start the day<svg class="ic"><use href="icons.svg#arrow"/></svg></button>
+  </section>
+
+  <section class="strip" aria-label="Today's schedule">
+    <div class="strip-h"><h2>Today</h2><span>08:00 – 20:00</span></div>
+    <div class="track">
+      <!-- 12h track: left% = (h-8)/12, width% = dur/12 -->
+      <a href="#" class="blk cal" style="left:8.33%;width:16.67%"><span>Deep work — RPL value engine</span><small>09:00–11:00</small></a>
+      <a href="#" class="blk fit" style="left:29.17%;width:8.33%"><span>Gym · Push</span><small>11:30</small></a>
+      <a href="#" class="blk health" style="left:41.67%;width:6.25%"><span>Lunch</span><small>13:00</small></a>
+      <a href="#" class="blk study" style="left:50%;width:12.5%"><span>Study — Networking</span><small>14:00–15:30</small></a>
+      <a href="#" class="blk cal" style="left:70.83%;width:4.17%"><span>Mom</span><small>16:30</small></a>
+      <a href="#" class="blk cal" style="left:91.67%;width:8.33%"><span>Scrim review</span><small>19:00</small></a>
+      <div class="nowm" style="left:5.56%" aria-hidden="true"></div>
+    </div>
+    <div class="ticks"><span>8</span><span>10</span><span>12</span><span>14</span><span>16</span><span>18</span><span>20</span></div>
+  </section>
+
+  <section class="tiles" aria-label="Areas">
+    <article class="tile fin">
+      <h3><svg class="ic"><use href="icons.svg#wallet"/></svg>Money</h3>
+      <p>Rent ($1,450) leaves $690 of flexible money until the 1st.</p>
+      <div class="big">$2,140<small>left of $3,200</small></div>
+      <a class="act" href="#" aria-label="Open Money"><svg class="ic" style="width:16px;height:16px"><use href="icons.svg#arrow"/></svg></a>
+    </article>
+    <article class="tile health">
+      <h3><svg class="ic"><use href="icons.svg#heart"/></svg>Health</h3>
+      <p>Slept 7h 12m. Water is behind.</p>
+      <div class="big">3<small>/ 8 glasses</small></div>
+      <a class="act" href="#" aria-label="Log water"><svg class="ic" style="width:16px;height:16px"><use href="icons.svg#plus"/></svg></a>
+    </article>
+    <article class="tile fit">
+      <h3><svg class="ic"><use href="icons.svg#dumbbell"/></svg>Fitness</h3>
+      <p>Push day at 11:30. One more makes the week.</p>
+      <div class="big">3<small>/ 4 sessions</small></div>
+      <a class="act" href="#" aria-label="Open Fitness"><svg class="ic" style="width:16px;height:16px"><use href="icons.svg#arrow"/></svg></a>
+    </article>
+    <article class="tile study">
+      <h3><svg class="ic"><use href="icons.svg#book"/></svg>Study</h3>
+      <p>Halfway through the week's hours. Block at 14:00.</p>
+      <div class="big">4h<small>/ 8h</small></div>
+      <a class="act" href="#" aria-label="Open Study"><svg class="ic" style="width:16px;height:16px"><use href="icons.svg#arrow"/></svg></a>
+    </article>
+    <article class="tile cal">
+      <h3><svg class="ic"><use href="icons.svg#calendar"/></svg>Calendar</h3>
+      <p>Free 17:00–19:00, then scrim review.</p>
+      <div class="big">6<small>items</small></div>
+      <a class="act" href="#" aria-label="Open Calendar"><svg class="ic" style="width:16px;height:16px"><use href="icons.svg#arrow"/></svg></a>
+    </article>
+    <div class="tile todo" role="group" aria-label="Checklist">
+      <h3>Checklist</h3>
+      <label><input type="checkbox" checked>Log weight</label>
+      <label><input type="checkbox">Take vitamins</label>
+      <label><input type="checkbox">Pay electric bill</label>
+      <label><input type="checkbox">Review September budget</label>
+      <label><input type="checkbox">Read 30 minutes</label>
+    </div>
+  </section>
+  <p class="foot">Sample data — shown for design only.</p>
+</div>
+</body>
+</html>

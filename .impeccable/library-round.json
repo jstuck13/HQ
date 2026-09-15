@@ -1,0 +1,66 @@
+{
+  "title": "Library — choose the composition",
+  "question": "Books you've read, plan to read, and are reading now; click a book for its details and write as many notes as you like. Same world. Lock one, steer, or re-roll.",
+  "options": [
+    {
+      "id": "open-book",
+      "label": "The open book",
+      "kicker": "THE ROLL",
+      "lineage": "a reading journal lying open: the book on the left page, your notes on the right",
+      "thesis": "The book you click opens as a two-page spread — its details on the left page (author, year, pages, genre, started/finished, rating, a line of description), your notes on the right as dated entries with a writing line at the foot. The three shelves are a compact rail beside it: Reading now on top, then To read and Read as ruled lists.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#F4EDD5"],
+      "materials": ["a shelf rail of ruled rows", "the open book as the page's one white card, split by a gutter", "dated note entries on rules", "serif titles, italic authors"],
+      "viewport": "Band: 'Library', italic '1 reading · 6 to read · 14 read this year'. Paper: left 4/12 the rail — 'Reading now' (title, author, page 142 of 320), 'To read' list, 'Read' list with ratings; right 8/12 the open book card: left page details, right page notes (each with a date) and 'Write a note' at the foot. Add a book: an inline line at the end of To read.",
+      "risk": "With many books the rail gets long; the spread needs a book selected to mean anything (defaults to the one you're reading).",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: Library · counts", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "Reading now (title · author · page)", "x": 0, "y": 1, "w": 4, "h": 2},
+        {"label": "To read (ruled list) + Add a book", "x": 0, "y": 3, "w": 4, "h": 3},
+        {"label": "Read (ruled list with ratings)", "x": 0, "y": 6, "w": 4, "h": 4},
+        {"label": "Open book — left page: details, rating, description", "x": 4, "y": 1, "w": 4, "h": 9, "accent": true},
+        {"label": "Open book — right page: dated notes + Write a note", "x": 8, "y": 1, "w": 4, "h": 9, "accent": true}
+      ]},
+      "comp": ".impeccable/mocks/decision/open-book.webp"
+    },
+    {
+      "id": "index-cards",
+      "label": "Index cards",
+      "lineage": "a card catalogue: one ruled index card per book, drawn from the drawer",
+      "thesis": "Every book is a ruled index card in a grid — title, italic author, shelf, rating dots — grouped under Reading now / To read / Read. Clicking a card lifts it as the page's one white card at the top with full details, and the notes column runs beneath it with a writing line.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#F4EDD5"],
+      "materials": ["ruled index cards on paper (no shadow)", "the lifted card is the one white card", "notes as dated entries", "rating as five dots"],
+      "viewport": "Band: 'Library', italic counts. Paper: the lifted book (white card): title, author, details row, description, then 'Notes' entries and the writing line; beneath, three shelves of index cards, 3 across: 'Reading now' (one card, with page progress), 'To read', 'Read'. 'Add a book' as a blank card at the end of To read.",
+      "risk": "Cards of equal size are the category's default; long titles and many notes push the shelves far down.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: Library · counts", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "Lifted book (card): details · description · notes + Write a note", "x": 0, "y": 1, "w": 12, "h": 3, "accent": true},
+        {"label": "Reading now — card", "x": 0, "y": 4, "w": 4, "h": 2},
+        {"label": "To read — cards", "x": 4, "y": 4, "w": 8, "h": 2},
+        {"label": "Read — cards ×3", "x": 0, "y": 6, "w": 12, "h": 2},
+        {"label": "Read — cards ×3 · Add a book", "x": 0, "y": 8, "w": 12, "h": 2}
+      ]},
+      "comp": ".impeccable/mocks/decision/index-cards.webp"
+    },
+    {
+      "id": "catalogue",
+      "label": "Catalogue table with a detail column",
+      "lineage": "the library's accession register: one ruled line per book",
+      "thesis": "One ruled table of every book — title, author, shelf, rating, started/finished — with shelf filters above it and the book you're reading pinned at the top. The clicked book's details and notes open in a right column, notes as dated entries with a writing line.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#F4EDD5"],
+      "materials": ["a ruled register with column heads", "text-toggle filters (All · Reading · To read · Read)", "the detail column as the one white card", "rating as five dots in the row"],
+      "viewport": "Band: 'Library', italic counts. Paper: left 7/12 — filters row, then the register: Reading now pinned, then To read, then Read (finished date, rating); 'Add a book' line at the foot. Right 5/12 — the open book card: title, author, details, description, 'Notes' with dated entries and the writing line.",
+      "risk": "Reads as admin; the row per book is dense and the notes column can be narrow at 1180px.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: Library · counts", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "filters: All · Reading · To read · Read", "x": 0, "y": 1, "w": 7, "h": 1},
+        {"label": "register: title · author · shelf · rating · dates (Reading pinned) + Add a book", "x": 0, "y": 2, "w": 7, "h": 8},
+        {"label": "Open book (card): details · description · notes + Write a note", "x": 7, "y": 1, "w": 5, "h": 9, "accent": true}
+      ]},
+      "comp": ".impeccable/mocks/decision/catalogue.webp"
+    }
+  ],
+  "reroll": true,
+  "buildPath": {"value": "code", "toggle": false},
+  "canon": false,
+  "steer": true
+}

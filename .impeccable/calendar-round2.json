@@ -1,0 +1,69 @@
+{
+  "title": "Calendar page — second hand",
+  "question": "Fresh structures, same world. Lock one, steer, or re-roll again.",
+  "options": [
+    {
+      "id": "area-lanes",
+      "label": "Area lanes across the week",
+      "kicker": "THE ROLL",
+      "lineage": "a training log ruled by discipline: one row per area, one column per day",
+      "thesis": "Rows are areas (Appointments, Training, Study), columns are days; you see at once which days carry a workout or a study block, and filtering by area is just hiding a row.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#E9EEF3", "#F6E6DC", "#ECE6F3"],
+      "materials": ["ruled ledger rows, one per area", "serif row labels in the left margin", "tinted entry chips in day cells", "today's column tinted paper"],
+      "viewport": "Band: wordmark, week title, prev/today/next, New entry. Paper: a ruled table, seven day columns headed by serif day names and figures, three area rows (Appointments, Training, Study) with their chips in the cells; today's column is tinted and its heading oxblood. Beneath, the selected day's hour timeline card (as on the home) and the inline add form side by side.",
+      "risk": "No hour axis in the grid, so overlaps and free time only show once you select a day.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: week title · prev/next · New entry", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "day headings Mon → Sun", "x": 2, "y": 1, "w": 10, "h": 1},
+        {"label": "Appointments", "x": 0, "y": 2, "w": 2, "h": 1},
+        {"label": "chips per day", "x": 2, "y": 2, "w": 10, "h": 1},
+        {"label": "Training", "x": 0, "y": 3, "w": 2, "h": 1},
+        {"label": "chips per day", "x": 2, "y": 3, "w": 10, "h": 1},
+        {"label": "Study", "x": 0, "y": 4, "w": 2, "h": 1},
+        {"label": "chips per day", "x": 2, "y": 4, "w": 10, "h": 1},
+        {"label": "selected day: hour timeline card", "x": 0, "y": 5, "w": 7, "h": 5, "accent": true},
+        {"label": "add entry (inline)", "x": 7, "y": 5, "w": 5, "h": 5}
+      ]},
+      "comp": ".impeccable/mocks/decision/area-lanes.webp"
+    },
+    {
+      "id": "free-first",
+      "label": "Free time first",
+      "lineage": "a booking sheet where the open slots are what you read",
+      "thesis": "The week is a 7-column hour grid, but the drawn objects are the gaps: free stretches are tinted paper blocks with their length written on them, while events are quiet ruled outlines. The question the page answers is 'when can I fit this?'",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#E9E1D0"],
+      "materials": ["one white card, seven day columns × hours", "free blocks in warm paper tint with serif duration", "events as hairline outlines with small labels", "now-line in oxblood"],
+      "viewport": "Band: wordmark, week title, prev/today/next, area filters, New entry. Paper: a wide card, day columns 08–20, free stretches drawn as tinted blocks labelled '2 h 30', events as outlined rectangles; clicking a free block opens the add form pre-filled with that slot, in a right-hand column that otherwise shows the selected day's ledger.",
+      "risk": "Inverts the convention; someone glancing for their appointments has to read the quiet layer. Strong for planning, weaker for recall.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: week title · prev/next · filters · New entry", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "week card: free blocks tinted, events outlined, hours 08–20", "x": 0, "y": 1, "w": 9, "h": 9, "accent": true},
+        {"label": "selected day ledger", "x": 9, "y": 1, "w": 3, "h": 5},
+        {"label": "add entry (pre-filled from a free block)", "x": 9, "y": 6, "w": 3, "h": 4}
+      ]},
+      "comp": ".impeccable/mocks/decision/free-first.webp"
+    },
+    {
+      "id": "week-ledger",
+      "label": "Week grid with a day ledger",
+      "lineage": "the familiar week view, set in this world",
+      "thesis": "Seven day columns over an hour rail in one white card, events as tinted blocks, today's column tinted; the selected day's ruled ledger and the add form sit in a right column. The canon of the category, executed in the agenda's materials.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#E9EEF3", "#F6E6DC", "#ECE6F3"],
+      "materials": ["one white card, 7 columns × hours 08–20", "serif day headings with oldstyle figures", "area-tinted blocks", "ruled ledger column"],
+      "viewport": "Band: wordmark, week title, prev/today/next, area filters, New entry. Paper: the week card takes 8/12 with day headings (Mon 14 … Sun 20), hour rail at left, blocks per area, today tinted with an oxblood now-line; right 4/12 the selected day's ledger rows and the inline add form.",
+      "risk": "The most familiar of the hands; earns its place on clarity rather than surprise.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: week title · prev/next · filters · New entry", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "day headings", "x": 0, "y": 1, "w": 8, "h": 1},
+        {"label": "week card: hour rail + 7 columns, tinted blocks, today tinted", "x": 0, "y": 2, "w": 8, "h": 8, "accent": true},
+        {"label": "selected day ledger", "x": 8, "y": 1, "w": 4, "h": 5},
+        {"label": "add entry (inline)", "x": 8, "y": 6, "w": 4, "h": 4}
+      ]},
+      "comp": ".impeccable/mocks/decision/week-ledger.webp"
+    }
+  ],
+  "reroll": true,
+  "buildPath": {"value": "code", "toggle": false},
+  "canon": false,
+  "steer": true
+}

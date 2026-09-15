@@ -1,0 +1,72 @@
+{
+  "title": "School — choose the composition",
+  "question": "Several courses; 'study next' decided by a mix of nearest due date, hours behind your weekly plan, and weakest topic. Links per course, study sessions logged, assignments ticked off. Same world. Lock one, steer, or re-roll.",
+  "options": [
+    {
+      "id": "tiles",
+      "label": "Study-next card over course tiles",
+      "kicker": "THE ROLL",
+      "lineage": "the study-app dashboard: one recommendation, a tile per course",
+      "thesis": "The page opens on one white card — what to study now, and why (due Thursday · 2 h behind plan · confidence 2 of 5) — with 'Start a session'. Beneath, a tile per course carrying hours vs plan, next due, confidence and its links; the due ledger runs down the right.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#ECE6F3"],
+      "materials": ["one white card for 'Study next'", "ruled course tiles on paper (no second card)", "checkbox ledger for due items", "serif numerals for hours and confidence"],
+      "viewport": "Band: 'School', italic 'Autumn term · 4 courses · exam in 12 days'. Paper: left 8/12 — the Study-next card, then 'Courses' as a 2×2 grid of ruled tiles (name, hours this week of plan, next due, confidence dots, links); right 4/12 — 'Due' ledger (date · item · course, checkbox), then 'Sessions' log with an add line.",
+      "risk": "Tiles are the category's default arrangement; with 6+ courses the grid pushes the ledger below the fold.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: School · term · exam in 12 days", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "Study next (card): course · topic · why · Start a session", "x": 0, "y": 1, "w": 8, "h": 2, "accent": true},
+        {"label": "Course tile", "x": 0, "y": 3, "w": 4, "h": 3},
+        {"label": "Course tile", "x": 4, "y": 3, "w": 4, "h": 3},
+        {"label": "Course tile", "x": 0, "y": 6, "w": 4, "h": 3},
+        {"label": "Course tile", "x": 4, "y": 6, "w": 4, "h": 3},
+        {"label": "Due: date · item · course (checkbox)", "x": 8, "y": 1, "w": 4, "h": 5},
+        {"label": "Sessions log + add line", "x": 8, "y": 6, "w": 4, "h": 4}
+      ]},
+      "comp": ".impeccable/mocks/decision/tiles.webp"
+    },
+    {
+      "id": "course-columns",
+      "label": "One column per course",
+      "lineage": "the term planner: courses side by side, the week read across",
+      "thesis": "Each course is a ruled column — name, hours this week vs plan, confidence, its due items as a checklist, its links — so the term reads left to right. The recommended course's column carries the one white card at its head ('Study this next') and the others stay on paper.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#ECE6F3"],
+      "materials": ["ruled columns, one per course", "one white card at the head of the recommended column", "checkbox ledgers inside each column", "session add line in the foot"],
+      "viewport": "Band: 'School', italic term line. Paper: four equal columns (Networking, Databases, Statistics, Writing): each with a serif name, 'this week 3 h of 5', confidence dots, 'Due' checklist, 'Links'. The Networking column head is the white card with the why-line and 'Start a session'. Foot, full width: 'Sessions' log with add line.",
+      "risk": "Four+ columns at 1180px are ~260px each; long assignment titles wrap; on mobile columns stack and the comparison is lost.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: School · term", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "Networking — Study this next (card)", "x": 0, "y": 1, "w": 3, "h": 2, "accent": true},
+        {"label": "due · links · hours", "x": 0, "y": 3, "w": 3, "h": 5},
+        {"label": "Databases", "x": 3, "y": 1, "w": 3, "h": 7},
+        {"label": "Statistics", "x": 6, "y": 1, "w": 3, "h": 7},
+        {"label": "Writing", "x": 9, "y": 1, "w": 3, "h": 7},
+        {"label": "Sessions log + add line", "x": 0, "y": 8, "w": 12, "h": 2}
+      ]},
+      "comp": ".impeccable/mocks/decision/course-columns.webp"
+    },
+    {
+      "id": "priority-stack",
+      "label": "A ranked stack with reasons",
+      "lineage": "the tutor's list: what to do, in order, with the reason written beside each",
+      "thesis": "The page is a ranked ledger of what to study — every item shows its reason in plain words (due Thu · 2 h behind plan · confidence 2/5); the top item opens by default to show its links and a 'Start a session' line. Courses sit in a compact rail on the right with hours vs plan and confidence you can nudge.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#ECE6F3"],
+      "materials": ["one ranked ruled ledger", "the open item is the page's white card", "a course rail of ruled rows with confidence dots", "session log beneath"],
+      "viewport": "Band: 'School', italic 'Autumn term · exam in 12 days · 4 h of 8 h this week'. Paper: left 8/12 'Study, in order' — ranked rows: rank figure, course + topic/assignment, the reason line, due date; the first row expanded as the card with links and a session line; done items sink. Right 4/12 'Courses' rail: name, hours of plan, confidence dots (click to set), 'Add course'. Beneath the stack: 'Sessions' log with add line, 'Add an item' form.",
+      "risk": "The ranking must be legible or it reads as arbitrary; reasons need to stay one line.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: School · term · hours this week", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "1 · Networking — subnetting (card, open): why · links · Start a session", "x": 0, "y": 1, "w": 8, "h": 3, "accent": true},
+        {"label": "2 · Statistics — problem set 4 · due Thu · 1 h behind", "x": 0, "y": 4, "w": 8, "h": 1},
+        {"label": "3 · Databases — reading ch. 5 · confidence 2/5", "x": 0, "y": 5, "w": 8, "h": 1},
+        {"label": "4 · Writing — essay draft · due 24 Sep", "x": 0, "y": 6, "w": 8, "h": 1},
+        {"label": "Sessions log + add line · Add an item", "x": 0, "y": 7, "w": 8, "h": 3},
+        {"label": "Courses rail: hours of plan · confidence · links count · Add course", "x": 8, "y": 1, "w": 4, "h": 9}
+      ]},
+      "comp": ".impeccable/mocks/decision/priority-stack.webp"
+    }
+  ],
+  "reroll": true,
+  "buildPath": {"value": "code", "toggle": false},
+  "canon": false,
+  "steer": true
+}

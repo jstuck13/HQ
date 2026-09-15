@@ -1,0 +1,161 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "all-caps-body",
+        "value": "*",
+        "files": [
+          "heroes/classical.html"
+        ],
+        "createdAt": "2026-09-14T23:10:47.805Z",
+        "reason": "designer: single letterspaced date line in the masthead, an agenda/ledger convention; no body copy is uppercased"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "heroes/friendly.html"
+        ],
+        "createdAt": "2026-09-14T23:10:53.257Z",
+        "reason": "designer: 'friendly' direction contract pins a warm ground under saturated pastel area tiles"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "heroes/classical.html"
+        ],
+        "createdAt": "2026-09-14T23:10:53.319Z",
+        "reason": "designer: 'classical' direction contract pins ivory paper below a committed bottle-green masthead band"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "heroes/hybrid-classical.html"
+        ],
+        "createdAt": "2026-09-14T23:19:02.500Z",
+        "reason": "designer: classical-led contract pins ivory paper under a committed bottle-green band"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "heroes/hybrid-clean.html"
+        ],
+        "createdAt": "2026-09-14T23:19:02.581Z",
+        "reason": "designer: the now-line pulse is the page's single authored motion and conveys live state, same as clean.html"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "heroes/cc-clean.html"
+        ],
+        "createdAt": "2026-09-14T23:30:24.222Z",
+        "reason": "designer: now-line pulse is the single authored motion, conveys live state (same as clean.html)"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "heroes/cc-classical.html"
+        ],
+        "createdAt": "2026-09-14T23:30:24.321Z",
+        "reason": "designer: classical-leaning contract pins ivory paper under the bottle-green band"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-09-15T02:46:23.512Z",
+        "reason": "designer: DESIGN.md paper token #F5F0E6 is the chosen world's ground (user picked the classical-leaning direction)"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "*",
+        "files": [
+          "heroes/*.html"
+        ],
+        "createdAt": "2026-09-15T02:46:50.643Z",
+        "reason": "designer: heroes/ is the rejected-exploration archive; each page deliberately used its own world before DESIGN.md existed (user chose cc-classical, promoted to index.html)"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          "heroes/*.html"
+        ],
+        "createdAt": "2026-09-15T02:46:50.713Z",
+        "reason": "designer: heroes/ is the rejected-exploration archive; each page deliberately used its own world before DESIGN.md existed (user chose cc-classical, promoted to index.html)"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "*",
+        "files": [
+          "heroes/*.html"
+        ],
+        "createdAt": "2026-09-15T02:46:50.797Z",
+        "reason": "designer: heroes/ is the rejected-exploration archive; each page deliberately used its own world before DESIGN.md existed (user chose cc-classical, promoted to index.html)"
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "*",
+        "files": [
+          "heroes/*.html"
+        ],
+        "createdAt": "2026-09-15T02:46:50.885Z",
+        "reason": "designer: heroes/ is the rejected-exploration archive; each page deliberately used its own world before DESIGN.md existed (user chose cc-classical, promoted to index.html)"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "calendar.html"
+        ],
+        "createdAt": "2026-09-15T03:01:47.025Z",
+        "reason": "designer: DESIGN.md paper token is the world's ground"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "health.html"
+        ],
+        "createdAt": "2026-09-15T03:41:52.608Z",
+        "reason": "designer: DESIGN.md paper token is the world's ground"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "finances.html"
+        ],
+        "createdAt": "2026-09-15T13:31:39.830Z",
+        "reason": "designer: DESIGN.md paper token is the world's ground"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "school.html"
+        ],
+        "createdAt": "2026-09-15T14:03:08.042Z",
+        "reason": "designer: DESIGN.md paper token is the world's ground"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "library.html"
+        ],
+        "createdAt": "2026-09-15T14:20:52.787Z",
+        "reason": "designer: DESIGN.md paper token is the world's ground"
+      }
+    ]
+  }
+}

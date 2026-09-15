@@ -1,0 +1,74 @@
+{
+  "title": "Calendar page — choose the composition",
+  "question": "The world is settled (green band, ivory ledger, Caslon + Figtree). These three are different structures for a week-first calendar; lock one, steer, or re-roll.",
+  "options": [
+    {
+      "id": "day-lanes",
+      "label": "Day lanes on an hour rail",
+      "kicker": "THE ROLL",
+      "lineage": "the home's timeline turned sideways: a week as seven horizontal lanes",
+      "thesis": "Rows are days, columns are hours; you read free time across the whole week in one glance, and the selected day's lane expands into its ledger.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#E9EEF3", "#F6E6DC", "#ECE6F3"],
+      "materials": ["one white card holding the lanes", "hairline hour columns", "area-tinted blocks", "oxblood now-marker"],
+      "viewport": "Band: wordmark, week title (14–20 September), prev/today/next, area filters as text toggles, New entry. Paper: one card with seven lanes (Mon–Sun) against an hour rail 08–20 along the top; today's lane is expanded to two rows and shows block titles, other lanes show blocks only. Right of the card, nothing; below it the selected day's ledger rows and the inline add form.",
+      "risk": "Horizontal time reads less naturally than vertical for some people; long titles must truncate inside short blocks.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: week title · prev/next · filters · New entry", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "hour rail 08 → 20", "x": 0, "y": 1, "w": 12, "h": 1},
+        {"label": "Mon lane", "x": 0, "y": 2, "w": 12, "h": 1},
+        {"label": "Tue lane", "x": 0, "y": 3, "w": 12, "h": 1},
+        {"label": "Wed (today) lane — expanded, titles shown", "x": 0, "y": 4, "w": 12, "h": 2, "accent": true},
+        {"label": "Thu · Fri · Sat · Sun lanes", "x": 0, "y": 6, "w": 12, "h": 2},
+        {"label": "selected day ledger", "x": 0, "y": 8, "w": 7, "h": 2},
+        {"label": "add entry (inline)", "x": 7, "y": 8, "w": 5, "h": 2}
+      ]},
+      "comp": ".impeccable/mocks/decision/day-lanes.webp"
+    },
+    {
+      "id": "month-first",
+      "label": "Month picker over the week",
+      "lineage": "a diary's month index above the week it opens to",
+      "thesis": "A mini month grid is the wayfinding control; the week it points at is drawn as the big vertical timeline, and the selected day's ledger sits beside it.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#E9EEF3", "#F6E6DC", "#ECE6F3"],
+      "materials": ["mini month in serif figures", "one white timeline card", "ruled ledger column", "area filters as text toggles"],
+      "viewport": "Band: wordmark, month title (September 2026), prev/next, New entry. Paper, three columns: left a narrow rail with the mini month (selected week highlighted) and area filters; centre the week timeline card, 7 day columns × hours 08–20, today's column tinted; right the selected day's ledger rows with the inline add form beneath.",
+      "risk": "Three columns get tight; the week card's day columns are narrow at 1180px and the timeline needs vertical scroll.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: month title · prev/next · New entry", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "mini month", "x": 0, "y": 1, "w": 2, "h": 4},
+        {"label": "area filters", "x": 0, "y": 5, "w": 2, "h": 2},
+        {"label": "week timeline card: 7 day columns × hours", "x": 2, "y": 1, "w": 7, "h": 9, "accent": true},
+        {"label": "selected day ledger", "x": 9, "y": 1, "w": 3, "h": 6},
+        {"label": "add entry", "x": 9, "y": 7, "w": 3, "h": 3}
+      ]},
+      "comp": ".impeccable/mocks/decision/month-first.webp"
+    },
+    {
+      "id": "spread",
+      "label": "The agenda spread",
+      "lineage": "a week-to-view diary lying open: left page the week, right page the day",
+      "thesis": "Two pages with a gutter: the left page is the week as seven ruled day columns (no hour grid, just stacked entries), the right page is the selected day drawn as the home's hour timeline with the add form at its foot.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#E9EEF3", "#F6E6DC", "#ECE6F3"],
+      "materials": ["paper pages with a centre gutter shadow", "ruled day columns", "one white timeline card on the right page", "serif day headings"],
+      "viewport": "Band: wordmark, week title, prev/today/next, filters, New entry. Below, one wide sheet split by a soft gutter: left page has Mon–Sun as seven ruled columns, each a ledger of that day's entries (time · title, tinted per area), today's heading in oxblood; right page has the selected day's serif heading, the hour timeline card, and the inline add form.",
+      "risk": "Entries without an hour grid don't show duration or gaps; the spread metaphor can feel decorative if the gutter is overdrawn.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: week title · prev/next · filters · New entry", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "Mon", "x": 0, "y": 1, "w": 1, "h": 9},
+        {"label": "Tue", "x": 1, "y": 1, "w": 1, "h": 9},
+        {"label": "Wed (today)", "x": 2, "y": 1, "w": 1, "h": 9, "accent": true},
+        {"label": "Thu", "x": 3, "y": 1, "w": 1, "h": 9},
+        {"label": "Fri", "x": 4, "y": 1, "w": 1, "h": 9},
+        {"label": "Sat", "x": 5, "y": 1, "w": 1, "h": 9},
+        {"label": "Sun", "x": 6, "y": 1, "w": 1, "h": 9},
+        {"label": "selected day: hour timeline card", "x": 7, "y": 1, "w": 5, "h": 6},
+        {"label": "add entry (inline)", "x": 7, "y": 7, "w": 5, "h": 3}
+      ]},
+      "comp": ".impeccable/mocks/decision/spread.webp"
+    }
+  ],
+  "reroll": true,
+  "buildPath": {"value": "code", "toggle": false},
+  "canon": false,
+  "steer": true
+}

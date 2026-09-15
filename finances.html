@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HQ — Finances</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --band:#1F3A2E; --band-ink:#F2ECDF; --band-muted:#B9C9BE;
+    --paper:#F5F0E6; --card:#FFFDF9; --ink:#1E1B16; --ink-2:#4D463C; --ink-3:#6A6256; --rule:#D3C9B6; --ox:#7A2E2B; --chart-out:#B9AE99;
+    --serif:"Libre Caslon Text",Georgia,serif; --sans:"Figtree",system-ui,sans-serif;
+    --shadow:0 1px 2px rgba(30,27,22,.05), 0 6px 18px -6px rgba(30,27,22,.12);
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:light}
+  body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;font-variant-numeric:oldstyle-nums tabular-nums}
+  ::selection{background:var(--band);color:var(--band-ink)}
+  :focus-visible{outline:2px solid var(--ox);outline-offset:3px}
+  a{color:inherit;text-decoration:none}
+  button,input,select{font:inherit;color:inherit;background:none;border:0;padding:0}
+  button{cursor:pointer}
+  [hidden]{display:none!important}
+  h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0}
+  ul{list-style:none;margin:0;padding:0}
+  .ic{width:16px;height:16px;flex:none}
+  .num{font-family:var(--serif)}
+
+  .band{background:var(--band);color:var(--band-ink)}
+  .band .in{max-width:1180px;margin:0 auto;padding:16px 40px 22px}
+  .row{display:flex;align-items:center;gap:26px}
+  .mark{font-family:var(--serif);font-size:20px;letter-spacing:.14em;font-weight:700}
+  .date{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted)}
+  nav{display:flex;gap:20px;font-size:13.5px;letter-spacing:.04em;color:var(--band-muted);margin-left:10px}
+  nav a:hover{color:var(--band-ink)}
+  nav a[aria-current]{color:var(--band-ink);border-bottom:1px solid var(--band-ink);padding-bottom:2px}
+  .row .right{margin-left:auto;display:flex;gap:18px;align-items:center;font-size:13.5px}
+  .textbtn{display:inline-flex;align-items:center;gap:8px;letter-spacing:.04em;border-bottom:1px solid transparent;transition:border-color .15s}
+  .textbtn:hover{border-color:currentColor}
+  .ib{color:var(--band-muted)} .ib:hover{color:var(--band-ink)}
+  .mast{margin-top:20px;padding-top:18px;border-top:1px solid rgba(242,236,223,.28);display:flex;align-items:baseline;gap:22px;flex-wrap:wrap}
+  h1{font-size:32px;line-height:1.3}
+  .mast .sub{font-family:var(--serif);font-style:italic;color:var(--band-muted)}
+  .mast .sub b{font-weight:400;color:var(--band-ink)}
+
+  main{max-width:1180px;margin:0 auto;padding:34px 40px 44px}
+  h2{font-size:22px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:4px;display:flex;align-items:baseline;gap:12px}
+  h2 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
+  h3{font-size:17px;margin:30px 0 4px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;align-items:baseline;gap:12px}
+  h3 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
+
+  /* the open book */
+  .book{display:grid;grid-template-columns:5fr 1px 7fr;gap:0 40px}
+  .gutter{background:var(--rule);box-shadow:6px 0 12px -8px rgba(30,27,22,.25)}
+
+  /* figures */
+  .figs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:14px 0 10px;border-bottom:1px solid var(--rule)}
+  .fig{min-width:0}
+  .fig .k{font-size:12.5px;color:var(--ink-3)}
+  .fig .v{font-family:var(--serif);font-size:24px;line-height:1.1;margin-top:2px;display:flex;align-items:baseline;gap:0}
+  .fig .v input{font-family:var(--serif);font-size:24px;width:5.5ch;border-bottom:1px dotted var(--ink-2);padding:0}
+  .fig .v input:focus{outline:none;border-bottom-color:var(--ink)}
+  .fig .n{font-size:12.5px;color:var(--ink-3)}
+
+  /* ledgers */
+  .ledger li{display:grid;grid-template-columns:64px 1fr auto auto;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+  .ledger .d{font-family:var(--serif);color:var(--ink-2);font-size:14px;white-space:nowrap}
+  .ledger .w{font-family:var(--serif);font-size:15.5px;min-width:0}
+  .ledger .w small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
+  .ledger .a{font-family:var(--serif);font-size:17px;text-align:right;white-space:nowrap}
+  .ledger .x{color:var(--ink-3);font-size:12.5px;opacity:0;transition:opacity .15s}
+  .ledger li:hover .x,.ledger li:focus-within .x{opacity:1}
+  .ledger .x:hover{color:var(--ox)}
+  .ledger .empty{padding:14px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif);grid-template-columns:1fr}
+  .ledger .total{font-family:var(--serif);border-bottom:0;padding-top:12px}
+  .ledger .more{grid-template-columns:1fr;border-bottom:0;padding-top:12px} .ledger .more .textbtn{font-size:13.5px;color:var(--ink-2)}
+  .ledger .total .w{font-style:italic;color:var(--ink-2)}
+
+  /* inline add line */
+  .addl{display:grid;gap:12px;padding:12px 0;border-bottom:1px dotted var(--rule);align-items:baseline}
+  .addl.in{grid-template-columns:1fr 84px 72px auto}
+  .addl.out{grid-template-columns:1fr 84px 120px 72px auto}
+  .addl input,.addl select{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0}
+  .addl input:focus,.addl select:focus{outline:none;border-bottom-color:var(--ink)}
+  .addl input::placeholder{color:var(--ink-3);font-style:italic}
+  .addl .amt{text-align:right}
+  .addl .textbtn{font-size:13.5px;white-space:nowrap}
+
+  /* categories */
+  .cats li{display:grid;grid-template-columns:1fr 210px;gap:2px 16px;padding:11px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+  .cats .n{font-family:var(--serif);font-size:15.5px;grid-column:1;grid-row:1}
+  .cats .bar{grid-column:1;grid-row:2;height:6px;background:var(--rule);border-radius:0 2px 2px 0;margin-top:6px;position:relative;overflow:hidden}
+  .cats .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--ink);border-radius:0 2px 2px 0}
+  .cats .bar i.over{background:var(--ox)}
+  .cats .s{grid-column:2;grid-row:1;font-family:var(--serif);font-size:17px;text-align:right;white-space:nowrap}
+  .cats .s small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
+  .cats .s input{font-family:var(--serif);font-size:17px;width:5ch;text-align:left;border-bottom:1px dotted var(--ink-2)}
+  .cats .s input:focus{outline:none;border-bottom-color:var(--ink)}
+  .cats .l{grid-column:2;grid-row:2;font-size:12.5px;color:var(--ink-3);text-align:right}
+  .cats .l.over{color:var(--ox)}
+  .cats .l.due{color:var(--ox)}
+  .cats .ctl{grid-column:1;grid-row:1;justify-self:end;margin-right:8px;display:inline-flex;align-items:center;gap:10px;opacity:0;transition:opacity .15s}
+  .cats li:hover .ctl,.cats li:focus-within .ctl{opacity:1}
+  .cats .x{color:var(--ink-3);font-size:12.5px}
+  .cats .mv{color:var(--ink-3);display:grid;place-items:center;width:20px;height:20px;border-radius:2px}
+  .cats .mv:hover{color:var(--ink);background:var(--card)}
+  .cats .mv[disabled]{opacity:.3;cursor:default;background:none}
+  .addc{display:grid;grid-template-columns:1fr 96px auto;gap:12px;padding:12px 0;border-bottom:1px dotted var(--rule);align-items:baseline}
+  .addc input{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0}
+  .addc input:focus{outline:none;border-bottom-color:var(--ink)}
+  .addc input::placeholder{color:var(--ink-3);font-style:italic}
+  .addc .textbtn{font-size:13.5px}
+
+  /* charts */
+  .charts{display:grid;grid-template-columns:6fr 3fr 3fr;gap:36px;margin-top:44px}
+  .chart{position:relative}
+  .chart h3{margin-top:0}
+  .chart:not(:first-child){padding-top:16px}
+  .chart .fig{font-family:var(--serif);font-size:24px;line-height:1.1;margin:10px 0 0}
+  .chart .fig small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:6px}
+  .chart .fig{display:flex;flex-wrap:wrap;align-items:baseline;gap:0 6px}
+  .chart svg{display:block;width:100%;height:auto;overflow:visible;margin-top:10px}
+  .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:16px 20px 18px;margin-top:0}
+  .card h3{border:0;padding:0;margin:0}
+  .ax{stroke:var(--rule);stroke-width:1}
+  .ln{fill:none;stroke:var(--ink);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+  .ln.proj{stroke-dasharray:1 4;stroke:var(--ink-3)}
+  .dot{fill:var(--ox);stroke:var(--card);stroke-width:2}
+  .tk{font:14px var(--sans);fill:var(--ink-3)}
+  .tk.i{fill:var(--ink)}
+  .mk{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:1 3}
+  .lbl{font:14px var(--sans);fill:var(--ink-2)}
+  .cap{font-size:12.5px;color:var(--ink-3);margin:8px 0 0}
+  .bar-in{fill:var(--band)} .bar-out{fill:var(--chart-out)}
+  .hbar{fill:var(--ink)} .hbar.over{fill:var(--ox)} .hbar-t{fill:var(--rule)}
+  .legend{display:flex;gap:16px;font-size:12.5px;color:var(--ink-3);margin-top:8px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+  .xh{stroke:var(--ink-3);stroke-width:1;opacity:0}
+  .hv{fill:var(--ink);stroke:var(--card);stroke-width:2;opacity:0}
+  .tip{position:absolute;pointer-events:none;background:var(--card);box-shadow:var(--shadow);border-radius:6px;padding:4px 8px;font-size:12.5px;white-space:nowrap;opacity:0;transition:opacity .12s;transform:translate(-50%,-100%)}
+  .tip b{font-family:var(--serif);font-weight:400;font-size:14px}
+  .foot{max-width:1180px;margin:0 auto;padding:0 40px 32px;font-size:12.5px;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
+
+  @media (prefers-reduced-motion:reduce){.textbtn,.ledger .x,.tip{transition:none}}
+  @media (max-width:1000px){
+    .book{grid-template-columns:1fr;gap:34px} .gutter{display:none}
+    .charts{grid-template-columns:1fr 1fr} .charts .chart:first-child{grid-column:1/-1}
+  }
+  @media (max-width:760px){
+    .band .in{padding:14px 20px 20px} nav,.date{display:none} .row{gap:14px} h1{font-size:26px}
+    main{padding:24px 20px 36px} .foot{padding:0 20px 28px}
+    .figs{grid-template-columns:1fr 1fr}
+    .ledger li{grid-template-columns:56px 1fr auto;grid-template-rows:auto auto} .ledger .d{grid-row:1/3} .ledger .w{grid-row:1/3} .ledger .a{grid-column:3;grid-row:1} .ledger .x{grid-column:3;grid-row:2;opacity:1;font-size:12px;justify-self:end}
+    .cats li{grid-template-columns:1fr auto} .cats .ctl{opacity:1}
+    .addl.in,.addl.out,.addc{grid-template-columns:1fr 1fr}
+    .charts{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<header class="band">
+  <div class="in">
+    <div class="row">
+      <a class="mark" href="index.html">HQ</a>
+      <span class="date">Monday, 14 September 2026 · 8.40 am</span>
+      <nav aria-label="Areas"><a href="index.html">Today</a><a href="calendar.html">Calendar</a><a href="finances.html" aria-current="page">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="health.html">Health</a></nav>
+      <div class="right">
+        <button class="textbtn" id="newx"><svg class="ic"><use href="icons.svg#plus"/></svg>Log an expense</button>
+        <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
+        <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
+      </div>
+    </div>
+    <div class="mast">
+      <h1>Finances</h1>
+      <span class="sub" id="sub">September</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="book">
+    <section class="page l">
+      <h2>Money in<small>September</small></h2>
+      <div class="figs">
+        <div class="fig"><div class="k">Expected this month</div><div class="v">$<input id="expected" inputmode="numeric"></div><div class="n">your plan; edit any time</div></div>
+        <div class="fig"><div class="k">Landed so far</div><div class="v num" id="landed">$0</div><div class="n" id="landedn"></div></div>
+        <div class="fig"><div class="k">Next expected</div><div class="v num" id="nextv">—</div><div class="n" id="nextn"></div></div>
+      </div>
+      <form class="addl in" id="addin">
+        <input id="in-src" placeholder="Paycheck, gig…" required>
+        <input id="in-amt" class="amt" inputmode="decimal" placeholder="$0" required>
+        <input id="in-date" value="14 Sep" size="6" aria-label="Day" required>
+        <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Log</button>
+      </form>
+      <ul class="ledger" id="inl"></ul>
+
+      <h3>Expected<small>planned, not yet landed</small></h3>
+      <ul class="ledger" id="planl"></ul>
+    </section>
+
+    <div class="gutter" aria-hidden="true"></div>
+    <section class="page r">
+      <h2>Money out<small id="outsum"></small></h2>
+      <ul class="cats" id="cats"></ul>
+      <form class="addc" id="addcat">
+        <input id="c-name" placeholder="New category">
+        <input id="c-limit" class="amt" inputmode="numeric" placeholder="limit $">
+        <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button>
+      </form>
+
+      <h3>This month<small id="logn"></small></h3>
+      <form class="addl out" id="addout">
+        <input id="x-what" placeholder="What was it?" required>
+        <input id="x-amt" class="amt" inputmode="decimal" placeholder="$0" required>
+        <select id="x-cat"></select>
+        <input id="x-date" value="14 Sep" size="6" aria-label="Day" required>
+        <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Log</button>
+      </form>
+      <ul class="ledger" id="outl"></ul>
+    </section>
+  </div>
+
+  <section class="charts">
+    <div class="chart"><div class="card"><h3>Cash left through the month<small id="cashn"></small></h3><div id="cash"></div></div></div>
+    <div class="chart" id="ive"></div>
+    <div class="chart" id="svl"></div>
+  </section>
+</main>
+<p class="foot">Sample data, shown for design only. What you log is kept in this browser.</p>
+
+<script>
+  // ---- state ----
+  // ponytail: localStorage; becomes the finance store later. Amounts are dollars (numbers).
+  const F = id => document.getElementById(id);
+  const TODAY = new Date(2026,8,14), DIM = 30, DAY = TODAY.getDate();
+  const seed = () => ({
+    expected: 4200,
+    income: [ {id:1,date:'2026-09-04',src:'Paycheck',amt:1450},{id:2,date:'2026-09-11',src:'Paycheck',amt:1450},{id:3,date:'2026-09-12',src:'Gig — video edit',amt:120} ],
+    plan: [ {date:'2026-09-25',src:'Paycheck',amt:1450} ],
+    cats: [ {id:'rent',name:'Rent',limit:1450,due:17},{id:'groc',name:'Groceries',limit:420},{id:'util',name:'Utilities',limit:180,due:14,bill:'Electric'},{id:'trans',name:'Transport',limit:160},{id:'eat',name:'Eating out',limit:150},{id:'fun',name:'Fun',limit:120},{id:'save',name:'Savings',limit:600},{id:'other',name:'Other',limit:120} ],
+    tx: [
+      {id:11,date:'2026-09-01',what:'Transfer to savings',cat:'save',amt:500},{id:12,date:'2026-09-02',what:'Weekly groceries',cat:'groc',amt:86.40},
+      {id:13,date:'2026-09-03',what:'Bus pass',cat:'trans',amt:58},{id:14,date:'2026-09-05',what:'Dinner with Sam',cat:'eat',amt:42.50},
+      {id:15,date:'2026-09-06',what:'Cinema',cat:'fun',amt:24},{id:16,date:'2026-09-08',what:'Weekly groceries',cat:'groc',amt:79.15},
+      {id:17,date:'2026-09-09',what:'Internet',cat:'util',amt:55},{id:18,date:'2026-09-10',what:'Lunch out',cat:'eat',amt:18.20},
+      {id:19,date:'2026-09-11',what:'Coffee beans',cat:'groc',amt:14.50},{id:20,date:'2026-09-12',what:'Board game night',cat:'fun',amt:40},
+      {id:21,date:'2026-09-13',what:'Weekly groceries',cat:'groc',amt:56.30},{id:22,date:'2026-09-13',what:'Takeaway',cat:'eat',amt:31.80},
+    ],
+    // past months, for the six-month chart (income, expenses)
+    history: [ ['Apr',3900,3120],['May',4150,3380],['Jun',4200,3210],['Jul',3700,3450],['Aug',4300,3160] ],
+  });
+  let showAll = false;
+  let S; try { S = JSON.parse(localStorage.getItem('hq.finances.2026-09')) || seed(); } catch { S = seed(); }
+  const save = () => { try { localStorage.setItem('hq.finances.2026-09', JSON.stringify(S)); } catch {} };
+
+  const $ = n => (n<0?'−':'') + '$' + Math.abs(n).toLocaleString('en-US',{minimumFractionDigits: Number.isInteger(n)?0:2, maximumFractionDigits:2});
+  const $0 = n => (n<0?'−':'') + '$' + Math.round(Math.abs(n)).toLocaleString('en-US');
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const dmy = d => { const [y,m,dd]=d.split('-').map(Number); return new Date(y,m-1,dd).toLocaleDateString('en-GB',{weekday:'short',day:'numeric'}); };
+  const num = s => { const v=parseFloat(String(s).replace(/[^0-9.\-]/g,'')); return isNaN(v)?null:v; };
+  const sum = a => a.reduce((x,y)=>x+y,0);
+  // '14 Sep', 'Sep 14', or '14' → this month's ISO date
+  const dayOf = t => { const m=/\d{1,2}/.exec(t); const d=m?Math.min(DIM,Math.max(1,+m[0])):DAY; return '2026-09-'+String(d).padStart(2,'0'); };
+  const spentIn = c => sum(S.tx.filter(t=>t.cat===c).map(t=>t.amt));
+  const cat = id => S.cats.find(c=>c.id===id);
+
+  function render(){
+    const landed = sum(S.income.map(i=>i.amt)), spent = sum(S.tx.map(t=>t.amt)), limits = sum(S.cats.map(c=>c.limit));
+    const left = limits - spent, daysLeft = DIM - DAY;
+    F('sub').innerHTML = `September · <b>${$0(left)}</b> left of ${$0(limits)} · ${daysLeft} days to go`;
+    // money in
+    F('expected').value = S.expected.toLocaleString('en-US');
+    F('landed').textContent = $0(landed);
+    F('landedn').textContent = `${Math.round(landed/S.expected*100)}% of expected · ${S.income.length} ${S.income.length===1?'payment':'payments'}`;
+    const next = S.plan.filter(p=>p.date >= '2026-09-'+String(DAY).padStart(2,'0')).sort((a,b)=>a.date<b.date?-1:1)[0];
+    F('nextv').textContent = next ? $0(next.amt) : '—'; F('nextn').textContent = next ? `${next.src}, ${dmy(next.date)}` : 'nothing planned';
+    const inc = [...S.income].sort((a,b)=>a.date<b.date?1:-1);
+    F('inl').innerHTML = (inc.length ? inc.map(i=>`<li data-id="${i.id}"><span class="d">${dmy(i.date)}</span><span class="w">${esc(i.src)}</span><button class="x" type="button" aria-label="Remove ${esc(i.src)}">remove</button><span class="a in">${$(i.amt)}</span></li>`).join('') : '<li class="empty">Nothing landed yet this month.</li>')
+      ;
+    F('planl').innerHTML = S.plan.map(p=>`<li><span class="d">${dmy(p.date)}</span><span class="w">${esc(p.src)}<small>expected</small></span><span></span><span class="a">${$(p.amt)}</span></li>`).join('')
+      + `<li class="total"><span class="d"></span><span class="w">To reach the ${$0(S.expected)} plan</span><span></span><span class="a">${$(Math.max(0,S.expected-landed))}</span></li>`;
+    // money out
+    F('outsum').textContent = `${$0(spent)} spent of ${$0(limits)}`;
+    F('cats').innerHTML = S.cats.map((c,i)=>{
+      const sp = spentIn(c.id), pct = Math.min(100, c.limit ? sp/c.limit*100 : 0), over = sp > c.limit, lft = c.limit - sp;
+      const due = c.due && (c.bill || sp===0) ? ((c.bill?c.bill+' ':'') + (c.due===DAY ? 'due today' : c.due>DAY ? `due ${c.due===DAY+1?'tomorrow':'on the '+c.due+ordinal(c.due)}` : 'overdue')) : '';
+      return `<li data-id="${c.id}"><span class="n">${esc(c.name)}</span><span class="ctl"><button class="mv" type="button" data-mv="-1" aria-label="Move ${esc(c.name)} up" ${i===0?'disabled':''}><svg class="ic"><use href="icons.svg?v=3#chevron-up"/></svg></button><button class="mv" type="button" data-mv="1" aria-label="Move ${esc(c.name)} down" ${i===S.cats.length-1?'disabled':''}><svg class="ic"><use href="icons.svg?v=3#chevron-down"/></svg></button><button class="x" type="button" aria-label="Remove ${esc(c.name)}">remove</button></span>
+        <span class="s">${$0(sp)} <small>of</small> $<input value="${c.limit.toLocaleString('en-US')}" inputmode="numeric" aria-label="${esc(c.name)} limit"></span>
+        <span class="bar"><i class="${over?'over':''}" style="width:${pct}%"></i></span>
+        <span class="l ${over?'over':''} ${/due today|overdue/.test(due)?'due':''}">${over ? $0(-lft)+' over' : due ? (c.bill ? due+' · '+$0(lft)+' left' : due) : $0(lft)+' left'}</span></li>`;
+    }).join('');
+    const lastCat = F('x-cat').value || (S.tx.length ? [...S.tx].sort((a,b)=>b.id-a.id)[0].cat : S.cats[1]?.id);
+    F('x-cat').innerHTML = S.cats.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join(''); if(lastCat && cat(lastCat)) F('x-cat').value = lastCat;
+    const tx = [...S.tx].sort((a,b)=>a.date<b.date?1:(a.date>b.date?-1:b.id-a.id));
+    F('logn').textContent = `${tx.length} entries · ${$0(spent)}`;
+    const shown = showAll ? tx : tx.slice(0,6);
+    F('outl').innerHTML = tx.length ? shown.map(t=>`<li data-id="${t.id}"><span class="d">${dmy(t.date)}</span><span class="w">${esc(t.what)}<small>${esc(cat(t.cat)?.name||'—')}</small></span><button class="x" type="button" aria-label="Remove ${esc(t.what)}">remove</button><span class="a">${$(t.amt)}</span></li>`).join('') + (tx.length>6 ? `<li class="more"><button class="textbtn" type="button" id="more">${showAll?'Show the latest six':'Show all '+tx.length}</button></li>` : '') : '<li class="empty">Nothing spent yet. Enjoy it.</li>';
+    charts(landed, spent, limits);
+    save();
+  }
+  const ordinal = n => (n%10===1&&n!==11)?'st':(n%10===2&&n!==12)?'nd':(n%10===3&&n!==13)?'rd':'th';
+
+  // ---- events ----
+  F('expected').addEventListener('change', e=>{ const v=num(e.target.value); if(v!=null){ S.expected=v; render(); } });
+  F('addin').addEventListener('submit', e=>{ e.preventDefault(); const amt=num(F('in-amt').value); if(amt==null) return F('in-amt').focus();
+    S.income.push({id:Date.now(), date:dayOf(F('in-date').value), src:F('in-src').value.trim(), amt}); F('addin').reset(); F('in-date').value='14 Sep'; render(); });
+  F('addout').addEventListener('submit', e=>{ e.preventDefault(); const amt=num(F('x-amt').value); if(amt==null) return F('x-amt').focus();
+    S.tx.push({id:Date.now(), date:dayOf(F('x-date').value), what:F('x-what').value.trim(), cat:F('x-cat').value, amt}); const keep=F('x-cat').value; F('addout').reset(); F('x-cat').value=keep; F('x-date').value='14 Sep'; render(); F('x-what').focus(); });
+  F('addcat').addEventListener('submit', e=>{ e.preventDefault(); const name=F('c-name').value.trim(), limit=num(F('c-limit').value)||0; if(!name) return F('c-name').focus();
+    S.cats.push({id:'c'+Date.now(), name, limit}); F('addcat').reset(); render(); });
+  F('inl').addEventListener('click', e=>{ const b=e.target.closest('.x'); if(b){ const id=+b.closest('li').dataset.id; S.income=S.income.filter(i=>i.id!==id); render(); } });
+  F('outl').addEventListener('click', e=>{ const b=e.target.closest('.x'); if(b){ const id=+b.closest('li').dataset.id; S.tx=S.tx.filter(t=>t.id!==id); render(); } });
+  F('cats').addEventListener('click', e=>{
+    const m=e.target.closest('.mv'); if(m && !m.disabled){ const id=m.closest('li').dataset.id, i=S.cats.findIndex(c=>c.id===id), j=i+(+m.dataset.mv); [S.cats[i],S.cats[j]]=[S.cats[j],S.cats[i]]; render(); F('cats').querySelector(`li[data-id="${id}"] .mv[data-mv="${m.dataset.mv}"]`)?.focus(); return; }
+    const b=e.target.closest('.x'); if(b){ const id=b.closest('li').dataset.id; if(S.tx.some(t=>t.cat===id)) { alert('Move or remove its entries first.'); return; } S.cats=S.cats.filter(c=>c.id!==id); render(); } });
+  F('cats').addEventListener('change', e=>{ if(e.target.tagName==='INPUT'){ const c=cat(e.target.closest('li').dataset.id), v=num(e.target.value); if(c && v!=null){ c.limit=v; render(); } } });
+  F('newx').addEventListener('click', ()=>F('x-what').focus());
+  F('outl').addEventListener('click', e=>{ if(e.target.closest('#more')){ showAll=!showAll; render(); } });
+
+  // ---- charts ----
+  function charts(landed, spent, limits){
+    // 1. cash left through the month: actual to today (landed − spent by day), projected to the 30th (plan − remaining limits spread evenly), rent and next paycheck marked
+    const W=Math.max(300, F('cash').clientWidth||560), H=Math.round(W*0.28), P={t:14,r:12,b:24,l:44};
+    const byDay = Array(DIM+1).fill(0); S.income.forEach(i=>byDay[+i.date.slice(-2)]+=i.amt); S.tx.forEach(t=>byDay[+t.date.slice(-2)]-=t.amt);
+    const act=[]; let run=0; for(let d=1;d<=DAY;d++){ run+=byDay[d]; act.push(run); }
+    const remainingLimit = S.cats.reduce((n,c)=>n+Math.max(0,c.limit-spentIn(c.id)),0), rent = S.cats.find(c=>c.id==='rent');
+    const perDay = (remainingLimit - (rent && spentIn('rent')===0 ? rent.limit : 0)) / Math.max(1, DIM-DAY);
+    const proj=[act[act.length-1]]; let r=proj[0];
+    for(let d=DAY+1; d<=DIM; d++){ r -= perDay; S.plan.forEach(p=>{ if(+p.date.slice(-2)===d) r+=p.amt; }); if(rent && spentIn('rent')===0 && d===rent.due) r-=rent.limit; proj.push(r); }
+    const all=[...act,...proj.slice(1)], lo=Math.min(0,...all), hi=Math.max(...all), pad=(hi-lo)*.1||1;
+    const x=d=>P.l+(W-P.l-P.r)*(d-1)/(DIM-1), y=v=>P.t+(H-P.t-P.b)*(1-(v-lo+pad)/(hi-lo+2*pad));
+    const pa=act.map((v,i)=>`${x(i+1).toFixed(1)},${y(v).toFixed(1)}`), pp=proj.map((v,i)=>`${x(DAY+i).toFixed(1)},${y(v).toFixed(1)}`);
+    const end = proj[proj.length-1];
+    F('cashn').textContent = `ends around ${$0(end)} ${end>=0?'ahead':'short'}`;
+    const marks = [rent && spentIn('rent')===0 ? {d:rent.due,l:'rent'} : null, ...S.plan.map(p=>({d:+p.date.slice(-2), l:'paycheck'}))].filter(Boolean);
+    F('cash').innerHTML = `<p class="fig">${$0(act[act.length-1])}<small>net this month, from $0 on 1 Sep: ${$0(landed)} in, ${$0(spent)} out</small></p>
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cash left through September; ${$0(act[act.length-1])} today, projected ${$0(end)} at month end">
+        <line class="ax" x1="${P.l}" x2="${W-P.r}" y1="${y(0).toFixed(1)}" y2="${y(0).toFixed(1)}"/>
+        <text class="tk" x="${P.l-6}" y="${y(0)+4}" text-anchor="end">$0</text>
+        ${marks.map(m=>`<line class="mk" x1="${x(m.d)}" x2="${x(m.d)}" y1="${P.t}" y2="${H-P.b}"/><text class="lbl" x="${x(m.d)+4}" y="${P.t+10}">${m.l}</text>`).join('')}
+        <path class="ln" d="M${pa.join(' L')}"/><path class="ln proj" d="M${pp.join(' L')}"/>
+        <circle class="dot" r="4.5" cx="${x(DAY)}" cy="${y(act[act.length-1])}"/>
+        <text class="tk" x="${x(1)}" y="${H-6}">1 Sep</text><text class="tk i" x="${x(DAY)}" y="${H-6}" text-anchor="middle">today</text><text class="tk" x="${x(DIM)}" y="${H-6}" text-anchor="end">30 Sep</text>
+        <line class="xh" y1="${P.t}" y2="${H-P.b}"/><circle class="hv" r="4.5"/><rect x="0" y="0" width="${W}" height="${H}" fill="transparent"/>
+      </svg><div class="tip"></div><p class="cap">Dotted line assumes the rest of each limit is spent evenly, rent goes on its due date, and expected paychecks land on theirs.</p>`;
+    hover(F('cash'), W, H, d=>({x:x(d), y:y(all[d-1]), text:`<b>${$0(all[d-1])}</b> · ${d} Sep${d>DAY?' (projected)':''}`}), 1, DIM, P);
+
+    // 2. income vs expenses, six months: paired bars, legend
+    const months=[...S.history, ['Sep', landed, spent]];
+    const W2=Math.max(220, F('ive').clientWidth||300), H2=156, P2={t:10,r:4,b:26,l:4}, top=Math.max(...months.flatMap(m=>[m[1],m[2]]))*1.08;
+    const bw=16, gw=(W2-P2.l-P2.r)/6;
+    const yb=v=>P2.t+(H2-P2.t-P2.b)*(1-v/top);
+    const rr=(x,yv,w,h,cls)=>`<path class="${cls}" d="M${x},${yv+h} V${yv+4} a4,4 0 0 1 4,-4 h${w-8} a4,4 0 0 1 4,4 V${yv+h} Z"/>`;
+    F('ive').innerHTML = `<h3>Income vs expenses<small>six months</small></h3><p class="fig">${$0(landed-spent)}<small>ahead so far in September</small></p>
+      <svg viewBox="0 0 ${W2} ${H2}" role="img" aria-label="Income and expenses by month, April to September">
+        <line class="ax" x1="${P2.l}" x2="${W2-P2.r}" y1="${H2-P2.b}" y2="${H2-P2.b}"/>
+        ${months.map((m,i)=>{ const gx=P2.l+gw*i+(gw-bw*2-2)/2; return rr(gx,yb(m[1]),bw,H2-P2.b-yb(m[1]),'bar-in')+rr(gx+bw+2,yb(m[2]),bw,H2-P2.b-yb(m[2]),'bar-out')+`<text class="tk ${i===5?'i':''}" x="${P2.l+gw*i+gw/2}" y="${H2-6}" text-anchor="middle">${m[0]}</text>`; }).join('')}
+      </svg><div class="legend"><span><i style="background:var(--band)"></i>Income</span><span><i style="background:var(--chart-out)"></i>Expenses</span></div>`;
+
+    // 3. spent vs limit by category: horizontal bars
+    const rows=S.cats.filter(c=>c.limit>0), W3=Math.max(220, F('svl').clientWidth||300), rh=22, H3=rows.length*rh+4, lw=88;
+    F('svl').innerHTML = `<h3>Spent vs limit<small>each bar is one limit</small></h3><p class="fig">${Math.round(spent/limits*100)}%<small>of limits used, ${Math.round(DAY/DIM*100)}% of the month gone</small></p>
+      <svg viewBox="0 0 ${W3} ${H3}" role="img" aria-label="Spent against limit for each category">
+        ${rows.map((c,i)=>{ const sp=spentIn(c.id), yv=i*rh+4, tw=(W3-lw), sw=Math.min(1,sp/c.limit)*(W3-lw); return `<text class="lbl" x="${lw-8}" y="${yv+12}" text-anchor="end">${esc(c.name)}</text><rect class="hbar-t" x="${lw}" y="${yv+3}" width="${tw.toFixed(1)}" height="10"/>${sp>0?`<path class="hbar ${sp>c.limit?'over':''}" d="M${lw},${yv+3} h${Math.max(0,sw-4).toFixed(1)} a4,4 0 0 1 4,4 v2 a4,4 0 0 1 -4,4 H${lw} Z"/>`:''}`; }).join('')}
+      </svg><div class="legend"><span><i style="background:var(--ink)"></i>Spent</span><span><i style="background:var(--rule)"></i>Limit</span>${rows.some(c=>spentIn(c.id)>c.limit)?'<span><i style="background:var(--ox)"></i>Over</span>':''}</div>`;
+  }
+  function hover(el, W, H, at, lo, hi, P){
+    const svg=el.querySelector('svg'), xh=svg.querySelector('.xh'), hv=svg.querySelector('.hv'), tip=el.querySelector('.tip');
+    svg.addEventListener('pointermove', e=>{
+      const r=svg.getBoundingClientRect(), d=Math.round(Math.min(hi,Math.max(lo, lo+((e.clientX-r.left)/r.width*W-P.l)/(W-P.l-P.r)*(hi-lo))));
+      const p=at(d); xh.setAttribute('x1',p.x); xh.setAttribute('x2',p.x); xh.style.opacity=1; hv.setAttribute('cx',p.x); hv.setAttribute('cy',p.y); hv.style.opacity=1;
+      tip.innerHTML=p.text; tip.style.left=`${p.x/W*r.width}px`; tip.style.top=`${p.y/H*r.height-8+svg.offsetTop}px`; tip.style.opacity=1;
+    });
+    svg.addEventListener('pointerleave', ()=>{ xh.style.opacity=0; hv.style.opacity=0; tip.style.opacity=0; });
+  }
+  render();
+  let rt; addEventListener('resize', ()=>{ clearTimeout(rt); rt=setTimeout(render,150); });
+</script>
+</body>
+</html>

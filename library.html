@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HQ — Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --band:#1F3A2E; --band-ink:#F2ECDF; --band-muted:#B9C9BE;
+    --paper:#F5F0E6; --card:#FFFDF9; --ink:#1E1B16; --ink-2:#4D463C; --ink-3:#6A6256; --rule:#D3C9B6; --ox:#7A2E2B; --straw:#F4EDD5;
+    --serif:"Libre Caslon Text",Georgia,serif; --sans:"Figtree",system-ui,sans-serif;
+    --shadow:0 1px 2px rgba(30,27,22,.05), 0 6px 18px -6px rgba(30,27,22,.12);
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:light}
+  body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;font-variant-numeric:oldstyle-nums tabular-nums}
+  ::selection{background:var(--band);color:var(--band-ink)}
+  :focus-visible{outline:2px solid var(--ox);outline-offset:3px}
+  a{color:inherit;text-decoration:none}
+  button,input,textarea{font:inherit;color:inherit;background:none;border:0;padding:0}
+  button{cursor:pointer}
+  [hidden]{display:none!important}
+  h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0}
+  ul{list-style:none;margin:0;padding:0}
+  .ic{width:16px;height:16px;flex:none}
+
+  .band{background:var(--band);color:var(--band-ink)}
+  .band .in{max-width:1180px;margin:0 auto;padding:16px 40px 22px}
+  .row{display:flex;align-items:center;gap:26px}
+  .mark{font-family:var(--serif);font-size:20px;letter-spacing:.14em;font-weight:700}
+  .date{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted)}
+  nav{display:flex;gap:20px;font-size:13.5px;letter-spacing:.04em;color:var(--band-muted);margin-left:10px}
+  nav a:hover{color:var(--band-ink)}
+  nav a[aria-current]{color:var(--band-ink);border-bottom:1px solid var(--band-ink);padding-bottom:2px}
+  .row .right{margin-left:auto;display:flex;gap:18px;align-items:center;font-size:13.5px}
+  .textbtn{display:inline-flex;align-items:center;gap:8px;letter-spacing:.04em;border-bottom:1px solid transparent;transition:border-color .15s;white-space:nowrap}
+  .textbtn:hover{border-color:currentColor}
+  .ib{color:var(--band-muted)} .ib:hover{color:var(--band-ink)}
+  .mast{margin-top:20px;padding-top:18px;border-top:1px solid rgba(242,236,223,.28);display:flex;align-items:baseline;gap:22px;flex-wrap:wrap}
+  h1{font-size:32px;line-height:1.3}
+  .mast .sub{font-family:var(--serif);font-style:italic;color:var(--band-muted)}
+  .mast .sub b{font-weight:400;color:var(--band-ink)}
+
+  main{max-width:1180px;margin:0 auto;padding:34px 40px 44px}
+  h2{font-size:22px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:4px;display:flex;align-items:baseline;gap:12px}
+  h2 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
+  h2 .back{font-size:12.5px;color:var(--ink);letter-spacing:0}
+
+  /* covers */
+  .cover{display:block;position:relative;aspect-ratio:2/3;background:var(--straw);border:1px solid var(--rule);overflow:hidden;border-radius:2px}
+  .cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  .cover img[data-missing]{display:none}
+  .cover .fb{position:absolute;inset:0;padding:12% 10%;display:flex;flex-direction:column;justify-content:space-between;text-align:center}
+  .cover .fb b{font-family:var(--serif);font-weight:400;font-size:clamp(13px,1.4vw,17px);line-height:1.2;color:var(--ink)}
+  .cover .fb i{font-family:var(--serif);font-size:12.5px;color:var(--ink-2)}
+  .cover:not(:has(img[data-missing])) .fb{display:none}
+
+  /* the open book */
+  .open{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:24px 28px 26px;margin-top:14px;display:grid;grid-template-columns:200px 1fr;gap:0 32px}
+  .open .cover{box-shadow:var(--shadow);align-self:start}
+  .open .t{font-family:var(--serif);font-size:24px;line-height:1.2}
+  .open .a{font-family:var(--serif);font-style:italic;font-size:17px;color:var(--ink-2);margin:2px 0 10px}
+  .open .meta{font-size:13.5px;color:var(--ink-3);display:flex;flex-wrap:wrap;gap:4px 14px}
+  .open .acts{display:flex;flex-wrap:wrap;gap:6px 18px;margin:12px 0 0;font-size:13.5px}
+  .open .acts .textbtn{color:var(--ink-2)} .open .acts .textbtn:hover{color:var(--ink)}
+  .open .acts .rm{color:var(--ink-3)}
+  .open .rate{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-3);margin-top:10px}
+  .dots{display:inline-flex;gap:5px}
+  .dots button,.dots i{width:12px;height:12px;border-radius:50%;border:1px solid var(--ink-2);background:transparent;display:inline-block}
+  .dots .on{background:var(--band);border-color:var(--band)}
+  .dots:hover button{background:var(--band);border-color:var(--band)}
+  .dots button:hover~button{background:transparent;border-color:var(--ink-2)}
+  .open .desc{margin:12px 0 0;max-width:62ch;color:var(--ink-2)}
+  .open .prog{margin-top:12px;font-size:13.5px;color:var(--ink-2);display:flex;align-items:baseline;gap:8px}
+  .open .prog input{font-family:var(--serif);font-size:17px;width:4ch;text-align:right;border-bottom:1px dotted var(--ink-2)}
+  .open .prog input:focus{outline:none;border-bottom-color:var(--ink)}
+  .open .prog .bar{flex:1;max-width:220px;height:4px;background:var(--rule);border-radius:0 2px 2px 0;position:relative;overflow:hidden;align-self:center}
+  .open .prog .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--ink)}
+  .notes{grid-column:1/-1;margin-top:22px;padding-top:14px;border-top:1px solid var(--rule)}
+  .notes h3{font-size:17px;display:flex;align-items:baseline;gap:10px}
+  .notes h3 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
+  .notes li{display:grid;grid-template-columns:96px 1fr auto;gap:14px;padding:10px 0;border-bottom:1px dotted var(--rule);align-items:baseline}
+  .notes .d{font-family:var(--serif);color:var(--ink-3);font-size:13.5px;white-space:nowrap}
+  .notes .n{font-family:var(--serif);font-size:15.5px;line-height:1.55;white-space:pre-wrap;max-width:70ch}
+  .notes .x{color:var(--ink-3);font-size:12px;opacity:0}
+  .notes li:hover .x,.notes li:focus-within .x{opacity:1}
+  .notes .empty{padding:10px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
+  .write{margin-top:8px;display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:start;padding-top:10px}
+  .write .d{font-family:var(--serif);color:var(--ink-3);font-size:13.5px;padding-top:4px}
+  .write textarea{width:100%;min-height:72px;font-family:var(--serif);font-size:15.5px;line-height:1.55;color:var(--ink);border-bottom:1px dotted var(--ink-2);resize:vertical;padding:2px 0}
+  .write textarea:focus{outline:none;border-bottom-color:var(--ink)}
+  .write textarea::placeholder{color:var(--ink-3);font-style:italic}
+  .write .textbtn{grid-column:2;justify-self:start;margin-top:8px;font-size:13.5px}
+
+  /* walls */
+  .shelf{margin-top:40px}
+  .wall{display:grid;grid-template-columns:repeat(6,1fr);gap:26px 22px;padding-top:16px}
+  .book{text-align:left;display:block;width:100%;align-self:start}
+  .add{align-self:start}
+  .book .cover{transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s}
+  .book:hover .cover{transform:translateY(-3px);box-shadow:var(--shadow)}
+  .book.cur .cover{outline:2px solid var(--ox);outline-offset:3px}
+  .book .cap{margin-top:8px}
+  .book .cap b{display:block;font-family:var(--serif);font-weight:400;font-size:14px;line-height:1.25}
+  .book .cap i{display:block;font-family:var(--serif);font-size:13px;color:var(--ink-2);margin-top:2px}
+  .book .cap .dots{margin-top:6px}
+  .book .cap .dots i{width:8px;height:8px;border-width:1px}
+  .add{width:100%;text-align:left}
+  .add .cover{background:transparent;border:1px dashed var(--rule);display:grid;place-items:center;color:var(--ink-3);font-size:13px}
+  .add .cover span{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .add:hover .cover{border-color:var(--ink-2);color:var(--ink)}
+  /* find a book */
+  .find{margin-top:12px;padding:14px 0 6px;border-top:1px dotted var(--rule)}
+  .find form{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:baseline}
+  .find input{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0}
+  .find input:focus{outline:none;border-bottom-color:var(--ink)}
+  .find input::placeholder{color:var(--ink-3);font-style:italic}
+  .find .textbtn{font-size:13.5px}
+  .find .res{margin-top:8px}
+  .find .res li{display:grid;grid-template-columns:32px 1fr auto;gap:14px;padding:8px 0;border-bottom:1px dotted var(--rule);align-items:center}
+  .find .res .cover{width:32px}
+  .find .res b{font-family:var(--serif);font-weight:400;font-size:15px;display:block}
+  .find .res i{font-family:var(--serif);font-size:13px;color:var(--ink-2)}
+  .find .res .textbtn{font-size:13px}
+  .find .msg{padding:8px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
+  .foot{max-width:1180px;margin:0 auto;padding:0 40px 32px;font-size:12.5px;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
+
+  @media (prefers-reduced-motion:reduce){.textbtn,.book .cover{transition:none}}
+  @media (max-width:1000px){.wall{grid-template-columns:repeat(4,1fr)}}
+  @media (max-width:760px){
+    .band .in{padding:14px 20px 20px} nav,.date{display:none} .row{gap:14px} h1{font-size:26px}
+    main{padding:24px 20px 36px} .foot{padding:0 20px 28px}
+    .open{grid-template-columns:1fr;padding:18px 18px 20px} .open .cover{width:140px}
+    .wall{grid-template-columns:repeat(3,1fr);gap:20px 14px}
+    .notes li{grid-template-columns:1fr auto} .notes .d{grid-column:1/-1} .notes .x{opacity:1}
+    .write{grid-template-columns:1fr} .write .textbtn{grid-column:1}
+    .find form{grid-template-columns:1fr auto}
+  }
+</style>
+</head>
+<body>
+<header class="band">
+  <div class="in">
+    <div class="row">
+      <a class="mark" href="index.html">HQ</a>
+      <span class="date">Monday, 14 September 2026 · 8.40 am</span>
+      <nav aria-label="Areas"><a href="index.html">Today</a><a href="calendar.html">Calendar</a><a href="finances.html">Finances</a><a href="library.html" aria-current="page">Library</a><a href="school.html">School</a><a href="health.html">Health</a></nav>
+      <div class="right">
+        <button class="textbtn" id="addbtn"><svg class="ic"><use href="icons.svg#plus"/></svg>Add a book</button>
+        <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
+        <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
+      </div>
+    </div>
+    <div class="mast">
+      <h1>Library</h1>
+      <span class="sub" id="sub"></span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section>
+    <h2 id="openh">Reading now</h2>
+    <div class="open" id="open"></div>
+  </section>
+
+  <section class="shelf" id="readingshelf" hidden>
+    <h2>Reading now<small id="readingn"></small></h2>
+    <div class="wall" id="reading"></div>
+  </section>
+
+  <section class="shelf">
+    <h2>To read<small id="toreadn"></small></h2>
+    <div class="wall" id="toread"></div>
+    <div class="find" id="find" hidden>
+      <form id="findf"><input id="q" placeholder="Title, author, or ISBN"><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#search"/></svg>Find</button><button class="textbtn" type="button" id="findx">Close</button></form>
+      <ul class="res" id="res"></ul>
+    </div>
+  </section>
+
+  <section class="shelf">
+    <h2>Read<small id="readn"></small></h2>
+    <div class="wall" id="read"></div>
+  </section>
+</main>
+<p class="foot">Sample shelves, shown for design only. Books, ratings and notes you add are kept in this browser. Covers and book details come from Open Library.</p>
+
+<script>
+  // ---- state ----
+  // ponytail: localStorage; becomes the library store later. Cover art by ISBN from Open Library.
+  const F = id => document.getElementById(id);
+  const TODAY = '2026-09-14';
+  const seed = () => ({
+    open: 1,
+    books: [
+      {id:1,shelf:'reading',title:'Project Hail Mary',author:'Andy Weir',year:2021,pages:476,genre:'Science fiction',isbn:'9780593135204',started:'2026-09-06',page:142,rating:0,desc:'A lone scientist wakes on a ship with no memory of why he is there, and has to work out how to save the sun.',notes:[{d:'2026-09-08',t:'The amnesia opening is a trick, but it works: every chapter earns the next reveal.'},{d:'2026-09-11',t:'Rocky. That is all.'},{d:'2026-09-13',t:'The astrophage maths is hand-wavy but the problem-solving rhythm is the same as The Martian and just as compulsive.'}]},
+      {id:2,shelf:'toread',title:'Thinking, Fast and Slow',author:'Daniel Kahneman',year:2011,pages:499,genre:'Psychology',isbn:'9780374533557',rating:0,desc:'Two systems of thought, and the biases that follow from letting the fast one run.',notes:[]},
+      {id:3,shelf:'toread',title:'The Pragmatic Programmer',author:'David Thomas & Andrew Hunt',year:2019,pages:352,genre:'Software',isbn:'9780135957059',rating:0,desc:'The twentieth-anniversary edition of the working programmer\'s handbook.',notes:[]},
+      {id:4,shelf:'toread',title:'Dune',author:'Frank Herbert',year:1965,pages:412,genre:'Science fiction',isbn:'9780441172719',rating:0,desc:'Spice, sand, and the fall of a house on Arrakis.',notes:[]},
+      {id:5,shelf:'toread',title:'The Name of the Wind',author:'Patrick Rothfuss',year:2007,pages:662,genre:'Fantasy',isbn:'9780756404741',rating:0,desc:'Kvothe tells his own story over three days at an inn.',notes:[]},
+      {id:6,shelf:'toread',title:'Sapiens',author:'Yuval Noah Harari',year:2011,pages:443,genre:'History',isbn:'9780062316097',rating:0,desc:'A brief history of humankind, from the cognitive revolution onward.',notes:[]},
+      {id:7,shelf:'toread',title:'Atomic Habits',author:'James Clear',year:2018,pages:320,genre:'Self-improvement',isbn:'9780735211292',rating:0,desc:'Small changes, remarkable results.',notes:[]},
+      {id:8,shelf:'read',title:'The Martian',author:'Andy Weir',year:2011,pages:369,genre:'Science fiction',isbn:'9780553418026',started:'2026-08-20',finished:'2026-08-30',rating:5,desc:'An astronaut is left for dead on Mars and refuses to die.',notes:[{d:'2026-08-30',t:'Read in a weekend. The log format keeps every problem small enough to enjoy.'}]},
+      {id:9,shelf:'read',title:'Piranesi',author:'Susanna Clarke',year:2020,pages:245,genre:'Fiction',isbn:'9781635575637',started:'2026-08-05',finished:'2026-08-12',rating:5,desc:'A man lives alone in an endless house of halls and statues, and keeps a journal.',notes:[{d:'2026-08-12',t:'The kindest book I have read this year. The House is a character.'}]},
+      {id:10,shelf:'read',title:'Deep Work',author:'Cal Newport',year:2016,pages:296,genre:'Productivity',isbn:'9781455586691',started:'2026-07-14',finished:'2026-07-25',rating:4,desc:'Rules for focused success in a distracted world.',notes:[{d:'2026-07-25',t:'The 9 am deep-work block on the calendar comes from chapter 2.'}]},
+      {id:11,shelf:'read',title:'Meditations',author:'Marcus Aurelius',year:180,pages:254,genre:'Philosophy',isbn:'9780812968255',started:'2026-06-01',finished:'2026-07-10',rating:5,desc:'The private notebook of a Roman emperor.',notes:[{d:'2026-06-20',t:'Book 5, on getting out of bed. Read it every morning for a week.'},{d:'2026-07-10',t:'Gregory Hays translation. The plain English is the point.'}]},
+      {id:12,shelf:'read',title:'The Hobbit',author:'J. R. R. Tolkien',year:1937,pages:300,genre:'Fantasy',isbn:'9780547928227',started:'2026-05-18',finished:'2026-05-28',rating:4,desc:'There and back again.',notes:[]},
+      {id:13,shelf:'read',title:'Klara and the Sun',author:'Kazuo Ishiguro',year:2021,pages:303,genre:'Fiction',isbn:'9780593318171',started:'2026-05-02',finished:'2026-05-14',rating:3,desc:'An Artificial Friend watches the world from a shop window, and then from a home.',notes:[]},
+      {id:14,shelf:'read',title:'Educated',author:'Tara Westover',year:2018,pages:334,genre:'Memoir',isbn:'9780399590504',started:'2026-04-10',finished:'2026-04-24',rating:4,desc:'A memoir of growing up without school, and leaving.',notes:[]},
+      {id:15,shelf:'read',title:'The Lean Startup',author:'Eric Ries',year:2011,pages:336,genre:'Business',isbn:'9780307887894',started:'2026-03-20',finished:'2026-04-02',rating:3,desc:'Build, measure, learn.',notes:[]},
+      {id:16,shelf:'read',title:'A Gentleman in Moscow',author:'Amor Towles',year:2016,pages:462,genre:'Fiction',isbn:'9780143110439',started:'2026-02-14',finished:'2026-03-08',rating:5,desc:'A count is sentenced to house arrest in a grand hotel, for decades.',notes:[{d:'2026-03-08',t:'Reread candidate. The bees.'}]},
+      {id:17,shelf:'read',title:'Norwegian Wood',author:'Haruki Murakami',year:1987,pages:296,genre:'Fiction',isbn:'9780375704024',started:'2026-01-25',finished:'2026-02-06',rating:4,desc:'A student in 1960s Tokyo, and two very different women.',notes:[]},
+      {id:18,shelf:'read',title:'The Design of Everyday Things',author:'Don Norman',year:1988,pages:368,genre:'Design',isbn:'9780465050659',started:'2026-01-05',finished:'2026-01-20',rating:4,desc:'Why doors are hard to open, and what to do about it.',notes:[{d:'2026-01-20',t:'Affordances and signifiers. The whole HQ project is trying to pass this test.'}]},
+    ],
+  });
+  let S; try { S = JSON.parse(localStorage.getItem('hq.library')) || seed(); } catch { S = seed(); }
+  const save = () => { try { localStorage.setItem('hq.library', JSON.stringify(S)); } catch {} };
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const book = id => S.books.find(b=>b.id===id);
+  const dmy = iso => iso ? new Date(iso+'T12:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '';
+  const coverURL = b => b.coverId ? `https://covers.openlibrary.org/b/id/${b.coverId}-L.jpg?default=false` : b.isbn ? `https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg?default=false` : '';
+  const cover = b => `<span class="cover">${coverURL(b)?`<img src="${coverURL(b)}" alt="" loading="lazy" onerror="this.dataset.missing=1">`:'<img data-missing=1 alt="">'}<span class="fb"><b>${esc(b.title)}</b><i>${esc(b.author)}</i></span></span>`;
+  const dots = (n, live) => `<span class="dots">${[1,2,3,4,5].map(i=>live?`<button type="button" data-rate="${i}" class="${i<=n?'on':''}" aria-label="${i} of 5"></button>`:`<i class="${i<=n?'on':''}"></i>`).join('')}</span>`;
+
+  function render(){
+    const reading=S.books.filter(b=>b.shelf==='reading'), toread=S.books.filter(b=>b.shelf==='toread'), read=S.books.filter(b=>b.shelf==='read').sort((a,b)=>(b.finished||'')<(a.finished||'')?-1:1);
+    const thisYear = read.filter(b=>(b.finished||'').startsWith('2026')).length;
+    F('sub').innerHTML = `<b>${reading.length} reading</b> · ${toread.length} to read · ${thisYear} read this year`;
+    // the open book
+    const o = book(S.open) || reading[0] || toread[0] || read[0];
+    const cur = reading[0];
+    F('openh').innerHTML = o ? (o.shelf==='reading' ? 'Reading now' : o.shelf==='toread' ? 'On the shelf' : 'Read') + `<small>${o.shelf==='reading'&&o.started?'since '+dmy(o.started):o.shelf==='read'&&o.finished?'finished '+dmy(o.finished):o.shelf==='toread'?'not started':''}${cur&&cur.id!==o.id?` · <button class="textbtn back" type="button" data-id="${cur.id}">Back to ${esc(cur.title)}</button>`:''}</small>` : 'Library';
+    if(o){
+      S.open=o.id;
+      const acts = o.shelf==='reading' ? `<button class="textbtn" data-act="finish">Finished it</button><button class="textbtn" data-act="shelve">Back to To read</button>` : o.shelf==='toread' ? `<button class="textbtn" data-act="start">Start reading</button>` : `<button class="textbtn" data-act="start">Read it again</button>`;
+      F('open').innerHTML = `${cover(o)}<div>
+        <div class="t">${esc(o.title)}</div><div class="a">${esc(o.author)}</div>
+        <div class="meta"><span>${o.year||''}</span><span>${o.pages?o.pages+' pages':''}</span><span>${esc(o.genre||'')}</span>${o.started?`<span>started ${dmy(o.started)}</span>`:''}${o.finished?`<span>finished ${dmy(o.finished)}</span>`:''}</div>
+        ${o.shelf==='reading'?`<div class="prog">Page <input value="${o.page||0}" inputmode="numeric" aria-label="Current page"> of ${o.pages||'?'}<span class="bar"><i style="width:${o.pages?Math.min(100,(o.page||0)/o.pages*100):0}%"></i></span><span>${o.pages?Math.round((o.page||0)/o.pages*100)+'%':''}</span></div>`:''}
+        <div class="rate">Rating ${dots(o.rating, true)}</div>
+        <p class="desc">${esc(o.desc||'')}</p>
+        <div class="acts">${acts}<button class="textbtn rm" data-act="remove">Remove from library</button></div>
+      </div>
+      <div class="notes"><h3>Notes<small>${o.notes.length} ${o.notes.length===1?'note':'notes'}</small></h3>
+        <ul>${o.notes.length?[...o.notes].reverse().map((n,i)=>`<li data-i="${o.notes.length-1-i}"><span class="d">${dmy(n.d)}</span><span class="n">${esc(n.t)}</span><button class="x" type="button">remove</button></li>`).join(''):'<li class="empty">Nothing written yet.</li>'}</ul>
+        <form class="write" id="write"><span class="d">${dmy(TODAY)}</span><textarea id="note" placeholder="Write a note — as long as you like." required></textarea><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Keep this note</button></form>
+      </div>`;
+    } else {
+      F('open').innerHTML = '<p class="empty" style="grid-column:1/-1">No books yet. Add one below.</p>';
+    }
+    // walls
+    F('readingshelf').hidden = !reading.length || (o && o.id===reading[0].id);
+    F('readingn').textContent = reading.length===1 ? (o&&o.id===reading[0].id ? 'open above' : 'click to go back to it') : `${reading.length} books`;
+    F('reading').innerHTML = reading.map(b=>`<button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i>${b.pages?`<i>page ${b.page||0} of ${b.pages}</i>`:''}</span></button>`).join('');
+    F('toreadn').textContent = `${toread.length} waiting`;
+    F('toread').innerHTML = toread.map(b=>`<button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i></span></button>`).join('')
+      + `<button class="add" id="addcover"><span class="cover"><span><svg class="ic"><use href="icons.svg#plus"/></svg>Add a book</span></span></button>`;
+    F('readn').textContent = `${read.length} books · ${thisYear} this year`;
+    F('read').innerHTML = read.map(b=>`<button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i>${dots(b.rating)}</span></button>`).join('');
+    save();
+  }
+
+  // ---- events ----
+  document.addEventListener('click', e=>{
+    const bk=e.target.closest('.book, .back'); if(bk){ S.open=+bk.dataset.id; render(); F('open').scrollIntoView({behavior:'smooth',block:'start'}); return; }
+    if(e.target.closest('#addcover') || e.target.closest('#addbtn')){ F('find').hidden=false; F('q').focus(); F('find').scrollIntoView({block:'nearest'}); return; }
+    if(e.target.closest('#findx')){ F('find').hidden=true; F('res').innerHTML=''; return; }
+    const o=book(S.open); if(!o) return;
+    const r=e.target.closest('[data-rate]'); if(r){ o.rating=+r.dataset.rate; render(); return; }
+    const a=e.target.closest('[data-act]'); if(a){
+      const act=a.dataset.act;
+      if(act==='start'){ S.books.forEach(b=>{ if(b.shelf==='reading'){ b.shelf='toread'; } }); o.shelf='reading'; o.started=TODAY; o.finished=null; o.page=0; }
+      if(act==='finish'){ o.shelf='read'; o.finished=TODAY; }
+      if(act==='shelve'){ o.shelf='toread'; o.started=null; o.page=0; }
+      if(act==='remove'){ S.books=S.books.filter(b=>b.id!==o.id); S.open=null; }
+      render(); return;
+    }
+    const x=e.target.closest('.notes .x'); if(x){ o.notes.splice(+x.closest('li').dataset.i,1); render(); }
+  });
+  document.addEventListener('submit', e=>{
+    if(e.target.id==='write'){ e.preventDefault(); const t=F('note').value.trim(); if(!t) return; book(S.open).notes.push({d:TODAY,t}); render(); return; }
+    if(e.target.id==='findf'){ e.preventDefault(); find(F('q').value.trim()); }
+  });
+  document.addEventListener('change', e=>{ if(e.target.matches('.prog input')){ const o=book(S.open), v=parseInt(e.target.value); if(o && !isNaN(v)){ o.page=Math.max(0,Math.min(o.pages||v,v)); render(); } } });
+
+  // ---- find a book on Open Library (CORS-open, no key) ----
+  async function find(q){
+    if(!q) return F('q').focus();
+    const res=F('res'); res.innerHTML='<li class="msg">Looking…</li>';
+    try{
+      const isbn=/^[\d-]{10,17}$/.test(q) ? q.replace(/-/g,'') : null;
+      const url = isbn ? `https://openlibrary.org/search.json?isbn=${isbn}&limit=5` : `https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=6`;
+      const j = await (await fetch(url+'&fields=key,title,author_name,first_publish_year,number_of_pages_median,cover_i,isbn,subject')).json();
+      if(!j.docs.length){ res.innerHTML='<li class="msg">Nothing found. Try the author too, or an ISBN.</li>'; return; }
+      found = j.docs;
+      res.innerHTML = j.docs.map((d,i)=>`<li><span class="cover">${d.cover_i?`<img src="https://covers.openlibrary.org/b/id/${d.cover_i}-S.jpg" alt="" onerror="this.dataset.missing=1">`:'<img data-missing=1 alt="">'}<span class="fb"></span></span><span><b>${esc(d.title)}</b><i>${esc((d.author_name||[]).slice(0,2).join(', '))}${d.first_publish_year?' · '+d.first_publish_year:''}</i></span><button class="textbtn" type="button" data-pick="${i}"><svg class="ic"><use href="icons.svg#plus"/></svg>To read</button></li>`).join('');
+    }catch(err){ res.innerHTML='<li class="msg">Could not reach Open Library. Check the connection and try again.</li>'; }
+  }
+  let found=[];
+  document.addEventListener('click', e=>{
+    const p=e.target.closest('[data-pick]'); if(!p) return;
+    const d=found[+p.dataset.pick];
+    const b={id:Date.now(), shelf:'toread', title:d.title, author:(d.author_name||['Unknown']).slice(0,2).join(' & '), year:d.first_publish_year||null, pages:d.number_of_pages_median||null, genre:(d.subject||[])[0]||'', isbn:(d.isbn||[]).find(x=>x.length===13)||(d.isbn||[])[0]||'', coverId:d.cover_i||null, rating:0, desc:'', notes:[]};
+    S.books.push(b); S.open=b.id; F('find').hidden=true; F('res').innerHTML=''; F('q').value=''; render(); F('open').scrollIntoView({behavior:'smooth',block:'start'});
+  });
+  render();
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+{
+  "title": "Library — second hand, with covers",
+  "question": "Steer taken: covers carry the page (real cover art via ISBN from Open Library, no backend needed). Three fresh structures in the same world. Lock one, steer, or re-roll.",
+  "options": [
+    {
+      "id": "shelf",
+      "label": "Spines on a shelf",
+      "kicker": "THE ROLL",
+      "lineage": "a real bookcase: spines standing on ruled shelves, one book pulled out and lying open",
+      "thesis": "Books stand as spines on three shelves (Reading now, To read, Read), each spine sized to its page count and tinted from its cover. The book you're reading lies open in front of the shelf with its cover showing; clicking any spine pulls it out and opens it — cover on the left page, details and your dated notes on the right.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#D3C9B6"],
+      "materials": ["shelf rules as thick hairlines with a soft under-shadow", "spines as tall narrow blocks with rotated serif titles", "the open book as the one white card with the cover image on its left page", "dated notes on rules"],
+      "viewport": "Band: 'Library', italic '1 reading · 6 to read · 14 read this year'. Paper: the open book card across the top (cover left, title/author/details/description and notes with a writing line right). Beneath, three shelves full width, each a row of spines standing on a rule; today's book is missing from its shelf (it's open above). 'Add a book' as an empty spine at the end of To read.",
+      "risk": "Rotated text is slower to read; more than ~20 books per shelf needs horizontal scroll; spine tints depend on cover art loading.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: Library · counts", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "Open book (card): cover", "x": 0, "y": 1, "w": 3, "h": 4, "accent": true},
+        {"label": "Open book (card): title · author · details · description · notes + Write a note", "x": 3, "y": 1, "w": 9, "h": 4, "accent": true},
+        {"label": "Reading now — shelf of spines", "x": 0, "y": 5, "w": 12, "h": 1},
+        {"label": "To read — shelf of spines · Add a book", "x": 0, "y": 6, "w": 12, "h": 2},
+        {"label": "Read — shelf of spines", "x": 0, "y": 8, "w": 12, "h": 2}
+      ]},
+      "comp": ".impeccable/mocks/decision/shelf.webp"
+    },
+    {
+      "id": "cover-wall",
+      "label": "Cover wall",
+      "lineage": "the bookshop's front table: covers face up, grouped, the one you're reading held bigger",
+      "thesis": "Covers are the page. The book you're reading sits large at the top with its details and notes beside it (the one white card); beneath, To read and Read are walls of covers, 6 across, with title and author under each and rating dots on the read ones. Clicking a cover swaps it into the open card above.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#D3C9B6"],
+      "materials": ["cover images at real proportions (2:3) with a hairline edge", "the open book as the one white card", "captions in serif title / italic author", "dated notes on rules"],
+      "viewport": "Band: 'Library', italic counts. Paper: open book card — large cover left (about 200px), title/author/details/description and notes with a writing line right. Beneath: 'To read' as a row of covers with captions and 'Add a book' as a blank cover; 'Read' as a wall of covers with captions and rating dots, most recent first.",
+      "risk": "Missing cover art leaves a blank rectangle unless a typographic fallback is drawn; the wall reads as a grid of tiles (category default) if captions are weak.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: Library · counts", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "Open book (card): large cover", "x": 0, "y": 1, "w": 3, "h": 4, "accent": true},
+        {"label": "Open book (card): details · description · notes + Write a note", "x": 3, "y": 1, "w": 9, "h": 4, "accent": true},
+        {"label": "To read — covers ×6 · Add a book", "x": 0, "y": 5, "w": 12, "h": 2},
+        {"label": "Read — covers ×6 with rating", "x": 0, "y": 7, "w": 12, "h": 3}
+      ]},
+      "comp": ".impeccable/mocks/decision/cover-wall.webp"
+    },
+    {
+      "id": "reading-log",
+      "label": "Reading log with covers",
+      "lineage": "a commonplace book: what you're reading now, then the record in order",
+      "thesis": "The book you're reading opens at the top as the white card — cover, details, and notes. Beneath, one chronological log: each row a small cover, title, italic author, when you read it, rating dots and how many notes it has; 'To read' is the same row style under its own heading with a planned order you can nudge. Clicking a row opens it above.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#D3C9B6"],
+      "materials": ["ruled log rows with small covers (about 44px wide)", "the open book as the one white card", "rating dots", "dated notes on rules"],
+      "viewport": "Band: 'Library', italic counts. Paper: open book card (cover left, details and notes right). Then two columns: left 7/12 'Read' — rows by finished date, most recent first, with cover thumbnails; right 5/12 'To read' — rows in your planned order with up/down, 'Add a book' line at the foot.",
+      "risk": "Small covers carry less delight than the wall; the log gets long over years and wants a year divider.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: Library · counts", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "Open book (card): cover · details · notes + Write a note", "x": 0, "y": 1, "w": 12, "h": 3, "accent": true},
+        {"label": "Read — log rows with small covers, dates, rating, notes count", "x": 0, "y": 4, "w": 7, "h": 6},
+        {"label": "To read — planned order (up/down) · Add a book", "x": 7, "y": 4, "w": 5, "h": 6}
+      ]},
+      "comp": ".impeccable/mocks/decision/reading-log.webp"
+    }
+  ],
+  "reroll": true,
+  "buildPath": {"value": "code", "toggle": false},
+  "canon": false,
+  "steer": true
+}

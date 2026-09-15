@@ -1,0 +1,422 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-14T00:00:00Z",
+  "title": "Design System: HQ",
+  "extensions": {
+    "colorMeta": {
+      "band": {
+        "role": "primary",
+        "displayName": "Bottle Green",
+        "canonical": "oklch(32.3% 0.040 164)",
+        "tonalRamp": [
+          "oklch(15% 0.040 164)",
+          "oklch(26% 0.040 164)",
+          "oklch(38% 0.040 164)",
+          "oklch(49% 0.040 164)",
+          "oklch(61% 0.040 164)",
+          "oklch(72% 0.040 164)",
+          "oklch(84% 0.040 164)",
+          "oklch(95% 0.040 164)"
+        ]
+      },
+      "band-ink": {
+        "role": "primary",
+        "displayName": "Band Ivory",
+        "canonical": "oklch(94.4% 0.018 86)",
+        "tonalRamp": [
+          "oklch(15% 0.018 86)",
+          "oklch(26% 0.018 86)",
+          "oklch(38% 0.018 86)",
+          "oklch(49% 0.018 86)",
+          "oklch(61% 0.018 86)",
+          "oklch(72% 0.018 86)",
+          "oklch(84% 0.018 86)",
+          "oklch(95% 0.018 86)"
+        ]
+      },
+      "band-muted": {
+        "role": "primary",
+        "displayName": "Band Sage",
+        "canonical": "oklch(82.1% 0.023 156)",
+        "tonalRamp": [
+          "oklch(15% 0.023 156)",
+          "oklch(26% 0.023 156)",
+          "oklch(38% 0.023 156)",
+          "oklch(49% 0.023 156)",
+          "oklch(61% 0.023 156)",
+          "oklch(72% 0.023 156)",
+          "oklch(84% 0.023 156)",
+          "oklch(95% 0.023 156)"
+        ]
+      },
+      "oxblood": {
+        "role": "secondary",
+        "displayName": "Oxblood",
+        "canonical": "oklch(41.0% 0.107 25)",
+        "tonalRamp": [
+          "oklch(15% 0.107 25)",
+          "oklch(26% 0.107 25)",
+          "oklch(38% 0.107 25)",
+          "oklch(49% 0.107 25)",
+          "oklch(61% 0.107 25)",
+          "oklch(72% 0.107 25)",
+          "oklch(84% 0.107 25)",
+          "oklch(95% 0.107 25)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "oklch(95.6% 0.014 85)",
+        "tonalRamp": [
+          "oklch(15% 0.014 85)",
+          "oklch(26% 0.014 85)",
+          "oklch(38% 0.014 85)",
+          "oklch(49% 0.014 85)",
+          "oklch(61% 0.014 85)",
+          "oklch(72% 0.014 85)",
+          "oklch(84% 0.014 85)",
+          "oklch(95% 0.014 85)"
+        ]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Card White",
+        "canonical": "oklch(99.4% 0.006 85)",
+        "tonalRamp": [
+          "oklch(15% 0.006 85)",
+          "oklch(26% 0.006 85)",
+          "oklch(38% 0.006 85)",
+          "oklch(49% 0.006 85)",
+          "oklch(61% 0.006 85)",
+          "oklch(72% 0.006 85)",
+          "oklch(84% 0.006 85)",
+          "oklch(95% 0.006 85)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(22.4% 0.010 81)",
+        "tonalRamp": [
+          "oklch(15% 0.010 81)",
+          "oklch(26% 0.010 81)",
+          "oklch(38% 0.010 81)",
+          "oklch(49% 0.010 81)",
+          "oklch(61% 0.010 81)",
+          "oklch(72% 0.010 81)",
+          "oklch(84% 0.010 81)",
+          "oklch(95% 0.010 81)"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Ink 2",
+        "canonical": "oklch(39.8% 0.019 77)",
+        "tonalRamp": [
+          "oklch(15% 0.019 77)",
+          "oklch(26% 0.019 77)",
+          "oklch(38% 0.019 77)",
+          "oklch(49% 0.019 77)",
+          "oklch(61% 0.019 77)",
+          "oklch(72% 0.019 77)",
+          "oklch(84% 0.019 77)",
+          "oklch(95% 0.019 77)"
+        ]
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Ink 3",
+        "canonical": "oklch(50.0% 0.021 78)",
+        "tonalRamp": [
+          "oklch(15% 0.021 78)",
+          "oklch(26% 0.021 78)",
+          "oklch(38% 0.021 78)",
+          "oklch(49% 0.021 78)",
+          "oklch(61% 0.021 78)",
+          "oklch(72% 0.021 78)",
+          "oklch(84% 0.021 78)",
+          "oklch(95% 0.021 78)"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Rule",
+        "canonical": "oklch(83.9% 0.028 84)",
+        "tonalRamp": [
+          "oklch(15% 0.028 84)",
+          "oklch(26% 0.028 84)",
+          "oklch(38% 0.028 84)",
+          "oklch(49% 0.028 84)",
+          "oklch(61% 0.028 84)",
+          "oklch(72% 0.028 84)",
+          "oklch(84% 0.028 84)",
+          "oklch(95% 0.028 84)"
+        ]
+      },
+      "chart-out": {
+        "role": "tertiary",
+        "displayName": "Chart Out",
+        "canonical": "oklch(75.4% 0.032 84)",
+        "tonalRamp": [
+          "oklch(15% 0.032 84)",
+          "oklch(26% 0.032 84)",
+          "oklch(38% 0.032 84)",
+          "oklch(49% 0.032 84)",
+          "oklch(61% 0.032 84)",
+          "oklch(72% 0.032 84)",
+          "oklch(84% 0.032 84)",
+          "oklch(95% 0.032 84)"
+        ]
+      },
+      "area-calendar": {
+        "role": "tertiary",
+        "displayName": "Calendar Mist",
+        "canonical": "oklch(94.7% 0.009 248)",
+        "tonalRamp": [
+          "oklch(15% 0.009 248)",
+          "oklch(26% 0.009 248)",
+          "oklch(38% 0.009 248)",
+          "oklch(49% 0.009 248)",
+          "oklch(61% 0.009 248)",
+          "oklch(72% 0.009 248)",
+          "oklch(84% 0.009 248)",
+          "oklch(95% 0.009 248)"
+        ]
+      },
+      "area-fitness": {
+        "role": "tertiary",
+        "displayName": "Fitness Peach",
+        "canonical": "oklch(93.5% 0.022 54)",
+        "tonalRamp": [
+          "oklch(15% 0.022 54)",
+          "oklch(26% 0.022 54)",
+          "oklch(38% 0.022 54)",
+          "oklch(49% 0.022 54)",
+          "oklch(61% 0.022 54)",
+          "oklch(72% 0.022 54)",
+          "oklch(84% 0.022 54)",
+          "oklch(95% 0.022 54)"
+        ]
+      },
+      "area-health": {
+        "role": "tertiary",
+        "displayName": "Health Rose",
+        "canonical": "oklch(93.3% 0.019 9)",
+        "tonalRamp": [
+          "oklch(15% 0.019 9)",
+          "oklch(26% 0.019 9)",
+          "oklch(38% 0.019 9)",
+          "oklch(49% 0.019 9)",
+          "oklch(61% 0.019 9)",
+          "oklch(72% 0.019 9)",
+          "oklch(84% 0.019 9)",
+          "oklch(95% 0.019 9)"
+        ]
+      },
+      "area-study": {
+        "role": "tertiary",
+        "displayName": "Study Lilac",
+        "canonical": "oklch(93.3% 0.018 307)",
+        "tonalRamp": [
+          "oklch(15% 0.018 307)",
+          "oklch(26% 0.018 307)",
+          "oklch(38% 0.018 307)",
+          "oklch(49% 0.018 307)",
+          "oklch(61% 0.018 307)",
+          "oklch(72% 0.018 307)",
+          "oklch(84% 0.018 307)",
+          "oklch(95% 0.018 307)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "cover": {
+        "displayName": "Cover",
+        "purpose": "the daily quote on the welcome cover (welcome.html), the one screen that is band-colour edge to edge; the only step above Display."
+      },
+      "display": {
+        "displayName": "Display",
+        "purpose": "Greeting h1 in the band; italic insight inside it."
+      },
+      "display-mobile": {
+        "displayName": "Display (mobile)",
+        "purpose": "Display under 900px."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section titles on a 1px ink rule."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Area names in ledger rows."
+      },
+      "numeral": {
+        "displayName": "Numeral",
+        "purpose": "The one number per area."
+      },
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "HQ mark; the only bold."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default text and to-do labels."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Nav links and text buttons in the band."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Counts, subtitles, timing, footer."
+      },
+      "hour": {
+        "displayName": "Hour",
+        "purpose": "Hour marks on the timeline rail."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card-lift",
+        "value": "0 1px 2px rgba(30,27,22,.05), 0 6px 18px -6px rgba(30,27,22,.12)",
+        "purpose": "Timeline card at rest; event blocks on hover."
+      }
+    ],
+    "motion": [
+      {
+        "name": "nudge",
+        "value": "transform .15s, box-shadow .15s",
+        "purpose": "Event block hover: 2px right and card-lift shadow. Removed under prefers-reduced-motion."
+      },
+      {
+        "name": "underline",
+        "value": "border-color .15s",
+        "purpose": "Text button hover underline."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "stack",
+        "value": "900px"
+      }
+    ],
+    "focus": {
+      "value": "2px solid #7A2E2B; outline-offset 3px",
+      "purpose": "Universal :focus-visible ring."
+    },
+    "timeline": {
+      "hourUnit": "44px",
+      "hours": 12,
+      "blockOffset": "+9px",
+      "blockInset": "-4px",
+      "eventLeft": "60px",
+      "nowLeft": "46px"
+    }
+  },
+  "components": [
+    {
+      "name": "Band",
+      "kind": "nav",
+      "refersTo": "band",
+      "description": "Bottle-green masthead strip: wordmark, italic serif date, nav, text actions.",
+      "html": "<header class=\"ds-band\"><a class=\"ds-mark\" href=\"#\">HQ</a><span class=\"ds-date\">Monday, 14 September 2026 · 8.40</span><nav class=\"ds-nav\"><a href=\"#\" aria-current=\"page\">Today</a><a href=\"#\">Calendar</a><a href=\"#\">Accounts</a></nav><span class=\"ds-right\"><button class=\"ds-textbtn\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\"><path d=\"M12 5v14M5 12h14\"/></svg>New entry</button><button class=\"ds-ib\" aria-label=\"Search\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\"><circle cx=\"11\" cy=\"11\" r=\"6.5\"/><path d=\"M20 20l-4.2-4.2\"/></svg></button></span></header>",
+      "css": ".ds-band{display:flex;align-items:center;gap:26px;background:#1F3A2E;color:#F2ECDF;padding:16px 40px 22px;font:15px/1.5 \"Figtree\",system-ui,sans-serif;font-variant-numeric:oldstyle-nums tabular-nums}.ds-mark{font-family:\"Libre Caslon Text\",Georgia,serif;font-size:20px;letter-spacing:.14em;font-weight:700;color:inherit;text-decoration:none}.ds-date{font-family:\"Libre Caslon Text\",Georgia,serif;font-style:italic;font-size:15px;color:#B9C9BE}.ds-nav{display:flex;gap:20px;font-size:13.5px;letter-spacing:.04em;color:#B9C9BE;margin-left:10px}.ds-nav a{color:inherit;text-decoration:none}.ds-nav a:hover{color:#F2ECDF}.ds-nav a[aria-current]{color:#F2ECDF;border-bottom:1px solid #F2ECDF;padding-bottom:2px}.ds-right{margin-left:auto;display:flex;gap:18px;align-items:center;font-size:13.5px}.ds-textbtn{display:inline-flex;align-items:center;gap:8px;letter-spacing:.04em;font:inherit;color:inherit;background:none;border:0;border-bottom:1px solid transparent;padding:0;cursor:pointer;transition:border-color .15s}.ds-textbtn:hover{border-color:currentColor}.ds-ib{font:inherit;color:#B9C9BE;background:none;border:0;padding:0;cursor:pointer;display:inline-flex}.ds-ib:hover{color:#F2ECDF}.ds-band :focus-visible{outline:2px solid #7A2E2B;outline-offset:3px}"
+    },
+    {
+      "name": "Text Button",
+      "kind": "button",
+      "refersTo": "button-text",
+      "description": "The only action style: icon plus label, underline on hover. No filled buttons exist.",
+      "html": "<div class=\"ds-btnwrap\"><button class=\"ds-btn-text\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\"><path d=\"M12 5v14M5 12h14\"/></svg>New entry</button></div>",
+      "css": ".ds-btnwrap{background:#1F3A2E;color:#F2ECDF;padding:16px 24px;display:inline-block}.ds-btn-text{display:inline-flex;align-items:center;gap:8px;font:13.5px/1.5 \"Figtree\",system-ui,sans-serif;letter-spacing:.04em;color:inherit;background:none;border:0;border-bottom:1px solid transparent;padding:0;cursor:pointer;transition:border-color .15s}.ds-btn-text:hover{border-color:currentColor}.ds-btn-text:focus-visible{outline:2px solid #7A2E2B;outline-offset:3px}"
+    },
+    {
+      "name": "Section Title",
+      "kind": "custom",
+      "refersTo": "headline",
+      "description": "Caslon h2 on a 1px ink rule with a right-aligned sans count.",
+      "html": "<h2 class=\"ds-h2\">State of affairs<small>This morning</small></h2>",
+      "css": ".ds-h2{font:400 22px/1.3 \"Libre Caslon Text\",Georgia,serif;color:#1E1B16;margin:0;padding-bottom:10px;border-bottom:1px solid #1E1B16;display:flex;align-items:baseline;gap:12px}.ds-h2 small{font-family:\"Figtree\",system-ui,sans-serif;font-size:12.5px;letter-spacing:.02em;color:#6A6256;margin-left:auto}"
+    },
+    {
+      "name": "Timeline Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "The one lifted surface: hour-ruled timeline with tinted event blocks and an oxblood now-line.",
+      "html": "<div class=\"ds-card\" style=\"--hour:44px\"><div class=\"ds-tl\"><div class=\"ds-hr\" style=\"top:0\"><span>8.00</span></div><div class=\"ds-hr\" style=\"top:calc(var(--hour)*1)\"><span>9.00</span></div><div class=\"ds-hr\" style=\"top:calc(var(--hour)*2)\"><span>10.00</span></div><div class=\"ds-hr\" style=\"top:calc(var(--hour)*3)\"><span>11.00</span></div><a href=\"#\" class=\"ds-ev ds-cal\" style=\"top:calc(var(--hour)*1 + 9px);height:calc(var(--hour)*2 - 4px)\"><b>Deep work — RPL value engine</b><small>Two hours, uninterrupted</small></a><a href=\"#\" class=\"ds-ev ds-fit\" style=\"top:calc(var(--hour)*3.5 + 9px);height:calc(var(--hour)*.5 - 4px)\"><b>Gym — push day</b></a><div class=\"ds-now\" style=\"top:calc(var(--hour)*0.667 + 9px)\"></div></div></div>",
+      "css": ".ds-card{background:#FFFDF9;border-radius:16px;box-shadow:0 1px 2px rgba(30,27,22,.05),0 6px 18px -6px rgba(30,27,22,.12);padding:18px 20px 20px;font:15px/1.5 \"Figtree\",system-ui,sans-serif;color:#1E1B16;font-variant-numeric:oldstyle-nums tabular-nums}.ds-tl{position:relative;height:calc(var(--hour)*4.2)}.ds-hr{position:absolute;left:0;right:0;display:flex;gap:14px;align-items:flex-start;font-family:\"Libre Caslon Text\",Georgia,serif;font-size:13px;color:#6A6256}.ds-hr::after{content:\"\";flex:1;border-top:1px solid #D3C9B6;transform:translateY(9px)}.ds-hr span{width:42px;text-align:right}.ds-ev{position:absolute;left:60px;right:0;min-height:30px;background:var(--c);border-radius:10px;padding:6px 12px;font-size:14.5px;line-height:1.3;color:inherit;text-decoration:none;transition:transform .15s,box-shadow .15s}.ds-ev:hover{transform:translateX(2px);box-shadow:0 1px 2px rgba(30,27,22,.05),0 6px 18px -6px rgba(30,27,22,.12)}.ds-ev:focus-visible{outline:2px solid #7A2E2B;outline-offset:3px}.ds-cal{--c:#E9EEF3}.ds-fit{--c:#F6E6DC}.ds-health{--c:#F5E4E6}.ds-study{--c:#ECE6F3}.ds-ev b{display:block;font-family:\"Libre Caslon Text\",Georgia,serif;font-weight:400}.ds-ev small{color:#6A6256;font-size:12.5px}.ds-now{position:absolute;left:46px;right:0;height:0;border-top:1.5px solid #7A2E2B;z-index:2;pointer-events:none}.ds-now::after{content:\"8.40\";position:absolute;right:0;top:-21px;font-family:\"Libre Caslon Text\",Georgia,serif;font-size:12px;color:#F2ECDF;background:#7A2E2B;padding:2px 8px;border-radius:6px}@media (prefers-reduced-motion:reduce){.ds-ev{transition:none}}"
+    },
+    {
+      "name": "Ledger Row",
+      "kind": "custom",
+      "refersTo": "title",
+      "description": "Area status row on a hairline: serif name and sans description left, serif numeral with unit right; flag turns the unit oxblood.",
+      "html": "<ul class=\"ds-affairs\"><li><span class=\"ds-n\">Accounts</span><span class=\"ds-d\">Rent of $1,450 due Thursday; $690 discretionary thereafter</span><span class=\"ds-v\">$2,140<small>of $3,200 remaining</small></span></li><li><span class=\"ds-n\">Health</span><span class=\"ds-d\">Seven hours twelve of sleep · resting pulse 58</span><span class=\"ds-v ds-flag\">3 of 8<small>glasses of water</small></span></li></ul>",
+      "css": ".ds-affairs{list-style:none;margin:0;padding:0;background:#F5F0E6;color:#1E1B16;font:15px/1.5 \"Figtree\",system-ui,sans-serif;font-variant-numeric:oldstyle-nums tabular-nums}.ds-affairs li{display:grid;grid-template-columns:1fr auto;gap:2px 20px;padding:13px 0;border-bottom:1px solid #D3C9B6;align-items:baseline}.ds-n{grid-column:1;grid-row:1;font-family:\"Libre Caslon Text\",Georgia,serif;font-size:17px}.ds-d{grid-column:1;grid-row:2;color:#4D463C;font-size:13.5px}.ds-v{grid-column:2;grid-row:1/3;font-family:\"Libre Caslon Text\",Georgia,serif;font-size:24px;text-align:right;line-height:1.1}.ds-v small{display:block;font-family:\"Figtree\",system-ui,sans-serif;font-size:12px;color:#6A6256;margin-top:2px}.ds-flag small{color:#7A2E2B}"
+    },
+    {
+      "name": "Checkbox Row",
+      "kind": "input",
+      "refersTo": "checkbox",
+      "description": "To-do row on a dotted hairline; square checkbox fills bottle green when checked and strikes the label.",
+      "html": "<ul class=\"ds-todo\"><li><input type=\"checkbox\" id=\"ds-a\" checked><label for=\"ds-a\">Log weight</label><span class=\"ds-w\">morning</span></li><li><input type=\"checkbox\" id=\"ds-b\"><label for=\"ds-b\">Pay electric bill</label><span class=\"ds-w ds-due\">due today</span></li></ul>",
+      "css": ".ds-todo{list-style:none;margin:0;padding:0;background:#F5F0E6;color:#1E1B16;font:15px/1.5 \"Figtree\",system-ui,sans-serif}.ds-todo li{display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px dotted #D3C9B6}.ds-todo input{appearance:none;width:15px;height:15px;border:1px solid #4D463C;margin:0;display:grid;place-items:center;cursor:pointer;background:#F5F0E6;border-radius:2px}.ds-todo input:checked{background:#1F3A2E;border-color:#1F3A2E}.ds-todo input:checked::after{content:\"\";width:7px;height:4px;border:1.5px solid #F2ECDF;border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}.ds-todo input:focus-visible{outline:2px solid #7A2E2B;outline-offset:3px}.ds-todo label{cursor:pointer;flex:1}.ds-todo input:checked + label{color:#6A6256;text-decoration:line-through}.ds-w{font-size:12.5px;color:#6A6256}.ds-due{color:#7A2E2B}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Morning Agenda",
+    "overview": "**Creative North Star: \"The Morning Agenda\"**\n\nHQ is one person's private command center, and its first official design reads like a well-kept agenda opened at breakfast: a bottle-green masthead band across the top, ivory paper below, Caslon for anything that speaks (greeting, section titles, names, numbers) and Figtree for anything that merely informs (descriptions, labels, counts). The tone is welcoming and settled; nothing shouts, nothing gamifies. Numbers are set in oldstyle tabular figures so that \"$2,140\" and \"3 of 8\" sit in the text like words rather than readouts.\n\nThe one modern object on the page is the day itself: a single white, softly shadowed card holding an hour-ruled vertical timeline with area-tinted blocks and an oxblood \"now\" line. Everything else (the state of each area, the to-do list) sits directly on the paper as ruled ledger rows. Depth is spent once, on the timeline; the rest of the page is flat.\n\nThis is the incumbent world, chosen by the owner as \"the first official design, not the final design\". Later surfaces extend it (new areas, new screens) and may refine it; they should not silently trade the band, the paper, or the serif voice for something else without a decision.",
+    "keyCharacteristics": [
+      "Two materials, bottle-green band and ivory paper, with one white card as the only lifted surface.",
+      "Serif speaks, sans informs: Libre Caslon Text for greeting, titles, names, numerals and hour marks; Figtree for body, labels and captions.",
+      "Oldstyle tabular numerals on the whole document (`font-variant-numeric: oldstyle-nums tabular-nums`).",
+      "One accent, oxblood, reserved for \"now\" and for flags that need the owner's attention.",
+      "Hairline rules (1px, solid or dotted) structure lists instead of containers.",
+      "Area tints are pale and paper-adjacent; they identify, they do not decorate.",
+      "Motion is limited to a 150ms nudge on hover; reduced-motion removes it."
+    ],
+    "rules": [
+      {
+        "name": "The One Warm Accent Rule",
+        "body": "Oxblood is the only saturated warm color on the paper, and it is used only for \"now\", for flagged values, and for focus. A screen with nothing urgent has no oxblood on it.",
+        "section": "colors"
+      },
+      {
+        "name": "The Band Stays in the Band Rule",
+        "body": "Bottle green is a surface, not a text color. On paper it appears only as the checked-checkbox fill and the selection highlight.",
+        "section": "colors"
+      },
+      {
+        "name": "The Serif Speaks Rule",
+        "body": "If the owner would read the text aloud (greeting, a section's name, an area's name, its number, the hour) it is Caslon. If it only qualifies or counts, it is Figtree.",
+        "section": "typography"
+      },
+      {
+        "name": "The Oldstyle Figures Rule",
+        "body": "Numerals are oldstyle and tabular on the whole document; times are written with a full stop (8.40, 11.30), never a colon.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Card Rule",
+        "body": "Only the day's timeline earns a card and a shadow. Status, lists and to-dos sit on the paper on rules. A second card on a screen is a decision, not a default.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep the bottle-green band as the top of every screen, with the wordmark, italic serif date, nav and text actions inside the 1180px column.",
+      "Do set every number in oldstyle tabular figures and write times with a full stop (8.40).",
+      "Do put the day's timeline in the one white card, and everything else on Paper on hairlines.",
+      "Do reserve oxblood for \"now\", flags, and focus; let a calm screen have none.",
+      "Do tint event blocks by area with the four paper-adjacent tints and keep the text Ink.",
+      "Do use the shared 16px stroke icons from `icons.svg` at 1.75 stroke width."
+    ],
+    "donts": [
+      "Don't add filled or pill buttons; actions are text with an icon and a hover underline.",
+      "Don't use Caslon bold anywhere but the wordmark, or Figtree above 500.",
+      "Don't introduce a second accent or saturated area colors; the tints are identity, not status.",
+      "Don't put cards around lists or status rows; the rule is the container.",
+      "Don't use cool grays; every neutral is warm (ink-tinted shadows, ivory paper, tan rules)."
+    ]
+  }
+}

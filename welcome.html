@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HQ — Welcome</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --band:#1F3A2E; --band-2:#274838; --band-ink:#F2ECDF; --band-muted:#B9C9BE; --band-rule:rgba(242,236,223,.28);
+    --paper:#F5F0E6; --ink:#1E1B16; --ink-2:#4D463C; --ink-3:#6A6256; --rule:#D3C9B6; --ox:#7A2E2B;
+    --serif:"Libre Caslon Text",Georgia,serif; --sans:"Figtree",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:dark}
+  body{margin:0;min-height:100vh;background:var(--band);color:var(--band-ink);font:16px/1.5 var(--sans);-webkit-font-smoothing:antialiased;font-variant-numeric:oldstyle-nums tabular-nums;display:flex;flex-direction:column}
+  ::selection{background:var(--band-ink);color:var(--band)}
+  :focus-visible{outline:2px solid var(--band-ink);outline-offset:4px}
+  a{color:inherit;text-decoration:none}
+
+  .wrap{width:100%;max-width:1180px;margin:0 auto;padding:22px 40px 40px;flex:1;display:flex;flex-direction:column}
+  .row{display:flex;align-items:baseline;gap:26px;padding-bottom:16px;border-bottom:1px solid var(--band-rule)}
+  .mark{font-family:var(--serif);font-size:20px;letter-spacing:.14em;font-weight:700}
+  .date{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted);white-space:nowrap}
+  .row .skip{margin-left:auto;font-size:14px;color:var(--band-muted);border-bottom:1px solid transparent}
+  .row .skip:hover{color:var(--band-ink);border-color:currentColor}
+
+  .cover{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:80px;align-items:center;padding:48px 0 40px}
+  .greet{font-family:var(--serif);font-style:italic;font-size:22px;color:var(--band-muted);margin:0 0 22px}
+  blockquote{margin:0;font-family:var(--serif);font-size:40px;line-height:1.3;letter-spacing:-.005em;text-wrap:balance;max-width:26ch}
+  blockquote::before{content:"“";position:absolute;margin-left:-.5em;color:var(--band-muted)}
+  blockquote::after{content:"”";color:var(--band-muted)}
+  .quote{position:relative;padding-left:.5em}
+  figcaption{margin-top:20px;font-size:15px;color:var(--band-muted)}
+  figcaption b{font-weight:500;color:var(--band-ink)}
+
+  .word h2{margin:0 0 18px;font-family:var(--serif);font-weight:400;font-size:22px;padding-bottom:10px;border-bottom:1px solid var(--band-rule)}
+  .word .w{font-family:var(--serif);font-size:32px;line-height:1.3;margin:0}
+  .word .pos{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted);margin:6px 0 16px}
+  .word .pos span{margin-right:12px}
+  .word .def{margin:0 0 12px;font-size:17px;line-height:1.5;max-width:44ch}
+  .word .ex{margin:0;font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted);max-width:44ch}
+  .word .ex b{font-weight:400;font-style:italic;color:var(--band-ink)}
+
+  .foot{display:flex;align-items:center;gap:24px;padding-top:22px;border-top:1px solid var(--band-rule)}
+  .open{display:inline-flex;align-items:center;gap:12px;font-family:var(--serif);font-size:22px;border-bottom:1px solid transparent;transition:border-color .15s}
+  .open:hover{border-color:currentColor}
+  .open svg{width:18px;height:18px;transition:transform .15s}
+  .open:hover svg{transform:translateX(3px)}
+  .foot .hint{font-size:14px;color:var(--band-muted)}
+  .foot .hint kbd{font:inherit;padding:1px 6px;border:1px solid var(--band-rule);border-radius:6px}
+
+  @media (prefers-reduced-motion:reduce){.open,.open svg{transition:none}}
+  @media (max-width:900px){
+    .wrap{padding:18px 20px 28px}
+    .cover{grid-template-columns:1fr;gap:36px;padding:32px 0 28px}
+    blockquote{font-size:26px}
+    .word .w{font-size:26px}
+    .foot{flex-wrap:wrap;gap:14px} .foot .hint{display:none}
+    .row{flex-wrap:wrap;gap:10px 18px} .row .skip{margin-left:0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="row">
+    <span class="mark">HQ</span>
+    <span class="date" id="date">Monday, 14 September 2026</span>
+    <a class="skip" href="index.html">Skip to today →</a>
+  </header>
+
+  <main class="cover">
+    <figure class="quote">
+      <p class="greet" id="greet">Good morning, Jacob.</p>
+      <blockquote id="q">The impediment to action advances action. What stands in the way becomes the way.</blockquote>
+      <figcaption id="qa"><b>Marcus Aurelius</b>, Meditations</figcaption>
+    </figure>
+
+    <section class="word" aria-labelledby="wotd">
+      <h2 id="wotd">Word of the day</h2>
+      <p class="w" id="w">equanimity</p>
+      <p class="pos"><span id="pr">/ˌek-wə-ˈni-mə-tē/</span><span id="pos">noun</span></p>
+      <p class="def" id="def">Calmness and evenness of mind, especially under strain.</p>
+      <p class="ex" id="ex">She took the delay with <b>equanimity</b> and read until the train came.</p>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <a class="open" href="index.html">Open today<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    <span class="hint">or press <kbd>Enter</kbd></span>
+  </footer>
+</div>
+
+<script>
+  // One quote and one word per calendar day, rotating through the lists below.
+  // ponytail: hardcoded lists; swap for a fetched JSON once there's a data layer.
+  const quotes = [
+    ["The impediment to action advances action. What stands in the way becomes the way.", "Marcus Aurelius", "Meditations"],
+    ["We suffer more often in imagination than in reality.", "Seneca", "Letters"],
+    ["It is not that we have a short time to live, but that we waste a lot of it.", "Seneca", "On the Shortness of Life"],
+    ["Well begun is half done.", "Aristotle", ""],
+    ["No man steps in the same river twice.", "Heraclitus", ""],
+    ["Waste no more time arguing what a good man should be. Be one.", "Marcus Aurelius", "Meditations"],
+    ["First say to yourself what you would be; and then do what you have to do.", "Epictetus", "Discourses"],
+  ];
+  const words = [
+    ["equanimity", "/ˌek-wə-ˈni-mə-tē/", "noun", "Calmness and evenness of mind, especially under strain.", "She took the delay with <b>equanimity</b> and read until the train came."],
+    ["assiduous", "/ə-ˈsi-jə-wəs/", "adjective", "Showing great care, attention and persistence.", "An <b>assiduous</b> note-taker, he never lost a thread."],
+    ["halcyon", "/ˈhal-sē-ən/", "adjective", "Calm, peaceful; often of a happy period in the past.", "Those <b>halcyon</b> summers on the lake."],
+    ["lacuna", "/lə-ˈkü-nə/", "noun", "A gap or missing part, especially in a text or argument.", "The report has one <b>lacuna</b>: it never says who pays."],
+    ["sanguine", "/ˈsaŋ-gwən/", "adjective", "Optimistic, especially in a difficult situation.", "He stayed <b>sanguine</b> about the exam."],
+    ["perspicacious", "/ˌpər-spə-ˈkā-shəs/", "adjective", "Having a ready insight into and understanding of things.", "A <b>perspicacious</b> reader spots the flaw on page one."],
+    ["vestige", "/ˈves-tij/", "noun", "A trace of something that once existed.", "The last <b>vestige</b> of the old routine was the 7 a.m. alarm."],
+  ];
+  const now = new Date();
+  const day = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 864e5);
+  const [qt, qa, qs] = quotes[day % quotes.length];
+  const [w, pr, pos, def, ex] = words[day % words.length];
+  document.getElementById('q').textContent = qt;
+  document.getElementById('qa').innerHTML = `<b>${qa}</b>${qs ? ', ' + qs : ''}`;
+  document.getElementById('w').textContent = w;
+  document.getElementById('pr').textContent = pr;
+  document.getElementById('pos').textContent = pos;
+  document.getElementById('def').textContent = def;
+  document.getElementById('ex').innerHTML = ex;
+  document.getElementById('date').textContent = now.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  const h = now.getHours();
+  document.getElementById('greet').textContent = (h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + ', Jacob.';
+  addEventListener('keydown', e => { if (e.key === 'Enter') location.href = 'index.html'; });
+</script>
+</body>
+</html>

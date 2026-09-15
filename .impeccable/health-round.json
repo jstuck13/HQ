@@ -1,0 +1,69 @@
+{
+  "title": "Health page — choose the composition",
+  "question": "Log today's numbers first, 30-day trends beneath. Same world (band, paper, one card, ledgers). Lock one, steer, or re-roll.",
+  "options": [
+    {
+      "id": "metric-tabs",
+      "label": "One big chart, a tab per metric",
+      "kicker": "THE ROLL",
+      "lineage": "the lab-results screen: one chart at a time, the log beside it",
+      "thesis": "Sleep, water, weight, resting HR are tabs above a single large 30-day chart; the log for today sits in a ruled column beside it; pills and appointments run beneath as ledgers.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#F5E4E6"],
+      "materials": ["one white chart card", "serif tabs with an ink underline", "ruled log fields", "checkbox ledger for pills"],
+      "viewport": "Band: wordmark, 'Health', italic 'as of 8.40 am'. Paper: left 4/12 'Today' as ruled fields (water tally with plus/minus, sleep hours, weight, resting HR) and a pills checklist; right 8/12 the chart card with metric tabs and a 30-day line, then 'Appointments and refills' ledger under it.",
+      "risk": "The most familiar of the three; only one trend is visible at a time, so a glance can't compare sleep against weight.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: Health · date", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "Today: water · sleep · weight · HR (ruled fields)", "x": 0, "y": 1, "w": 4, "h": 5},
+        {"label": "Pills checklist", "x": 0, "y": 6, "w": 4, "h": 4},
+        {"label": "Sleep | Water | Weight | HR  — one 30-day chart card", "x": 4, "y": 1, "w": 8, "h": 6, "accent": true},
+        {"label": "Appointments and refills ledger", "x": 4, "y": 7, "w": 8, "h": 3}
+      ]},
+      "comp": ".impeccable/mocks/decision/metric-tabs.webp"
+    },
+    {
+      "id": "log-then-strip",
+      "label": "Today's ledger, then a strip of four trends",
+      "lineage": "a daily log sheet with the month's graphs pinned along the bottom",
+      "thesis": "The whole top of the page is today: one wide ruled ledger of everything to log (water, sleep, weight, HR, pills, next appointment) with inputs inline; beneath, four small 30-day charts in a row, one per metric, all visible at once.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#F5E4E6"],
+      "materials": ["full-width ruled log rows", "four small chart panes on paper rules (no cards)", "serif numerals for today's values", "one white card reserved for the water tally"],
+      "viewport": "Band: wordmark, 'Health', 'Tuesday · logged 3 of 6'. Paper: 'Today' ledger rows full width — each row: metric name, today's input, last value, note; pills as checkboxes in the same ledger; then 'Last 30 days' as four side-by-side ruled charts (sleep, water, weight, HR) with their averages.",
+      "risk": "Four small charts at ~260px each are readable for shape, not detail; inputs inside ledger rows must be clearly editable.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: Health · logged 3 of 6", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "Today: ruled log rows with inline inputs (water, sleep, weight, HR, pills, appointment)", "x": 0, "y": 1, "w": 12, "h": 5, "accent": true},
+        {"label": "Sleep 30d", "x": 0, "y": 6, "w": 3, "h": 4},
+        {"label": "Water 30d", "x": 3, "y": 6, "w": 3, "h": 4},
+        {"label": "Weight 30d", "x": 6, "y": 6, "w": 3, "h": 4},
+        {"label": "Resting HR 30d", "x": 9, "y": 6, "w": 3, "h": 4}
+      ]},
+      "comp": ".impeccable/mocks/decision/log-then-strip.webp"
+    },
+    {
+      "id": "morning-card",
+      "label": "The morning card over tall trends",
+      "lineage": "the home's One Card rule applied to health: today's log is the card, the month is the paper",
+      "thesis": "Today's log is the page's single white card — compact, all six things to log in one place with big serif numerals; below it the 30 days run as tall ruled charts stacked two-by-two directly on the paper, with pills and appointments in a right-hand ledger column.",
+      "palette": ["#1F3A2E", "#F5F0E6", "#FFFDF9", "#7A2E2B", "#F5E4E6"],
+      "materials": ["one white log card with the system shadow", "tall ruled charts on paper", "serif numerals", "checkbox ledger"],
+      "viewport": "Band: wordmark, 'Health', italic date. Paper: left 8/12 — the Today card (water tally with plus/minus, sleep, weight, HR as serif numerals with inline inputs), then 'Last 30 days' as two rows of two tall charts; right 4/12 — 'Pills' checklist ledger and 'Appointments and refills' ledger.",
+      "risk": "Tall charts push appointments below the fold at 900px; the card must stay compact or the page reads as two hero blocks.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "band: Health · date", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "Today card: water · sleep · weight · HR", "x": 0, "y": 1, "w": 8, "h": 3, "accent": true},
+        {"label": "Sleep 30d", "x": 0, "y": 4, "w": 4, "h": 3},
+        {"label": "Water 30d", "x": 4, "y": 4, "w": 4, "h": 3},
+        {"label": "Weight 30d", "x": 0, "y": 7, "w": 4, "h": 3},
+        {"label": "Resting HR 30d", "x": 4, "y": 7, "w": 4, "h": 3},
+        {"label": "Pills checklist", "x": 8, "y": 1, "w": 4, "h": 4},
+        {"label": "Appointments and refills", "x": 8, "y": 5, "w": 4, "h": 5}
+      ]},
+      "comp": ".impeccable/mocks/decision/morning-card.webp"
+    }
+  ],
+  "reroll": true,
+  "buildPath": {"value": "code", "toggle": false},
+  "canon": false,
+  "steer": true
+}
