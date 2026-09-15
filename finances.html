@@ -74,7 +74,7 @@
   .ledger .x{color:var(--ink-3);font-size:12.5px;opacity:0;transition:opacity .15s}
   .ledger li:hover .x,.ledger li:focus-within .x{opacity:1}
   .ledger .x:hover{color:var(--ox)}
-  .ledger .empty{padding:14px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif);grid-template-columns:1fr}
+  .ledger .empty,.cats .empty{padding:14px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif);grid-template-columns:1fr;display:block}
   .ledger .total{font-family:var(--serif);border-bottom:0;padding-top:12px}
   .ledger .more{grid-template-columns:1fr;border-bottom:0;padding-top:12px} .ledger .more .textbtn{font-size:13.5px;color:var(--ink-2)}
   .ledger .total .w{font-style:italic;color:var(--ink-2)}
@@ -143,6 +143,7 @@
   .tip{position:absolute;pointer-events:none;background:var(--card);box-shadow:var(--shadow);border-radius:6px;padding:4px 8px;font-size:12.5px;white-space:nowrap;opacity:0;transition:opacity .12s;transform:translate(-50%,-100%)}
   .tip b{font-family:var(--serif);font-weight:400;font-size:14px}
   .foot{max-width:1180px;margin:0 auto;padding:0 40px 32px;font-size:12.5px;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
+  .foot .textbtn{font-style:normal;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:8px} .foot .textbtn.ox{color:var(--ox)} .foot .textbtn:hover{color:var(--ink)}
 
   @media (prefers-reduced-motion:reduce){.textbtn,.ledger .x,.tip{transition:none}}
   @media (max-width:1000px){
@@ -230,7 +231,7 @@
     <div class="chart" id="svl"></div>
   </section>
 </main>
-<p class="foot">What you log is saved to your HQ account (and cached in this browser).</p>
+<p class="foot">What you log is saved to your HQ account (and cached in this browser). <button class="textbtn" type="button" id="clear-ask">Clear everything</button><span id="clear-sure" hidden>Remove every category, paycheck and expense for this month? <button class="textbtn ox" type="button" id="clear-yes">Yes, clear</button> <button class="textbtn" type="button" id="clear-no">Keep them</button></span></p>
 
 <script src="clock.js"></script>
 <script src="store.js"></script>
@@ -274,24 +275,23 @@
     F('expected').value = S.expected.toLocaleString('en-US');
     F('monthn').textContent = MONTH;
     F('landed').textContent = $0(landed);
-    F('landedn').textContent = `${Math.round(landed/S.expected*100)}% of expected · ${S.income.length} ${S.income.length===1?'payment':'payments'}`;
+    F('landedn').textContent = `${S.expected?Math.round(landed/S.expected*100)+'% of expected · ':''}${S.income.length} ${S.income.length===1?'payment':'payments'}`;
     const next = S.plan.filter(p=>p.date >= C.today).sort((a,b)=>a.date<b.date?-1:1)[0];
     F('nextv').textContent = next ? $0(next.amt) : '—'; F('nextn').textContent = next ? `${next.src}, ${dmy(next.date)}` : 'nothing planned';
     const inc = [...S.income].sort((a,b)=>a.date<b.date?1:-1);
     F('inl').innerHTML = (inc.length ? inc.map(i=>`<li data-id="${i.id}"><span class="d">${dmy(i.date)}</span><span class="w">${esc(i.src)}</span><button class="x" type="button" aria-label="Remove ${esc(i.src)}">remove</button><span class="a in">${$(i.amt)}</span></li>`).join('') : '<li class="empty">Nothing landed yet this month.</li>')
       ;
-    F('planl').innerHTML = S.plan.map(p=>`<li><span class="d">${dmy(p.date)}</span><span class="w">${esc(p.src)}<small>expected</small></span><span></span><span class="a">${$(p.amt)}</span></li>`).join('')
-      + `<li class="total"><span class="d"></span><span class="w">To reach the ${$0(S.expected)} plan</span><span></span><span class="a">${$(Math.max(0,S.expected-landed))}</span></li>`;
+    F('planl').innerHTML = (S.plan.length ? S.plan.map(p=>`<li><span class="d">${dmy(p.date)}</span><span class="w">${esc(p.src)}<small>expected</small></span><span></span><span class="a">${$(p.amt)}</span></li>`).join('') : '') + `<li class="total"><span class="d"></span><span class="w">To reach the ${$0(S.expected)} plan</span><span></span><span class="a">${$(Math.max(0,S.expected-landed))}</span></li>`;
     // money out
     F('outsum').textContent = `${$0(spent)} spent of ${$0(limits)}`;
-    F('cats').innerHTML = S.cats.map((c,i)=>{
+    F('cats').innerHTML = S.cats.length ? S.cats.map((c,i)=>{
       const sp = spentIn(c.id), pct = Math.min(100, c.limit ? sp/c.limit*100 : 0), over = sp > c.limit, lft = c.limit - sp;
       const due = c.due && (c.bill || sp===0) ? ((c.bill?c.bill+' ':'') + (c.due===DAY ? 'due today' : c.due>DAY ? `due ${c.due===DAY+1?'tomorrow':'on the '+c.due+ordinal(c.due)}` : 'overdue')) : '';
       return `<li data-id="${c.id}"><span class="n">${esc(c.name)}</span><span class="ctl"><button class="mv" type="button" data-mv="-1" aria-label="Move ${esc(c.name)} up" ${i===0?'disabled':''}><svg class="ic"><use href="icons.svg?v=3#chevron-up"/></svg></button><button class="mv" type="button" data-mv="1" aria-label="Move ${esc(c.name)} down" ${i===S.cats.length-1?'disabled':''}><svg class="ic"><use href="icons.svg?v=3#chevron-down"/></svg></button><button class="x" type="button" aria-label="Remove ${esc(c.name)}">remove</button></span>
         <span class="s">${$0(sp)} <small>of</small> $<input value="${c.limit.toLocaleString('en-US')}" inputmode="numeric" aria-label="${esc(c.name)} limit"></span>
         <span class="bar"><i class="${over?'over':''}" style="width:${pct}%"></i></span>
         <span class="l ${over?'over':''} ${/due today|overdue/.test(due)?'due':''}">${over ? $0(-lft)+' over' : due ? (c.bill ? due+' · '+$0(lft)+' left' : due) : $0(lft)+' left'}</span></li>`;
-    }).join('');
+    }).join('') : '<li class="empty">No categories yet. Add one below with a monthly limit.</li>';
     const lastCat = F('x-cat').value || (S.tx.length ? [...S.tx].sort((a,b)=>b.id-a.id)[0].cat : S.cats[1]?.id);
     F('x-cat').innerHTML = S.cats.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join(''); if(lastCat && cat(lastCat)) F('x-cat').value = lastCat;
     const tx = [...S.tx].sort((a,b)=>a.date<b.date?1:(a.date>b.date?-1:b.id-a.id));
@@ -362,7 +362,7 @@
 
     // 3. spent vs limit by category: horizontal bars
     const rows=S.cats.filter(c=>c.limit>0), W3=Math.max(220, F('svl').clientWidth||300), rh=22, H3=rows.length*rh+4, lw=88;
-    F('svl').innerHTML = `<h3>Spent vs limit<small>each bar is one limit</small></h3><p class="fig">${Math.round(spent/limits*100)}%<small>of limits used, ${Math.round(DAY/DIM*100)}% of the month gone</small></p>
+    F('svl').innerHTML = `<h3>Spent vs limit<small>each bar is one limit</small></h3><p class="fig">${limits?Math.round(spent/limits*100)+'%':'—'}<small>${limits?'of limits used, ':''}${Math.round(DAY/DIM*100)}% of the month gone</small></p>
       <svg viewBox="0 0 ${W3} ${H3}" role="img" aria-label="Spent against limit for each category">
         ${rows.map((c,i)=>{ const sp=spentIn(c.id), yv=i*rh+4, tw=(W3-lw), sw=Math.min(1,sp/c.limit)*(W3-lw); return `<text class="lbl" x="${lw-8}" y="${yv+12}" text-anchor="end">${esc(c.name)}</text><rect class="hbar-t" x="${lw}" y="${yv+3}" width="${tw.toFixed(1)}" height="10"/>${sp>0?`<path class="hbar ${sp>c.limit?'over':''}" d="M${lw},${yv+3} h${Math.max(0,sw-4).toFixed(1)} a4,4 0 0 1 4,4 v2 a4,4 0 0 1 -4,4 H${lw} Z"/>`:''}`; }).join('')}
       </svg><div class="legend"><span><i style="background:var(--ink)"></i>Spent</span><span><i style="background:var(--rule)"></i>Limit</span>${rows.some(c=>spentIn(c.id)>c.limit)?'<span><i style="background:var(--ox)"></i>Over</span>':''}</div>`;
@@ -377,6 +377,11 @@
     svg.addEventListener('pointerleave', ()=>{ xh.style.opacity=0; hv.style.opacity=0; tip.style.opacity=0; });
   }
   F('in-date').value = F('x-date').value = C.dayMonth(NOWD);
+  // an empty month: one blank plan, no categories, no history
+  const blank = () => ({ expected: 0, income: [], plan: [], cats: [], tx: [], history: [] });
+  F('clear-ask').addEventListener('click', ()=>{ F('clear-ask').hidden=true; F('clear-sure').hidden=false; });
+  F('clear-no').addEventListener('click', ()=>{ F('clear-ask').hidden=false; F('clear-sure').hidden=true; });
+  F('clear-yes').addEventListener('click', ()=>{ S=blank(); showAll=false; F('clear-ask').hidden=false; F('clear-sure').hidden=true; render(); });
   render();
   store.load(KEY).then(doc => { if (doc) { S = doc; render(); } else save(); });
   let rt; addEventListener('resize', ()=>{ clearTimeout(rt); rt=setTimeout(render,150); });
