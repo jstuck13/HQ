@@ -192,17 +192,19 @@
     <div class="strip" id="strip"></div>
   </section>
 </main>
-<p class="foot">Sample data, shown for design only. What you log today is kept in this browser.</p>
+<p class="foot">What you log is saved to your HQ account (and cached in this browser). Trend lines are sample data until readings accumulate.</p>
 
+<script src="store.js"></script>
 <script>
   // ---- state: today's log, kept in this browser ----
   // ponytail: localStorage; becomes the health store later.
   const F = id => document.getElementById(id);
-  let L; try { L = JSON.parse(localStorage.getItem('hq.health.2026-09-14')) || {}; } catch { L = {}; }
-  const save = () => { try { localStorage.setItem('hq.health.2026-09-14', JSON.stringify(L)); } catch {} };
+  let L = {};
+  const save = () => store.save('health.2026-09-14', L);
   L.pills ??= [];
 
   // readings
+  const applyLog = () => { ['sleep','bed','woke','weight','hr','bps','bpd'].forEach(k=>{ F(k).value = L[k]!=null ? L[k] : ''; }); document.querySelectorAll('.pills input').forEach(i=>{ i.checked = L.pills.includes(i.dataset.p); }); renderLogged(); };
   ['sleep','bed','woke','weight','hr','bps','bpd'].forEach(k=>{
     const el=F(k); if(L[k]!=null) el.value=L[k];
     el.addEventListener('change', ()=>{ const v=el.value.trim(); if(v) L[k]=v; else delete L[k]; save(); renderLogged(); });
@@ -266,6 +268,7 @@
   cell('hr', hr.fmt(hr.data[28]), 'yesterday', hr.fmt(hr.data.reduce((a,b)=>a+b,0)/30), trend(hr.data, .5, v=>`${Math.round(v)}`));
   renderLogged();
   F('newentry').onclick = ()=>F('sleep').focus();
+  store.load('health.2026-09-14').then(doc => { if (doc) { L = doc; L.pills ??= []; applyLog(); } });
 
   // hover: crosshair + tooltip on the nearest day
   document.querySelectorAll('.chart').forEach(ch=>{

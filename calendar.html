@@ -254,8 +254,9 @@
     </form>
   </aside>
 </main>
-<p class="foot">Sample data, shown for design only. Entries, categories and notes you add are kept in this browser. Week navigation and the mini month's other weeks are drawn states.</p>
+<p class="foot">Entries, categories and notes are saved to your HQ account (and cached in this browser). Week navigation and the mini month's other weeks are drawn states.</p>
 
+<script src="store.js"></script>
 <script>
   // ---- data model ----
   // A series repeats; an occurrence is one series on one day. Notes belong to the occurrence.
@@ -294,9 +295,9 @@
     notes: { '1@0':'Finish the pricing curve; ask Sam for the export before 11.', '2@0':'Bench felt heavy last week — keep 3×5 at the same weight.' },
     hidden: [],
   });
-  let S; try { S = JSON.parse(localStorage.getItem('hq.calendar')) || seed(); } catch { S = seed(); }
-  S.series.forEach(x=>{ if(!Array.isArray(x.rep)) x.rep = ({mwf:[0,2,4],tt:[1,3],daily:[0,1,2,3,4,5,6],weekdays:[0,1,2,3,4]})[x.rep] || []; });
-  const save = () => { try { localStorage.setItem('hq.calendar', JSON.stringify(S)); } catch {} };
+  let S = seed();
+  const migrate = () => S.series.forEach(x=>{ if(!Array.isArray(x.rep)) x.rep = ({mwf:[0,2,4],tt:[1,3],daily:[0,1,2,3,4,5,6],weekdays:[0,1,2,3,4]})[x.rep] || []; });
+  const save = () => store.save('calendar', S);
 
   const cat = id => S.cats.find(c=>c.id===id) || S.cats[0];
   const h12 = h => { const hr=Math.floor(h), m=Math.round((h%1)*60); return `${hr%12||12}.${String(m).padStart(2,'0')} ${hr<12?'am':'pm'}`; };
@@ -425,6 +426,7 @@
 
   function renderAll(){ renderCats(); renderGrid(); renderLedger(); renderEntry(); }
   renderAll(); reset();
+  store.load('calendar').then(doc => { if (doc) { S = doc; migrate(); renderAll(); reset(); } });
 </script>
 <script>document.getElementById('menubtn').addEventListener('click', e=>{ const b=document.querySelector('.band'); b.classList.toggle('nav-open'); e.currentTarget.setAttribute('aria-expanded', b.classList.contains('nav-open')); });</script>
 </body>

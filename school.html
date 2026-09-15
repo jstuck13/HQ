@@ -202,8 +202,9 @@
     </div>
   </aside>
 </main>
-<p class="foot">Sample data, shown for design only. Courses, items, links and sessions you add are kept in this browser.</p>
+<p class="foot">Courses, items, links and sessions are saved to your HQ account (and cached in this browser).</p>
 
+<script src="store.js"></script>
 <script>
   // ---- state ----
   // ponytail: localStorage; becomes the school store later.
@@ -230,8 +231,8 @@
       {id:14,date:'2026-09-11',course:'db',min:45},{id:15,date:'2026-09-12',course:'wri',min:60},{id:16,date:'2026-09-13',course:'stat',min:60},
     ],
   });
-  let S; try { S = JSON.parse(localStorage.getItem('hq.school')) || seed(); } catch { S = seed(); }
-  const save = () => { try { localStorage.setItem('hq.school', JSON.stringify(S)); } catch {} };
+  let S = seed();
+  const save = () => store.save('school', S);
 
   const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const course = id => S.courses.find(c=>c.id===id);
@@ -333,6 +334,7 @@
   F('addsess').addEventListener('submit', e=>{ e.preventDefault(); const min=parseInt(F('s-min').value); if(!min) return F('s-min').focus(); S.sessions.push({id:Date.now(), date:dayOf(F('s-date').value), course:F('s-course').value, min}); const k=F('s-course').value; F('addsess').reset(); F('s-course').value=k; F('s-date').value='14 Sep'; render(); });
   F('newitem').addEventListener('click', ()=>F('i-title').focus());
   render();
+  store.load('school').then(doc => { if (doc) { S = doc; render(); } });
 </script>
 <script>document.getElementById('menubtn').addEventListener('click', e=>{ const b=document.querySelector('.band'); b.classList.toggle('nav-open'); e.currentTarget.setAttribute('aria-expanded', b.classList.contains('nav-open')); });</script>
 </body>
