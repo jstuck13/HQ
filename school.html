@@ -104,7 +104,7 @@
   .addc .textbtn{font-size:13.5px}
 
   /* right column */
-  .ledger li{display:grid;grid-template-columns:auto 1fr auto;gap:12px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+  .ledger li{display:grid;grid-template-columns:auto 1fr auto 20px;gap:12px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
   .ledger input[type=checkbox]{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px;align-self:center}
   .ledger input:checked{background:var(--band);border-color:var(--band)}
   .ledger input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
@@ -115,8 +115,8 @@
   .ledger .d{font-family:var(--serif);color:var(--ink-2);font-size:14px;white-space:nowrap;text-align:right}
   .ledger .d.ox{color:var(--ox)}
   .ledger .d small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3)}
-  .ledger .x{color:var(--ink-3);font-size:12px;opacity:0;grid-column:3;justify-self:end}
-  .ledger .x .m-{display:none}
+  .ledger .x{color:var(--ink-3);font-size:12px;opacity:0;grid-column:4;grid-row:1;justify-self:end;align-self:center}
+  .ledger .x .w-{display:none} .ledger .x .m-{display:block}
   .ledger li:hover .x,.ledger li:focus-within .x{opacity:1}
   .ledger.sess li{grid-template-columns:64px 1fr auto}
   .ledger.sess .m{font-family:var(--serif);font-size:17px;white-space:nowrap}
@@ -134,8 +134,10 @@
 
   @media (prefers-reduced-motion:reduce){.textbtn{transition:none}}
   @media (max-width:1000px){main{grid-template-columns:1fr;grid-template-rows:auto;gap:34px} main > aside{grid-column:1;grid-row:auto} .courses{order:3;margin-top:0} .tiles{grid-template-columns:1fr}}
+  @media (max-width:900px){
+    .band .in{padding:14px 20px 20px} .date{display:none} .row{flex-wrap:wrap;gap:14px} .menu{display:grid;place-items:center;width:32px;height:32px;color:var(--band-ink)} nav{display:none;order:9;width:100%;flex-wrap:wrap;gap:10px 18px;margin:12px 0 0;padding-top:12px;border-top:1px solid rgba(242,236,223,.28)} .band.nav-open nav{display:flex} h1{font-size:26px}
+  }
   @media (max-width:760px){
-    .band .in{padding:14px 20px 20px} .date{display:none} .row{flex-wrap:wrap} .menu{display:grid;place-items:center;width:32px;height:32px;color:var(--band-ink)} nav{display:none;order:9;width:100%;flex-wrap:wrap;gap:10px 18px;margin:12px 0 0;padding-top:12px;border-top:1px solid rgba(242,236,223,.28)} .band.nav-open nav{display:flex} .row{gap:14px} h1{font-size:26px}
     main{padding:24px 20px 36px} .foot{padding:0 20px 28px}
     .next{grid-template-columns:1fr} .next .sess{grid-column:1;grid-row:auto;align-items:flex-start;text-align:left}
     h2{flex-wrap:wrap} h2 small{flex-basis:100%;margin-left:0}
@@ -188,7 +190,7 @@
       <input id="i-title" class="full" placeholder="Assignment, test, reading…" required>
       <select id="i-course"></select>
       <select id="i-type"><option value="assignment">Assignment</option><option value="test">Test</option><option value="reading">Reading</option></select>
-      <input id="i-date" placeholder="17 Sep" aria-label="Due day" required>
+      <input id="i-date" placeholder="" aria-label="Due day" required>
       <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add to due</button>
     </form>
     <ul class="ledger" id="due"></ul>
@@ -321,6 +323,7 @@
   F('clear-ask').addEventListener('click', ()=>{ F('clear-ask').hidden=true; F('clear-sure').hidden=false; });
   F('clear-no').addEventListener('click', ()=>{ F('clear-ask').hidden=false; F('clear-sure').hidden=true; });
   F('clear-yes').addEventListener('click', ()=>{ S=seed(); F('clear-ask').hidden=false; F('clear-sure').hidden=true; render(); });
+  F('i-date').placeholder = C.dayMonth(C.addDays(C.now, 2));
   render();
   store.load('school').then(doc => { if (doc) { S = doc; render(); } else save(); });
 </script>

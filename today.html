@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>HQ</title>
+<title>HQ — Today</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
@@ -34,7 +34,7 @@
   nav a:hover{color:var(--band-ink)}
   nav a[aria-current]{color:var(--band-ink);border-bottom:1px solid var(--band-ink);padding-bottom:2px}
   .row .right{margin-left:auto;display:flex;gap:18px;align-items:center;font-size:13.5px}
-  .textbtn{display:inline-flex;align-items:center;gap:8px;letter-spacing:.04em;border-bottom:1px solid transparent;transition:border-color .15s}
+  .textbtn{display:inline-flex;align-items:center;gap:8px;letter-spacing:.04em;border-bottom:1px solid transparent;transition:border-color .15s;white-space:nowrap}
   .textbtn:hover{border-color:currentColor}
   .ib{color:var(--band-muted)} .ib:hover{color:var(--band-ink)}
   .menu{display:none}
@@ -42,9 +42,9 @@
   h1{font-size:32px;line-height:1.3;text-wrap:balance;max-width:40ch}
   h1 em{font-style:italic}
 
-  main{max-width:1180px;margin:0 auto;padding:34px 40px 40px;display:grid;grid-template-columns:1.1fr 1fr;gap:64px}
+  main{max-width:1180px;margin:0 auto;padding:34px 40px 44px;display:grid;grid-template-columns:1.1fr 1fr;gap:64px}
   h2{font-size:22px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:4px;display:flex;align-items:baseline;gap:12px}
-  h2 small{font-family:var(--sans);font-size:12.5px;letter-spacing:.02em;color:var(--ink-3);margin-left:auto}
+  h2 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
   ul{list-style:none;margin:0;padding:0}
 
   /* hour-ruled timeline (clean's donation, in ink and paper) */
@@ -70,11 +70,11 @@
   .affairs .v.flag small{color:var(--ox)}
   .todo{margin-top:34px}
   .todo li{display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px dotted var(--rule)}
-  .todo input{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px}
-  .todo input:checked{background:var(--band);border-color:var(--band)}
-  .todo input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+  .todo input[type=checkbox]{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px}
+  .todo input[type=checkbox]:checked{background:var(--band);border-color:var(--band)}
+  .todo input[type=checkbox]:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
   .todo label{cursor:pointer;flex:1}
-  .todo input:checked + label{color:var(--ink-3);text-decoration:line-through}
+  .todo input[type=checkbox]:checked + label{color:var(--ink-3);text-decoration:line-through}
   .todo .w{font-size:12.5px;color:var(--ink-3)}
   .todo .w.due{color:var(--ox)}
   .todo .x{opacity:0} .todo li:hover .x,.todo li:focus-within .x{opacity:1} .todo .x:hover{color:var(--ox)}
@@ -90,8 +90,7 @@
 
   @media (prefers-reduced-motion:reduce){.ev{transition:none}}
   @media (max-width:900px){
-    .band .in{padding:14px 20px 20px} .date{display:none} .row{flex-wrap:wrap} .menu{display:grid;place-items:center;width:32px;height:32px;color:var(--band-ink)} nav{display:none;order:9;width:100%;flex-wrap:wrap;gap:10px 18px;margin:12px 0 0;padding-top:12px;border-top:1px solid rgba(242,236,223,.28)} .band.nav-open nav{display:flex} .row{gap:14px}
-    h1{font-size:26px}
+    .band .in{padding:14px 20px 20px} .date{display:none} .row{flex-wrap:wrap;gap:14px} .menu{display:grid;place-items:center;width:32px;height:32px;color:var(--band-ink)} nav{display:none;order:9;width:100%;flex-wrap:wrap;gap:10px 18px;margin:12px 0 0;padding-top:12px;border-top:1px solid rgba(242,236,223,.28)} .band.nav-open nav{display:flex} h1{font-size:26px}
     main{grid-template-columns:1fr;gap:36px;padding:24px 20px 36px} .card{padding:12px 10px 14px} .foot{padding:0 20px 28px}
   }
 </style>
@@ -175,7 +174,7 @@
       const due=d.fin.cats.find(c=>c.due && (c.bill || !d.fin.tx.some(t=>t.cat===c.id)) && c.due>=C.now.getDate()), next=(d.fin.plan||[]).filter(p=>p.date>=TODAY).sort()[0];
       const note = due ? `${esc(due.bill||due.name)} ${due.due===C.now.getDate()?'due today':'due on the '+due.due+ordinal(due.due)}` : next ? `Next paycheck ${C.short(C.fromISO(next.date))}, ${$0(next.amt)}` : `${$0(spent)} spent so far`;
       rows.push(row('Finances','finances.html',note,$0(left),`of ${$0(limits)} remaining`, due && due.due===C.now.getDate()));
-    } else rows.push(row('Finances','finances.html','Open Finances to set this month’s budget','—','not started'));
+    } else rows.push(row('Finances','finances.html','Open Finances to set this month’s budget','','not started'));
     // health
     if(d.health){ const L=d.health, meds=L.meds||0, pills=(L.pills||[]).length, total=meds?5:4, n=['sleep','weight','hr'].filter(k=>L[k]!=null).length+(L.bps&&L.bpd?1:0)+(meds&&pills>=meds?1:0);
       const note = L.sleep ? `Slept ${L.sleep} h${L.hr?' · resting pulse '+L.hr:''}` : 'Nothing logged yet today';
@@ -184,14 +183,14 @@
     // library
     if(d.lib){ const b=(d.lib.books||[]).find(x=>x.shelf==='reading'), toread=(d.lib.books||[]).filter(x=>x.shelf==='toread').length;
       if(b) rows.push(row('Library','library.html',`${esc(b.title)}, ${esc(b.author)}`, b.pages?`p. ${b.page||0}`:'reading', b.pages?`of ${b.pages} · ${Math.round((b.page||0)/b.pages*100)}%`:'', false));
-      else rows.push(row('Library','library.html',`${toread} waiting on the shelf`,'—','nothing open'));
-    } else rows.push(row('Library','library.html','Open Library to shelve your books','—','no books yet'));
+      else rows.push(row('Library','library.html',`${toread} waiting on the shelf`,'','nothing open'));
+    } else rows.push(row('Library','library.html','Open Library to shelve your books','','no books yet'));
     // school
     if(d.school){ const items=(d.school.items||[]).filter(i=>!i.done).sort((a,b)=>a.due<b.due?-1:1), nx=items[0], cn=id=>(d.school.courses||[]).find(c=>c.id===id);
       const dd = nx ? C.daysBetween(TODAY, nx.due) : null;
       const note = nx ? `${esc(cn(nx.course)?.name||'')} — ${esc(nx.title)}, ${dd<0?'overdue':dd===0?'due today':dd===1?'due tomorrow':'due '+C.short(C.fromISO(nx.due))}` : 'Nothing due';
       rows.push(row('School','school.html',note,`${items.length}`,`open ${items.length===1?'item':'items'}`, dd!==null && dd<=0));
-    } else rows.push(row('School','school.html','Open School to add your courses','—','no courses yet'));
+    } else rows.push(row('School','school.html','Open School to add your courses','','no courses yet'));
     // calendar
     { const list=d.day||[], later=list.filter(s=>s.start>NOW), next=later[0];
       const lastEnd = list.length ? Math.max(...list.map(s=>s.end)) : null;

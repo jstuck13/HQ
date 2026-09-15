@@ -36,7 +36,7 @@
   nav a:hover{color:var(--band-ink)}
   nav a[aria-current]{color:var(--band-ink);border-bottom:1px solid var(--band-ink);padding-bottom:2px}
   .row .right{margin-left:auto;display:flex;gap:18px;align-items:center;font-size:13.5px}
-  .textbtn{display:inline-flex;align-items:center;gap:8px;letter-spacing:.04em;border-bottom:1px solid transparent;transition:border-color .15s}
+  .textbtn{display:inline-flex;align-items:center;gap:8px;letter-spacing:.04em;border-bottom:1px solid transparent;transition:border-color .15s;white-space:nowrap}
   .textbtn:hover{border-color:currentColor}
   .ib{color:var(--band-muted)} .ib:hover{color:var(--band-ink)}
   .menu{display:none}
@@ -121,8 +121,10 @@
 
   @media (prefers-reduced-motion:reduce){.textbtn,.chart .tip{transition:none}}
   @media (max-width:1000px){.log{grid-template-columns:1fr;gap:34px}.strip{grid-template-columns:repeat(2,1fr)}.strip .chart:last-child{grid-column:1/-1}}
+  @media (max-width:900px){
+    .band .in{padding:14px 20px 20px} .date{display:none} .row{flex-wrap:wrap;gap:14px} .menu{display:grid;place-items:center;width:32px;height:32px;color:var(--band-ink)} nav{display:none;order:9;width:100%;flex-wrap:wrap;gap:10px 18px;margin:12px 0 0;padding-top:12px;border-top:1px solid rgba(242,236,223,.28)} .band.nav-open nav{display:flex} h1{font-size:26px}
+  }
   @media (max-width:760px){
-    .band .in{padding:14px 20px 20px} .date{display:none} .row{flex-wrap:wrap} .menu{display:grid;place-items:center;width:32px;height:32px;color:var(--band-ink)} nav{display:none;order:9;width:100%;flex-wrap:wrap;gap:10px 18px;margin:12px 0 0;padding-top:12px;border-top:1px solid rgba(242,236,223,.28)} .band.nav-open nav{display:flex} .row{gap:14px} h1{font-size:26px}
     main{padding:24px 20px 36px} .foot{padding:0 20px 28px}
     .ledger li{grid-template-columns:1fr auto;gap:6px 12px} .ledger .head{display:none} .ledger .l,.ledger .a{grid-column:1/-1;text-align:left;display:inline}
     .ledger .l,.ledger .a{grid-column:auto;display:block;font-size:12.5px} .ledger .l small,.ledger .a small{display:inline;margin-left:4px}
@@ -186,7 +188,7 @@
       <div class="next">
         <h2>Next<small>Appointments and refills</small></h2>
         <ul id="next"></ul>
-        <form class="addl" id="addnext"><input id="nx-name" placeholder="Dentist, refill, bloods…" aria-label="What" required><input id="nx-date" placeholder="17 Sep" aria-label="Day"><input id="nx-note" placeholder="where, who, time" aria-label="Note" class="full"><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
+        <form class="addl" id="addnext"><input id="nx-name" placeholder="Dentist, refill, bloods…" aria-label="What" required><input id="nx-date" placeholder="" aria-label="Day"><input id="nx-note" placeholder="where, who, time" aria-label="Note" class="full"><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
       </div>
     </aside>
   </div>
@@ -319,6 +321,7 @@
 
   F('todayn').textContent = `${C.dayName(C.now)} ${C.dayMonthLong(C.now)}`;
   F('rangen').textContent = `${C.dayMonthLong(C.addDays(C.now,-29))} – ${C.dayMonthLong(C.now)}`;
+  F('nx-date').placeholder = C.dayMonth(C.addDays(C.now, 2));
   renderAll();
   F('newentry').onclick = ()=>F('sleep').focus();
   store.load(KEY).then(doc => { if (doc && doc.days) { H = doc; H.meds ??= []; H.next ??= []; L = H.days[TODAY] || { pills: [] }; L.pills ??= []; applyLog(); } });

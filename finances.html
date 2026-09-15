@@ -37,7 +37,7 @@
   nav a:hover{color:var(--band-ink)}
   nav a[aria-current]{color:var(--band-ink);border-bottom:1px solid var(--band-ink);padding-bottom:2px}
   .row .right{margin-left:auto;display:flex;gap:18px;align-items:center;font-size:13.5px}
-  .textbtn{display:inline-flex;align-items:center;gap:8px;letter-spacing:.04em;border-bottom:1px solid transparent;transition:border-color .15s}
+  .textbtn{display:inline-flex;align-items:center;gap:8px;letter-spacing:.04em;border-bottom:1px solid transparent;transition:border-color .15s;white-space:nowrap}
   .textbtn:hover{border-color:currentColor}
   .ib{color:var(--band-muted)} .ib:hover{color:var(--band-ink)}
   .menu{display:none}
@@ -151,8 +151,10 @@
     .book{grid-template-columns:1fr;gap:34px} .gutter{display:none}
     .charts{grid-template-columns:1fr 1fr} .charts .chart:first-child{grid-column:1/-1}
   }
+  @media (max-width:900px){
+    .band .in{padding:14px 20px 20px} .date{display:none} .row{flex-wrap:wrap;gap:14px} .menu{display:grid;place-items:center;width:32px;height:32px;color:var(--band-ink)} nav{display:none;order:9;width:100%;flex-wrap:wrap;gap:10px 18px;margin:12px 0 0;padding-top:12px;border-top:1px solid rgba(242,236,223,.28)} .band.nav-open nav{display:flex} h1{font-size:26px}
+  }
   @media (max-width:760px){
-    .band .in{padding:14px 20px 20px} .date{display:none} .row{flex-wrap:wrap} .menu{display:grid;place-items:center;width:32px;height:32px;color:var(--band-ink)} nav{display:none;order:9;width:100%;flex-wrap:wrap;gap:10px 18px;margin:12px 0 0;padding-top:12px;border-top:1px solid rgba(242,236,223,.28)} .band.nav-open nav{display:flex} .row{gap:14px} h1{font-size:26px}
     main{padding:24px 20px 36px} .foot{padding:0 20px 28px}
     .figs{grid-template-columns:1fr 1fr}
     .ledger li{grid-template-columns:56px 1fr auto 20px;gap:10px} .ledger li > .a{grid-column:3;grid-row:1} .ledger li > .x{grid-column:4;grid-row:1;opacity:1;justify-self:end;align-self:center} .ledger .x span{display:none} .ledger .x .m-{display:block}

@@ -38,11 +38,11 @@
   nav a:hover{color:var(--band-ink)}
   nav a[aria-current]{color:var(--band-ink);border-bottom:1px solid var(--band-ink);padding-bottom:2px}
   .row .right{margin-left:auto;display:flex;gap:18px;align-items:center;font-size:13.5px}
-  .textbtn{display:inline-flex;align-items:center;gap:8px;letter-spacing:.04em;border-bottom:1px solid transparent;transition:border-color .15s}
+  .textbtn{display:inline-flex;align-items:center;gap:8px;letter-spacing:.04em;border-bottom:1px solid transparent;transition:border-color .15s;white-space:nowrap}
   .textbtn:hover{border-color:currentColor}
   .ib{color:var(--band-muted)} .ib:hover{color:var(--band-ink)}
   .menu{display:none}
-  .mast{margin-top:20px;padding-top:18px;border-top:1px solid rgba(242,236,223,.28);display:flex;align-items:baseline;gap:22px}
+  .mast{margin-top:20px;padding-top:18px;border-top:1px solid rgba(242,236,223,.28);display:flex;align-items:baseline;gap:22px;flex-wrap:wrap}
   h1{font-size:32px;line-height:1.3}
   .mast .nav{display:flex;gap:16px;align-items:center;align-self:center;font-size:13.5px;letter-spacing:.04em;color:var(--band-muted)}
   .mast .nav button{color:inherit;border-bottom:1px solid transparent;display:inline-flex;align-items:center;gap:4px;line-height:1;padding:4px 0}
@@ -164,12 +164,14 @@
     main{grid-template-columns:1fr 3fr;gap:32px}
     .right{grid-column:1/-1}
   }
+  @media (max-width:900px){
+    .band .in{padding:14px 20px 20px} .date{display:none} .row{flex-wrap:wrap;gap:14px} .menu{display:grid;place-items:center;width:32px;height:32px;color:var(--band-ink)} nav{display:none;order:9;width:100%;flex-wrap:wrap;gap:10px 18px;margin:12px 0 0;padding-top:12px;border-top:1px solid rgba(242,236,223,.28)} .band.nav-open nav{display:flex} h1{font-size:26px}
+  }
   @media (max-width:760px){
     main > aside:first-child{order:3} main > section{order:2} main > .right{order:1}
   }
   @media (max-width:760px){
-    .band .in{padding:14px 20px 20px} .date{display:none} .row{flex-wrap:wrap} .menu{display:grid;place-items:center;width:32px;height:32px;color:var(--band-ink)} nav{display:none;order:9;width:100%;flex-wrap:wrap;gap:10px 18px;margin:12px 0 0;padding-top:12px;border-top:1px solid rgba(242,236,223,.28)} .band.nav-open nav{display:flex} .row{gap:14px}
-    .mast{flex-wrap:wrap;gap:10px 18px} h1{font-size:26px} .mast .week{margin-left:0;width:100%}
+    .mast{gap:10px 18px} .mast .week{margin-left:0;width:100%}
     main{grid-template-columns:1fr;padding:24px 20px 36px;gap:32px} .foot{padding:0 20px 28px}
     .card{padding:10px 8px 12px;overflow-x:auto}
     .days,.grid{min-width:640px}
@@ -244,7 +246,7 @@
     <form class="add" id="add">
       <h2 id="formh">Add an entry</h2>
       <div class="field"><label for="a-title">Title</label><input id="a-title" placeholder="What is it?" required></div>
-      <div class="field"><label for="a-day">Day</label><input id="a-day" placeholder="17 Sep" aria-label="Day"></div>
+      <div class="field"><label for="a-day">Day</label><input id="a-day" aria-label="Day"></div>
       <div class="field"><label for="a-start">Time</label><div class="pair"><input id="a-start" value="5.00 pm" size="8" aria-label="Start"><span>to</span><input id="a-end" value="6.00 pm" size="8" aria-label="End"></div></div>
       <div class="field"><label for="a-area">Category</label><select id="a-area"></select></div>
       <div class="field"><span class="lbl" id="rep-l">Repeats</span><div class="dows" id="a-rep" role="group" aria-labelledby="rep-l"><label><input type="checkbox" value="0"><span>M</span></label><label><input type="checkbox" value="1"><span>T</span></label><label><input type="checkbox" value="2"><span>W</span></label><label><input type="checkbox" value="3"><span>T</span></label><label><input type="checkbox" value="4"><span>F</span></label><label><input type="checkbox" value="5"><span>S</span></label><label><input type="checkbox" value="6"><span>S</span></label></div></div>
