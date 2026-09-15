@@ -186,11 +186,12 @@
     <div class="wall" id="read"></div>
   </section>
 </main>
-<p class="foot">Sample shelves, shown for design only. Books, ratings and notes you add are kept in this browser. Covers and book details come from Open Library.</p>
+<p class="foot">Books, ratings and notes are saved to your HQ account (and cached in this browser). Covers and book details come from Open Library.</p>
 
+<script src="store.js"></script>
 <script>
   // ---- state ----
-  // ponytail: localStorage; becomes the library store later. Cover art by ISBN from Open Library.
+  // One document, 'library', via store.js (server + localStorage cache). Cover art by ISBN from Open Library.
   const F = id => document.getElementById(id);
   const TODAY = '2026-09-14';
   const seed = () => ({
@@ -216,8 +217,8 @@
       {id:18,shelf:'read',title:'The Design of Everyday Things',author:'Don Norman',year:1988,pages:368,genre:'Design',isbn:'9780465050659',started:'2026-01-05',finished:'2026-01-20',rating:4,desc:'Why doors are hard to open, and what to do about it.',notes:[{d:'2026-01-20',t:'Affordances and signifiers. The whole HQ project is trying to pass this test.'}]},
     ],
   });
-  let S; try { S = JSON.parse(localStorage.getItem('hq.library')) || seed(); } catch { S = seed(); }
-  const save = () => { try { localStorage.setItem('hq.library', JSON.stringify(S)); } catch {} };
+  let S = seed();
+  const save = () => store.save('library', S);
   const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const book = id => S.books.find(b=>b.id===id);
   const dmy = iso => iso ? new Date(iso+'T12:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '';
@@ -307,6 +308,7 @@
     S.books.push(b); S.open=b.id; F('find').hidden=true; F('res').innerHTML=''; F('q').value=''; render(); F('open').scrollIntoView({behavior:'smooth',block:'start'});
   });
   render();
+  store.load('library').then(doc => { if (doc) { S = doc; render(); } });
 </script>
 </body>
 </html>

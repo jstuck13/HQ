@@ -49,7 +49,13 @@
   .open:hover{border-color:currentColor}
   .open svg{width:18px;height:18px;transition:transform .15s}
   .open:hover svg{transform:translateX(3px)}
+  .gate{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+  .gate input{font-family:var(--serif);font-size:17px;color:var(--band-ink);border-bottom:1px solid var(--band-rule);padding:4px 0;width:12ch;letter-spacing:.2em}
+  .gate input:focus{outline:none;border-bottom-color:var(--band-ink)}
+  .gate input::placeholder{font-style:italic;letter-spacing:0;color:var(--band-muted)}
+  .gate input[hidden]{display:none}
   .foot .hint{font-size:14px;color:var(--band-muted)}
+  .foot .hint.no{color:var(--band-ink)}
   .foot .hint kbd{font:inherit;padding:1px 6px;border:1px solid var(--band-rule);border-radius:6px}
 
   @media (prefers-reduced-motion:reduce){.open,.open svg{transition:none}}
@@ -88,11 +94,15 @@
   </main>
 
   <footer class="foot">
-    <a class="open" href="index.html">Open today<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-    <span class="hint">or press <kbd>Enter</kbd></span>
+    <form class="gate" id="gate">
+      <input id="pass" type="password" placeholder="Passcode" autocomplete="current-password" aria-label="Passcode">
+      <button class="open" type="submit">Open today<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <span class="hint" id="hint">or press <kbd>Enter</kbd></span>
+    </form>
   </footer>
 </div>
 
+<script src="store.js"></script>
 <script>
   // One quote and one word per calendar day, rotating through the lists below.
   // ponytail: hardcoded lists; swap for a fetched JSON once there's a data layer.
@@ -128,7 +138,16 @@
   document.getElementById('date').textContent = now.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
   const h = now.getHours();
   document.getElementById('greet').textContent = (h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + ', Jacob.';
-  addEventListener('keydown', e => { if (e.key === 'Enter') location.href = 'index.html'; });
+  // The front door. With the API present, the passcode sets the session cookie; on a plain static server it just opens.
+  const gate = document.getElementById('gate'), pass = document.getElementById('pass'), hint = document.getElementById('hint');
+  fetch('/api/login').then(r => r.ok ? r.json() : { authed: true }).then(j => { if (j.authed) pass.hidden = true; }).catch(() => { pass.hidden = true; });
+  gate.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (pass.hidden) return location.href = 'index.html';
+    const ok = await store.signIn(pass.value).catch(() => true);
+    if (ok) location.href = 'index.html';
+    else { hint.textContent = 'That is not it. Try again.'; hint.classList.add('no'); pass.select(); }
+  });
 </script>
 </body>
 </html>
