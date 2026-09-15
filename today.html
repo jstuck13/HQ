@@ -177,10 +177,10 @@
       rows.push(row('Finances','finances.html',note,$0(left),`of ${$0(limits)} remaining`, due && due.due===C.now.getDate()));
     } else rows.push(row('Finances','finances.html','Open Finances to set this month’s budget','—','not started'));
     // health
-    if(d.health){ const L=d.health, pills=(L.pills||[]).length, n=['sleep','weight','hr'].filter(k=>L[k]!=null).length+(L.bps&&L.bpd?1:0)+(pills===4?1:0);
+    if(d.health){ const L=d.health, meds=L.meds||0, pills=(L.pills||[]).length, total=meds?5:4, n=['sleep','weight','hr'].filter(k=>L[k]!=null).length+(L.bps&&L.bpd?1:0)+(meds&&pills>=meds?1:0);
       const note = L.sleep ? `Slept ${L.sleep} h${L.hr?' · resting pulse '+L.hr:''}` : 'Nothing logged yet today';
-      rows.push(row('Health','health.html',note,`${n} of 5`,`logged today${pills<4?' · '+(4-pills)+' pills to take':''}`, false));
-    } else rows.push(row('Health','health.html','Nothing logged yet today','0 of 5','logged today'));
+      rows.push(row('Health','health.html',note,`${n} of ${total}`,`logged today${meds&&pills<meds?' · '+(meds-pills)+' pills to take':''}`, false));
+    } else rows.push(row('Health','health.html','Nothing logged yet today','0 of 4','logged today'));
     // library
     if(d.lib){ const b=(d.lib.books||[]).find(x=>x.shelf==='reading'), toread=(d.lib.books||[]).filter(x=>x.shelf==='toread').length;
       if(b) rows.push(row('Library','library.html',`${esc(b.title)}, ${esc(b.author)}`, b.pages?`p. ${b.page||0}`:'reading', b.pages?`of ${b.pages} · ${Math.round((b.page||0)/b.pages*100)}%`:'', false));
@@ -227,7 +227,7 @@
 
   // ---- load everything the other pages keep, then draw ----
   (async () => {
-    const [cal, fin, health, lib, school, today] = await Promise.all([store.load('calendar'), store.load('finances.'+YM), store.load('health.'+TODAY), store.load('library'), store.load('school'), store.load(TKEY)]);
+    const [cal, fin, health, lib, school, today] = await Promise.all([store.load('calendar'), store.load('finances.'+YM), store.load('health').then(h=>h && h.days ? Object.assign({meds:(h.meds||[]).length}, h.days[TODAY] || {pills:[]}) : null), store.load('library'), store.load('school'), store.load(TKEY)]);
     if(today) T = today;
     const d = { fin, health, lib, school };
     d.day = renderDay(cal);

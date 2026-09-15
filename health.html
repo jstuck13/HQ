@@ -81,6 +81,15 @@
   .pills input:checked + label{color:var(--ink-3);text-decoration:line-through}
   .pills .w{font-size:12.5px;color:var(--ink-3)}
   .next{margin-top:34px}
+  .addl{display:grid;grid-template-columns:1fr 110px auto;gap:12px;padding:12px 0;border-bottom:1px dotted var(--rule);align-items:baseline}
+  .addl .full{grid-column:1/-1}
+  .addl input{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0}
+  .addl input:focus{outline:none;border-bottom-color:var(--ink)}
+  .addl input::placeholder{color:var(--ink-3);font-style:italic}
+  .addl .textbtn{font-size:13.5px}
+  .pills .x,.next .x{color:var(--ink-3);font-size:12px;opacity:0;margin-left:10px} .pills li:hover .x,.next li:hover .x,.pills li:focus-within .x,.next li:focus-within .x{opacity:1}
+  .next .x{grid-column:1;grid-row:2;justify-self:start;margin:0}
+  .pills .empty,.next .empty{padding:12px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif);border:0;display:block}
   .next li{display:grid;grid-template-columns:1fr auto;gap:2px 16px;padding:11px 0;border-bottom:1px solid var(--rule)}
   .next .n{grid-column:1;grid-row:1;font-family:var(--serif);font-size:15.5px}
   .next .d{color:var(--ink-3);font-size:12.5px;grid-column:1;grid-row:2}
@@ -99,7 +108,8 @@
   .chart .avg{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:1 3;stroke-linecap:round}
   .chart .ln{fill:none;stroke:var(--ink);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
   .chart .wash{fill:var(--ink);opacity:.06}
-  .chart .dot{fill:var(--ox);stroke:var(--paper);stroke-width:2}
+  .chart .dot{fill:var(--ox);stroke:var(--paper);stroke-width:2} .chart .dot.past{fill:var(--ink)}
+  .chart .pt{fill:var(--ink);stroke:var(--paper);stroke-width:1.5}
   .chart .tk{font:12px var(--sans);fill:var(--ink-3)}
   .chart .xh{stroke:var(--ink-3);stroke-width:1;opacity:0}
   .chart .hv{fill:var(--ink);stroke:var(--paper);stroke-width:2;opacity:0}
@@ -154,35 +164,28 @@
         <li class="head"><span>Reading</span><span>Today</span><span class="l">Last</span><span class="a">30-day avg</span></li>
         <li data-k="sleep"><span class="n">Sleep<small>Hours, and when</small></span>
           <span class="v"><input id="sleep" inputmode="decimal" placeholder="—"><span class="u">hours</span><span class="aux">bed <input id="bed" placeholder="11.40 pm"> · woke <input id="woke" placeholder="6.52 am"></span></span>
-          <span class="l">7 h 12<small>yesterday</small></span><span class="a">6 h 48<small>up 20 min</small></span></li>
+          <span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>
         <li data-k="weight"><span class="n">Weight<small>Mornings, before breakfast</small></span>
           <span class="v"><input id="weight" inputmode="decimal" placeholder="—"><span class="u">lb</span></span>
-          <span class="l">181.6<small>Saturday</small></span><span class="a">182.0<small>level</small></span></li>
+          <span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>
         <li data-k="hr"><span class="n">Resting heart rate<small>From the watch, on waking</small></span>
           <span class="v"><input id="hr" inputmode="numeric" placeholder="—"><span class="u">bpm</span></span>
-          <span class="l">58<small>yesterday</small></span><span class="a">59<small>down 1</small></span></li>
-        <li data-k="bp"><span class="n">Blood pressure<small>Occasional; last taken 9 days ago</small></span>
+          <span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>
+        <li data-k="bp"><span class="n">Blood pressure<small>Occasional</small></span>
           <span class="v"><input id="bps" inputmode="numeric" placeholder="—" style="width:3.5ch"><span class="u">/</span><input id="bpd" inputmode="numeric" placeholder="—" style="width:3.5ch"><span class="u">mmHg</span></span>
-          <span class="l">118 / 76<small>5 Sep</small></span><span class="a">—<small>too few</small></span></li>
+          <span class="l"><small>no earlier reading</small></span><span class="a"><small>too few</small></span></li>
       </ul>
     </section>
 
     <aside>
-      <h2>Pills and vitamins<small id="pillsn">0 of 4</small></h2>
-      <ul class="pills" id="pills">
-        <li><input type="checkbox" id="p1" data-p="d3"><label for="p1">Vitamin D</label><span class="w">morning</span></li>
-        <li><input type="checkbox" id="p2" data-p="omega"><label for="p2">Omega-3</label><span class="w">with breakfast</span></li>
-        <li><input type="checkbox" id="p3" data-p="allergy"><label for="p3">Allergy tablet</label><span class="w">morning</span></li>
-        <li><input type="checkbox" id="p4" data-p="mag"><label for="p4">Magnesium</label><span class="w">evening</span></li>
-      </ul>
+      <h2>Pills and vitamins<small id="pillsn"></small></h2>
+      <ul class="pills" id="pills"></ul>
+      <form class="addl" id="addpill"><input id="pl-name" placeholder="Vitamin D" aria-label="Pill name" required><input id="pl-when" placeholder="morning" aria-label="When"><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
 
       <div class="next">
         <h2>Next<small>Appointments and refills</small></h2>
-        <ul>
-          <li><span class="n">Dentist — check-up</span><span class="d">Wednesday 16 · 2.00 pm · Dr Elian</span><span class="t">In 2 days</span></li>
-          <li><span class="n">Allergy tablets — refill</span><span class="d">6 left · pharmacy on Main St</span><span class="t">6 days</span></li>
-          <li><span class="n">GP — annual bloods</span><span class="d">To book; last done October 2025</span><span class="t flag">Overdue</span></li>
-        </ul>
+        <ul id="next"></ul>
+        <form class="addl" id="addnext"><input id="nx-name" placeholder="Dentist, refill, bloods…" aria-label="What" required><input id="nx-date" placeholder="17 Sep" aria-label="Day"><input id="nx-note" placeholder="where, who, time" aria-label="Note" class="full"><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
       </div>
     </aside>
   </div>
@@ -192,101 +195,132 @@
     <div class="strip" id="strip"></div>
   </section>
 </main>
-<p class="foot">What you log is saved to your HQ account (and cached in this browser). Trend lines are sample data until readings accumulate.</p>
+<p class="foot">What you log is saved to your HQ account (and cached in this browser). The trends are drawn only from days you have logged.</p>
 
 <script src="clock.js"></script>
 <script src="store.js"></script>
 <script>
-  // ---- state: today's log, kept in this browser ----
-  // ponytail: localStorage; becomes the health store later.
+  // ---- state: one document, a log per day ----
+  // H.days[ISO] = { sleep, bed, woke, weight, hr, bps, bpd, pills:[] } — only what you typed, nothing invented.
   const F = id => document.getElementById(id);
-  const C = clock, KEY = 'health.' + C.today;
-  let L = {};
-  const save = () => store.save(KEY, L);
-  L.pills ??= [];
+  const C = clock, KEY = 'health', TODAY = C.today;
+  let H = { days: {}, meds: [], next: [] };
+  let L = { pills: [] };
+  const save = () => { H.days[TODAY] = L; store.save(KEY, H); };
+  const num = v => { const n = parseFloat(String(v ?? '').replace(/[^0-9.]/g, '')); return isNaN(n) ? null : n; };
 
   // readings
-  const applyLog = () => { ['sleep','bed','woke','weight','hr','bps','bpd'].forEach(k=>{ F(k).value = L[k]!=null ? L[k] : ''; }); document.querySelectorAll('.pills input').forEach(i=>{ i.checked = L.pills.includes(i.dataset.p); }); renderLogged(); };
+  const applyLog = () => { ['sleep','bed','woke','weight','hr','bps','bpd'].forEach(k=>{ F(k).value = L[k]!=null ? L[k] : ''; }); renderAll(); };
   ['sleep','bed','woke','weight','hr','bps','bpd'].forEach(k=>{
-    const el=F(k); if(L[k]!=null) el.value=L[k];
-    el.addEventListener('change', ()=>{ const v=el.value.trim(); if(v) L[k]=v; else delete L[k]; save(); renderLogged(); });
+    F(k).addEventListener('change', ()=>{ const v=F(k).value.trim(); if(v) L[k]=v; else delete L[k]; save(); renderAll(); });
   });
-  // pills
-  document.querySelectorAll('.pills input').forEach(i=>{
-    i.checked = L.pills.includes(i.dataset.p);
-    i.addEventListener('change', ()=>{ L.pills = i.checked ? [...new Set([...L.pills,i.dataset.p])] : L.pills.filter(p=>p!==i.dataset.p); save(); renderLogged(); });
-  });
-  function renderLogged(){
-    document.querySelectorAll('#ledger li[data-k]').forEach(li=>{
-      const k=li.dataset.k; li.classList.toggle('logged', k==='bp' ? !!(L.bps&&L.bpd) : L[k]!=null);
+  function renderPills(){
+    const meds=H.meds||[];
+    F('pillsn').textContent = meds.length ? `${L.pills.filter(p=>meds.some(m=>m.id===p)).length} of ${meds.length}` : 'none yet';
+    F('pills').innerHTML = meds.length ? meds.map(m=>`<li><input type="checkbox" id="p-${m.id}" data-p="${m.id}" ${L.pills.includes(m.id)?'checked':''}><label for="p-${m.id}">${esc(m.name)}</label><span class="w">${esc(m.when||'')}</span><button class="x" type="button" data-rm="${m.id}" aria-label="Remove ${esc(m.name)}">remove</button></li>`).join('') : '<li class="empty">Add the pills and vitamins you take; they become a daily checklist.</li>';
+  }
+  function renderNext(){
+    const nx=[...(H.next||[])].sort((a,b)=>(a.date||'9')<(b.date||'9')?-1:1);
+    F('next').innerHTML = nx.length ? nx.map(n=>{ const d=n.date?C.daysBetween(TODAY,n.date):null; const t=d==null?'To book':d<0?'Overdue':d===0?'Today':d===1?'Tomorrow':`In ${d} days`;
+      return `<li data-id="${n.id}"><span class="n">${esc(n.name)}</span><span class="d">${n.date?C.fromISO(n.date).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'}):''}${n.date&&n.note?' · ':''}${esc(n.note||'')}</span><span class="t ${d!=null&&d<=0?'flag':''}">${t}</span><button class="x" type="button" data-rm="${n.id}" aria-label="Remove ${esc(n.name)}">remove</button></li>`; }).join('')
+      : '<li class="empty">Nothing booked. Add an appointment or a refill to keep it in view.</li>';
+  }
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  F('pills').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ const id=e.target.dataset.p; L.pills = e.target.checked ? [...new Set([...L.pills,id])] : L.pills.filter(p=>p!==id); save(); renderAll(); } });
+  F('pills').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ H.meds=H.meds.filter(m=>m.id!==b.dataset.rm); save(); renderAll(); } });
+  F('addpill').addEventListener('submit', e=>{ e.preventDefault(); H.meds=H.meds||[]; H.meds.push({id:'m'+Date.now(), name:F('pl-name').value.trim(), when:F('pl-when').value.trim()}); F('addpill').reset(); save(); renderAll(); });
+  F('next').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ H.next=H.next.filter(n=>n.id!==b.dataset.rm); save(); renderAll(); } });
+  F('addnext').addEventListener('submit', e=>{ e.preventDefault(); H.next=H.next||[]; const d=F('nx-date').value.trim(); H.next.push({id:'n'+Date.now(), name:F('nx-name').value.trim(), date:d?C.parseDay(d):null, note:F('nx-note').value.trim()}); F('addnext').reset(); save(); renderAll(); });
+
+  // ---- history: the last 30 days from the document ----
+  const days = Array.from({length:30},(_,i)=>C.addDays(C.now, i-29));
+  const isoDays = days.map(d=>C.iso(d));
+  const fmtDay = d => d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  const series = [
+    {name:'Sleep', key:'sleep', fmt:v=>`${Math.floor(v)} h ${String(Math.round((v%1)*60)).padStart(2,'0')}`, level:.1, delta:v=>`${Math.round(v*60)} min`},
+    {name:'Weight', key:'weight', fmt:v=>`${v.toFixed(1)} lb`, level:.5, delta:v=>`${v.toFixed(1)} lb`},
+    {name:'Resting HR', key:'hr', fmt:v=>`${Math.round(v)} bpm`, level:.5, delta:v=>`${Math.round(v)}`},
+  ];
+  const pointsFor = s => isoDays.map((d,i)=>({i, d, v: num((d===TODAY ? L : H.days[d]||{})[s.key])})).filter(p=>p.v!=null);
+  const trendOf = (s, pts) => {
+    if(pts.length<4) return null;
+    const avg = a => a.reduce((x,p)=>x+p.v,0)/a.length, half=Math.floor(pts.length/2), diff=avg(pts.slice(half))-avg(pts.slice(0,half));
+    return Math.abs(diff)<s.level ? 'level' : `${diff>0?'up':'down'} ${s.delta(Math.abs(diff))}`;
+  };
+  const W=340, H_=130, P={t:10,r:8,b:22,l:8};
+  const x = i => P.l+(W-P.l-P.r)*i/29;
+
+  function renderCells(){
+    series.forEach(s=>{
+      const li=document.querySelector(`#ledger li[data-k="${s.key}"]`), pts=pointsFor(s).filter(p=>p.d!==TODAY);
+      const last=pts[pts.length-1], avg=pts.length?pts.reduce((x,p)=>x+p.v,0)/pts.length:null, t=trendOf(s, pointsFor(s));
+      li.querySelector('.l').innerHTML = last ? `${s.fmt(last.v)}<small>${last.d===isoDays[28]?'yesterday':fmtDay(C.fromISO(last.d))}</small>` : `<small>no earlier reading</small>`;
+      li.querySelector('.a').innerHTML = avg!=null ? `${s.fmt(avg)}<small>${t||`${pts.length} ${pts.length===1?'reading':'readings'}`}</small>` : `<small>not yet</small>`;
     });
-    const n = ['sleep','weight','hr'].filter(k=>L[k]!=null).length + (L.bps&&L.bpd?1:0) + (L.pills.length===4?1:0);
-    F('sub').innerHTML = `Logged <b>${n} of 5</b> ${C.now.getHours()<12?'this morning':'today'}; on the month sleep is ${SLEEP_T}, weight is ${WEIGHT_T}.`;
-    F('pillsn').textContent = `${L.pills.length} of 4`;
+    // blood pressure: last reading from any day
+    const bpDays = Object.keys(H.days).filter(d=>d!==TODAY && H.days[d].bps && H.days[d].bpd).sort();
+    const bl = bpDays[bpDays.length-1], li=document.querySelector('#ledger li[data-k="bp"]');
+    li.querySelector('.l').innerHTML = bl ? `${H.days[bl].bps} / ${H.days[bl].bpd}<small>${fmtDay(C.fromISO(bl))}</small>` : `<small>no earlier reading</small>`;
+    li.querySelector('.a').innerHTML = `<small>${bpDays.length<3?'too few':bpDays.length+' readings'}</small>`;
+    li.querySelector('.n small').textContent = bl ? `Occasional; last taken ${C.daysBetween(bl, TODAY)} days ago` : 'Occasional';
   }
 
-  // ---- 30-day trends: single series, ink line on paper, today's point in oxblood ----
-  // Synthetic but plausible; a seeded walk so it is the same every load.
-  let seedv = 7; const rnd = () => (seedv = (seedv * 16807) % 2147483647) / 2147483647;
-  const walk = (start, step, min, max, n=30) => { let v=start; return Array.from({length:n},()=>{ v=Math.min(max,Math.max(min,v+(rnd()-.5)*step)); return v; }); };
-  const days = Array.from({length:30},(_,i)=>C.addDays(C.now, i-29));
-  const series = [
-    {name:'Sleep', data:walk(6.4,1.6,5.2,8.4).map((v,i)=>v+i*0.02), fmt:v=>`${Math.floor(v)} h ${String(Math.round((v%1)*60)).padStart(2,'0')}`},
-    {name:'Weight', data:walk(182.4,1.2,180.5,183.5), fmt:v=>`${v.toFixed(1)} lb`},
-    {name:'Resting HR', data:walk(60,3,55,64), fmt:v=>`${Math.round(v)} bpm`},
-  ];
-  const W=340, H=130, P={t:10,r:8,b:22,l:8};
-  const fmtDay = d => d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-  F('strip').innerHTML = series.map((s,si)=>{
-    const lo=Math.min(...s.data), hi=Math.max(...s.data), pad=(hi-lo)*.15||1;
-    const y=v=>P.t+(H-P.t-P.b)*(1-(v-lo+pad)/(hi-lo+2*pad)), x=i=>P.l+(W-P.l-P.r)*i/29;
-    const pts=s.data.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`);
-    const avg=s.data.reduce((a,b)=>a+b,0)/30, last=s.data[29];
-    return `<div class="chart" data-i="${si}">
-      <h3>${s.name}</h3>
-      <p class="fig">${s.fmt(avg)}<small>30-day average</small></p>
-      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${s.name}, last 30 days, ${s.fmt(lo)} to ${s.fmt(hi)}, average ${s.fmt(avg)}">
-        <line class="ax" x1="${P.l}" x2="${W-P.r}" y1="${H-P.b}" y2="${H-P.b}"/>
-        <line class="avg" x1="${P.l}" x2="${W-P.r}" y1="${y(avg).toFixed(1)}" y2="${y(avg).toFixed(1)}"/>
-        <path class="wash" d="M${pts[0]} L${pts.slice(1).join(' L')} L${x(29).toFixed(1)},${H-P.b} L${x(0)},${H-P.b} Z"/>
-        <path class="ln" d="M${pts.join(' L')}"/>
-        <circle class="dot" r="4.5" cx="${x(29).toFixed(1)}" cy="${y(last).toFixed(1)}"/>
-        <text class="tk" x="${P.l}" y="${H-6}">${fmtDay(days[0])}</text><text class="tk" x="${W-P.r}" y="${H-6}" text-anchor="end">today</text>
-        <line class="xh" y1="${P.t}" y2="${H-P.b}"/><circle class="hv" r="4.5"/>
-        <rect x="0" y="0" width="${W}" height="${H}" fill="transparent" class="hit"/>
-      </svg>
-      <div class="tip"></div>
-      <p class="rng">Low ${s.fmt(lo)} · high ${s.fmt(hi)} · today ${s.fmt(last)}</p>
-    </div>`;
-  }).join('');
+  function renderCharts(){
+    F('strip').innerHTML = series.map((s,si)=>{
+      const pts=pointsFor(s);
+      if(pts.length<2) return `<div class="chart" data-i="${si}"><h3>${s.name}</h3><p class="fig"><small>${pts.length===1?'one reading; the line starts at two':'nothing logged yet'}</small></p><p class="rng">Log ${s.name.toLowerCase()} on a few days and the last 30 days draw themselves.</p></div>`;
+      const vals=pts.map(p=>p.v), lo=Math.min(...vals), hi=Math.max(...vals), pad=(hi-lo)*.15||1;
+      const y=v=>P.t+(H_-P.t-P.b)*(1-(v-lo+pad)/(hi-lo+2*pad));
+      const avg=vals.reduce((a,b)=>a+b,0)/vals.length, last=pts[pts.length-1];
+      const path=pts.map((p,k)=>`${k?'L':'M'}${x(p.i).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
+      return `<div class="chart" data-i="${si}">
+        <h3>${s.name}</h3>
+        <p class="fig">${s.fmt(avg)}<small>average of ${pts.length} readings</small></p>
+        <svg viewBox="0 0 ${W} ${H_}" role="img" aria-label="${s.name}, last 30 days, ${s.fmt(lo)} to ${s.fmt(hi)}, average ${s.fmt(avg)}">
+          <line class="ax" x1="${P.l}" x2="${W-P.r}" y1="${H_-P.b}" y2="${H_-P.b}"/>
+          <line class="avg" x1="${P.l}" x2="${W-P.r}" y1="${y(avg).toFixed(1)}" y2="${y(avg).toFixed(1)}"/>
+          <path class="ln" d="${path}"/>
+          ${pts.map(p=>`<circle class="pt" r="3" cx="${x(p.i).toFixed(1)}" cy="${y(p.v).toFixed(1)}"/>`).join('')}
+          <circle class="dot ${last.d===TODAY?'':'past'}" r="4.5" cx="${x(last.i).toFixed(1)}" cy="${y(last.v).toFixed(1)}"/>
+          <text class="tk" x="${P.l}" y="${H_-6}">${fmtDay(days[0])}</text><text class="tk" x="${W-P.r}" y="${H_-6}" text-anchor="end">today</text>
+          <line class="xh" y1="${P.t}" y2="${H_-P.b}"/><circle class="hv" r="4.5"/>
+          <rect x="0" y="0" width="${W}" height="${H_}" fill="transparent" class="hit"/>
+        </svg>
+        <div class="tip"></div>
+        <p class="rng">Low ${s.fmt(lo)} · high ${s.fmt(hi)} · latest ${s.fmt(last.v)}</p>
+      </div>`;
+    }).join('');
+    // hover: nearest logged day
+    document.querySelectorAll('.chart').forEach(ch=>{
+      const s=series[+ch.dataset.i], svg=ch.querySelector('svg'); if(!svg) return;
+      const pts=pointsFor(s), vals=pts.map(p=>p.v), lo=Math.min(...vals), hi=Math.max(...vals), pad=(hi-lo)*.15||1;
+      const y=v=>P.t+(H_-P.t-P.b)*(1-(v-lo+pad)/(hi-lo+2*pad));
+      const xh=svg.querySelector('.xh'), hv=svg.querySelector('.hv'), tip=ch.querySelector('.tip');
+      svg.addEventListener('pointermove', e=>{
+        const r=svg.getBoundingClientRect(), i=((e.clientX-r.left)/r.width*W-P.l)/(W-P.l-P.r)*29;
+        const p=pts.reduce((a,b)=>Math.abs(b.i-i)<Math.abs(a.i-i)?b:a);
+        xh.setAttribute('x1',x(p.i)); xh.setAttribute('x2',x(p.i)); xh.style.opacity=1; hv.setAttribute('cx',x(p.i)); hv.setAttribute('cy',y(p.v)); hv.style.opacity=1;
+        tip.innerHTML=`<b>${s.fmt(p.v)}</b> · ${fmtDay(C.fromISO(p.d))}`; tip.style.left=`${x(p.i)/W*r.width}px`; tip.style.top=`${y(p.v)/H_*r.height-8+svg.offsetTop}px`; tip.style.opacity=1;
+      });
+      svg.addEventListener('pointerleave', ()=>{ xh.style.opacity=0; hv.style.opacity=0; tip.style.opacity=0; });
+    });
+  }
 
-  // the ledger's Last / 30-day avg come from the same series as the charts
-  const trend = (d, f, unit) => { const avg=d.reduce((a,b)=>a+b,0)/30, diff=avg-d.slice(0,15).reduce((a,b)=>a+b,0)/15; return Math.abs(diff)<f ? 'level' : `${diff>0?'up':'down'} ${unit(Math.abs(diff))}`; };
-  const cell = (k, last, when, avg, note) => { const li=document.querySelector(`#ledger li[data-k="${k}"]`); li.querySelector('.l').innerHTML=`${last}<small>${when}</small>`; li.querySelector('.a').innerHTML=`${avg}<small>${note}</small>`; };
-  const [sl, wt, hr] = series;
-  const SLEEP_T = trend(sl.data, .1, v=>`${Math.round(v*60)} min`), WEIGHT_T = trend(wt.data, .5, v=>`${v.toFixed(1)} lb`);
-  cell('sleep', sl.fmt(sl.data[28]), 'yesterday', sl.fmt(sl.data.reduce((a,b)=>a+b,0)/30), SLEEP_T);
-  cell('weight', wt.fmt(wt.data[27]), 'Saturday', wt.fmt(wt.data.reduce((a,b)=>a+b,0)/30), WEIGHT_T);
-  cell('hr', hr.fmt(hr.data[28]), 'yesterday', hr.fmt(hr.data.reduce((a,b)=>a+b,0)/30), trend(hr.data, .5, v=>`${Math.round(v)}`));
+  function renderLogged(){
+    document.querySelectorAll('#ledger li[data-k]').forEach(li=>{ const k=li.dataset.k; li.classList.toggle('logged', k==='bp' ? !!(L.bps&&L.bpd) : L[k]!=null); });
+    const meds=(H.meds||[]).length, taken=L.pills.filter(p=>(H.meds||[]).some(m=>m.id===p)).length;
+    const n = ['sleep','weight','hr'].filter(k=>L[k]!=null).length + (L.bps&&L.bpd?1:0) + (meds && taken===meds ? 1 : 0);
+    const st=trendOf(series[0], pointsFor(series[0])), wt=trendOf(series[1], pointsFor(series[1]));
+    const tail = st||wt ? `; on the month${st?' sleep is '+st:''}${st&&wt?',':''}${wt?' weight is '+wt:''}.` : '.';
+    F('sub').innerHTML = `Logged <b>${n} of ${meds?5:4}</b> ${C.now.getHours()<12?'this morning':'today'}${tail}`;
+  }
+  function renderAll(){ renderLogged(); renderCells(); renderCharts(); renderPills(); renderNext(); }
+
   F('todayn').textContent = C.now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
   F('rangen').textContent = `${C.addDays(C.now,-29).toLocaleDateString('en-GB',{day:'numeric',month:'long'})} – ${C.now.toLocaleDateString('en-GB',{day:'numeric',month:'long'})}`;
-  renderLogged();
+  renderAll();
   F('newentry').onclick = ()=>F('sleep').focus();
-  store.load(KEY).then(doc => { if (doc) { L = doc; L.pills ??= []; applyLog(); } });
-
-  // hover: crosshair + tooltip on the nearest day
-  document.querySelectorAll('.chart').forEach(ch=>{
-    const s=series[+ch.dataset.i], svg=ch.querySelector('svg'), xh=ch.querySelector('.xh'), hv=ch.querySelector('.hv'), tip=ch.querySelector('.tip');
-    const lo=Math.min(...s.data), hi=Math.max(...s.data), pad=(hi-lo)*.15||1;
-    const y=v=>P.t+(H-P.t-P.b)*(1-(v-lo+pad)/(hi-lo+2*pad)), x=i=>P.l+(W-P.l-P.r)*i/29;
-    svg.addEventListener('pointermove', e=>{
-      const r=svg.getBoundingClientRect(), i=Math.round(Math.min(29,Math.max(0,((e.clientX-r.left)/r.width*W-P.l)/(W-P.l-P.r)*29)));
-      xh.setAttribute('x1',x(i)); xh.setAttribute('x2',x(i)); xh.style.opacity=1;
-      hv.setAttribute('cx',x(i)); hv.setAttribute('cy',y(s.data[i])); hv.style.opacity=1;
-      tip.innerHTML=`<b>${s.fmt(s.data[i])}</b> · ${fmtDay(days[i])}`; tip.style.left=`${x(i)/W*r.width}px`; tip.style.top=`${y(s.data[i])/H*r.height - 8 + svg.offsetTop}px`; tip.style.opacity=1;
-    });
-    svg.addEventListener('pointerleave', ()=>{ xh.style.opacity=0; hv.style.opacity=0; tip.style.opacity=0; });
-  });
+  store.load(KEY).then(doc => { if (doc && doc.days) { H = doc; H.meds ??= []; H.next ??= []; L = H.days[TODAY] || { pills: [] }; L.pills ??= []; applyLog(); } });
 </script>
 <script>document.getElementById('menubtn').addEventListener('click', e=>{ const b=document.querySelector('.band'); b.classList.toggle('nav-open'); e.currentTarget.setAttribute('aria-expanded', b.classList.contains('nav-open')); });</script>
 </body>
