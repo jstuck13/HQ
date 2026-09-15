@@ -109,6 +109,9 @@
   .book .cap i{display:block;font-family:var(--serif);font-size:13px;color:var(--ink-2);margin-top:2px}
   .book .cap .dots{margin-top:6px}
   .book .cap .dots i{width:8px;height:8px;border-width:1px}
+  .slot{position:relative;display:block}
+  .slot .rmb{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:var(--card);color:var(--ink-2);display:grid;place-items:center;box-shadow:var(--shadow);opacity:0;transition:opacity .15s}
+  .slot:hover .rmb,.slot:focus-within .rmb{opacity:1} .slot .rmb:hover{color:var(--ox)}
   .add{width:100%;text-align:left}
   .add .cover{background:transparent;border:1px dashed var(--rule);display:grid;place-items:center;color:var(--ink-3);font-size:13px}
   .add .cover span{display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -128,6 +131,7 @@
   .find .res .textbtn{font-size:13px}
   .find .msg{padding:8px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
   .foot{max-width:1180px;margin:0 auto;padding:0 40px 32px;font-size:12.5px;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
+  .foot .textbtn{font-style:normal;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:8px} .foot .textbtn.ox{color:var(--ox)} .foot .textbtn:hover{color:var(--ink)}
 
   @media (prefers-reduced-motion:reduce){.textbtn,.book .cover{transition:none}}
   @media (max-width:1000px){.wall{grid-template-columns:repeat(4,1fr)}}
@@ -135,7 +139,7 @@
     .band .in{padding:14px 20px 20px} .date{display:none} .row{flex-wrap:wrap} .menu{display:grid;place-items:center;width:32px;height:32px;color:var(--band-ink)} nav{display:none;order:9;width:100%;flex-wrap:wrap;gap:10px 18px;margin:12px 0 0;padding-top:12px;border-top:1px solid rgba(242,236,223,.28)} .band.nav-open nav{display:flex} .row{gap:14px} h1{font-size:26px}
     main{padding:24px 20px 36px} .foot{padding:0 20px 28px}
     .open{grid-template-columns:1fr;padding:18px 18px 20px} .open .cover{width:140px}
-    .wall{grid-template-columns:repeat(3,1fr);gap:20px 14px}
+    .wall{grid-template-columns:repeat(3,1fr);gap:20px 14px} .slot .rmb{opacity:1}
     .notes li{grid-template-columns:1fr auto} .notes .d{grid-column:1/-1} .notes .x{opacity:1}
     .write{grid-template-columns:1fr} .write .textbtn{grid-column:1}
     .find form{grid-template-columns:1fr auto}
@@ -188,7 +192,7 @@
     <div class="wall" id="read"></div>
   </section>
 </main>
-<p class="foot">Books, ratings and notes are saved to your HQ account (and cached in this browser). Covers and book details come from Open Library.</p>
+<p class="foot">Books, ratings and notes are saved to your HQ account (and cached in this browser). Covers and book details come from Open Library. <button class="textbtn" type="button" id="clear-ask">Clear the whole library</button><span id="clear-sure" hidden>Remove every book and note? <button class="textbtn ox" type="button" id="clear-yes">Yes, clear</button> <button class="textbtn" type="button" id="clear-no">Keep them</button></span></p>
 
 <script src="clock.js"></script>
 <script src="store.js"></script>
@@ -197,29 +201,7 @@
   // One document, 'library', via store.js (server + localStorage cache). Cover art by ISBN from Open Library.
   const F = id => document.getElementById(id);
   const C = clock, TODAY = C.today;
-  const seed = () => ({
-    open: 1,
-    books: [
-      {id:1,shelf:'reading',title:'Project Hail Mary',author:'Andy Weir',year:2021,pages:476,genre:'Science fiction',isbn:'9780593135204',started:'2026-09-06',page:142,rating:0,desc:'A lone scientist wakes on a ship with no memory of why he is there, and has to work out how to save the sun.',notes:[{d:'2026-09-08',t:'The amnesia opening is a trick, but it works: every chapter earns the next reveal.'},{d:'2026-09-11',t:'Rocky. That is all.'},{d:'2026-09-13',t:'The astrophage maths is hand-wavy but the problem-solving rhythm is the same as The Martian and just as compulsive.'}]},
-      {id:2,shelf:'toread',title:'Thinking, Fast and Slow',author:'Daniel Kahneman',year:2011,pages:499,genre:'Psychology',isbn:'9780374533557',rating:0,desc:'Two systems of thought, and the biases that follow from letting the fast one run.',notes:[]},
-      {id:3,shelf:'toread',title:'The Pragmatic Programmer',author:'David Thomas & Andrew Hunt',year:2019,pages:352,genre:'Software',isbn:'9780135957059',rating:0,desc:'The twentieth-anniversary edition of the working programmer\'s handbook.',notes:[]},
-      {id:4,shelf:'toread',title:'Dune',author:'Frank Herbert',year:1965,pages:412,genre:'Science fiction',isbn:'9780441172719',rating:0,desc:'Spice, sand, and the fall of a house on Arrakis.',notes:[]},
-      {id:5,shelf:'toread',title:'The Name of the Wind',author:'Patrick Rothfuss',year:2007,pages:662,genre:'Fantasy',isbn:'9780756404741',rating:0,desc:'Kvothe tells his own story over three days at an inn.',notes:[]},
-      {id:6,shelf:'toread',title:'Sapiens',author:'Yuval Noah Harari',year:2011,pages:443,genre:'History',isbn:'9780062316097',rating:0,desc:'A brief history of humankind, from the cognitive revolution onward.',notes:[]},
-      {id:7,shelf:'toread',title:'Atomic Habits',author:'James Clear',year:2018,pages:320,genre:'Self-improvement',isbn:'9780735211292',rating:0,desc:'Small changes, remarkable results.',notes:[]},
-      {id:8,shelf:'read',title:'The Martian',author:'Andy Weir',year:2011,pages:369,genre:'Science fiction',isbn:'9780553418026',started:'2026-08-20',finished:'2026-08-30',rating:5,desc:'An astronaut is left for dead on Mars and refuses to die.',notes:[{d:'2026-08-30',t:'Read in a weekend. The log format keeps every problem small enough to enjoy.'}]},
-      {id:9,shelf:'read',title:'Piranesi',author:'Susanna Clarke',year:2020,pages:245,genre:'Fiction',isbn:'9781635575637',started:'2026-08-05',finished:'2026-08-12',rating:5,desc:'A man lives alone in an endless house of halls and statues, and keeps a journal.',notes:[{d:'2026-08-12',t:'The kindest book I have read this year. The House is a character.'}]},
-      {id:10,shelf:'read',title:'Deep Work',author:'Cal Newport',year:2016,pages:296,genre:'Productivity',isbn:'9781455586691',started:'2026-07-14',finished:'2026-07-25',rating:4,desc:'Rules for focused success in a distracted world.',notes:[{d:'2026-07-25',t:'The 9 am deep-work block on the calendar comes from chapter 2.'}]},
-      {id:11,shelf:'read',title:'Meditations',author:'Marcus Aurelius',year:180,pages:254,genre:'Philosophy',isbn:'9780812968255',started:'2026-06-01',finished:'2026-07-10',rating:5,desc:'The private notebook of a Roman emperor.',notes:[{d:'2026-06-20',t:'Book 5, on getting out of bed. Read it every morning for a week.'},{d:'2026-07-10',t:'Gregory Hays translation. The plain English is the point.'}]},
-      {id:12,shelf:'read',title:'The Hobbit',author:'J. R. R. Tolkien',year:1937,pages:300,genre:'Fantasy',isbn:'9780547928227',started:'2026-05-18',finished:'2026-05-28',rating:4,desc:'There and back again.',notes:[]},
-      {id:13,shelf:'read',title:'Klara and the Sun',author:'Kazuo Ishiguro',year:2021,pages:303,genre:'Fiction',isbn:'9780593318171',started:'2026-05-02',finished:'2026-05-14',rating:3,desc:'An Artificial Friend watches the world from a shop window, and then from a home.',notes:[]},
-      {id:14,shelf:'read',title:'Educated',author:'Tara Westover',year:2018,pages:334,genre:'Memoir',isbn:'9780399590504',started:'2026-04-10',finished:'2026-04-24',rating:4,desc:'A memoir of growing up without school, and leaving.',notes:[]},
-      {id:15,shelf:'read',title:'The Lean Startup',author:'Eric Ries',year:2011,pages:336,genre:'Business',isbn:'9780307887894',started:'2026-03-20',finished:'2026-04-02',rating:3,desc:'Build, measure, learn.',notes:[]},
-      {id:16,shelf:'read',title:'A Gentleman in Moscow',author:'Amor Towles',year:2016,pages:462,genre:'Fiction',isbn:'9780143110439',started:'2026-02-14',finished:'2026-03-08',rating:5,desc:'A count is sentenced to house arrest in a grand hotel, for decades.',notes:[{d:'2026-03-08',t:'Reread candidate. The bees.'}]},
-      {id:17,shelf:'read',title:'Norwegian Wood',author:'Haruki Murakami',year:1987,pages:296,genre:'Fiction',isbn:'9780375704024',started:'2026-01-25',finished:'2026-02-06',rating:4,desc:'A student in 1960s Tokyo, and two very different women.',notes:[]},
-      {id:18,shelf:'read',title:'The Design of Everyday Things',author:'Don Norman',year:1988,pages:368,genre:'Design',isbn:'9780465050659',started:'2026-01-05',finished:'2026-01-20',rating:4,desc:'Why doors are hard to open, and what to do about it.',notes:[{d:'2026-01-20',t:'Affordances and signifiers. The whole HQ project is trying to pass this test.'}]},
-    ],
-  });
+  const seed = () => ({ open: null, books: [] });
   let S = seed();
   const save = () => store.save('library', S);
   const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -253,22 +235,23 @@
         <form class="write" id="write"><span class="d">${dmy(TODAY)}</span><textarea id="note" placeholder="Write a note — as long as you like." required></textarea><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Keep this note</button></form>
       </div>`;
     } else {
-      F('open').innerHTML = '<p class="empty" style="grid-column:1/-1">No books yet. Add one below.</p>';
+      F('open').innerHTML = '<p class="empty" style="grid-column:1/-1">Nothing open. Add a book below, or click one on a shelf.</p>';
     }
     // walls
     F('readingshelf').hidden = !reading.length || (o && o.id===reading[0].id);
     F('readingn').textContent = reading.length===1 ? (o&&o.id===reading[0].id ? 'open above' : 'click to go back to it') : `${reading.length} books`;
     F('reading').innerHTML = reading.map(b=>`<button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i>${b.pages?`<i>page ${b.page||0} of ${b.pages}</i>`:''}</span></button>`).join('');
     F('toreadn').textContent = `${toread.length} waiting`;
-    F('toread').innerHTML = toread.map(b=>`<button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i></span></button>`).join('')
+    F('toread').innerHTML = toread.map(b=>`<span class="slot"><button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i></span></button><button class="rmb" type="button" data-rmb="${b.id}" aria-label="Remove ${esc(b.title)}"><svg class="ic"><use href="icons.svg?v=3#minus"/></svg></button></span>`).join('')
       + `<button class="add" id="addcover"><span class="cover"><span><svg class="ic"><use href="icons.svg#plus"/></svg>Add a book</span></span></button>`;
     F('readn').textContent = `${read.length} books · ${thisYear} this year`;
-    F('read').innerHTML = read.map(b=>`<button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i>${dots(b.rating)}</span></button>`).join('');
+    F('read').innerHTML = read.length ? read.map(b=>`<span class="slot"><button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i>${dots(b.rating)}</span></button><button class="rmb" type="button" data-rmb="${b.id}" aria-label="Remove ${esc(b.title)}"><svg class="ic"><use href="icons.svg?v=3#minus"/></svg></button></span>`).join('') : '<p class="empty" style="grid-column:1/-1">Nothing finished yet. When you finish the book you are reading, it lands here.</p>';
     save();
   }
 
   // ---- events ----
   document.addEventListener('click', e=>{
+    const rb=e.target.closest('[data-rmb]'); if(rb){ const id=+rb.dataset.rmb; S.books=S.books.filter(b=>b.id!==id); if(S.open===id) S.open=null; render(); return; }
     const bk=e.target.closest('.book, .back'); if(bk){ S.open=+bk.dataset.id; render(); F('open').scrollIntoView({behavior:'smooth',block:'start'}); return; }
     if(e.target.closest('#addcover') || e.target.closest('#addbtn')){ F('find').hidden=false; F('q').focus(); F('find').scrollIntoView({block:'nearest'}); return; }
     if(e.target.closest('#findx')){ F('find').hidden=true; F('res').innerHTML=''; return; }
@@ -310,6 +293,9 @@
     const b={id:Date.now(), shelf:'toread', title:d.title, author:(d.author_name||['Unknown']).slice(0,2).join(' & '), year:d.first_publish_year||null, pages:d.number_of_pages_median||null, genre:(d.subject||[])[0]||'', isbn:(d.isbn||[]).find(x=>x.length===13)||(d.isbn||[])[0]||'', coverId:d.cover_i||null, rating:0, desc:'', notes:[]};
     S.books.push(b); S.open=b.id; F('find').hidden=true; F('res').innerHTML=''; F('q').value=''; render(); F('open').scrollIntoView({behavior:'smooth',block:'start'});
   });
+  F('clear-ask').addEventListener('click', ()=>{ F('clear-ask').hidden=true; F('clear-sure').hidden=false; });
+  F('clear-no').addEventListener('click', ()=>{ F('clear-ask').hidden=false; F('clear-sure').hidden=true; });
+  F('clear-yes').addEventListener('click', ()=>{ S={open:null, books:[]}; F('clear-ask').hidden=false; F('clear-sure').hidden=true; render(); });
   render();
   store.load('library').then(doc => { if (doc) { S = doc; render(); } else save(); });
 </script>

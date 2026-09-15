@@ -130,6 +130,7 @@
   .addl .textbtn{font-size:13.5px;grid-column:1/-1;justify-self:start;margin-top:4px}
   .sessions{margin-top:34px}
   .foot{max-width:1180px;margin:0 auto;padding:0 40px 32px;font-size:12.5px;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
+  .foot .textbtn{font-style:normal;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:8px} .foot .textbtn.ox{color:var(--ox)} .foot .textbtn:hover{color:var(--ink)}
 
   @media (prefers-reduced-motion:reduce){.textbtn{transition:none}}
   @media (max-width:1000px){main{grid-template-columns:1fr;grid-template-rows:auto;gap:34px} main > aside{grid-column:1;grid-row:auto} .courses{order:3;margin-top:0} .tiles{grid-template-columns:1fr}}
@@ -202,7 +203,7 @@
     </div>
   </aside>
 </main>
-<p class="foot">Courses, items, links and sessions are saved to your HQ account (and cached in this browser).</p>
+<p class="foot">Courses, items, links and sessions are saved to your HQ account (and cached in this browser). <button class="textbtn" type="button" id="clear-ask">Clear everything</button><span id="clear-sure" hidden>Remove every course, item, link and session? <button class="textbtn ox" type="button" id="clear-yes">Yes, clear</button> <button class="textbtn" type="button" id="clear-no">Keep them</button></span></p>
 
 <script src="clock.js"></script>
 <script src="store.js"></script>
@@ -212,27 +213,7 @@
   const F = id => document.getElementById(id);
   const C = clock, TODAY = C.today;
   const inDays = n => C.iso(C.addDays(C.now, n));
-  const seed = () => ({
-    courses: [
-      {id:'net',name:'Networking',conf:3,links:[{t:'Cisco NetAcad — module 6',u:'https://www.netacad.com/'},{t:'Subnetting practice',u:'https://subnetipv4.com/'},{t:'Lecture 6 recording',u:'https://example.edu/lectures/net-6'}]},
-      {id:'db',name:'Databases',conf:2,links:[{t:'Textbook ch. 5 — normalisation',u:'https://example.edu/db/ch5'},{t:'SQLBolt exercises',u:'https://sqlbolt.com/'}]},
-      {id:'stat',name:'Statistics',conf:3,links:[{t:'Khan — hypothesis testing',u:'https://www.khanacademy.org/math/statistics-probability'},{t:'Problem set 4 (PDF)',u:'https://example.edu/stats/ps4.pdf'}]},
-      {id:'wri',name:'Writing',conf:4,links:[{t:'Purdue OWL — argument essays',u:'https://owl.purdue.edu/'}]},
-    ],
-    items: [
-      {id:1,course:'net',title:'Exam, chapters 1–7',type:'test',due:inDays(12),done:false},
-      {id:2,course:'net',title:'Lab 3: VLAN configuration',type:'assignment',due:inDays(4),done:false},
-      {id:3,course:'stat',title:'Problem set 4',type:'assignment',due:inDays(3),done:false},
-      {id:4,course:'db',title:'Chapter 5 reading',type:'reading',due:inDays(7),done:false},
-      {id:5,course:'db',title:'Normalisation quiz',type:'test',due:inDays(9),done:false},
-      {id:6,course:'wri',title:'Essay draft',type:'assignment',due:inDays(10),done:false},
-      {id:7,course:'stat',title:'Chapter 8 reading',type:'reading',due:inDays(-2),done:true},
-    ],
-    sessions: [
-      {id:11,date:inDays(-6),course:'net',min:90},{id:12,date:inDays(-5),course:'stat',min:60},{id:13,date:inDays(-4),course:'net',min:60},
-      {id:14,date:inDays(-3),course:'db',min:45},{id:15,date:inDays(-2),course:'wri',min:60},{id:16,date:inDays(-1),course:'stat',min:60},
-    ],
-  });
+  const seed = () => ({ courses: [], items: [], sessions: [] });
   let S = seed();
   const save = () => store.save('school', S);
 
@@ -282,12 +263,12 @@
       F('start')?.addEventListener('click', ()=>startTimer(c.id));
       F('stop')?.addEventListener('click', stopTimer);
     } else {
-      F('nextn').textContent=''; F('next').innerHTML='<p class="empty" style="grid-column:1/-1">Nothing open. Add an item on the right, or enjoy the evening.</p>';
+      F('nextn').textContent=''; F('next').innerHTML=`<p class="empty" style="grid-column:1/-1">${S.courses.length?'Nothing open. Add an item on the right, or enjoy the evening.':'Add a course below to get started.'}</p>`;
     }
 
     // course tiles
-    F('coursesn').textContent = `${hrs(doneMin)} studied this week`;
-    F('tiles').innerHTML = S.courses.map(c=>{
+    F('coursesn').textContent = S.courses.length ? `${hrs(doneMin)} studied this week` : '';
+    F('tiles').innerHTML = S.courses.length ? S.courses.map(c=>{
       const m=weekMin(c.id);
       const nd=S.items.filter(i=>i.course===c.id && !i.done).sort((a,b)=>a.due<b.due?-1:1)[0];
       return `<div class="tile" data-id="${c.id}">
@@ -298,7 +279,7 @@
         <ul class="lk">${c.links.map((l,i)=>`<li><a href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.t)}</a><span class="h">${esc(host(l.u))}</span><button class="rm" type="button" data-lk="${i}" aria-label="Remove link">remove</button></li>`).join('')}
           <li class="addlk"><input placeholder="Link title" aria-label="Link title"><input placeholder="https://…" aria-label="Link URL"><button class="textbtn" type="button" data-addlk><svg class="ic" style="width:14px;height:14px"><use href="icons.svg#plus"/></svg>Add a link</button></li></ul>
       </div>`;
-    }).join('');
+    }).join('') : '<p class="empty" style="grid-column:1/-1">No courses yet. Add one below; then its assignments, tests and links.</p>';
 
     // due ledger
     const dueList = [...S.items].sort((a,b)=>a.done!==b.done ? (a.done?1:-1) : (a.due<b.due?-1:1));
@@ -335,6 +316,9 @@
   F('addsess').addEventListener('submit', e=>{ e.preventDefault(); const min=parseInt(F('s-min').value); if(!min) return F('s-min').focus(); S.sessions.push({id:Date.now(), date:dayOf(F('s-date').value), course:F('s-course').value, min}); const k=F('s-course').value; F('addsess').reset(); F('s-course').value=k; F('s-date').value=C.dayMonth(C.now); render(); });
   F('newitem').addEventListener('click', ()=>F('i-title').focus());
   F('s-date').value=C.dayMonth(C.now);
+  F('clear-ask').addEventListener('click', ()=>{ F('clear-ask').hidden=true; F('clear-sure').hidden=false; });
+  F('clear-no').addEventListener('click', ()=>{ F('clear-ask').hidden=false; F('clear-sure').hidden=true; });
+  F('clear-yes').addEventListener('click', ()=>{ S=seed(); F('clear-ask').hidden=false; F('clear-sure').hidden=true; render(); });
   render();
   store.load('school').then(doc => { if (doc) { S = doc; render(); } else save(); });
 </script>
