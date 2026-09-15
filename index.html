@@ -3,153 +3,152 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>HQ</title>
+<title>HQ — Welcome</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --band:#1F3A2E; --band-ink:#F2ECDF; --band-muted:#B9C9BE;
-    --paper:#F5F0E6; --paper-2:#EDE6D8; --tint:#E9E1D0; --ink:#1E1B16; --ink-2:#4D463C; --ink-3:#6A6256; --rule:#D3C9B6; --ox:#7A2E2B;
-    --serif:"Libre Caslon Text",Georgia,serif; --sans:"Figtree",system-ui,sans-serif; --card:#FFFDF9; --shadow:0 1px 2px rgba(30,27,22,.05), 0 6px 18px -6px rgba(30,27,22,.12); --a-cal:#E9EEF3; --a-fit:#F6E6DC; --a-health:#F5E4E6; --a-study:#ECE6F3; --hour:44px;
+    --band:#1F3A2E; --band-2:#274838; --band-ink:#F2ECDF; --band-muted:#B9C9BE; --band-rule:rgba(242,236,223,.28);
+    --paper:#F5F0E6; --ink:#1E1B16; --ink-2:#4D463C; --ink-3:#6A6256; --rule:#D3C9B6; --ox:#7A2E2B;
+    --serif:"Libre Caslon Text",Georgia,serif; --sans:"Figtree",system-ui,sans-serif;
   }
   *{box-sizing:border-box}
-  html{color-scheme:light}
-  body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;font-variant-numeric:oldstyle-nums tabular-nums}
-  ::selection{background:var(--band);color:var(--band-ink)}
-  :focus-visible{outline:2px solid var(--ox);outline-offset:3px}
+  html{color-scheme:dark}
+  body{margin:0;min-height:100vh;background:var(--band);color:var(--band-ink);font:16px/1.5 var(--sans);-webkit-font-smoothing:antialiased;font-variant-numeric:oldstyle-nums tabular-nums;display:flex;flex-direction:column}
+  ::selection{background:var(--band-ink);color:var(--band)}
+  :focus-visible{outline:2px solid var(--band-ink);outline-offset:4px}
   a{color:inherit;text-decoration:none}
-  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
-  h1,h2{font-family:var(--serif);font-weight:400;margin:0}
-  .ic{width:16px;height:16px;flex:none}
 
-  .band{background:var(--band);color:var(--band-ink)}
-  .band .in{max-width:1180px;margin:0 auto;padding:16px 40px 22px}
-  .row{display:flex;align-items:center;gap:26px}
+  .wrap{width:100%;max-width:1180px;margin:0 auto;padding:22px 40px 40px;flex:1;display:flex;flex-direction:column}
+  .row{display:flex;align-items:baseline;gap:26px;padding-bottom:16px;border-bottom:1px solid var(--band-rule)}
   .mark{font-family:var(--serif);font-size:20px;letter-spacing:.14em;font-weight:700}
-  .date{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted)}
-  nav{display:flex;gap:20px;font-size:13.5px;letter-spacing:.04em;color:var(--band-muted);margin-left:10px}
-  nav a:hover{color:var(--band-ink)}
-  nav a[aria-current]{color:var(--band-ink);border-bottom:1px solid var(--band-ink);padding-bottom:2px}
-  .row .right{margin-left:auto;display:flex;gap:18px;align-items:center;font-size:13.5px}
-  .textbtn{display:inline-flex;align-items:center;gap:8px;letter-spacing:.04em;border-bottom:1px solid transparent;transition:border-color .15s}
-  .textbtn:hover{border-color:currentColor}
-  .ib{color:var(--band-muted)} .ib:hover{color:var(--band-ink)}
-  .menu{display:none}
-  .mast{margin-top:20px;padding-top:18px;border-top:1px solid rgba(242,236,223,.28)}
-  h1{font-size:32px;line-height:1.3;text-wrap:balance;max-width:40ch}
-  h1 em{font-style:italic}
+  .date{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted);white-space:nowrap}
+  .row .skip{margin-left:auto;font-size:14px;color:var(--band-muted);border-bottom:1px solid transparent}
+  .row .skip:hover{color:var(--band-ink);border-color:currentColor}
 
-  main{max-width:1180px;margin:0 auto;padding:34px 40px 40px;display:grid;grid-template-columns:1.1fr 1fr;gap:64px}
-  h2{font-size:22px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:4px;display:flex;align-items:baseline;gap:12px}
-  h2 small{font-family:var(--sans);font-size:12.5px;letter-spacing:.02em;color:var(--ink-3);margin-left:auto}
-  ul{list-style:none;margin:0;padding:0}
+  .cover{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:80px;align-items:center;padding:48px 0 40px}
+  .greet{font-family:var(--serif);font-style:italic;font-size:22px;color:var(--band-muted);margin:0 0 22px}
+  blockquote{margin:0;font-family:var(--serif);font-size:40px;line-height:1.3;letter-spacing:-.005em;text-wrap:balance;max-width:26ch}
+  blockquote::before{content:"“";position:absolute;margin-left:-.5em;color:var(--band-muted)}
+  blockquote::after{content:"”";color:var(--band-muted)}
+  .quote{position:relative;padding-left:.5em}
+  figcaption{margin-top:20px;font-size:15px;color:var(--band-muted)}
+  figcaption b{font-weight:500;color:var(--band-ink)}
 
-  /* hour-ruled timeline (clean's donation, in ink and paper) */
-  .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:18px 20px 20px;margin-top:14px}
-  .tl{position:relative;height:calc(var(--hour) * 12)}
-  .hr{position:absolute;left:0;right:0;display:flex;gap:14px;align-items:flex-start;font-family:var(--serif);font-size:13px;color:var(--ink-3)}
-  .hr::after{content:"";flex:1;border-top:1px solid var(--rule);transform:translateY(9px)}
-  .hr span{width:42px;text-align:right}
-  .ev{position:absolute;left:60px;right:0;min-height:30px;background:var(--c);border-radius:10px;padding:6px 12px;font-size:14.5px;line-height:1.3;transition:transform .15s,box-shadow .15s}
-  .ev:hover{transform:translateX(2px);box-shadow:var(--shadow)}
-  .ev.cal{--c:var(--a-cal)} .ev.fit{--c:var(--a-fit)} .ev.health{--c:var(--a-health)} .ev.study{--c:var(--a-study)}
-  .ev b{display:block;font-family:var(--serif);font-weight:400}
-  .ev small{color:var(--ink-3);font-size:12.5px}
-  .now{position:absolute;left:46px;right:0;height:0;border-top:1.5px solid var(--ox);z-index:2;pointer-events:none}
-  .now::after{content:"8.40 am";position:absolute;right:0;top:-21px;font-family:var(--serif);font-size:12px;color:var(--band-ink);background:var(--ox);padding:2px 8px;border-radius:6px}
+  .word h2{margin:0 0 18px;font-family:var(--serif);font-weight:400;font-size:22px;padding-bottom:10px;border-bottom:1px solid var(--band-rule)}
+  .word .w{font-family:var(--serif);font-size:32px;line-height:1.3;margin:0}
+  .word .pos{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted);margin:6px 0 16px}
+  .word .pos span{margin-right:12px}
+  .word .def{margin:0 0 12px;font-size:17px;line-height:1.5;max-width:44ch}
+  .word .ex{margin:0;font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted);max-width:44ch}
+  .word .ex b{font-weight:400;font-style:italic;color:var(--band-ink)}
 
-  .affairs li{display:grid;grid-template-columns:1fr auto;gap:2px 20px;padding:13px 0;border-bottom:1px solid var(--rule);align-items:baseline}
-  .affairs .n{grid-column:1;grid-row:1;font-family:var(--serif);font-size:17px}
-  .affairs .d{grid-column:1;grid-row:2;color:var(--ink-2);font-size:13.5px}
-  .affairs .v{grid-column:2;grid-row:1/3;font-family:var(--serif);font-size:24px;text-align:right;line-height:1.1}
-  .affairs .v small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3);margin-top:2px}
-  .affairs .v.flag small{color:var(--ox)}
-  .todo{margin-top:34px}
-  .todo li{display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px dotted var(--rule)}
-  .todo input{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px}
-  .todo input:checked{background:var(--band);border-color:var(--band)}
-  .todo input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
-  .todo label{cursor:pointer;flex:1}
-  .todo input:checked + label{color:var(--ink-3);text-decoration:line-through}
-  .todo .w{font-size:12.5px;color:var(--ink-3)}
-  .todo .w.due{color:var(--ox)}
-  .foot{max-width:1180px;margin:0 auto;padding:0 40px 32px;font-size:12.5px;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
+  .foot{display:flex;align-items:center;gap:24px;padding-top:22px;border-top:1px solid var(--band-rule)}
+  .open{display:inline-flex;align-items:center;gap:12px;font-family:var(--serif);font-size:22px;border-bottom:1px solid transparent;transition:border-color .15s}
+  .open:hover{border-color:currentColor}
+  .open svg{width:18px;height:18px;transition:transform .15s}
+  .open:hover svg{transform:translateX(3px)}
+  .gate{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+  .gate input{font-family:var(--serif);font-size:17px;color:var(--band-ink);border-bottom:1px solid var(--band-rule);padding:4px 0;width:12ch;letter-spacing:.2em}
+  .gate input:focus{outline:none;border-bottom-color:var(--band-ink)}
+  .gate input::placeholder{font-style:italic;letter-spacing:0;color:var(--band-muted)}
+  .gate input[hidden]{display:none}
+  .foot .hint{font-size:14px;color:var(--band-muted)}
+  .foot .hint.no{color:var(--band-ink)}
+  .foot .hint kbd{font:inherit;padding:1px 6px;border:1px solid var(--band-rule);border-radius:6px}
 
-  @media (prefers-reduced-motion:reduce){.ev{transition:none}}
+  @media (prefers-reduced-motion:reduce){.open,.open svg{transition:none}}
   @media (max-width:900px){
-    .band .in{padding:14px 20px 20px} .date{display:none} .row{flex-wrap:wrap} .menu{display:grid;place-items:center;width:32px;height:32px;color:var(--band-ink)} nav{display:none;order:9;width:100%;flex-wrap:wrap;gap:10px 18px;margin:12px 0 0;padding-top:12px;border-top:1px solid rgba(242,236,223,.28)} .band.nav-open nav{display:flex} .row{gap:14px}
-    h1{font-size:26px}
-    main{grid-template-columns:1fr;gap:36px;padding:24px 20px 36px} .card{padding:12px 10px 14px} .foot{padding:0 20px 28px}
+    .wrap{padding:18px 20px 28px}
+    .cover{grid-template-columns:1fr;gap:36px;padding:32px 0 28px}
+    blockquote{font-size:26px}
+    .word .w{font-size:26px}
+    .foot{flex-wrap:wrap;gap:14px} .foot .hint{display:none}
+    .row{flex-wrap:wrap;gap:10px 18px} .row .skip{margin-left:0}
   }
 </style>
 </head>
 <body>
-<header class="band">
-  <div class="in">
-    <div class="row">
-      <a class="mark" href="#">HQ</a>
-      <span class="date">Monday, 14 September 2026 · 8.40 am</span>
-      <nav aria-label="Areas"><a href="#" aria-current="page">Today</a><a href="#">Calendar</a><a href="finances.html">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="#">Health</a></nav>
-      <div class="right">
-        <button class="textbtn"><svg class="ic"><use href="icons.svg#plus"/></svg>New entry</button>
-        <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
-        <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
-        <button class="ib menu" type="button" aria-label="Menu" aria-expanded="false" id="menubtn"><svg class="ic"><use href="icons.svg#menu"/></svg></button>
-      </div>
-    </div>
-    <div class="mast"><h1>Good morning, Jacob. <em>Deep work at nine, in twenty minutes; the gym at half past eleven makes it seven weeks.</em></h1></div>
-  </div>
-</header>
+<div class="wrap">
+  <header class="row">
+    <span class="mark">HQ</span>
+    <span class="date" id="date">Monday, 14 September 2026</span>
+    <a class="skip" href="today.html">Skip to today →</a>
+  </header>
 
-<main>
-  <section>
-    <h2>The day<small>Six items · 8 am to 8 pm</small></h2>
-    <div class="card"><div class="tl">
-      <div class="hr" style="top:0"><span>8 am</span></div>
-      <div class="hr" style="top:calc(var(--hour)*1)"><span>9 am</span></div>
-      <div class="hr" style="top:calc(var(--hour)*2)"><span>10 am</span></div>
-      <div class="hr" style="top:calc(var(--hour)*3)"><span>11 am</span></div>
-      <div class="hr" style="top:calc(var(--hour)*4)"><span>12 pm</span></div>
-      <div class="hr" style="top:calc(var(--hour)*5)"><span>1 pm</span></div>
-      <div class="hr" style="top:calc(var(--hour)*6)"><span>2 pm</span></div>
-      <div class="hr" style="top:calc(var(--hour)*7)"><span>3 pm</span></div>
-      <div class="hr" style="top:calc(var(--hour)*8)"><span>4 pm</span></div>
-      <div class="hr" style="top:calc(var(--hour)*9)"><span>5 pm</span></div>
-      <div class="hr" style="top:calc(var(--hour)*10)"><span>6 pm</span></div>
-      <div class="hr" style="top:calc(var(--hour)*11)"><span>7 pm</span></div>
-      <a href="#" class="ev cal" style="top:calc(var(--hour)*1 + 9px);height:calc(var(--hour)*2 - 4px)"><b>Deep work — RPL value engine</b><small>Two hours, uninterrupted</small></a>
-      <a href="#" class="ev fit" style="top:calc(var(--hour)*3.5 + 9px);height:calc(var(--hour)*1 - 4px)"><b>Gym — push day, upper A</b><small>Bench, overhead press, dips</small></a>
-      <a href="#" class="ev health" style="top:calc(var(--hour)*5 + 9px);height:calc(var(--hour)*.75 - 4px)"><b>Lunch</b></a>
-      <a href="#" class="ev study" style="top:calc(var(--hour)*6 + 9px);height:calc(var(--hour)*1.5 - 4px)"><b>Study — Networking, chapter six</b><small>Subnetting</small></a>
-      <a href="#" class="ev cal" style="top:calc(var(--hour)*8.5 + 9px);height:calc(var(--hour)*.5 - 4px)"><b>Telephone Mother</b></a>
-      <a href="#" class="ev cal" style="top:calc(var(--hour)*11 + 9px);height:calc(var(--hour)*1 - 4px)"><b>RPL scrim review</b></a>
-      <div class="now" style="top:calc(var(--hour)*0.667 + 9px)"></div>
-    </div></div>
-  </section>
+  <main class="cover">
+    <figure class="quote">
+      <p class="greet" id="greet">Good morning, Jacob.</p>
+      <blockquote id="q">The impediment to action advances action. What stands in the way becomes the way.</blockquote>
+      <figcaption id="qa"><b>Marcus Aurelius</b>, Meditations</figcaption>
+    </figure>
 
-  <section>
-    <h2>State of affairs<small>This morning</small></h2>
-    <ul class="affairs">
-      <li><span class="n">Accounts</span><span class="d">Rent of $1,450 due Thursday; $690 discretionary thereafter</span><span class="v">$2,140<small>of $3,200 remaining</small></span></li>
-      <li><span class="n">Health</span><span class="d">Seven hours twelve of sleep · resting pulse 58</span><span class="v flag">3 of 8<small>glasses of water</small></span></li>
-      <li><span class="n">Training</span><span class="d">Sixth consecutive week · next at 11.30 am</span><span class="v">3 of 4<small>sessions this week</small></span></li>
-      <li><span class="n">Study</span><span class="d">Examination in twelve days · next block 2.00 pm</span><span class="v flag">4 of 8 h<small>this week</small></span></li>
-      <li><span class="n">Calendar</span><span class="d">Free from five until the scrim review at seven</span><span class="v">6<small>engagements</small></span></li>
-    </ul>
-    <div class="todo">
-      <h2>To do<small>One of five</small></h2>
-      <ul>
-        <li><input type="checkbox" id="a" checked><label for="a">Log weight</label><span class="w">morning</span></li>
-        <li><input type="checkbox" id="b"><label for="b">Take vitamins</label><span class="w">morning</span></li>
-        <li><input type="checkbox" id="c"><label for="c">Pay electric bill</label><span class="w due">due today</span></li>
-        <li><input type="checkbox" id="d"><label for="d">Review September budget</label><span class="w">15 min</span></li>
-        <li><input type="checkbox" id="e"><label for="e">Read thirty minutes</label><span class="w">evening</span></li>
-      </ul>
-    </div>
-  </section>
-</main>
-<p class="foot">Sample data, shown for design only.</p>
-<script>document.getElementById('menubtn').addEventListener('click', e=>{ const b=document.querySelector('.band'); b.classList.toggle('nav-open'); e.currentTarget.setAttribute('aria-expanded', b.classList.contains('nav-open')); });</script>
+    <section class="word" aria-labelledby="wotd">
+      <h2 id="wotd">Word of the day</h2>
+      <p class="w" id="w">equanimity</p>
+      <p class="pos"><span id="pr">/ˌek-wə-ˈni-mə-tē/</span><span id="pos">noun</span></p>
+      <p class="def" id="def">Calmness and evenness of mind, especially under strain.</p>
+      <p class="ex" id="ex">She took the delay with <b>equanimity</b> and read until the train came.</p>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <form class="gate" id="gate">
+      <input id="pass" type="password" placeholder="Passcode" autocomplete="current-password" aria-label="Passcode">
+      <button class="open" type="submit"><span id="openlbl">Open today</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <span class="hint" id="hint">or press <kbd>Enter</kbd></span>
+    </form>
+  </footer>
+</div>
+
+<script src="store.js"></script>
+<script>
+  // One quote and one word per calendar day, rotating through the lists below.
+  // ponytail: hardcoded lists; swap for a fetched JSON once there's a data layer.
+  const quotes = [
+    ["The impediment to action advances action. What stands in the way becomes the way.", "Marcus Aurelius", "Meditations"],
+    ["We suffer more often in imagination than in reality.", "Seneca", "Letters"],
+    ["It is not that we have a short time to live, but that we waste a lot of it.", "Seneca", "On the Shortness of Life"],
+    ["Well begun is half done.", "Aristotle", ""],
+    ["No man steps in the same river twice.", "Heraclitus", ""],
+    ["Waste no more time arguing what a good man should be. Be one.", "Marcus Aurelius", "Meditations"],
+    ["First say to yourself what you would be; and then do what you have to do.", "Epictetus", "Discourses"],
+  ];
+  const words = [
+    ["equanimity", "/ˌek-wə-ˈni-mə-tē/", "noun", "Calmness and evenness of mind, especially under strain.", "She took the delay with <b>equanimity</b> and read until the train came."],
+    ["assiduous", "/ə-ˈsi-jə-wəs/", "adjective", "Showing great care, attention and persistence.", "An <b>assiduous</b> note-taker, he never lost a thread."],
+    ["halcyon", "/ˈhal-sē-ən/", "adjective", "Calm, peaceful; often of a happy period in the past.", "Those <b>halcyon</b> summers on the lake."],
+    ["lacuna", "/lə-ˈkü-nə/", "noun", "A gap or missing part, especially in a text or argument.", "The report has one <b>lacuna</b>: it never says who pays."],
+    ["sanguine", "/ˈsaŋ-gwən/", "adjective", "Optimistic, especially in a difficult situation.", "He stayed <b>sanguine</b> about the exam."],
+    ["perspicacious", "/ˌpər-spə-ˈkā-shəs/", "adjective", "Having a ready insight into and understanding of things.", "A <b>perspicacious</b> reader spots the flaw on page one."],
+    ["vestige", "/ˈves-tij/", "noun", "A trace of something that once existed.", "The last <b>vestige</b> of the old routine was the 7 a.m. alarm."],
+  ];
+  const now = new Date();
+  const day = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 864e5);
+  const [qt, qa, qs] = quotes[day % quotes.length];
+  const [w, pr, pos, def, ex] = words[day % words.length];
+  document.getElementById('q').textContent = qt;
+  document.getElementById('qa').innerHTML = `<b>${qa}</b>${qs ? ', ' + qs : ''}`;
+  document.getElementById('w').textContent = w;
+  document.getElementById('pr').textContent = pr;
+  document.getElementById('pos').textContent = pos;
+  document.getElementById('def').textContent = def;
+  document.getElementById('ex').innerHTML = ex;
+  document.getElementById('date').textContent = now.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  const h = now.getHours();
+  document.getElementById('greet').textContent = (h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + ', Jacob.';
+  // The front door. With the API present, the passcode sets the session cookie; on a plain static server it just opens.
+  const gate = document.getElementById('gate'), pass = document.getElementById('pass'), hint = document.getElementById('hint');
+  const signedIn = () => { pass.hidden = true; document.getElementById('openlbl').textContent = 'Continue'; };
+  fetch('/api/login').then(r => r.ok ? r.json() : { authed: true }).then(j => { if (j.authed) signedIn(); }).catch(signedIn);
+  gate.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (pass.hidden) return location.href = 'today.html';
+    const ok = await store.signIn(pass.value).catch(() => true);
+    if (ok) location.href = 'today.html';
+    else { hint.textContent = 'That is not it. Try again.'; hint.classList.add('no'); pass.select(); }
+  });
+</script>
 </body>
 </html>

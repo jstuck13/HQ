@@ -181,7 +181,7 @@ Warm ivory and near-black ink under a deep bottle-green band, with a single oxbl
 
 ### Hierarchy
 - **Display** (400, 32px, 1.3; 26px under 900px): the greeting h1 in the band, balanced and capped at 40ch, with the insight sentence in italic inside it.
-- **Cover** (400, 40px, 1.3; 26px under 900px): the daily quote on the welcome cover (`welcome.html`), the one screen that is band-colour edge to edge; the only step above Display.
+- **Cover** (400, 40px, 1.3; 26px under 900px): the daily quote on the welcome cover (`index.html (the welcome cover)`), the one screen that is band-colour edge to edge; the only step above Display.
 - **Headline** (400, 22px): section titles ("The day", "State of affairs", "To do"), underlined with a 1px Ink rule and carrying a right-aligned sans count at caption size.
 - **Title** (400, 17px): area names in ledger rows. Event block titles use the same serif at 14.5px inside the timeline card.
 - **Numeral** (400, 24px, 1.1): the one number per area, right-aligned, with a 12px sans unit line beneath.
