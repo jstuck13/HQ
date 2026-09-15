@@ -6,22 +6,26 @@
     get: k => { try { return JSON.parse(localStorage.getItem('hq.' + k)); } catch { return null; } },
     set: (k, v) => { try { localStorage.setItem('hq.' + k, JSON.stringify(v)); } catch {} },
   };
-  const timers = {};
+  const timers = {}, loaded = {};   // a key can be saved only after its load has answered; earlier renders must not clobber the cache or the server
 
   async function load(key) {
     const cached = ls.get(key);
+    try { return await fetchDoc(key, cached); } finally { loaded[key] = true; }
+  }
+  async function fetchDoc(key, cached) {
     try {
       const r = await fetch(`/api/state?key=${encodeURIComponent(key)}`, { cache: 'no-store' });
       if (r.status === 401) { window.store.signedOut = true; return cached; }
       if (!r.ok) return cached;
       const doc = await r.json();
       if (doc && doc.data !== undefined) { ls.set(key, doc.data); return doc.data; }
-      if (cached) save(key, cached);           // first run against an empty server: seed it from the cache
+      if (cached) { loaded[key] = true; save(key, cached); }   // first run against an empty server: seed it from the cache
       return cached;
     } catch { return cached; }                 // offline or no API (plain static server): cache it is
   }
 
   function save(key, doc) {
+    if (!loaded[key]) return;                  // still waiting on the server: nothing to save yet
     ls.set(key, doc);
     clearTimeout(timers[key]);                 // ponytail: debounce, last write wins; no conflict handling for one user
     timers[key] = setTimeout(() => {

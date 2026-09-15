@@ -127,6 +127,7 @@
     .ledger li{grid-template-columns:1fr auto;gap:6px 12px} .ledger .head{display:none} .ledger .l,.ledger .a{grid-column:1/-1;text-align:left;display:inline}
     .ledger .l,.ledger .a{grid-column:auto;display:block;font-size:12.5px} .ledger .l small,.ledger .a small{display:inline;margin-left:4px}
     .ledger .l::before{content:"last "} .ledger .a::before{content:"avg "} .ledger .a{margin-left:0} .ledger .l,.ledger .a{white-space:nowrap}
+    .addl{grid-template-columns:1fr 1fr} .addl .textbtn{grid-column:1/-1;justify-self:start}
     .ledger li{grid-template-columns:1fr auto} .ledger .n{grid-column:1} .ledger .v{grid-column:2;grid-row:1} .ledger .l{grid-column:1;grid-row:2} .ledger .a{grid-column:2;grid-row:2;text-align:right}
     .next li{grid-template-columns:1fr auto} .next .t{grid-column:2;grid-row:1}
     .strip{grid-template-columns:1fr}
@@ -222,7 +223,7 @@
   function renderNext(){
     const nx=[...(H.next||[])].sort((a,b)=>(a.date||'9')<(b.date||'9')?-1:1);
     F('next').innerHTML = nx.length ? nx.map(n=>{ const d=n.date?C.daysBetween(TODAY,n.date):null; const t=d==null?'To book':d<0?'Overdue':d===0?'Today':d===1?'Tomorrow':`In ${d} days`;
-      return `<li data-id="${n.id}"><span class="n">${esc(n.name)}</span><span class="d">${n.date?C.fromISO(n.date).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'}):''}${n.date&&n.note?' · ':''}${esc(n.note||'')}</span><span class="t ${d!=null&&d<=0?'flag':''}">${t}</span><button class="x" type="button" data-rm="${n.id}" aria-label="Remove ${esc(n.name)}">remove</button></li>`; }).join('')
+      return `<li data-id="${n.id}"><span class="n">${esc(n.name)}</span><span class="d">${n.date?C.weekdayDayMonth(C.fromISO(n.date)):''}${n.date&&n.note?' · ':''}${esc(n.note||'')}</span><span class="t ${d!=null&&d<=0?'flag':''}">${t}</span><button class="x" type="button" data-rm="${n.id}" aria-label="Remove ${esc(n.name)}">remove</button></li>`; }).join('')
       : '<li class="empty">Nothing booked. Add an appointment or a refill to keep it in view.</li>';
   }
   const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -235,7 +236,7 @@
   // ---- history: the last 30 days from the document ----
   const days = Array.from({length:30},(_,i)=>C.addDays(C.now, i-29));
   const isoDays = days.map(d=>C.iso(d));
-  const fmtDay = d => d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  const fmtDay = d => C.dayMonth(d);
   const series = [
     {name:'Sleep', key:'sleep', fmt:v=>`${Math.floor(v)} h ${String(Math.round((v%1)*60)).padStart(2,'0')}`, level:.1, delta:v=>`${Math.round(v*60)} min`},
     {name:'Weight', key:'weight', fmt:v=>`${v.toFixed(1)} lb`, level:.5, delta:v=>`${v.toFixed(1)} lb`},
@@ -316,8 +317,8 @@
   }
   function renderAll(){ renderLogged(); renderCells(); renderCharts(); renderPills(); renderNext(); }
 
-  F('todayn').textContent = C.now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
-  F('rangen').textContent = `${C.addDays(C.now,-29).toLocaleDateString('en-GB',{day:'numeric',month:'long'})} – ${C.now.toLocaleDateString('en-GB',{day:'numeric',month:'long'})}`;
+  F('todayn').textContent = `${C.dayName(C.now)} ${C.dayMonthLong(C.now)}`;
+  F('rangen').textContent = `${C.dayMonthLong(C.addDays(C.now,-29))} – ${C.dayMonthLong(C.now)}`;
   renderAll();
   F('newentry').onclick = ()=>F('sleep').focus();
   store.load(KEY).then(doc => { if (doc && doc.days) { H = doc; H.meds ??= []; H.next ??= []; L = H.days[TODAY] || { pills: [] }; L.pills ??= []; applyLog(); } });

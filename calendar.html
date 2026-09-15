@@ -165,6 +165,9 @@
     .right{grid-column:1/-1}
   }
   @media (max-width:760px){
+    main > aside:first-child{order:3} main > section{order:2} main > .right{order:1}
+  }
+  @media (max-width:760px){
     .band .in{padding:14px 20px 20px} .date{display:none} .row{flex-wrap:wrap} .menu{display:grid;place-items:center;width:32px;height:32px;color:var(--band-ink)} nav{display:none;order:9;width:100%;flex-wrap:wrap;gap:10px 18px;margin:12px 0 0;padding-top:12px;border-top:1px solid rgba(242,236,223,.28)} .band.nav-open nav{display:flex} .row{gap:14px}
     .mast{flex-wrap:wrap;gap:10px 18px} h1{font-size:26px} .mast .week{margin-left:0;width:100%}
     main{grid-template-columns:1fr;padding:24px 20px 36px;gap:32px} .foot{padding:0 20px 28px}
@@ -370,8 +373,8 @@
   });
   function renderGrid(){
     const ws=C.fromISO(weekStart), we=C.addDays(ws,6);
-    F('monthh').textContent = ws.getMonth()===we.getMonth() ? C.month(ws) : `${ws.toLocaleDateString('en-GB',{month:'long'})} – ${C.month(we)}`;
-    F('weekh').textContent = `${ws.getDate()} ${ws.toLocaleDateString('en-GB',{month:'short'})} – ${we.getDate()} ${we.toLocaleDateString('en-GB',{month:'short'})} · 8 am – 8 pm`;
+    F('monthh').textContent = ws.getMonth()===we.getMonth() ? C.month(ws) : `${C.monthName(ws)} – ${C.month(we)}`;
+    F('weekh').textContent = `${C.dayMonth(ws)} – ${C.dayMonth(we)} · 8 am – 8 pm`;
     let total=0;
     document.querySelectorAll('#days button').forEach(b=>{
       const i=+b.dataset.i, d=dateOf(i), dt=C.fromISO(d);
@@ -388,7 +391,7 @@
       });
       if(d===TODAY && NOW>=8 && NOW<=20){ const n=document.createElement('div'); n.className='now'; n.style.top=`calc(var(--hour)*${NOW-8})`; c.appendChild(n); }
     });
-    document.querySelector('.mast .week').textContent = `${weekStart===thisMon?'This week':'Week of '+ws.getDate()+' '+ws.toLocaleDateString('en-GB',{month:'short'})} · ${total} ${total===1?'entry':'entries'}`;
+    document.querySelector('.mast .week').textContent = `${weekStart===thisMon?'This week':'Week of '+C.dayMonth(ws)} · ${total} ${total===1?'entry':'entries'}`;
   }
   function renderLedger(){
     const list = occ(selDay), dt=C.fromISO(selDay);
@@ -407,7 +410,7 @@
     const c=cat(s.cat), k=key(s,open.d), dt=C.fromISO(open.d);
     el.innerHTML = `<h2>Entry</h2>
       <p class="title">${esc(s.title)}</p>
-      <p class="when">${DAYS[wd(open.d)]} ${dt.getDate()} ${dt.toLocaleDateString('en-GB',{month:'short'})} · ${h12(s.start)} – ${h12(s.end)} · ${dur(s.start,s.end)}</p>
+      <p class="when">${C.weekdayDayMonth(dt)} · ${h12(s.start)} – ${h12(s.end)} · ${dur(s.start,s.end)}</p>
       <p class="meta"><span><i class="sw" style="background:${c.tint}"></i>${esc(c.name)}</span><span>${isWeekly(s)?'<svg class="ic"><use href="icons.svg?v=3#repeat"/></svg>'+repLabel(s):'Once'}</span>${s.sub?`<span>${esc(s.sub)}</span>`:''}</p>
       <div class="notes"><label for="note">Notes for this ${isWeekly(s)?'occurrence':'entry'}</label><textarea id="note" placeholder="Nothing noted yet.">${esc(S.notes[k]||'')}</textarea><p class="saved" id="saved"></p></div>
       <div class="acts"><button class="textbtn" type="button" id="e-edit">Edit entry</button></div>`;

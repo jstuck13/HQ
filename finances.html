@@ -72,6 +72,7 @@
   .ledger .w small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
   .ledger .a{font-family:var(--serif);font-size:17px;text-align:right;white-space:nowrap}
   .ledger .x{color:var(--ink-3);font-size:12.5px;opacity:0;transition:opacity .15s}
+  .ledger .x .m-,.cats .x .m-{display:none}
   .ledger li:hover .x,.ledger li:focus-within .x{opacity:1}
   .ledger .x:hover{color:var(--ox)}
   .ledger .empty,.cats .empty{padding:14px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif);grid-template-columns:1fr;display:block}
@@ -154,8 +155,9 @@
     .band .in{padding:14px 20px 20px} .date{display:none} .row{flex-wrap:wrap} .menu{display:grid;place-items:center;width:32px;height:32px;color:var(--band-ink)} nav{display:none;order:9;width:100%;flex-wrap:wrap;gap:10px 18px;margin:12px 0 0;padding-top:12px;border-top:1px solid rgba(242,236,223,.28)} .band.nav-open nav{display:flex} .row{gap:14px} h1{font-size:26px}
     main{padding:24px 20px 36px} .foot{padding:0 20px 28px}
     .figs{grid-template-columns:1fr 1fr}
-    .ledger li{grid-template-columns:56px 1fr auto;grid-template-rows:auto auto} .ledger .d{grid-row:1/3} .ledger .w{grid-row:1/3} .ledger .a{grid-column:3;grid-row:1} .ledger .x{grid-column:3;grid-row:2;opacity:1;font-size:12px;justify-self:end}
-    .cats li{grid-template-columns:1fr auto} .cats .ctl{opacity:1}
+    .ledger li{grid-template-columns:56px 1fr auto 20px;gap:10px} .ledger li > .a{grid-column:3;grid-row:1} .ledger li > .x{grid-column:4;grid-row:1;opacity:1;justify-self:end;align-self:center} .ledger .x span{display:none} .ledger .x .m-{display:block}
+    .cats li{grid-template-columns:1fr auto;grid-template-rows:auto auto auto} .cats .ctl{opacity:1;grid-column:1/-1;grid-row:3;justify-self:end;margin:6px 0 0} .cats .x span{display:none} .cats .x .m-{display:block} .cats .x{color:var(--ink-3)}
+    .addl.in{grid-template-columns:1fr 84px} .addl.in input[id$=date]{grid-column:1} .addl.out{grid-template-columns:1fr 84px} .addl .textbtn{grid-column:1/-1;justify-self:start}
     .addl.in,.addl.out,.addc{grid-template-columns:1fr 1fr}
     .charts{grid-template-columns:1fr}
   }
@@ -240,7 +242,7 @@
   // ponytail: localStorage; becomes the finance store later. Amounts are dollars (numbers).
   const F = id => document.getElementById(id);
   const C = clock, NOWD = C.now, DAY = NOWD.getDate(), DIM = new Date(NOWD.getFullYear(), NOWD.getMonth()+1, 0).getDate();
-  const YM = C.today.slice(0,7), MONTH = NOWD.toLocaleDateString('en-GB',{month:'long'});
+  const YM = C.today.slice(0,7), MONTH = C.monthName(NOWD);
   const dom = d => `${YM}-${String(d).padStart(2,'0')}`;   // a day number in this month → ISO
   const upto = (...ds) => ds.filter(d=>d<=DAY);
   const seed = () => ({
@@ -250,7 +252,7 @@
     cats: [ {id:'rent',name:'Rent',limit:1450,due:17},{id:'groc',name:'Groceries',limit:420},{id:'util',name:'Utilities',limit:180,due:14,bill:'Electric'},{id:'trans',name:'Transport',limit:160},{id:'eat',name:'Eating out',limit:150},{id:'fun',name:'Fun',limit:120},{id:'save',name:'Savings',limit:600},{id:'other',name:'Other',limit:120} ],
     tx: [ [1,'Transfer to savings','save',500],[2,'Weekly groceries','groc',86.40],[3,'Bus pass','trans',58],[5,'Dinner with Sam','eat',42.50],[6,'Cinema','fun',24],[8,'Weekly groceries','groc',79.15],[9,'Internet','util',55],[10,'Lunch out','eat',18.20],[11,'Coffee beans','groc',14.50],[12,'Board game night','fun',40],[13,'Weekly groceries','groc',56.30],[13,'Takeaway','eat',31.80] ].filter(x=>x[0]<=DAY).map((x,i)=>({id:11+i,date:dom(x[0]),what:x[1],cat:x[2],amt:x[3]})),
     // past months, for the six-month chart (income, expenses)
-    history: [3900,4150,4200,3700,4300].map((inc,i)=>[new Date(NOWD.getFullYear(), NOWD.getMonth()-5+i, 1).toLocaleDateString('en-GB',{month:'short'}), inc, [3120,3380,3210,3450,3160][i]]),
+    history: [3900,4150,4200,3700,4300].map((inc,i)=>[C.monthShort(new Date(NOWD.getFullYear(), NOWD.getMonth()-5+i, 1)), inc, [3120,3380,3210,3450,3160][i]]),
   });
   let showAll = false;
   let S = seed();
@@ -279,7 +281,7 @@
     const next = S.plan.filter(p=>p.date >= C.today).sort((a,b)=>a.date<b.date?-1:1)[0];
     F('nextv').textContent = next ? $0(next.amt) : '—'; F('nextn').textContent = next ? `${next.src}, ${dmy(next.date)}` : 'nothing planned';
     const inc = [...S.income].sort((a,b)=>a.date<b.date?1:-1);
-    F('inl').innerHTML = (inc.length ? inc.map(i=>`<li data-id="${i.id}"><span class="d">${dmy(i.date)}</span><span class="w">${esc(i.src)}</span><button class="x" type="button" aria-label="Remove ${esc(i.src)}">remove</button><span class="a in">${$(i.amt)}</span></li>`).join('') : '<li class="empty">Nothing landed yet this month.</li>')
+    F('inl').innerHTML = (inc.length ? inc.map(i=>`<li data-id="${i.id}"><span class="d">${dmy(i.date)}</span><span class="w">${esc(i.src)}</span><button class="x" type="button" aria-label="Remove ${esc(i.src)}"><span>remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button><span class="a in">${$(i.amt)}</span></li>`).join('') : '<li class="empty">Nothing landed yet this month.</li>')
       ;
     F('planl').innerHTML = (S.plan.length ? S.plan.map(p=>`<li><span class="d">${dmy(p.date)}</span><span class="w">${esc(p.src)}<small>expected</small></span><span></span><span class="a">${$(p.amt)}</span></li>`).join('') : '') + `<li class="total"><span class="d"></span><span class="w">To reach the ${$0(S.expected)} plan</span><span></span><span class="a">${$(Math.max(0,S.expected-landed))}</span></li>`;
     // money out
@@ -287,7 +289,7 @@
     F('cats').innerHTML = S.cats.length ? S.cats.map((c,i)=>{
       const sp = spentIn(c.id), pct = Math.min(100, c.limit ? sp/c.limit*100 : 0), over = sp > c.limit, lft = c.limit - sp;
       const due = c.due && (c.bill || sp===0) ? ((c.bill?c.bill+' ':'') + (c.due===DAY ? 'due today' : c.due>DAY ? `due ${c.due===DAY+1?'tomorrow':'on the '+c.due+ordinal(c.due)}` : 'overdue')) : '';
-      return `<li data-id="${c.id}"><span class="n">${esc(c.name)}</span><span class="ctl"><button class="mv" type="button" data-mv="-1" aria-label="Move ${esc(c.name)} up" ${i===0?'disabled':''}><svg class="ic"><use href="icons.svg?v=3#chevron-up"/></svg></button><button class="mv" type="button" data-mv="1" aria-label="Move ${esc(c.name)} down" ${i===S.cats.length-1?'disabled':''}><svg class="ic"><use href="icons.svg?v=3#chevron-down"/></svg></button><button class="x" type="button" aria-label="Remove ${esc(c.name)}">remove</button></span>
+      return `<li data-id="${c.id}"><span class="n">${esc(c.name)}</span><span class="ctl"><button class="mv" type="button" data-mv="-1" aria-label="Move ${esc(c.name)} up" ${i===0?'disabled':''}><svg class="ic"><use href="icons.svg?v=3#chevron-up"/></svg></button><button class="mv" type="button" data-mv="1" aria-label="Move ${esc(c.name)} down" ${i===S.cats.length-1?'disabled':''}><svg class="ic"><use href="icons.svg?v=3#chevron-down"/></svg></button><button class="x" type="button" aria-label="Remove ${esc(c.name)}"><span>remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button></span>
         <span class="s">${$0(sp)} <small>of</small> $<input value="${c.limit.toLocaleString('en-US')}" inputmode="numeric" aria-label="${esc(c.name)} limit"></span>
         <span class="bar"><i class="${over?'over':''}" style="width:${pct}%"></i></span>
         <span class="l ${over?'over':''} ${/due today|overdue/.test(due)?'due':''}">${over ? $0(-lft)+' over' : due ? (c.bill ? due+' · '+$0(lft)+' left' : due) : $0(lft)+' left'}</span></li>`;
@@ -297,7 +299,7 @@
     const tx = [...S.tx].sort((a,b)=>a.date<b.date?1:(a.date>b.date?-1:b.id-a.id));
     F('logn').textContent = `${tx.length} entries · ${$0(spent)}`;
     const shown = showAll ? tx : tx.slice(0,6);
-    F('outl').innerHTML = tx.length ? shown.map(t=>`<li data-id="${t.id}"><span class="d">${dmy(t.date)}</span><span class="w">${esc(t.what)}<small>${esc(cat(t.cat)?.name||'—')}</small></span><button class="x" type="button" aria-label="Remove ${esc(t.what)}">remove</button><span class="a">${$(t.amt)}</span></li>`).join('') + (tx.length>6 ? `<li class="more"><button class="textbtn" type="button" id="more">${showAll?'Show the latest six':'Show all '+tx.length}</button></li>` : '') : '<li class="empty">Nothing spent yet. Enjoy it.</li>';
+    F('outl').innerHTML = tx.length ? shown.map(t=>`<li data-id="${t.id}"><span class="d">${dmy(t.date)}</span><span class="w">${esc(t.what)}<small>${esc(cat(t.cat)?.name||'—')}</small></span><button class="x" type="button" aria-label="Remove ${esc(t.what)}"><span>remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button><span class="a">${$(t.amt)}</span></li>`).join('') + (tx.length>6 ? `<li class="more"><button class="textbtn" type="button" id="more">${showAll?'Show the latest six':'Show all '+tx.length}</button></li>` : '') : '<li class="empty">Nothing spent yet. Enjoy it.</li>';
     charts(landed, spent, limits);
     save();
   }

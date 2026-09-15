@@ -179,7 +179,7 @@
     // health
     if(d.health){ const L=d.health, meds=L.meds||0, pills=(L.pills||[]).length, total=meds?5:4, n=['sleep','weight','hr'].filter(k=>L[k]!=null).length+(L.bps&&L.bpd?1:0)+(meds&&pills>=meds?1:0);
       const note = L.sleep ? `Slept ${L.sleep} h${L.hr?' · resting pulse '+L.hr:''}` : 'Nothing logged yet today';
-      rows.push(row('Health','health.html',note,`${n} of ${total}`,`logged today${meds&&pills<meds?' · '+(meds-pills)+' pills to take':''}`, false));
+      rows.push(row('Health','health.html',note,`${n} of ${total}`,`logged today${meds&&pills<meds?' · '+(meds-pills)+(meds-pills===1?' pill':' pills')+' to take':''}`, false));
     } else rows.push(row('Health','health.html','Nothing logged yet today','0 of 4','logged today'));
     // library
     if(d.lib){ const b=(d.lib.books||[]).find(x=>x.shelf==='reading'), toread=(d.lib.books||[]).filter(x=>x.shelf==='toread').length;
