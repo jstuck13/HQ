@@ -153,6 +153,9 @@
   .swatches button[aria-pressed="true"]{outline:2px solid var(--band);outline-offset:2px}
   .filters .textbtn{margin-top:12px;color:var(--ink);font-size:13.5px}
   .filters .newcat .textbtn{margin:6px 14px 0 0}
+  .clear{margin:18px 0 0;font-size:12.5px;color:var(--ink-3)}
+  .clear .textbtn{font-size:12.5px;color:var(--ink-3);margin-right:8px} .clear .textbtn.ox{color:var(--ox)} .clear .textbtn:hover{color:var(--ink)}
+  .clear b{font-weight:400;color:var(--ink)}
   .foot{max-width:1180px;margin:0 auto;padding:0 40px 32px;font-size:12.5px;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
 
   @media (prefers-reduced-motion:reduce){.ev,.textbtn{transition:none}}
@@ -209,6 +212,7 @@
         <button class="textbtn" type="button" id="nc-cancel">Cancel</button>
       </div>
       <button class="textbtn" type="button" id="nc-open"><svg class="ic"><use href="icons.svg#plus"/></svg>New category</button>
+      <p class="clear" id="clear"><button class="textbtn" type="button" id="clear-ask">Clear every entry</button><span id="clear-sure" hidden>Remove all <b id="clear-n"></b> entries and their notes? <button class="textbtn ox" type="button" id="clear-yes">Yes, clear</button> <button class="textbtn" type="button" id="clear-no">Keep them</button></span></p>
     </div>
 
     <div class="entry" id="entry">
@@ -334,6 +338,10 @@
     S.cats.push({id:'c'+Date.now(), name, tint:ncTint}); save(); F('nc-cancel').click(); renderAll();
   });
   F('nc-name').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); F('nc-add').click(); } });
+  // clearing is two steps, inline, no dialog
+  F('clear-ask').addEventListener('click', ()=>{ F('clear-n').textContent=S.series.length; F('clear-ask').hidden=true; F('clear-sure').hidden=false; });
+  F('clear-no').addEventListener('click', ()=>{ F('clear-ask').hidden=false; F('clear-sure').hidden=true; });
+  F('clear-yes').addEventListener('click', ()=>{ S.series=[]; S.notes={}; open=null; save(); F('clear-ask').hidden=false; F('clear-sure').hidden=true; renderAll(); reset(); });
 
   // ---- mini month (the month of the selected day) ----
   function renderMini(){
