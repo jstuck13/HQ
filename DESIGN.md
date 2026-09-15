@@ -238,7 +238,7 @@ Gently rounded and quiet. The card is 16px; event blocks inside it are 10px; the
 - **Text inputs:** none in the build.
 
 ### Navigation
-- **Style:** a single row of label-size links in the band, 20px apart, Band Sage at rest, Band Ivory on hover; the current page is Band Ivory with a 1px underline 2px below the text. Hidden under 900px (no mobile nav is built yet).
+- **Style:** a single row of label-size links in the band, 20px apart, Band Sage at rest, Band Ivory on hover; the current page is Band Ivory with a 1px underline 2px below the text. Under 900px the row hides the nav and date and shows a menu icon button at the end of the actions; tapping it (`.band.nav-open`) folds the nav open as a wrapped row beneath the toolbar, above the masthead, separated by the band's 28%-alpha hairline.
 
 ### Timeline
 A relative container `hour x 12` tall inside the card. Each hour is a flex row: a 42px right-aligned serif hour mark in Ink 3, then a 1px Rule line nudged 9px down to sit on the text baseline. Events are absolutely positioned anchors from 60px in, tinted per area, 10px radius, 6px 12px padding, 14.5px text with the title in serif and a 12.5px Ink 3 subtitle; hover nudges 2px right and lifts with the card shadow. The now-line is a 1.5px oxblood rule from 46px in, with a serif 12px time badge (oxblood fill, Band Ivory text, 6px radius) hanging above its right end.
