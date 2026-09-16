@@ -115,6 +115,9 @@
   .entry .meta span{display:inline-flex;align-items:center;gap:4px}
   .ledger .d{color:var(--ink-3);font-size:12.5px;white-space:nowrap}
   .ledger .empty{padding:14px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif);cursor:default}
+  .syncline{margin:0 0 14px;font-size:12.5px;color:var(--ink-3)}
+  .syncline .textbtn{font-size:12.5px;color:var(--ink-2);margin-left:8px} .syncline .textbtn:hover{color:var(--ink)}
+  .syncline .bad{color:var(--ox)}
   .add{margin-top:34px}
   .field{display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:baseline;padding:9px 0;border-bottom:1px dotted var(--rule)}
   .field label,.field .lbl{font-size:12.5px;color:var(--ink-3)}
@@ -244,6 +247,7 @@
   </section>
 
   <aside class="right">
+    <p class="syncline" id="syncline" hidden></p>
     <h2 id="dayh">Monday 14<small>6 entries</small></h2>
     <ul class="ledger" id="ledger"></ul>
 
@@ -417,7 +421,7 @@
     el.innerHTML = `<h2>Entry</h2>
       <p class="title">${esc(s.title)}</p>
       <p class="when">${C.weekdayDayMonth(dt)} · ${h12(s.start)} – ${h12(s.end)} · ${dur(s.start,s.end)}</p>
-      <p class="meta"><span><i class="sw" style="background:${c.tint}"></i>${esc(c.name)}</span><span>${isWeekly(s)?'<svg class="ic"><use href="icons.svg?v=3#repeat"/></svg>'+repLabel(s):'Once'}</span>${s.sub?`<span>${esc(s.sub)}</span>`:''}</p>
+      <p class="meta"><span><i class="sw" style="background:${c.tint}"></i>${esc(c.name)}</span><span>${isWeekly(s)?'<svg class="ic"><use href="icons.svg?v=3#repeat"/></svg>'+repLabel(s):'Once'}</span>${s.sub?`<span>${esc(s.sub)}</span>`:''}${s.source==='google'?`<span>${s.url?`<a href="${esc(s.url)}" target="_blank" rel="noopener">From Google Calendar</a>`:'From Google Calendar'}</span>`:''}</p>
       <div class="notes"><label for="note">Notes for this ${isWeekly(s)?'occurrence':'entry'}</label><textarea id="note" placeholder="Nothing noted yet.">${esc(S.notes[k]||'')}</textarea><p class="saved" id="saved"></p></div>
       <div class="acts"><button class="textbtn" type="button" id="e-edit">Edit entry</button></div>`;
     let t; F('note').addEventListener('input', e=>{ S.notes[k]=e.target.value; save(); clearTimeout(t); F('saved').textContent='Saving…'; t=setTimeout(()=>F('saved').textContent='Saved.',600); });
@@ -425,8 +429,9 @@
   }
   function openEntry(id, d){ open={id,d}; selDay=d; renderAll(); F('entry').scrollIntoView({block:'nearest'}); }
   function goto(d){ selDay=d; weekStart=C.iso(C.monday(C.fromISO(d))); renderAll(); }
-  grid.addEventListener('click', e=>{ const a=e.target.closest('a.ev'); if(a){ e.preventDefault(); openEntry(+a.dataset.id, a.parentElement.dataset.d); } });
-  F('ledger').addEventListener('click', e=>{ const li=e.target.closest('li[data-id]'); if(li) openEntry(+li.dataset.id, selDay); });
+  const idOf = v => isNaN(+v) ? v : +v;
+  grid.addEventListener('click', e=>{ const a=e.target.closest('a.ev'); if(a){ e.preventDefault(); openEntry(idOf(a.dataset.id), a.parentElement.dataset.d); } });
+  F('ledger').addEventListener('click', e=>{ const li=e.target.closest('li[data-id]'); if(li) openEntry(idOf(li.dataset.id), selDay); });
   days.addEventListener('click', e=>{ const b=e.target.closest('button'); if(b){ selDay=b.dataset.d; renderAll(); } });
   F('mini').addEventListener('click', e=>{ const b=e.target.closest('button[data-d]'); if(b) goto(b.dataset.d); });
   F('prev').addEventListener('click', ()=>goto(onDay(selDay,-7)));
@@ -464,6 +469,7 @@
     save(); open={id:s.id, d}; goto(d); reset();
   });
   F('remove').addEventListener('click', ()=>{
+    const gone=S.series.find(x=>x.id===editing.id); if(gone && gone.source){ S.ignored=[...(S.ignored||[]), gone.id]; }
     S.series = S.series.filter(x=>x.id!==editing.id);
     Object.keys(S.notes).forEach(k=>{ if(k.startsWith(editing.id+'@')) delete S.notes[k]; });
     open=null; save(); reset(); renderAll();
@@ -471,9 +477,19 @@
   F('cancel').addEventListener('click', reset);
   F('newentry').addEventListener('click', ()=>{ reset(); F('a-title').focus(); });
 
+  async function renderSync(){
+    const led = await store.ledger(), g = led.google, el=F('syncline');
+    const q = new URLSearchParams(location.search).get('google');
+    el.hidden=false;
+    if(q==='connected' && !g){ el.innerHTML = `Google Calendar connected <button class="textbtn" type="button" id="syncnow">Sync now</button>`; }
+    else if(q==='failed' || q==='denied'){ el.innerHTML = `<span class="bad">Google did not connect (${q}).</span> <a class="textbtn" href="/api/auth/google">Try again</a>`; }
+    else if(!g){ el.innerHTML = `Google Calendar not connected <a class="textbtn" href="/api/auth/google">Connect</a>`; }
+    else { const ago=Math.round((Date.now()-new Date(g.last))/60000); el.innerHTML = (g.ok ? `Google synced ${ago<1?'just now':ago<60?ago+' min ago':Math.round(ago/60)+' h ago'} · ${g.calendars} ${g.calendars===1?'calendar':'calendars'}` : `<span class="bad">Google sync failed: ${esc(g.error||'')}</span>`) + ` <button class="textbtn" type="button" id="syncnow">Sync now</button>` + (g.ok ? '' : ` <a class="textbtn" href="/api/auth/google">Reconnect</a>`); }
+    F('syncnow')?.addEventListener('click', async ()=>{ F('syncnow').textContent='Syncing…'; const r=await store.sync('google'); if(r && r.ok){ const doc=await store.load('calendar'); if(doc){ S=doc; migrate(); renderAll(); reset(); } } history.replaceState(null,'',location.pathname); renderSync(); });
+  }
   function renderAll(){ renderCats(); renderMini(); renderGrid(); renderLedger(); renderEntry(); }
   renderAll(); reset();
-  store.load('calendar').then(doc => { if (doc) { S = doc; migrate(); renderAll(); reset(); } else save(); });
+  store.load('calendar').then(doc => { if (doc) { S = doc; migrate(); renderAll(); reset(); } else save(); if(!store.signedOut) renderSync(); });
 </script>
 <script>document.getElementById('menubtn').addEventListener('click', e=>{ const b=document.querySelector('.band'); b.classList.toggle('nav-open'); e.currentTarget.setAttribute('aria-expanded', b.classList.contains('nav-open')); });</script>
 </body>

@@ -7,7 +7,7 @@ const KEY = /^[a-z0-9._-]{1,80}$/i;
 export default async function handler(req, res) {
   if (!isAuthed(req)) return res.status(401).json({ error: 'sign in' });
   const key = String(req.query.key || '');
-  if (!KEY.test(key)) return res.status(400).json({ error: 'bad key' });
+  if (!KEY.test(key) || key.startsWith('_')) return res.status(400).json({ error: 'bad key' });   // _keys hold tokens; never served
   await ensureTable();
 
   if (req.method === 'GET') {

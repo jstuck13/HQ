@@ -1,5 +1,6 @@
 {
   "crons": [
-    { "path": "/api/sync/canvas", "schedule": "0 11 * * *" }
+    { "path": "/api/sync/canvas", "schedule": "0 11 * * *" },
+    { "path": "/api/sync/google", "schedule": "30 10 * * *" }
   ]
 }
