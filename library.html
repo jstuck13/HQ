@@ -82,7 +82,7 @@
   .book .cover{transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s}
   .book:hover .cover{transform:translateY(-3px);box-shadow:var(--shadow)}
   .book.cur .cover{outline:2px solid var(--ox);outline-offset:3px}
-  .book .cap{margin-top:14px}   /* clear of the selected outline (2px + 3px offset) and the hover lift */
+  .book .cap{display:block;margin-top:14px}   /* clear of the selected outline (2px + 3px offset) and the hover lift */
   .book .cap b{display:block;font-family:var(--serif);font-weight:400;font-size:14px;line-height:1.25}
   .book .cap i{display:block;font-family:var(--serif);font-size:13px;color:var(--ink-2);margin-top:2px}
   .book .cap .dots{margin-top:6px}
