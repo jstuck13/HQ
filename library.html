@@ -91,7 +91,8 @@
   .notes{grid-column:1/-1;margin-top:22px;padding-top:14px;border-top:1px solid var(--rule)}
   .notes h3{font-size:17px;display:flex;align-items:baseline;gap:10px}
   .notes h3 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
-  .notes li{display:grid;grid-template-columns:96px 1fr auto;gap:14px;padding:10px 0;border-bottom:1px dotted var(--rule);align-items:baseline}
+  .notes ul{border-left:1px solid color-mix(in srgb, var(--ox) 32%, transparent);padding-left:14px}
+  .notes li{display:grid;grid-template-columns:96px 1fr auto;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
   .notes .d{font-family:var(--serif);color:var(--ink-3);font-size:13.5px;white-space:nowrap}
   .notes .n{font-family:var(--serif);font-size:15.5px;line-height:1.55;white-space:pre-wrap;max-width:70ch}
   .notes .x{color:var(--ink-3);font-size:12px;opacity:0}
@@ -324,8 +325,9 @@
   F('clear-yes').addEventListener('click', ()=>{ S={open:null, books:[]}; F('clear-ask').hidden=false; F('clear-sure').hidden=true; render(); });
   render();
   store.load('library').then(doc => { if (doc) { S = doc; } else save();
-    const o = new URLSearchParams(location.search).get('open'); if(o && S.books.some(b=>String(b.id)===o)){ S.open = isNaN(+o) ? o : +o; history.replaceState(null,'',location.pathname); }
-    render(); });
+    const q = new URLSearchParams(location.search), o = q.get('open'); if(o && S.books.some(b=>String(b.id)===o)){ S.open = isNaN(+o) ? o : +o; history.replaceState(null,'',location.pathname); }
+    render();
+    if(q.get('find')){ F('find').hidden=false; F('q').value=q.get('find'); find(q.get('find')); F('find').scrollIntoView({block:'center'}); history.replaceState(null,'',location.pathname); } });
 </script>
 <script>document.getElementById('menubtn').addEventListener('click', e=>{ const b=document.querySelector('.band'); b.classList.toggle('nav-open'); e.currentTarget.setAttribute('aria-expanded', b.classList.contains('nav-open')); });</script>
 </body>

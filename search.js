@@ -45,7 +45,8 @@
       const list = pop.querySelector('ul'); q = q.trim().toLowerCase();
       if (!q) { list.innerHTML = ''; return; }
       const hits = (await gather()).filter(r => (r.title + ' ' + r.sub).toLowerCase().includes(q)).slice(0, 30);
-      list.innerHTML = hits.length ? hits.map(r => `<li><a href="${r.href}"><span class="t">${hi(r.title, q)}</span><span class="s">${esc(r.sub)}</span><span class="a">${r.area}</span></a></li>`).join('') : '<li class="none">Nothing matches.</li>';
+      const add = q.length >= 3 && !hits.some(r => r.area === 'Library') ? `<li><a href="library.html?find=${encodeURIComponent(q)}"><span class="t">Add “${esc(q)}” to the Library</span><span class="s">search Open Library for it</span><span class="a">Library</span></a></li>` : '';
+      list.innerHTML = hits.length || add ? hits.map(r => `<li><a href="${r.href}"><span class="t">${hi(r.title, q)}</span><span class="s">${esc(r.sub)}</span><span class="a">${r.area}</span></a></li>`).join('') + add : '<li class="none">Nothing matches.</li>';
     };
     const open = () => { if (!pop) { pop = document.createElement('div'); pop.className = 'srch'; pop.innerHTML = '<input type="text" autocomplete="off" placeholder="Search everything" aria-label="Search"><ul></ul>'; btn.parentElement.appendChild(pop); pop.querySelector('input').addEventListener('input', e => render(e.target.value)); }
       pop.hidden = false; btn.setAttribute('aria-expanded', 'true'); pop.querySelector('input').focus(); pop.querySelector('input').select(); };

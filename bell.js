@@ -9,7 +9,9 @@
   // three kinds of notice, nothing else: due today, a bill due today, pills not taken by nine in the evening
   const notices = async () => {
     const today = clock.today, ym = today.slice(0, 7), hour = new Date().getHours(), out = [];
-    const [school, fin, health] = await Promise.all([store.load('school'), store.load('finances.' + ym), store.load('health')].map(p => p.catch(() => null)));
+    const [school, fin, health, todo] = await Promise.all([store.load('school'), store.load('finances.' + ym), store.load('health'), store.load('today.' + today)].map(p => p.catch(() => null)));
+    const nowH = new Date().getHours() + new Date().getMinutes() / 60, h12 = h => { const hr = Math.floor(h), m = Math.round((h % 1) * 60); return `${hr % 12 || 12}.${String(m).padStart(2, '0')} ${hr < 12 ? 'am' : 'pm'}`; };
+    for (const i of (todo && todo.items || []).filter(i => !i.done && i.at != null && i.at < nowH)) out.push({ text: `${esc(i.text)} was due by ${h12(i.at)}`, href: 'today.html' });
     for (const i of (school && school.items || []).filter(i => !i.done && i.due && i.due <= today)) out.push({ text: `${esc(i.title)} ${i.due < today ? 'is overdue' : 'is due today'}`, href: 'school.html' });
     if (fin) for (const c of (fin.cats || []).filter(c => c.due === new Date().getDate() && (c.bill || !(fin.tx || []).some(t => t.cat === c.id)))) out.push({ text: `${esc(c.bill || c.name)} is due today`, href: 'finances.html' });
     if (health && hour >= 21) { const meds = health.meds || [], taken = (health.days && health.days[today] || {}).pills || [], left = meds.filter(m => !taken.includes(m.id)); if (left.length) out.push({ text: `${left.map(m => esc(m.name)).join(', ')} not taken yet`, href: 'health.html' }); }

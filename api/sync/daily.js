@@ -8,7 +8,7 @@ const WORDS = ['equanimity', 'assiduous', 'halcyon', 'lacuna', 'sanguine', 'pers
 export default syncRoute('daily', async ({ putDoc }) => {
   const now = new Date(), date = now.toISOString().slice(0, 10);
   const doy = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 864e5);
-  const out = { date, word: null, quote: null };
+  const out = { date, word: null, quote: null }, errors = [];
 
   const w = WORDS[doy % WORDS.length];
   try {
@@ -19,14 +19,15 @@ export default syncRoute('daily', async ({ putDoc }) => {
       const d = (m.definitions || []).find(d => d.example) || (m.definitions || [])[0] || {};
       const pr = e.phonetic || (e.phonetics || []).map(p => p.text).find(Boolean) || '';
       if (d.definition) out.word = { w, pr, pos: m.partOfSpeech || '', def: d.definition[0].toUpperCase() + d.definition.slice(1).replace(/\.?$/, '.'), ex: d.example ? d.example[0].toUpperCase() + d.example.slice(1).replace(/\.?$/, '.') : '' };
-    }
-  } catch {}
+    } else errors.push('dictionary ' + r.status);
+  } catch (e) { errors.push('dictionary ' + e.message); }
 
   try {
     const r = await fetch('https://zenquotes.io/api/today');
     if (r.ok) { const [q] = await r.json(); if (q && q.q && q.a) out.quote = { q: q.q.trim(), a: q.a.trim(), via: 'ZenQuotes' }; }
-  } catch {}
+    else errors.push('zenquotes ' + r.status);
+  } catch (e) { errors.push('zenquotes ' + e.message); }
 
   await putDoc('daily', out);
-  return { word: out.word ? out.word.w : null, quote: out.quote ? out.quote.a : null };
+  return { word: out.word ? out.word.w : null, quote: out.quote ? out.quote.a : null, errors: errors.length ? errors.join('; ') : undefined };
 });

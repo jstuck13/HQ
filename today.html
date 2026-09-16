@@ -68,6 +68,9 @@
   .now{position:absolute;left:46px;right:0;height:0;border-top:1.5px solid var(--ox);z-index:2;pointer-events:none}
   .now::after{content:attr(data-t);position:absolute;right:0;top:-21px;font-family:var(--serif);font-size:12px;color:var(--band-ink);background:var(--ox);padding:2px 8px;border-radius:6px}
   .ev.live b{color:var(--ox)}
+  .td{position:absolute;left:64px;right:0;display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2);border-top:1px dashed var(--ink-3);padding-top:3px;transform:translateY(-1px);pointer-events:none}
+  .td span{display:inline-flex;align-items:center;gap:8px;background:var(--card);padding:0 6px 0 0;border-radius:4px;position:relative;z-index:1} .td small{background:var(--card);padding:0 0 0 6px;position:relative;z-index:1}
+  .td .ic{width:12px;height:12px;color:var(--ink-3)} .td small{color:var(--ink-3);margin-left:auto} .td.late,.td.late small,.td.late .ic{color:var(--ox)} .td.late{border-color:var(--ox)}
   .card.clear{padding:34px 28px 32px;text-align:center}
   .card.clear b{display:block;font-family:var(--serif);font-weight:400;font-style:italic;font-size:22px;margin-bottom:6px}
   .card.clear small{color:var(--ink-3);font-size:13px}
@@ -112,7 +115,8 @@
   .affairs .v small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3);margin-top:2px}
   .affairs .v.flag small{color:var(--ox)}
   .todo{margin-top:34px}
-  .todo li{display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px dotted var(--rule)}
+  .todo ul{border-left:1px solid color-mix(in srgb, var(--ox) 32%, transparent);padding-left:14px}
+  .todo li{display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px solid var(--rule)}
   .todo input[type=checkbox]{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px}
   .todo input[type=checkbox]:checked{background:var(--band);border-color:var(--band)}
   .todo input[type=checkbox]:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
@@ -204,13 +208,15 @@
       list = cal.series.filter(s=>s.date && occurs(s) && !(cal.hidden||[]).includes(s.cat)).sort((a,b)=>a.start-b.start);
     }
     // 8 to 8, stretched when the day has something earlier or later
-    const H0=Math.min(8, ...list.map(s=>Math.floor(s.start))), H1=Math.max(20, ...list.map(s=>Math.ceil(s.end)));
+    const ats=T.items.filter(i=>i.at!=null && !i.done).map(i=>i.at);
+    const H0=Math.min(8, ...list.map(s=>Math.floor(s.start)), ...ats.map(Math.floor)), H1=Math.max(20, ...list.map(s=>Math.ceil(s.end)), ...ats.map(a=>Math.ceil(a+0.5)));
     tl.style.height=`calc(var(--hour) * ${H1-H0})`;
     for(let h=H0; h<H1; h++) html += `<div class="hr" style="top:calc(var(--hour)*${h-H0})"><span>${C.hourLabel(h)}</span></div>`;
     if(cal && cal.series){
       const cats = cal.cats||[], cat = id => cats.find(c=>c.id===id) || {tint:'#E9EEF3'};
       html += list.map(s=>`<a href="calendar.html" class="ev ${s.start<=NOW&&s.end>NOW?'live':''}" style="--c:${cat(s.cat).tint};top:calc(var(--hour)*${s.start-H0} + 9px);height:calc(var(--hour)*${s.end-s.start} - 4px)"><b>${esc(s.title)}</b>${s.end-s.start>=0.75&&s.sub?`<small>${esc(s.sub)}</small>`:''}</a>`).join('');
     }
+    T.items.filter(i=>i.at!=null && !i.done && i.at>=H0 && i.at<=H1).forEach(i=>{ html += `<div class="td ${i.at<NOW?'late':''}" style="top:calc(var(--hour)*${i.at-H0} + 9px)"><span><svg class="ic"><use href="icons.svg#check"/></svg>${esc(i.text)}</span><small>by ${h12(i.at)}</small></div>`; });
     if(NOW>=H0 && NOW<=H1) html += `<div class="now" style="top:calc(var(--hour)*${NOW-H0} + 9px)" data-t="${C.time(new Date())}"></div>`;
     const card = tl.parentElement; card.classList.toggle('clear', !list.length); card.querySelector('.clearmsg')?.remove();
     tl.hidden = !list.length; tl.innerHTML = html;
@@ -325,17 +331,19 @@
   }
 
   // ---- to do: the home's own document, one per day ----
-  const TKEY = 'today.' + TODAY; let T = {items:[]};
+  const TKEY = 'today.' + TODAY; let T = {items:[]}, CAL = null, d = {};
   const YDAY = C.iso(C.addDays(C.fromISO(TODAY),-1));
   const saveT = () => store.save(TKEY, T);
   function renderTodo(){
     const done=T.items.filter(i=>i.done).length;
     F('todon').textContent = T.items.length ? `${done} of ${T.items.length}` : 'nothing yet';
-    F('todo').innerHTML = T.items.length ? T.items.map((i,k)=>`<li><input type="checkbox" id="t${k}" ${i.done?'checked':''} data-k="${k}"><label for="t${k}">${esc(i.text)}</label>${i.from?`<span class="w from">from ${i.from===YDAY?'yesterday':C.short(C.fromISO(i.from))}</span>`:''}<button class="w x" type="button" data-rm="${k}" aria-label="Remove">remove</button></li>`).join('') : '<li class="empty">Nothing on the list. Add the one thing today needs.</li>';
+    F('todo').innerHTML = T.items.length ? T.items.map((i,k)=>`<li><input type="checkbox" id="t${k}" ${i.done?'checked':''} data-k="${k}"><label for="t${k}">${esc(i.text)}</label>${i.at!=null?`<span class="w ${!i.done&&i.at<NOW?'due':''}">by ${h12(i.at)}</span>`:''}${i.from?`<span class="w from">from ${i.from===YDAY?'yesterday':C.short(C.fromISO(i.from))}</span>`:''}<button class="w x" type="button" data-rm="${k}" aria-label="Remove">remove</button></li>`).join('') : '<li class="empty">Nothing on the list. Add the one thing today needs.</li>';
   }
-  F('todo').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ T.items[+e.target.dataset.k].done=e.target.checked; saveT(); renderTodo(); } });
+  F('todo').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ T.items[+e.target.dataset.k].done=e.target.checked; saveT(); renderTodo(); d.day=renderDay(CAL); } });
   F('todo').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ T.items.splice(+b.dataset.rm,1); saveT(); renderTodo(); } });
-  F('addt').addEventListener('submit', e=>{ e.preventDefault(); const t=F('t-text').value.trim(); if(!t) return; T.items.push({text:t,done:false}); F('addt').reset(); saveT(); renderTodo(); });
+  // "… by 3 pm" / "… at 3.30pm" at the end of a to-do becomes its time; it then sits on the timeline and the bell watches it
+  const parseAt = t => { const m=/\s(?:by|at)\s+(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm)\.?$/i.exec(t); if(!m) return {text:t}; let h=+m[1]%12; if(m[3].toLowerCase()==='pm') h+=12; return {text:t.slice(0,m.index).trim(), at:h+(+(m[2]||0))/60}; };
+  F('addt').addEventListener('submit', e=>{ e.preventDefault(); const t=F('t-text').value.trim(); if(!t) return; T.items.push({...parseAt(t), done:false}); F('addt').reset(); saveT(); renderTodo(); d.day=renderDay(CAL); });
 
   // ---- load everything the other pages keep, then draw ----
   (async () => {
@@ -346,7 +354,7 @@
       if(T.items.length) saveT();
     }
     const health = H && H.days ? Object.assign({meds:(H.meds||[]).length}, H.days[TODAY] || {pills:[]}) : null;
-    const d = { fin, health, lib, school, H };
+    Object.assign(d, { fin, health, lib, school, H }); CAL = cal;
     renderReport(H);
     d.day = renderDay(cal);
     renderAffairs(d); renderGreeting(d); renderUpNext(d.day); renderTodo(); renderWeather();
