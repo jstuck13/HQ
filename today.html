@@ -188,21 +188,25 @@
 
   // ---- the day: from the calendar document ----
   function renderDay(cal){
-    const tl = F('tl'); let html='';
-    for(let h=8; h<20; h++) html += `<div class="hr" style="top:calc(var(--hour)*${h-8})"><span>${C.hourLabel(h)}</span></div>`;
-    let list=[];
+    const tl = F('tl'); let html='', list=[];
     if(cal && cal.series){
-      const cats = cal.cats||[], cat = id => cats.find(c=>c.id===id) || {tint:'#E9EEF3'};
       const isWeekly = s => (s.rep||[]).length>0, repDays = s => [...new Set([wd(s.date), ...(s.rep||[])])];
       const occurs = s => isWeekly(s) ? (TODAY>=s.date && repDays(s).includes(wd(TODAY))) : s.date===TODAY;
       list = cal.series.filter(s=>s.date && occurs(s) && !(cal.hidden||[]).includes(s.cat)).sort((a,b)=>a.start-b.start);
-      html += list.map(s=>`<a href="calendar.html" class="ev ${s.start<=NOW&&s.end>NOW?'live':''}" style="--c:${cat(s.cat).tint};top:calc(var(--hour)*${s.start-8} + 9px);height:calc(var(--hour)*${s.end-s.start} - 4px)"><b>${esc(s.title)}</b>${s.end-s.start>=0.75&&s.sub?`<small>${esc(s.sub)}</small>`:''}</a>`).join('');
     }
-    if(NOW>=8 && NOW<=20) html += `<div class="now" style="top:calc(var(--hour)*${NOW-8} + 9px)" data-t="${C.time(new Date())}"></div>`;
+    // 8 to 8, stretched when the day has something earlier or later
+    const H0=Math.min(8, ...list.map(s=>Math.floor(s.start))), H1=Math.max(20, ...list.map(s=>Math.ceil(s.end)));
+    tl.style.height=`calc(var(--hour) * ${H1-H0})`;
+    for(let h=H0; h<H1; h++) html += `<div class="hr" style="top:calc(var(--hour)*${h-H0})"><span>${C.hourLabel(h)}</span></div>`;
+    if(cal && cal.series){
+      const cats = cal.cats||[], cat = id => cats.find(c=>c.id===id) || {tint:'#E9EEF3'};
+      html += list.map(s=>`<a href="calendar.html" class="ev ${s.start<=NOW&&s.end>NOW?'live':''}" style="--c:${cat(s.cat).tint};top:calc(var(--hour)*${s.start-H0} + 9px);height:calc(var(--hour)*${s.end-s.start} - 4px)"><b>${esc(s.title)}</b>${s.end-s.start>=0.75&&s.sub?`<small>${esc(s.sub)}</small>`:''}</a>`).join('');
+    }
+    if(NOW>=H0 && NOW<=H1) html += `<div class="now" style="top:calc(var(--hour)*${NOW-H0} + 9px)" data-t="${C.time(new Date())}"></div>`;
     const card = tl.parentElement; card.classList.toggle('clear', !list.length); card.querySelector('.clearmsg')?.remove();
     tl.hidden = !list.length; tl.innerHTML = html;
     if(!list.length) card.insertAdjacentHTML('beforeend', `<div class="clearmsg"><b>A clear day.</b><small>Nothing on the calendar · <a href="calendar.html">plan it</a></small></div>`);
-    F('dayn').textContent = cal ? (list.length ? `${list.length} ${list.length===1?'item':'items'} · 8 am to 8 pm` : C.time(new Date())) : 'open Calendar to plan the day';
+    F('dayn').textContent = cal ? (list.length ? `${list.length} ${list.length===1?'item':'items'} · ${C.hourLabel(H0)} to ${C.hourLabel(H1)}` : C.time(new Date())) : 'open Calendar to plan the day';
     return list;
   }
 

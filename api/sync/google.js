@@ -39,12 +39,10 @@ export default syncRoute('google', async ({ getDoc, putDoc }) => {
       const id = `google:${e.id}`; seen.add(id);
       if (cal.ignored.includes(id)) continue;
       let date, start, end, sub = c.primary ? '' : c.summary || '';
-      if (e.start.dateTime) { const a = local(e.start.dateTime, c.timeZone || e.start.timeZone), b = local(e.end.dateTime, c.timeZone || e.end.timeZone); date = a.date; start = a.h; end = b.date === a.date ? Math.max(b.h, a.h + 0.25) : 20; }
+      if (e.start.dateTime) { const a = local(e.start.dateTime, c.timeZone || e.start.timeZone), b = local(e.end.dateTime, c.timeZone || e.end.timeZone); date = a.date; start = a.h; end = b.date === a.date ? Math.max(b.h, a.h + 0.25) : 24; }
       else { date = e.start.date; start = 8; end = 8.5; sub = ['All day', sub].filter(Boolean).join(' · '); }
-      if (start < 8) { start = 8; if (end <= 8) end = 8.5; }
-      if (start >= 20) continue;                       // outside the drawn day; skipped rather than mis-placed
       const group = e.recurringEventId ? `google:${e.recurringEventId}` : undefined;
-      const record = { id, group, date, start: Math.round(start * 4) / 4, end: Math.min(20, Math.round(end * 4) / 4), title: e.summary || '(no title)', sub: [sub, e.location].filter(Boolean).join(' · '), rep: [], source: 'google', url: e.htmlLink };
+      const record = { id, group, date, start: Math.round(start * 4) / 4, end: Math.min(24, Math.round(end * 4) / 4), title: e.summary || '(no title)', sub: [sub, e.location].filter(Boolean).join(' · '), rep: [], source: 'google', url: e.htmlLink };
       const existing = cal.series.find(s => s.id === id);
       if (existing) { Object.assign(existing, record, { cat: existing.cat || 'cal' }); updated++; }
       else { cal.series.push({ ...record, cat: (group && groupCat[group]) || 'cal' }); added++; }

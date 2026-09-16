@@ -100,8 +100,29 @@
   .ev:hover{transform:translateX(1px);box-shadow:var(--shadow);z-index:2}
   .ev.short{padding:2px 7px;line-height:1.1} .ev.short b{-webkit-line-clamp:1}
   .ev b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-family:var(--serif);font-weight:400;font-size:12.5px;overflow:hidden}
-  .now{position:absolute;left:0;right:0;border-top:1.5px solid var(--ox);z-index:3;pointer-events:none}
-  .now::before{content:"";position:absolute;left:-4px;top:-4px;width:7px;height:7px;border-radius:50%;background:var(--ox)}
+  .ev small{display:block;color:var(--ink-3);font-size:11px;margin-top:1px}
+  .now{position:absolute;left:50px;right:0;border-top:1.5px solid var(--ox);z-index:3;pointer-events:none}
+  .now::before{content:"";position:absolute;left:-1px;top:-4px;width:7px;height:7px;border-radius:50%;background:var(--ox)}
+  .now::after{content:attr(data-t);position:absolute;right:calc(100% + 8px);top:-9px;font-family:var(--serif);font-size:11.5px;color:var(--ox);white-space:nowrap;background:var(--card);padding:0 2px}
+  h1 button{font:inherit;color:inherit;display:inline-flex;align-items:center;gap:8px;border-bottom:1px solid transparent}
+  h1 button:hover{border-color:var(--band-muted)}
+  h1 button .ic{width:14px;height:14px;color:var(--band-muted);transition:transform .15s}
+  h1 button[aria-expanded="true"] .ic{transform:rotate(180deg)}
+
+  /* the month: six rows of seven, entries as chips */
+  .mgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .mgrid .dh{font-family:var(--serif);font-size:13px;color:var(--ink-3);padding:2px 6px 6px}
+  .mday{min-height:96px;border-top:1px solid var(--rule);padding:6px;border-radius:0 0 6px 6px;cursor:pointer;overflow:hidden}
+  .mday:hover{background:var(--paper)}
+  .mday.out{opacity:.45}
+  .mday.today{background-color:var(--today)}
+  .mday.sel{box-shadow:inset 0 0 0 1.5px var(--band);border-radius:6px}
+  .mday .dn{font-family:var(--serif);font-size:15px;display:block;margin-bottom:4px;color:var(--ink)}
+  .mday.today .dn{color:var(--ox)}
+  .mday i{display:block;font-style:normal;font-family:var(--serif);font-size:11.5px;line-height:1.35;background:var(--c);border-radius:4px;padding:1px 6px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mday i.open{outline:1.5px solid var(--ox);outline-offset:-1.5px}
+  .mday .more{font-size:11px;color:var(--ink-3);margin-top:3px;padding-left:6px}
+  #addopen{margin-top:18px;font-size:14px}
 
   /* right: selected day ledger + add form */
   .ledger li{display:grid;grid-template-columns:66px 1fr auto;gap:12px;padding:11px 0;border-bottom:1px solid var(--rule);align-items:baseline;cursor:pointer}
@@ -183,7 +204,7 @@
     .mast{gap:10px 18px} .mast .week{margin-left:0;width:100%}
     main{grid-template-columns:1fr;padding:24px 20px 36px;gap:32px} .foot{padding:0 20px 28px}
     .card{padding:10px 8px 12px;overflow-x:auto}
-    .days,.grid{min-width:640px}
+    .days,.grid,.mgrid{min-width:640px}
   }
 </style>
 </head>
@@ -202,7 +223,7 @@
       </div>
     </div>
     <div class="mast">
-      <h1 id="monthh">September 2026</h1>
+      <h1><button type="button" id="monthh" aria-expanded="false" aria-controls="mgrid">September 2026<svg class="ic"><use href="icons.svg#chevron-down"/></svg></button></h1>
       <div class="nav" aria-label="Change week"><button type="button" id="prev"><svg class="ic"><use href="icons.svg#chevron-left"/></svg>Previous</button><button type="button" id="todaybtn">Today</button><button type="button" id="next">Next<svg class="ic"><use href="icons.svg#chevron-right"/></svg></button></div>
       <span class="week"></span>
     </div>
@@ -237,14 +258,13 @@
   </aside>
 
   <section>
-    <h2>The week<small id="weekh"></small></h2>
+    <h2 id="viewh">The week<small id="weekh"></small></h2>
     <div class="card">
-      <div class="days" id="days"><span></span></div>
-      <div class="grid" id="grid">
-        <div class="rail">
-          <span style="top:0">8 am</span><span style="top:calc(var(--hour)*2)">10 am</span><span style="top:calc(var(--hour)*4)">12 pm</span><span style="top:calc(var(--hour)*6)">2 pm</span><span style="top:calc(var(--hour)*8)">4 pm</span><span style="top:calc(var(--hour)*10)">6 pm</span><span style="top:calc(var(--hour)*12)">8 pm</span>
-        </div>
+      <div id="weekview">
+        <div class="days" id="days"><span></span></div>
+        <div class="grid" id="grid"><div class="rail" id="rail"></div></div>
       </div>
+      <div class="mgrid" id="mgrid" hidden></div>
     </div>
   </section>
 
@@ -252,8 +272,9 @@
     <p class="syncline" id="syncline" hidden></p>
     <h2 id="dayh">Monday 14<small>6 entries</small></h2>
     <ul class="ledger" id="ledger"></ul>
+    <button class="textbtn" type="button" id="addopen"><svg class="ic"><use href="icons.svg#plus"/></svg>Add an entry</button>
 
-    <form class="add" id="add">
+    <form class="add" id="add" hidden>
       <h2 id="formh">Add an entry</h2>
       <div class="field"><label for="a-title">Title</label><input id="a-title" placeholder="What is it?" required></div>
       <div class="field"><label for="a-day">Day</label><input id="a-day" aria-label="Day"></div>
@@ -334,9 +355,10 @@
   const key = (s,d) => `${s.id}@${d}`;
   const F = id => document.getElementById(id);
 
-  let weekStart = thisMon, selDay = TODAY, open = null;   // open = {id, d}
+  let weekStart = thisMon, selDay = TODAY, open = null, view = 'week';   // open = {id, d}
   const dateOf = i => onDay(weekStart, i);
-  const NOW = C.now.getHours() + C.now.getMinutes()/60;
+  let NOW = C.now.getHours() + C.now.getMinutes()/60;
+  const hourLabel = h => h===12 ? '12 pm' : h===24 || h===0 ? '12 am' : h<12 ? `${h} am` : `${h-12} pm`;
 
   // ---- categories ----
   function renderCats(){
@@ -380,15 +402,21 @@
 
   // ---- week grid ----
   const days = F('days'), grid = F('grid');
-  for(let h=0;h<=12;h++){ const l=document.createElement('div'); l.className='hl'; l.style.top=`calc(var(--hour)*${h})`; grid.appendChild(l); }
   DAYS.forEach((d,i)=>{
     const b=document.createElement('button'); b.type='button'; b.dataset.i=i; days.appendChild(b);
     const c=document.createElement('div'); c.className='col'; c.dataset.i=i; grid.appendChild(c);
   });
   function renderGrid(){
     const ws=C.fromISO(weekStart), we=C.addDays(ws,6);
-    F('monthh').textContent = ws.getMonth()===we.getMonth() ? C.month(ws) : `${C.monthName(ws)} – ${C.month(we)}`;
-    F('weekh').textContent = `${C.dayMonth(ws)} – ${C.dayMonth(we)} · 8 am – 8 pm`;
+    F('monthh').firstChild.textContent = view==='month' ? C.month(C.fromISO(selDay)) : ws.getMonth()===we.getMonth() ? C.month(ws) : `${C.monthName(ws)} – ${C.month(we)}`;
+    // the day runs 8 to 8 unless the week has something earlier or later; then it stretches to fit
+    const all=[0,1,2,3,4,5,6].flatMap(i=>occ(dateOf(i)));
+    const H0=Math.min(8, ...all.map(s=>Math.floor(s.start))), H1=Math.max(20, ...all.map(s=>Math.ceil(s.end)));
+    F('weekh').textContent = `${C.dayMonth(ws)} – ${C.dayMonth(we)} · ${hourLabel(H0)} – ${hourLabel(H1)}`;
+    grid.style.height=`calc(var(--hour) * ${H1-H0})`;
+    grid.querySelectorAll('.hl,.now').forEach(e=>e.remove());
+    for(let h=0;h<=H1-H0;h++){ const l=document.createElement('div'); l.className='hl'; l.style.top=`calc(var(--hour)*${h})`; grid.appendChild(l); }
+    F('rail').innerHTML=''; for(let h=H0;h<=H1;h+=2) F('rail').insertAdjacentHTML('beforeend', `<span data-h="${h}" style="top:calc(var(--hour)*${h-H0})">${hourLabel(h)}</span>`);
     let total=0;
     document.querySelectorAll('#days button').forEach(b=>{
       const i=+b.dataset.i, d=dateOf(i), dt=C.fromISO(d);
@@ -400,13 +428,31 @@
       list.forEach(s=>{
         const a=document.createElement('a'); a.href='#'; a.dataset.id=s.id; a.className='ev'+(s.end-s.start<0.75?' short':'')+(open&&open.id===s.id&&open.d===d?' open':'');
         a.style.setProperty('--c', cat(s.cat).tint);
-        a.style.top=`calc(var(--hour)*${s.start-8} + 2px)`; a.style.height=`calc(var(--hour)*${s.end-s.start} - 4px)`;
-        a.title=`${s.title}, ${h12(s.start)} – ${h12(s.end)}`; a.innerHTML=`<b>${esc(s.short||short(s.title))}</b>`; c.appendChild(a);
+        a.style.top=`calc(var(--hour)*${s.start-H0} + 2px)`; a.style.height=`calc(var(--hour)*${s.end-s.start} - 4px)`;
+        a.title=`${s.title}, ${h12(s.start)} – ${h12(s.end)}`; a.innerHTML=`<b>${esc(s.short||short(s.title))}</b>${s.end-s.start>=1.5?`<small>${h12(s.start)}</small>`:''}`; c.appendChild(a);
       });
-      if(d===TODAY && NOW>=8 && NOW<=20){ const n=document.createElement('div'); n.className='now'; n.style.top=`calc(var(--hour)*${NOW-8})`; c.appendChild(n); }
     });
-    document.querySelector('.mast .week').textContent = `${weekStart===thisMon?'This week':'Week of '+C.dayMonth(ws)} · ${total} ${total===1?'entry':'entries'}`;
+    // one line across the whole week, so the hour reads against every day
+    if(weekStart<=TODAY && TODAY<=dateOf(6) && NOW>=H0 && NOW<=H1){ const n=document.createElement('div'); n.className='now'; n.dataset.t=C.time(new Date()); n.style.top=`calc(var(--hour)*${NOW-H0})`; grid.appendChild(n);
+      F('rail').querySelectorAll('span').forEach(sp=>{ if(Math.abs(+sp.dataset.h-NOW)<0.4) sp.style.visibility='hidden'; }); }   // the hour label steps aside for the time
+    document.querySelector('.mast .week').textContent = view==='month' ? `${C.monthName(C.fromISO(selDay))} · ${monthTotal()} entries` : `${weekStart===thisMon?'This week':'Week of '+C.dayMonth(ws)} · ${total} ${total===1?'entry':'entries'}`;
   }
+  // ---- month grid ----
+  const monthCells = () => { const a=C.fromISO(selDay), y=a.getFullYear(), m=a.getMonth(), start=C.monday(new Date(y,m,1,12)), last=new Date(y,m+1,0,12), out=[]; for(let i=0;i<42;i++){ const d=C.addDays(start,i); if(i%7===0 && d>last) break; out.push({d, di:C.iso(d), out:d.getMonth()!==m}); } return out; };
+  const monthTotal = () => monthCells().filter(c=>!c.out).reduce((n,c)=>n+occ(c.di).length,0);
+  function renderMonth(){
+    F('weekview').hidden = view==='month'; F('mgrid').hidden = view!=='month'; F('monthh').setAttribute('aria-expanded', view==='month');
+    F('viewh').firstChild.textContent = view==='month' ? 'The month' : 'The week';
+    if(view!=='month') return;
+    F('weekh').textContent = C.month(C.fromISO(selDay));
+    F('mgrid').innerHTML = SHORTD.map(d=>`<div class="dh">${d}</div>`).join('') + monthCells().map(({d,di,out})=>{
+      const list=occ(di), shown=list.slice(0,3);
+      return `<div class="mday ${out?'out':''} ${di===TODAY?'today':''} ${di===selDay?'sel':''}" data-d="${di}"><span class="dn">${d.getDate()}</span>${shown.map(s=>`<i data-id="${s.id}" class="${open&&open.id===s.id&&open.d===di?'open':''}" style="--c:${cat(s.cat).tint}" title="${esc(s.title)}, ${h12(s.start)}">${esc(s.short||short(s.title))}</i>`).join('')}${list.length>3?`<div class="more">+${list.length-3} more</div>`:''}</div>`;
+    }).join('');
+  }
+  F('mgrid').addEventListener('click', e=>{ const i=e.target.closest('i[data-id]'), cell=e.target.closest('.mday'); if(!cell) return; if(i) openEntry(idOf(i.dataset.id), cell.dataset.d); else { selDay=cell.dataset.d; weekStart=C.iso(C.monday(C.fromISO(selDay))); renderAll(); } });
+  F('monthh').addEventListener('click', ()=>{ view = view==='month' ? 'week' : 'month'; renderAll(); });
+  setInterval(()=>{ const n=new Date(); NOW=n.getHours()+n.getMinutes()/60; if(view==='week') renderGrid(); }, 60000);
   function renderLedger(){
     const list = occ(selDay), dt=C.fromISO(selDay);
     F('dayh').innerHTML = `${DAYS[wd(selDay)]} ${dt.getDate()}<small>${selDay===TODAY?'today · ':''}${list.length} ${list.length===1?'entry':'entries'}</small>`;
@@ -438,8 +484,9 @@
   F('ledger').addEventListener('click', e=>{ const li=e.target.closest('li[data-id]'); if(li) openEntry(idOf(li.dataset.id), selDay); });
   days.addEventListener('click', e=>{ const b=e.target.closest('button'); if(b){ selDay=b.dataset.d; renderAll(); } });
   F('mini').addEventListener('click', e=>{ const b=e.target.closest('button[data-d]'); if(b) goto(b.dataset.d); });
-  F('prev').addEventListener('click', ()=>goto(onDay(selDay,-7)));
-  F('next').addEventListener('click', ()=>goto(onDay(selDay,7)));
+  const step = n => { if(view!=='month') return goto(onDay(selDay,7*n)); const a=C.fromISO(selDay); goto(C.iso(new Date(a.getFullYear(), a.getMonth()+n, 1, 12))); };
+  F('prev').addEventListener('click', ()=>step(-1));
+  F('next').addEventListener('click', ()=>step(1));
   F('todaybtn').addEventListener('click', ()=>goto(TODAY));
 
   const getRep = () => [...F('a-rep').querySelectorAll('input:checked')].map(i=>+i.value);
@@ -452,12 +499,13 @@
     F('remove').hidden=F('cancel').hidden=false;
     F('a-title').value=s.title; F('a-day').value=C.dayMonth(C.fromISO(s.date)); F('a-start').value=h12(s.start); F('a-end').value=h12(s.end);
     F('a-area').value=s.cat; setRep(isWeekly(s)?repDays(s):[]); F('a-sub').value=s.sub||''; F('a-notes').value=S.notes[key(s,d)]||'';
-    F('a-title').focus(); F('add').scrollIntoView({block:'nearest'});
+    show(); F('a-title').focus(); F('add').scrollIntoView({block:'nearest'});
   }
+  function show(){ F('add').hidden=false; F('addopen').hidden=true; F('cancel').hidden=false; }
   function reset(){
     editing=null; pending=null; F('add').classList.remove('asking'); F('scope').hidden=true;
     F('formh').textContent='Add an entry'; F('submit').querySelector('span').textContent='Add to the day';
-    F('remove').hidden=F('cancel').hidden=true;
+    F('remove').hidden=F('cancel').hidden=true; F('add').hidden=true; F('addopen').hidden=false;
     F('add').reset(); F('a-day').value=C.dayMonth(C.fromISO(selDay)); setRep([]); F('a-start').value='5.00 pm'; F('a-end').value='6.00 pm';
   }
   const siblings = s => s.source ? S.series.filter(x=>x!==s && x.source===s.source && ((s.group && x.group===s.group) || (!s.group && x.title===s.title))) : [];
@@ -492,7 +540,8 @@
     open=null; save(); reset(); renderAll();
   });
   F('cancel').addEventListener('click', reset);
-  F('newentry').addEventListener('click', ()=>{ reset(); F('a-title').focus(); });
+  F('newentry').addEventListener('click', ()=>{ reset(); show(); F('a-title').focus(); F('add').scrollIntoView({block:'nearest'}); });
+  F('addopen').addEventListener('click', ()=>{ reset(); show(); F('a-title').focus(); });
 
   async function renderSync(){
     const led = await store.ledger(), g = led.google, el=F('syncline');
@@ -504,7 +553,7 @@
     else { const ago=Math.round((Date.now()-new Date(g.last))/60000); el.innerHTML = (g.ok ? `Google synced ${ago<1?'just now':ago<60?ago+' min ago':Math.round(ago/60)+' h ago'} · ${g.calendars} ${g.calendars===1?'calendar':'calendars'}` : `<span class="bad">Google sync failed: ${esc(g.error||'')}</span>`) + ` <button class="textbtn" type="button" id="syncnow">Sync now</button>` + (g.ok ? '' : ` <a class="textbtn" href="/api/auth/google">Reconnect</a>`); }
     F('syncnow')?.addEventListener('click', async ()=>{ F('syncnow').textContent='Syncing…'; const r=await store.sync('google'); if(r && r.ok){ const doc=await store.load('calendar'); if(doc){ S=doc; migrate(); renderAll(); reset(); } } history.replaceState(null,'',location.pathname); renderSync(); });
   }
-  function renderAll(){ renderCats(); renderMini(); renderGrid(); renderLedger(); renderEntry(); }
+  function renderAll(){ renderCats(); renderMini(); renderGrid(); renderMonth(); renderLedger(); renderEntry(); }
   renderAll(); reset();
   store.load('calendar').then(doc => { if (doc) { S = doc; migrate(); renderAll(); reset(); } else save(); if(!store.signedOut) renderSync(); });
 </script>
