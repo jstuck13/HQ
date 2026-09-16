@@ -100,7 +100,7 @@
   .col.today{background-color:var(--today)}
   .ev{position:absolute;left:3px;right:2px;border-radius:6px;padding:4px 7px;font-size:12px;line-height:1.25;background:var(--c);overflow:hidden;transition:transform .15s,box-shadow .15s}
   .ev:hover{transform:translateX(1px);box-shadow:var(--shadow);z-index:2}
-  .ev.short{padding:2px 7px;line-height:1.1} .ev.short b{-webkit-line-clamp:1}
+  .ev.short{padding:2px 7px;line-height:1.1} .ev.short b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .ev b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-family:var(--serif);font-weight:400;font-size:12.5px;overflow:hidden}
   .ev small{display:block;color:var(--ink-3);font-size:11px;margin-top:1px}
   .now{position:absolute;left:50px;right:0;border-top:1.5px solid var(--ox);z-index:3;pointer-events:none}
@@ -140,6 +140,7 @@
   .ledger .empty{padding:14px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif);cursor:default;display:block}
   .ledger .empty{display:block!important;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
   .ledger .empty::before{content:"";display:block;width:160px;height:12px;margin:0 auto 10px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='12' viewBox='0 0 160 12'%3E%3Cpath d='M0 6.5h62M98 6.5h62' stroke='%23D3C9B6'/%3E%3Cpath d='M80 1.5l5 5-5 5-5-5z' fill='%236A6256'/%3E%3C/svg%3E") center/160px 12px no-repeat}
+  .right h2{font-size:20px} .right h2 small{white-space:nowrap}
   .syncline{margin:0 0 14px;font-size:12.5px;color:var(--ink-3)}
   .syncline .textbtn{font-size:12.5px;color:var(--ink-2);margin-left:8px} .syncline .textbtn:hover{color:var(--ink)}
   .syncline .bad{color:var(--ox)}

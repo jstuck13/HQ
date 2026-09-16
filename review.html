@@ -149,7 +149,7 @@
   const week = start => Array.from({length:7},(_,i)=>C.iso(C.addDays(C.fromISO(start),i)));
   const inWeek = (d, days) => d>=days[0] && d<=days[6];
   const avg = a => a.length ? a.reduce((x,y)=>x+y,0)/a.length : null;
-  const delta = (now, prev, fmt, upGood=true) => { if(now==null||prev==null) return ''; const d=now-prev; if(Math.abs(d)<1e-9) return ' · level with last week'; const up=d>0; return ` · <span class="${up===upGood?'up':'down'}">${up?'up':'down'} ${fmt(Math.abs(d))}</span> on last week`; };
+  const delta = (now, prev, fmt, upGood=true) => { if(now==null||prev==null||(!now&&!prev)) return ''; const d=now-prev; if(Math.abs(d)<1e-9) return ' · level with last week'; const up=d>0; return ` · <span class="${up===upGood?'up':'down'}">${up?'up':'down'} ${fmt(Math.abs(d))}</span> on last week`; };
   const bars = (vals, fmt, tint) => { const days=week(ws), max=Math.max(...vals.map(v=>v||0), 0.0001); return `<span class="bars" aria-hidden="true">${vals.map((v,i)=>`<i class="${v==null?'none':''} ${days[i]===TODAY?'today':''}" data-d="${'MTWTFSS'[i]}" style="height:${v==null?2:Math.max(3,v/max*100)}%;${tint?`--c:${tint}`:''}" title="${v==null?'':fmt(v)}"></i>`).join('')}</span>`; };
   const li = (name, href, sentence, value, unit, small, barsHtml) => `<li><span class="n"><a href="${href}">${name}</a></span><span class="d">${sentence}</span><span class="v">${value}${unit?`<i>${unit}</i>`:''}${small?`<small>${small}</small>`:''}</span>${barsHtml||''}</li>`;
 
@@ -198,7 +198,7 @@
       let pages=0, ppages=0; const perDay=days.map(()=>0);
       lib.books.forEach(b=>{ const log=Object.entries(b.log||{}).sort(); log.forEach(([d,p],i)=>{ const before=i?log[i-1][1]:0, gain=Math.max(0,p-before); if(inWeek(d,days)){ pages+=gain; perDay[wd(d)]+=gain; } else if(inWeek(d,prev)) ppages+=gain; }); });
       const reading=lib.books.find(b=>b.shelf==='reading');
-      if(pages||finished.length||reading) rows.push(li('Library','library.html', `${finished.length?`finished <b>${finished.map(b=>esc(b.title)).join(', ')}</b>`:reading?`reading <b>${esc(reading.title)}</b>`:'nothing open'}${pages?` · <b>${pages}</b> pages logged${delta(pages,ppages,v=>`${Math.round(v)} pages`)}`:''}`, pages, '', 'pages', bars(perDay.map((v,i)=>days[i]<=TODAY?v:null), v=>`${v} pages`, '#D9C79A')));
+      if(pages||finished.length||reading) rows.push(li('Library','library.html', `${finished.length?`finished <b>${finished.map(b=>esc(b.title)).join(', ')}</b>`:reading?`reading <b>${esc(reading.title)}</b>`:'nothing open'}${pages?` · <b>${pages}</b> pages logged${delta(pages,ppages,v=>`${Math.round(v)} pages`)}`:''}`, pages||finished.length, '', pages?'pages':finished.length===1?'book finished':'books finished', bars(perDay.map((v,i)=>days[i]<=TODAY?v:null), v=>`${v} pages`, '#D9C79A')));
     }
     // to do
     { const all = todos.flatMap(t=>t&&t.items||[]), done=all.filter(i=>i.done).length;

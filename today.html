@@ -120,7 +120,7 @@
   .todo input[type=checkbox]{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px}
   .todo input[type=checkbox]:checked{background:var(--band);border-color:var(--band)}
   .todo input[type=checkbox]:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
-  .todo label{cursor:pointer;flex:1}
+  .todo label{cursor:pointer;margin-right:auto}
   .todo input[type=checkbox]:checked + label{color:var(--ink-3);background:linear-gradient(currentColor,currentColor) left 58%/100% 1px no-repeat}
   .todo .w{font-size:12.5px;color:var(--ink-3)}
   .todo .w.due{color:var(--ox)}
@@ -274,6 +274,7 @@
   function renderAffairs(d){
     const rows=[];
     // finances
+    if(d.fin && !(d.fin.cats||[]).length && !(d.fin.tx||[]).length && !(d.fin.income||[]).length) d.fin = null;   // a month nobody has touched reads as not started
     if(d.fin){ const spent=d.fin.tx.reduce((n,t)=>n+t.amt,0), limits=d.fin.cats.reduce((n,c)=>n+c.limit,0), left=limits-spent;
       const due=d.fin.cats.find(c=>c.due && (c.bill || !d.fin.tx.some(t=>t.cat===c.id)) && c.due>=C.now.getDate()), next=(d.fin.plan||[]).filter(p=>p.date>=TODAY).sort()[0];
       const note = due ? `${esc(due.bill||due.name)} ${due.due===C.now.getDate()?'due today':'due on the '+due.due+ordinal(due.due)}` : next ? `Next paycheck ${C.short(C.fromISO(next.date))}, ${$0(next.amt)}` : `${$0(spent)} spent so far`;

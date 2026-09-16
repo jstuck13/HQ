@@ -63,7 +63,7 @@
   .cover .fb{position:absolute;inset:0;padding:12% 10%;display:flex;flex-direction:column;justify-content:space-between;text-align:center}
   .cover .fb b{font-family:var(--serif);font-weight:400;font-size:clamp(13px,1.4vw,17px);line-height:1.2;color:var(--ink)}
   .cover .fb i{font-family:var(--serif);font-size:12.5px;color:var(--ink-2)}
-  .cover:not(:has(img[data-missing])) .fb{display:none}
+  .cover:has(img.ok) .fb{display:none}   /* the printed cover appears over the typed one once it has loaded */
 
   /* the open book */
   .open{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:24px 28px 26px;margin-top:14px;display:grid;grid-template-columns:200px 1fr;gap:0 32px}
@@ -224,7 +224,7 @@
   const book = id => S.books.find(b=>b.id===id);
   const dmy = iso => iso ? C.full(C.fromISO(iso)) : '';
   const coverURL = b => b.coverId ? `https://covers.openlibrary.org/b/id/${b.coverId}-L.jpg?default=false` : b.isbn ? `https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg?default=false` : '';
-  const cover = b => `<span class="cover">${coverURL(b)?`<img src="${coverURL(b)}" alt="" loading="lazy" onerror="this.dataset.missing=1">`:'<img data-missing=1 alt="">'}<span class="fb"><b>${esc(b.title)}</b><i>${esc(b.author)}</i></span></span>`;
+  const cover = b => `<span class="cover">${coverURL(b)?`<img src="${coverURL(b)}" alt="" loading="lazy" onload="this.classList.add('ok')" onerror="this.dataset.missing=1">`:'<img data-missing=1 alt="">'}<span class="fb"><b>${esc(b.title)}</b><i>${esc(b.author)}</i></span></span>`;
   const dots = (n, live) => `<span class="dots">${[1,2,3,4,5].map(i=>live?`<button type="button" data-rate="${i}" class="${i<=n?'on':''}" aria-label="${i} of 5"></button>`:`<i class="${i<=n?'on':''}"></i>`).join('')}</span>`;
 
   function render(){

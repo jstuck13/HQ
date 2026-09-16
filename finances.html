@@ -285,7 +285,9 @@
   function render(){
     const landed = sum(S.income.map(i=>i.amt)), spent = sum(S.tx.map(t=>t.amt)), limits = sum(S.cats.map(c=>c.limit));
     const left = limits - spent, daysLeft = DIM - DAY;
-    F('sub').innerHTML = `${MONTH} · <b>${$0(left)}</b> left of ${$0(limits)} · ${daysLeft} ${daysLeft===1?'day':'days'} to go`;
+    const blankMonth = !S.income.length && !S.tx.length && !S.cats.length && !S.expected;
+    F('sub').innerHTML = blankMonth ? `${MONTH} · nothing logged yet` : `${MONTH} · <b>${$0(left)}</b> left of ${$0(limits)} · ${daysLeft} ${daysLeft===1?'day':'days'} to go`;
+    document.querySelector('.charts').hidden = document.querySelector('.cashc').hidden = blankMonth;   // charts wait for a first number
     // money in
     F('expected').value = S.expected.toLocaleString('en-US');
     F('monthn').textContent = MONTH;
@@ -296,7 +298,7 @@
     const inc = [...S.income].sort((a,b)=>a.date<b.date?1:-1);
     F('inl').innerHTML = (inc.length ? inc.map(i=>`<li data-id="${i.id}"><span class="d">${dmy(i.date)}</span><span class="w">${esc(i.src)}</span><button class="x" type="button" aria-label="Remove ${esc(i.src)}"><span>remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button><span class="a in">${$(i.amt)}</span></li>`).join('') : '<li class="empty">Nothing landed yet this month.</li>')
       ;
-    F('planl').innerHTML = (S.plan.length ? S.plan.map(p=>`<li><span class="d">${dmy(p.date)}</span><span class="w">${esc(p.src)}<small>expected</small></span><span></span><span class="a">${$(p.amt)}</span></li>`).join('') : '') + `<li class="total"><span class="d"></span><span class="w">To reach the ${$0(S.expected)} plan</span><span></span><span class="a">${$(Math.max(0,S.expected-landed))}</span></li>`;
+    F('planl').innerHTML = (S.plan.length ? S.plan.map(p=>`<li><span class="d">${dmy(p.date)}</span><span class="w">${esc(p.src)}<small>expected</small></span><span></span><span class="a">${$(p.amt)}</span></li>`).join('') : '') + (S.expected ? `<li class="total"><span class="d"></span><span class="w">To reach the ${$0(S.expected)} plan</span><span></span><span class="a">${$(Math.max(0,S.expected-landed))}</span></li>` : (S.plan.length ? '' : '<li class="empty">Nothing planned. Set an expected amount above, or log income as it lands.</li>'));
     // money out
     F('outsum').textContent = `${$0(spent)} spent of ${$0(limits)}`;
     F('cats').innerHTML = S.cats.length ? S.cats.map((c,i)=>{

@@ -26,8 +26,9 @@ export default syncRoute('canvas', async ({ getDoc, putDoc }) => {
     const id = `canvas:${c.id}`, existing = byId(school.courses, id);
     if (school.ignored.includes(id)) continue;
     const canvasLink = { t: 'Canvas', u: `${base}/courses/${c.id}`, source: 'canvas' };
-    if (existing) { existing.name = c.course_code && c.name.length > 40 ? c.course_code : c.name; existing.links = [canvasLink, ...existing.links.filter(l => l.source !== 'canvas')]; }
-    else { school.courses.push({ id, name: c.course_code && c.name.length > 40 ? c.course_code : c.name, conf: 3, links: [canvasLink], source: 'canvas' }); nc++; }
+    const tidy = n => String(n).replace(/\s*\((?:Fall|Spring|Summer|Winter|Autumn)\s*\d{4}\)\s*$/i, '').trim();   // "MATH-2650-100 (Fall 2026)" → "MATH-2650-100"
+    if (existing) { existing.name = tidy(c.course_code && c.name.length > 40 ? c.course_code : c.name); existing.links = [canvasLink, ...existing.links.filter(l => l.source !== 'canvas')]; }
+    else { school.courses.push({ id, name: tidy(c.course_code && c.name.length > 40 ? c.course_code : c.name), conf: 3, links: [canvasLink], source: 'canvas' }); nc++; }
   }
 
   // items: due date and title follow Canvas; "done" is Canvas-submitted OR ticked by hand (never un-ticks a hand tick)
