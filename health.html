@@ -93,6 +93,11 @@
   .addl input:focus{outline:none;border-bottom-color:var(--ink)}
   .addl input::placeholder{color:var(--ink-3);font-style:italic}
   .addl .textbtn{font-size:13.5px}
+  .range{display:inline-flex;gap:8px;align-items:baseline;margin:0 2px}
+  .range button{font-family:var(--serif);font-size:22px;color:var(--ink-3);border-bottom:1px solid transparent;line-height:1}
+  .range button[aria-pressed="true"]{color:var(--ink);border-color:var(--ink)}
+  .range button:hover{color:var(--ink)}
+  .range span{color:var(--ink-3);font-size:16px}
   .syncline{margin:8px 0 2px;font-size:12.5px;color:var(--ink-3)}
   .syncline .textbtn{font-size:12.5px;color:var(--ink-2);margin-left:8px} .syncline .textbtn:hover{color:var(--ink)}
   .syncline .bad{color:var(--ox)}
@@ -174,7 +179,7 @@
       <h2>Today<small id="todayn"></small></h2>
       <p class="syncline" id="syncline" hidden></p>
       <ul class="ledger" id="ledger">
-        <li class="head"><span>Reading</span><span>Today</span><span class="l">Last</span><span class="a">30-day avg</span></li>
+        <li class="head"><span>Reading</span><span>Today</span><span class="l">Last</span><span class="a" id="avgh">30-day avg</span></li>
         <li data-k="sleep"><span class="n">Sleep<small>Hours, and when</small></span>
           <span class="v"><input id="sleep" inputmode="decimal" placeholder="—"><span class="u">hours</span><span class="aux">bed <input id="bed" placeholder="11.40 pm"> · woke <input id="woke" placeholder="6.52 am"></span></span>
           <span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>
@@ -201,7 +206,7 @@
   </div>
 
   <section class="trends">
-    <h2>Last 30 days<small id="rangen"></small></h2>
+    <h2>Last <span class="range" id="range"><button type="button" data-n="30" aria-pressed="true">30</button><span aria-hidden="true">·</span><button type="button" data-n="90" aria-pressed="false">90</button></span> days<small id="rangen"></small></h2>
     <div class="strip" id="strip"></div>
   </section>
 </main>
@@ -245,8 +250,11 @@
   F('addnext').addEventListener('submit', e=>{ e.preventDefault(); H.next=H.next||[]; const d=F('nx-date').value.trim(); H.next.push({id:'n'+Date.now(), name:F('nx-name').value.trim(), date:d?C.parseDay(d):null, note:F('nx-note').value.trim()}); F('addnext').reset(); save(); renderAll(); });
 
   // ---- history: the last 30 days from the document ----
-  const days = Array.from({length:30},(_,i)=>C.addDays(C.now, i-29));
-  const isoDays = days.map(d=>C.iso(d));
+  let N = +localStorage.getItem('hq.health.range') || 30, days, isoDays;   // 30 or 90 days, remembered in this browser
+  const setRange = n => { N=n; days=Array.from({length:N},(_,i)=>C.addDays(C.now, i-N+1)); isoDays=days.map(d=>C.iso(d)); try{ localStorage.setItem('hq.health.range', n); }catch{}
+    F('rangen').textContent = `${C.dayMonthLong(C.addDays(C.now,1-N))} – ${C.dayMonthLong(C.now)}`; F('avgh').textContent = `${N}-day avg`;
+    document.querySelectorAll('#range button').forEach(b=>b.setAttribute('aria-pressed', +b.dataset.n===N)); };
+  setRange(N);
   const fmtDay = d => C.dayMonth(d);
   const series = [
     {name:'Sleep', key:'sleep', fmt:v=>`${Math.floor(v)} h ${String(Math.round((v%1)*60)).padStart(2,'0')}`, level:.1, delta:v=>`${Math.round(v*60)} min`},
@@ -260,13 +268,13 @@
     return Math.abs(diff)<s.level ? 'level' : `${diff>0?'up':'down'} ${s.delta(Math.abs(diff))}`;
   };
   const W=340, H_=130, P={t:10,r:8,b:22,l:8};
-  const x = i => P.l+(W-P.l-P.r)*i/29;
+  const x = i => P.l+(W-P.l-P.r)*i/(N-1);
 
   function renderCells(){
     series.forEach(s=>{
       const li=document.querySelector(`#ledger li[data-k="${s.key}"]`), pts=pointsFor(s).filter(p=>p.d!==TODAY);
       const last=pts[pts.length-1], avg=pts.length?pts.reduce((x,p)=>x+p.v,0)/pts.length:null, t=trendOf(s, pointsFor(s));
-      li.querySelector('.l').innerHTML = last ? `${s.fmt(last.v)}<small>${last.d===isoDays[28]?'yesterday':fmtDay(C.fromISO(last.d))}</small>` : `<small>no earlier reading</small>`;
+      li.querySelector('.l').innerHTML = last ? `${s.fmt(last.v)}<small>${last.d===isoDays[N-2]?'yesterday':fmtDay(C.fromISO(last.d))}</small>` : `<small>no earlier reading</small>`;
       li.querySelector('.a').innerHTML = avg!=null ? `${s.fmt(avg)}<small>${t||`${pts.length} ${pts.length===1?'reading':'readings'}`}</small>` : `<small>not yet</small>`;
     });
   }
@@ -282,7 +290,7 @@
       return `<div class="chart" data-i="${si}">
         <h3>${s.name}</h3>
         <p class="fig">${s.fmt(avg)}<small>average of ${pts.length} readings</small></p>
-        <svg viewBox="0 0 ${W} ${H_}" role="img" aria-label="${s.name}, last 30 days, ${s.fmt(lo)} to ${s.fmt(hi)}, average ${s.fmt(avg)}">
+        <svg viewBox="0 0 ${W} ${H_}" role="img" aria-label="${s.name}, last ${N} days, ${s.fmt(lo)} to ${s.fmt(hi)}, average ${s.fmt(avg)}">
           <line class="ax" x1="${P.l}" x2="${W-P.r}" y1="${H_-P.b}" y2="${H_-P.b}"/>
           <line class="avg" x1="${P.l}" x2="${W-P.r}" y1="${y(avg).toFixed(1)}" y2="${y(avg).toFixed(1)}"/>
           <path class="ln" pathLength="1" d="${path}"/>
@@ -303,7 +311,7 @@
       const y=v=>P.t+(H_-P.t-P.b)*(1-(v-lo+pad)/(hi-lo+2*pad));
       const xh=svg.querySelector('.xh'), hv=svg.querySelector('.hv'), tip=ch.querySelector('.tip');
       svg.addEventListener('pointermove', e=>{
-        const r=svg.getBoundingClientRect(), i=((e.clientX-r.left)/r.width*W-P.l)/(W-P.l-P.r)*29;
+        const r=svg.getBoundingClientRect(), i=((e.clientX-r.left)/r.width*W-P.l)/(W-P.l-P.r)*(N-1);
         const p=pts.reduce((a,b)=>Math.abs(b.i-i)<Math.abs(a.i-i)?b:a);
         xh.setAttribute('x1',x(p.i)); xh.setAttribute('x2',x(p.i)); xh.style.opacity=1; hv.setAttribute('cx',x(p.i)); hv.setAttribute('cy',y(p.v)); hv.style.opacity=1;
         tip.innerHTML=`<b>${s.fmt(p.v)}</b> · ${fmtDay(C.fromISO(p.d))}`; tip.style.left=`${x(p.i)/W*r.width}px`; tip.style.top=`${y(p.v)/H_*r.height-8+svg.offsetTop}px`; tip.style.opacity=1;
@@ -328,7 +336,7 @@
   function renderAll(){ renderLogged(); renderCells(); renderCharts(); renderPills(); renderNext(); }
 
   F('todayn').textContent = `${C.dayName(C.now)} ${C.dayMonthLong(C.now)}`;
-  F('rangen').textContent = `${C.dayMonthLong(C.addDays(C.now,-29))} – ${C.dayMonthLong(C.now)}`;
+  F('range').addEventListener('click', e=>{ const b=e.target.closest('button[data-n]'); if(b){ setRange(+b.dataset.n); renderAll(); } });
   F('nx-date').placeholder = C.dayMonth(C.addDays(C.now, 2));
   renderAll();
   F('newentry').onclick = ()=>F('sleep').focus();

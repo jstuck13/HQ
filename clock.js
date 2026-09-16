@@ -47,7 +47,9 @@
   const now = new Date();
   window.clock = { now, today: iso(now), iso, fromISO, addDays, monday, time, hourLabel, dayName, dayShort, monthName, monthShort, long, short, dayMonth, dayMonthLong, weekdayDayMonth, month, full, greeting, daysBetween, parseDay, countIn };
   // lamplight: from eight in the evening until six the pages take a warmer, dimmer palette
-  const lamp = () => { const h = new Date().getHours(); document.documentElement.dataset.light = (h >= 20 || h < 6) ? 'evening' : ''; };
+  const lamp = () => { const h = new Date().getHours(), next = (h >= 20 || h < 6) ? 'evening' : '', root = document.documentElement;
+    if (root.dataset.light !== undefined && root.dataset.light !== next) { root.classList.add('hq-fade'); setTimeout(() => root.classList.remove('hq-fade'), 2400); }   // a live flip crossfades
+    root.dataset.light = next; };
   lamp(); setInterval(lamp, 60000);
   // motion, restrained: pages arrive, the now line breathes, a ticked line strikes through. All off under reduced motion.
   const motion = document.createElement('style');
@@ -65,6 +67,7 @@
     html:not([data-ready]) svg .bar-in,html:not([data-ready]) svg .bar-out{transform-box:fill-box;transform-origin:bottom;animation:hq-grow .5s ease-out both}
     html:not([data-ready]) svg .hbar{transform-box:fill-box;transform-origin:left;animation:hq-widen .5s ease-out both}
     html:not([data-ready]) .cats .bar i{animation:hq-widen .5s ease-out both;transform-origin:left}
+    .hq-fade,.hq-fade *{transition:background-color 2s ease,color 2s ease,border-color 2s ease!important}
     @keyframes hq-strike{from{background-size:0 1px}to{background-size:100% 1px}}
     html[data-ready] .todo input:checked+label,html[data-ready] .pills input:checked+label{animation:hq-strike .3s ease-out both}
   }`;
