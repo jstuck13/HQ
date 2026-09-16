@@ -25,8 +25,12 @@ export default syncRoute('garmin', async ({ getDoc, putDoc }) => {
     const key = localDate(Date.now() - back * 86400000); const d = new Date(key + 'T12:00:00Z');   // the library keys by UTC date; noon UTC lands on `key`
     const day = health.days[key] || { pills: [] }; day.pills ??= []; day.garmin ??= {};
     const set = (k, v, fmt = x => x) => { if (v == null || Number.isNaN(v)) return; day.garmin[k] = v; if (day[k] == null || day[k] === '') { day[k] = fmt(v); filled++; } };
-    try { const s = await client.getSleepData(d); const dto = s && s.dailySleepDTO; if (dto && dto.sleepTimeSeconds) { set('sleep', dto.sleepTimeSeconds / 3600, v => (Math.round(v * 10) / 10).toString()); if (dto.sleepStartTimestampGMT) set('bed', clock12(dto.sleepStartTimestampGMT)); if (dto.sleepEndTimestampGMT) set('woke', clock12(dto.sleepEndTimestampGMT)); } } catch {}
-    try { const h = await client.getHeartRate(d); if (h && h.restingHeartRate) set('hr', h.restingHeartRate, v => String(v)); } catch {}
+    try { const s = await client.getSleepData(d); const dto = s && s.dailySleepDTO; if (dto && dto.sleepTimeSeconds) { set('sleep', dto.sleepTimeSeconds / 3600, v => (Math.round(v * 10) / 10).toString()); if (dto.sleepStartTimestampGMT) set('bed', clock12(dto.sleepStartTimestampGMT)); if (dto.sleepEndTimestampGMT) set('woke', clock12(dto.sleepEndTimestampGMT));
+      // the rest of the night, for the morning report
+      const g = day.garmin, bb = s.sleepBodyBattery || [];
+      Object.assign(g, { score: dto.sleepScores?.overall?.value, deep: dto.deepSleepSeconds, light: dto.lightSleepSeconds, rem: dto.remSleepSeconds, awake: dto.awakeSleepSeconds, nap: dto.napTimeSeconds, resp: dto.averageRespirationValue, hrv: s.avgOvernightHrv, hrvStatus: s.hrvStatus, bbChange: s.bodyBatteryChange, bb: bb.length ? bb[bb.length - 1].value : undefined, feedback: dto.sleepScoreFeedback });
+      for (const k of Object.keys(g)) if (g[k] == null) delete g[k]; } } catch {}
+    try { const h = await client.getHeartRate(d); if (h && h.restingHeartRate) { set('hr', h.restingHeartRate, v => String(v)); if (h.lastSevenDaysAvgRestingHeartRate) day.garmin.hr7 = h.lastSevenDaysAvgRestingHeartRate; } } catch {}
     try { const w = await client.getDailyWeightInPounds(d); if (w && w > 0) set('weight', w, v => (Math.round(v * 10) / 10).toString()); } catch {}
     try { const st = await client.getSteps(d); if (st != null) day.garmin.steps = st; } catch {}
     health.days[key] = day; days++;
