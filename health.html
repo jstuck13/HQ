@@ -121,7 +121,6 @@
       <span class="date">Monday, 14 September 2026 · 8.40 am</span>
       <nav aria-label="Areas"><a href="today.html">Today</a><a href="calendar.html">Calendar</a><a href="finances.html">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="health.html" aria-current="page">Health</a></nav>
       <div class="right">
-        <button class="textbtn" id="newentry"><svg class="ic"><use href="icons.svg#plus"/></svg>Log a reading</button>
         <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
         <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
         <button class="ib menu" type="button" aria-label="Menu" aria-expanded="false" id="menubtn"><svg class="ic"><use href="icons.svg#menu"/></svg></button>
@@ -299,7 +298,6 @@
   F('range').addEventListener('click', e=>{ const b=e.target.closest('button[data-n]'); if(b){ setRange(+b.dataset.n); renderAll(); } });
   F('nx-date').placeholder = C.dayMonth(C.addDays(C.now, 2));
   renderAll();
-  F('newentry').onclick = ()=>F('sleep').focus();
   const adopt = doc => { H = doc; H.meds ??= []; H.next ??= []; L = H.days[TODAY] || { pills: [] }; L.pills ??= []; applyLog(); };
   async function renderSync(){
     const led = await store.ledger(), g = led.garmin; const el=F('syncline'); if(!g && !navigator.onLine){ el.hidden=true; return; }

@@ -143,7 +143,6 @@
       <span class="date">Monday, 14 September 2026 · 8.40 am</span>
       <nav aria-label="Areas"><a href="today.html">Today</a><a href="calendar.html">Calendar</a><a href="finances.html" aria-current="page">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="health.html">Health</a></nav>
       <div class="right">
-        <button class="textbtn" id="newx"><svg class="ic"><use href="icons.svg#plus"/></svg>Log an expense</button>
         <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
         <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
         <button class="ib menu" type="button" aria-label="Menu" aria-expanded="false" id="menubtn"><svg class="ic"><use href="icons.svg#menu"/></svg></button>
@@ -294,7 +293,6 @@
     const m=e.target.closest('.mv'); if(m && !m.disabled){ const id=m.closest('li').dataset.id, i=S.cats.findIndex(c=>c.id===id), j=i+(+m.dataset.mv); [S.cats[i],S.cats[j]]=[S.cats[j],S.cats[i]]; render(); F('cats').querySelector(`li[data-id="${id}"] .mv[data-mv="${m.dataset.mv}"]`)?.focus(); return; }
     const b=e.target.closest('.x'); if(b){ const id=b.closest('li').dataset.id; if(S.tx.some(t=>t.cat===id)) { alert('Move or remove its entries first.'); return; } S.cats=S.cats.filter(c=>c.id!==id); render(); } });
   F('cats').addEventListener('change', e=>{ if(e.target.tagName==='INPUT'){ const c=cat(e.target.closest('li').dataset.id), v=num(e.target.value); if(c && v!=null){ c.limit=v; render(); } } });
-  F('newx').addEventListener('click', ()=>F('x-what').focus());
   F('outl').addEventListener('click', e=>{ if(e.target.closest('#more')){ showAll=!showAll; render(); } });
 
   // ---- charts ----

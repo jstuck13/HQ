@@ -9,11 +9,13 @@
   // three kinds of notice, nothing else: due today, a bill due today, pills not taken by nine in the evening
   // two kinds of notice above the syncs: today's timed to-dos (all of them, late ones marked), and what is due — school
   // items due today or overdue, a bill due today, pills not taken by nine in the evening
+  let todoDoc = null;   // today's to-do document, kept so a tick from the bell can be saved
   const notices = async () => {
     const today = clock.today, ym = today.slice(0, 7), hour = new Date().getHours(), todos = [], due = [];
     const [school, fin, health, todo] = await Promise.all([store.load('school'), store.load('finances.' + ym), store.load('health'), store.load('today.' + today)].map(p => p.catch(() => null)));
     const nowH = new Date().getHours() + new Date().getMinutes() / 60, h12 = h => { const hr = Math.floor(h), m = Math.round((h % 1) * 60); return `${hr % 12 || 12}.${String(m).padStart(2, '0')} ${hr < 12 ? 'am' : 'pm'}`; };
-    for (const i of (todo && todo.items || []).filter(i => !i.done && i.at != null).sort((a, b) => a.at - b.at)) todos.push({ text: esc(i.text), when: i.at < nowH ? `was due by ${h12(i.at)}` : `by ${h12(i.at)}`, late: i.at < nowH, href: 'today.html' });
+    (todo && todo.items || []).forEach((i, k) => { if (!i.done && i.at != null) todos.push({ k, at: i.at, text: esc(i.text), when: i.at < nowH ? `was due by ${h12(i.at)}` : `by ${h12(i.at)}`, late: i.at < nowH, href: 'today.html' }); });
+    todos.sort((a, b) => a.at - b.at); todoDoc = todo;
     for (const i of (school && school.items || []).filter(i => !i.done && i.due && i.due <= today)) due.push({ text: esc(i.title), when: i.due < today ? 'overdue' : 'due today', late: i.due < today, href: 'school.html' });
     if (fin) for (const c of (fin.cats || []).filter(c => c.due === new Date().getDate() && (c.bill || !(fin.tx || []).some(t => t.cat === c.id)))) due.push({ text: esc(c.bill || c.name), when: 'due today', href: 'finances.html' });
     if (health && hour >= 21) { const meds = health.meds || [], taken = (health.days && health.days[today] || {}).pills || [], left = meds.filter(m => !taken.includes(m.id)); if (left.length) due.push({ text: left.map(m => esc(m.name)).join(', '), when: 'not taken yet', late: true, href: 'health.html' }); }
@@ -39,6 +41,11 @@
     .bellpop .go.dl{grid-column:2;grid-row:3;margin-top:2px}
     .bellpop .empty{padding:8px 0 2px;color:var(--ink-3);font-style:italic;font-family:var(--serif);font-size:14px}
     .bellpop ul.notices li{display:grid;grid-template-columns:1fr auto;gap:12px;padding:8px 0;border-bottom:1px dotted var(--rule);align-items:baseline}
+    .bellpop ul.notices li:has(input){grid-template-columns:auto 1fr auto}
+    .bellpop .notices input{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px;align-self:center}
+    .bellpop .notices input:checked{background:var(--band);border-color:var(--band)}
+    .bellpop .notices input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+    .bellpop .notices li.done .t{color:var(--ink-3);text-decoration:line-through}
     .bellpop .notices a{font-family:var(--serif);font-size:15px;display:contents}
     .bellpop .notices .w{font-size:12.5px;color:var(--ink-3);font-family:var(--sans);white-space:nowrap}
     .bellpop .notices .late .w{color:var(--ox)}
@@ -53,7 +60,7 @@
     bell.setAttribute('aria-expanded', 'false');
     let pop = null, ledger = {}, notes = { todos: [], due: [] };
     const paint = () => { bell.classList.toggle('bad', notes.todos.some(n => n.late) || notes.due.length > 0 || Object.values(ledger).some(l => l && l.ok === false)); };   // the dot: something late, something due, or a failed sync
-    const section = (title, list) => list.length ? `<h4>${title}</h4><ul class="notices">${list.map(n => `<li class="${n.late ? 'late' : ''}"><a href="${n.href}"><span class="t">${n.text}</span><span class="w">${n.when}</span></a></li>`).join('')}</ul>` : '';
+    const section = (title, list) => list.length ? `<h4>${title}</h4><ul class="notices">${list.map(n => `<li class="${n.late ? 'late' : ''}">${n.k != null ? `<input type="checkbox" aria-label="Done: ${n.text}" data-k="${n.k}">` : ''}<a href="${n.href}"><span class="t">${n.text}</span><span class="w">${n.when}</span></a></li>`).join('')}</ul>` : '';
     const render = () => {
       const rows = Object.entries(SOURCES).map(([k, src]) => {
         const l = ledger[k];
@@ -61,6 +68,12 @@
         return `<li><span class="n"><a href="${src.page}">${src.name}</a></span><span class="s ${l && !l.ok ? 'bad' : ''}">${status}</span>${l ? `<button class="go" type="button" data-sync="${k}">${k === 'backup' ? 'Back up now' : 'Sync now'}</button>${src.extra && l.ok ? src.extra(l) : ''}` : k === 'backup' ? `<button class="go" type="button" data-sync="${k}">Back up now</button>` : `<a class="go" href="${src.page}">Set up</a>`}</li>`;
       });
       pop.innerHTML = `${section('To do', notes.todos)}${section('Due', notes.due)}<h4>Syncs</h4><ul>${rows.join('')}</ul>`;
+      // a tick here is the same as a tick on Today: saved, and Today redraws if it is the page underneath
+      pop.querySelectorAll('input[data-k]').forEach(c => c.addEventListener('change', async () => {
+        if (!todoDoc) return; todoDoc.items[+c.dataset.k].done = c.checked; store.save('today.' + clock.today, todoDoc);
+        if (window.onTodoChange) window.onTodoChange(todoDoc);
+        c.closest('li').classList.add('done'); setTimeout(async () => { notes = await notices(); paint(); render(); }, 450);
+      }));
       pop.querySelectorAll('[data-sync]').forEach(b => b.addEventListener('click', async () => {
         b.textContent = b.dataset.sync === 'backup' ? 'Backing up…' : 'Syncing…'; const r = await store.sync(b.dataset.sync); if (r) ledger[b.dataset.sync] = r; paint(); render();
         if (r && r.ok && location.pathname.endsWith(SOURCES[b.dataset.sync].page)) location.reload();

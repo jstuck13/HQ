@@ -130,7 +130,6 @@
       <span class="date">Monday, 14 September 2026 · 8.40 am</span>
       <nav aria-label="Areas"><a href="today.html">Today</a><a href="calendar.html">Calendar</a><a href="finances.html">Finances</a><a href="library.html" aria-current="page">Library</a><a href="school.html">School</a><a href="health.html">Health</a></nav>
       <div class="right">
-        <button class="textbtn" id="addbtn"><svg class="ic"><use href="icons.svg#plus"/></svg>Add a book</button>
         <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
         <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
         <button class="ib menu" type="button" aria-label="Menu" aria-expanded="false" id="menubtn"><svg class="ic"><use href="icons.svg#menu"/></svg></button>
@@ -230,7 +229,7 @@
   document.addEventListener('click', e=>{
     const rb=e.target.closest('[data-rmb]'); if(rb){ const id=+rb.dataset.rmb; S.books=S.books.filter(b=>b.id!==id); if(S.open===id) S.open=null; render(); return; }
     const bk=e.target.closest('.book, .back'); if(bk){ S.open=+bk.dataset.id; render(); F('open').scrollIntoView({behavior:'smooth',block:'start'}); return; }
-    if(e.target.closest('#addcover') || e.target.closest('#addbtn')){ F('find').hidden=false; F('q').focus(); F('find').scrollIntoView({block:'nearest'}); return; }
+    if(e.target.closest('#addcover')){ F('find').hidden=false; F('q').focus(); F('find').scrollIntoView({block:'nearest'}); return; }
     if(e.target.closest('#findx')){ F('find').hidden=true; F('res').innerHTML=''; return; }
     const o=book(S.open); if(!o) return;
     const r=e.target.closest('[data-rate]'); if(r){ o.rating=+r.dataset.rate; render(); return; }

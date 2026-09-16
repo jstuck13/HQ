@@ -117,7 +117,6 @@
       <span class="date"></span>
       <nav aria-label="Areas"><a href="today.html" aria-current="page">Today</a><a href="calendar.html">Calendar</a><a href="finances.html">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="health.html">Health</a></nav>
       <div class="right">
-        <a class="textbtn" href="calendar.html"><svg class="ic"><use href="icons.svg#plus"/></svg>New entry</a>
         <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
         <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
         <button class="ib menu" type="button" aria-label="Menu" aria-expanded="false" id="menubtn"><svg class="ic"><use href="icons.svg#menu"/></svg></button>
@@ -312,6 +311,7 @@
   const migrateAt = () => { let n=0; T.items.forEach(i=>{ if(i.at==null){ const p=parseAt(i.text); if(p.at!=null){ Object.assign(i,p); n++; } } }); return n; };
   F('addt').addEventListener('submit', e=>{ e.preventDefault(); const t=F('t-text').value.trim(); if(!t) return; T.items.push({...parseAt(t), done:false}); F('addt').reset(); saveT(); renderTodo(); d.day=renderDay(CAL); });
 
+  window.onTodoChange = doc => { T = doc; renderTodo(); d.day = renderDay(CAL); };   // a tick in the bell shows here at once
   // ---- load everything the other pages keep, then draw ----
   (async () => {
     const [cal, fin, H, lib, school, today] = await Promise.all([store.load('calendar'), store.load('finances.'+YM), store.load('health'), store.load('library'), store.load('school'), store.load(TKEY)]);

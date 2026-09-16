@@ -188,7 +188,6 @@
       <span class="date">Monday, 14 September 2026 · 8.40 am</span>
       <nav aria-label="Areas"><a href="today.html">Today</a><a href="calendar.html" aria-current="page">Calendar</a><a href="finances.html">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="health.html">Health</a></nav>
       <div class="right">
-        <button class="textbtn" id="newentry"><svg class="ic"><use href="icons.svg#plus"/></svg>New entry</button>
         <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
         <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
         <button class="ib menu" type="button" aria-label="Menu" aria-expanded="false" id="menubtn"><svg class="ic"><use href="icons.svg#menu"/></svg></button>
@@ -544,7 +543,6 @@
     open=null; save(); reset(); renderAll();
   });
   F('cancel').addEventListener('click', reset);
-  F('newentry').addEventListener('click', ()=>{ reset(); show(); F('a-title').focus(); F('add').scrollIntoView({block:'nearest'}); });
   F('addopen').addEventListener('click', ()=>{ reset(); show(); F('a-title').focus(); });
 
   async function renderSync(){
