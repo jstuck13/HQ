@@ -181,7 +181,7 @@
       rows.push(row('Finances','finances.html',note,$0(left),`of ${$0(limits)} remaining`, due && due.due===C.now.getDate()));
     } else rows.push(row('Finances','finances.html','Open Finances to set this month’s budget','','not started'));
     // health
-    if(d.health){ const L=d.health, meds=L.meds||0, pills=(L.pills||[]).length, total=meds?5:4, n=['sleep','weight','hr'].filter(k=>L[k]!=null).length+(L.bps&&L.bpd?1:0)+(meds&&pills>=meds?1:0);
+    if(d.health){ const L=d.health, meds=L.meds||0, pills=(L.pills||[]).length, total=meds?4:3, n=['sleep','weight','hr'].filter(k=>L[k]!=null).length+(meds&&pills>=meds?1:0);
       const note = L.sleep ? `Slept ${L.sleep} h${L.hr?' · resting pulse '+L.hr:''}` : 'Nothing logged yet today';
       rows.push(row('Health','health.html',note,`${n} of ${total}`,`logged today${meds&&pills<meds?' · '+(meds-pills)+(meds-pills===1?' pill':' pills')+' to take':''}`, false));
     } else rows.push(row('Health','health.html','Nothing logged yet today','0 of 4','logged today'));

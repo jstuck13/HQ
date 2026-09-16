@@ -180,9 +180,6 @@
         <li data-k="hr"><span class="n">Resting heart rate<small>From the watch, on waking</small></span>
           <span class="v"><input id="hr" inputmode="numeric" placeholder="—"><span class="u">bpm</span></span>
           <span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>
-        <li data-k="bp"><span class="n">Blood pressure<small>Occasional</small></span>
-          <span class="v"><input id="bps" inputmode="numeric" placeholder="—" style="width:3.5ch"><span class="u">/</span><input id="bpd" inputmode="numeric" placeholder="—" style="width:3.5ch"><span class="u">mmHg</span></span>
-          <span class="l"><small>no earlier reading</small></span><span class="a"><small>too few</small></span></li>
       </ul>
     </section>
 
@@ -211,7 +208,7 @@
 <script src="bell.js"></script>
 <script>
   // ---- state: one document, a log per day ----
-  // H.days[ISO] = { sleep, bed, woke, weight, hr, bps, bpd, pills:[] } — only what you typed, nothing invented.
+  // H.days[ISO] = { sleep, bed, woke, weight, hr, pills:[] } — only what you typed, nothing invented.
   const F = id => document.getElementById(id);
   const C = clock, KEY = 'health', TODAY = C.today;
   let H = { days: {}, meds: [], next: [] };
@@ -220,8 +217,8 @@
   const num = v => { const n = parseFloat(String(v ?? '').replace(/[^0-9.]/g, '')); return isNaN(n) ? null : n; };
 
   // readings
-  const applyLog = () => { ['sleep','bed','woke','weight','hr','bps','bpd'].forEach(k=>{ F(k).value = L[k]!=null ? L[k] : ''; }); renderAll(); };
-  ['sleep','bed','woke','weight','hr','bps','bpd'].forEach(k=>{
+  const applyLog = () => { ['sleep','bed','woke','weight','hr'].forEach(k=>{ F(k).value = L[k]!=null ? L[k] : ''; }); renderAll(); };
+  ['sleep','bed','woke','weight','hr'].forEach(k=>{
     F(k).addEventListener('change', ()=>{ const v=F(k).value.trim(); if(v) L[k]=v; else delete L[k]; save(); renderAll(); });
   });
   function renderPills(){
@@ -267,12 +264,6 @@
       li.querySelector('.l').innerHTML = last ? `${s.fmt(last.v)}<small>${last.d===isoDays[28]?'yesterday':fmtDay(C.fromISO(last.d))}</small>` : `<small>no earlier reading</small>`;
       li.querySelector('.a').innerHTML = avg!=null ? `${s.fmt(avg)}<small>${t||`${pts.length} ${pts.length===1?'reading':'readings'}`}</small>` : `<small>not yet</small>`;
     });
-    // blood pressure: last reading from any day
-    const bpDays = Object.keys(H.days).filter(d=>d!==TODAY && H.days[d].bps && H.days[d].bpd).sort();
-    const bl = bpDays[bpDays.length-1], li=document.querySelector('#ledger li[data-k="bp"]');
-    li.querySelector('.l').innerHTML = bl ? `${H.days[bl].bps} / ${H.days[bl].bpd}<small>${fmtDay(C.fromISO(bl))}</small>` : `<small>no earlier reading</small>`;
-    li.querySelector('.a').innerHTML = `<small>${bpDays.length<3?'too few':bpDays.length+' readings'}</small>`;
-    li.querySelector('.n small').textContent = bl ? `Occasional; last taken ${C.daysBetween(bl, TODAY)} days ago` : 'Occasional';
   }
 
   function renderCharts(){
@@ -317,12 +308,12 @@
   }
 
   function renderLogged(){
-    document.querySelectorAll('#ledger li[data-k]').forEach(li=>{ const k=li.dataset.k; li.classList.toggle('logged', k==='bp' ? !!(L.bps&&L.bpd) : L[k]!=null); });
+    document.querySelectorAll('#ledger li[data-k]').forEach(li=>{ const k=li.dataset.k; li.classList.toggle('logged', L[k]!=null); });
     const meds=(H.meds||[]).length, taken=L.pills.filter(p=>(H.meds||[]).some(m=>m.id===p)).length;
-    const n = ['sleep','weight','hr'].filter(k=>L[k]!=null).length + (L.bps&&L.bpd?1:0) + (meds && taken===meds ? 1 : 0);
+    const n = ['sleep','weight','hr'].filter(k=>L[k]!=null).length + (meds && taken===meds ? 1 : 0);
     const st=trendOf(series[0], pointsFor(series[0])), wt=trendOf(series[1], pointsFor(series[1]));
     const tail = st||wt ? `; on the month${st?' sleep is '+st:''}${st&&wt?',':''}${wt?' weight is '+wt:''}.` : '.';
-    F('sub').innerHTML = `Logged <b>${n} of ${meds?5:4}</b> ${C.now.getHours()<12?'this morning':'today'}${tail}`;
+    F('sub').innerHTML = `Logged <b>${n} of ${meds?4:3}</b> ${C.now.getHours()<12?'this morning':'today'}${tail}`;
   }
   function renderAll(){ renderLogged(); renderCells(); renderCharts(); renderPills(); renderNext(); }
 
