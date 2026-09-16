@@ -2,7 +2,7 @@
 (function () {
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const today = () => window.clock ? clock.today : new Date().toISOString().slice(0, 10);
-  const day = iso => iso && window.clock ? clock.short(clock.fromISO(iso)) : iso || '';   // 2026-09-15 → Tue 15 Sep
+  const day = iso => iso && window.clock ? clock.dayMonth(clock.fromISO(iso)) : iso || "";   // 2026-09-15 → 15 Sep
 
   // each source: load its document, turn it into {area, title, sub, href} rows
   const SOURCES = [
