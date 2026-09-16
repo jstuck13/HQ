@@ -51,6 +51,7 @@
   main{max-width:1180px;margin:0 auto;padding:34px 40px 44px;display:grid;grid-template-columns:1.1fr 1fr;gap:64px}
   h2{font-size:22px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:4px;display:flex;align-items:baseline;gap:12px}
   h2 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
+  h2 small a{border-bottom:1px solid var(--rule)} h2 small a:hover{color:var(--ink);border-color:var(--ink)}
   ul{list-style:none;margin:0;padding:0}
 
   /* hour-ruled timeline (clean's donation, in ink and paper) */
@@ -280,7 +281,7 @@
       const note = !list.length ? 'A clear day' : lastEnd<=NOW ? 'Nothing more today' : `Free after ${h12(lastEnd)}`;
       rows.push(row('Calendar','calendar.html',note, `${list.length}`, `${list.length===1?'item':'items'} today`, false)); }
     F('affairs').innerHTML = rows.join('');
-    F('affn').textContent = C.now.getHours()<12 ? 'this morning' : C.now.getHours()<18 ? 'this afternoon' : 'this evening';
+    F('affn').innerHTML = `${C.now.getHours()<12 ? 'this morning' : C.now.getHours()<18 ? 'this afternoon' : 'this evening'} · <a href="review.html">the week</a>`;
   }
   const ordinal = n => (n%10===1&&n!==11)?'st':(n%10===2&&n!==12)?'nd':(n%10===3&&n!==13)?'rd':'th';
 
