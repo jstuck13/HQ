@@ -342,13 +342,16 @@
   F('todo').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ T.items[+e.target.dataset.k].done=e.target.checked; saveT(); renderTodo(); d.day=renderDay(CAL); } });
   F('todo').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ T.items.splice(+b.dataset.rm,1); saveT(); renderTodo(); } });
   // "… by 3 pm" / "… at 3.30pm" at the end of a to-do becomes its time; it then sits on the timeline and the bell watches it
-  const parseAt = t => { const m=/\s(?:by|at)\s+(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm)\.?$/i.exec(t); if(!m) return {text:t}; let h=+m[1]%12; if(m[3].toLowerCase()==='pm') h+=12; return {text:t.slice(0,m.index).trim(), at:h+(+(m[2]||0))/60}; };
+  const parseAt = t => { const m=/\s(?:by|at)\s+(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?\.?$/i.exec(t); if(!m || +m[1]>12) return {text:t}; let h=+m[1]%12; const mm=+(m[2]||0)/60, ap=(m[3]||'').toLowerCase();
+    if(ap.startsWith('p')) h+=12; else if(!ap && (h+mm<=NOW || +m[1]===12)) h+=12;   // no am/pm: the next time that clock reading comes round
+    return {text:t.slice(0,m.index).trim(), at:h+mm}; };
+  const migrateAt = () => { let n=0; T.items.forEach(i=>{ if(i.at==null){ const p=parseAt(i.text); if(p.at!=null){ Object.assign(i,p); n++; } } }); return n; };
   F('addt').addEventListener('submit', e=>{ e.preventDefault(); const t=F('t-text').value.trim(); if(!t) return; T.items.push({...parseAt(t), done:false}); F('addt').reset(); saveT(); renderTodo(); d.day=renderDay(CAL); });
 
   // ---- load everything the other pages keep, then draw ----
   (async () => {
     const [cal, fin, H, lib, school, today] = await Promise.all([store.load('calendar'), store.load('finances.'+YM), store.load('health'), store.load('library'), store.load('school'), store.load(TKEY)]);
-    if(today) T = today;
+    if(today){ T = today; if(migrateAt()) saveT(); }
     else {   // first look at a new day: unfinished items from the last few days come along, marked
       for(let i=1;i<=3 && !T.items.length;i++){ const k=C.iso(C.addDays(C.fromISO(TODAY),-i)), prev=await store.load('today.'+k); if(prev && prev.items){ T.items = prev.items.filter(x=>!x.done).map(x=>({text:x.text, done:false, from:x.from||k})); break; } }
       if(T.items.length) saveT();
