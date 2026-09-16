@@ -3,6 +3,7 @@
   const SOURCES = { canvas: { name: 'Canvas', page: 'school.html', count: l => l.items != null ? `${l.items} items` : '' },
                     google: { name: 'Google Calendar', page: 'calendar.html', count: l => l.calendars != null ? `${l.calendars} ${l.calendars === 1 ? 'calendar' : 'calendars'}` : '' },
                     garmin: { name: 'Garmin', page: 'health.html', count: l => l.days != null ? `${l.days} days` : '' },
+                    daily: { name: 'Word and quote', page: 'index.html', count: l => l.word ? `“${l.word}”` : '' },
                     backup: { name: 'Nightly backup', page: 'today.html', count: l => l.documents != null ? `${l.documents} documents` : '', extra: l => l.day ? `<a class="go dl" href="/api/sync/backup?day=${l.day}" download>Download</a>` : '' } };
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   // three kinds of notice, nothing else: due today, a bill due today, pills not taken by nine in the evening

@@ -79,6 +79,7 @@
   .upnext .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--band-ink);margin-right:8px}
   .upnext b{font-family:var(--serif);font-weight:400;color:var(--band-ink)}
   .upnext .t{white-space:nowrap}
+  #wx{margin-top:6px}
 
   /* morning report: last night and the body, read from Health */
   .report{margin-top:34px}
@@ -152,7 +153,7 @@
         <button class="ib menu" type="button" aria-label="Menu" aria-expanded="false" id="menubtn"><svg class="ic"><use href="icons.svg#menu"/></svg></button>
       </div>
     </div>
-    <div class="mast"><h1 id="greet">Good morning, Jacob.</h1><p class="upnext" id="upnext" hidden></p></div>
+    <div class="mast"><h1 id="greet">Good morning, Jacob.</h1><p class="upnext" id="upnext" hidden></p><p class="upnext" id="wx" hidden></p></div>
   </div>
 </header>
 
@@ -247,6 +248,18 @@
     F('repn').textContent = Object.keys(G).length ? 'last night · from Garmin' : 'last night · from Health';
   }
 
+  // ---- the weather, from Open-Meteo, for wherever the browser says you are (asked once, remembered) ----
+  const SKY = c => c===0?'clear':c<=2?'partly cloudy':c===3?'overcast':c<=48?'foggy':c<=57?'drizzling':c<=67?'raining':c<=77?'snowing':c<=82?'showers':c<=86?'snow showers':'thunderstorms';
+  async function renderWeather(){
+    let geo=null; try{ geo=JSON.parse(localStorage.getItem('hq.geo')); }catch{}
+    if(!geo){ if(!navigator.geolocation) return; geo = await new Promise(res=>navigator.geolocation.getCurrentPosition(p=>res({lat:+p.coords.latitude.toFixed(2), lon:+p.coords.longitude.toFixed(2)}), ()=>res(null), {maximumAge:864e5, timeout:8000})); if(!geo) return; try{ localStorage.setItem('hq.geo', JSON.stringify(geo)); }catch{} }
+    try{
+      const u=`https://api.open-meteo.com/v1/forecast?latitude=${geo.lat}&longitude=${geo.lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone=auto&forecast_days=1`;
+      const w=await (await fetch(u)).json(); const t=Math.round(w.current.temperature_2m), hi=Math.round(w.daily.temperature_2m_max[0]), lo=Math.round(w.daily.temperature_2m_min[0]), rain=w.daily.precipitation_probability_max[0];
+      F('wx').innerHTML = `<span><span class="k">Out</span><b>${t}°</b> <span class="t">and ${SKY(w.current.weather_code)} · ${lo}° to ${hi}°${rain>=30?` · ${rain}% chance of rain`:''}</span></span>`; F('wx').hidden=false;
+    }catch{}
+  }
+
   // ---- state of affairs: one row per area ----
   function row(name, href, note, value, unit, flag){
     return `<li><a class="n" href="${href}">${name}</a><span class="d">${note}</span><span class="v ${flag?'flag':''}">${value}<small>${unit}</small></span></li>`;
@@ -336,7 +349,7 @@
     const d = { fin, health, lib, school, H };
     renderReport(H);
     d.day = renderDay(cal);
-    renderAffairs(d); renderGreeting(d); renderUpNext(d.day); renderTodo();
+    renderAffairs(d); renderGreeting(d); renderUpNext(d.day); renderTodo(); renderWeather();
     C.countIn('.affairs .v, .rep .big b, .rep .facts b');
     // the now line, "in 40 min" and the live event move with the clock
     setInterval(() => { const n=new Date(); if(C.iso(n)!==TODAY){ location.reload(); return; } NOW = n.getHours()+n.getMinutes()/60; d.day = renderDay(cal); renderAffairs(d); renderUpNext(d.day); }, 60000);

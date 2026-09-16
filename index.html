@@ -42,6 +42,7 @@
   .orn{width:160px;height:12px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='12' viewBox='0 0 160 12'%3E%3Cpath d='M0 6.5h62M98 6.5h62' stroke='%23F2ECDF' stroke-opacity='.35'/%3E%3Cpath d='M80 1.5l5 5-5 5-5-5z' fill='%23B9C9BE'/%3E%3C/svg%3E") left center/160px 12px no-repeat}
   .quote .orn{margin:0 0 26px} .quote .orn.end{margin:30px 0 0}
   figcaption b{font-weight:500;color:var(--band-ink)}
+  figcaption .via{font-size:12.5px;opacity:.75}
 
   .word h2{margin:0 0 18px;font-family:var(--serif);font-weight:400;font-size:22px;padding-bottom:10px;border-bottom:1px solid var(--band-rule)}
   .word .w{font-family:var(--serif);font-size:32px;line-height:1.3;margin:0}
@@ -151,8 +152,17 @@
   // The front door. With the API present, the passcode sets the session cookie; on a plain static server it just opens.
   const gate = document.getElementById('gate'), pass = document.getElementById('pass'), hint = document.getElementById('hint');
   const passl = document.getElementById('passl');
-  const signedIn = () => { passl.hidden = true; pass.hidden = true; document.getElementById('openlbl').textContent = 'Continue'; };
+  const signedIn = () => { passl.hidden = true; pass.hidden = true; document.getElementById('openlbl').textContent = 'Continue'; fetched(); };
   fetch('/api/login').then(r => r.ok ? r.json() : { authed: true }).then(j => { if (j.authed) signedIn(); }).catch(signedIn);
+  // today's fetched word and quote (the nightly `daily` document) replace the built-in rotation when they are there
+  async function fetched(){
+    const today = new Date(); const iso = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    const d = await store.load('daily').catch(() => null); if (!d || !d.date || Math.abs(new Date(d.date) - new Date(iso)) > 2 * 864e5) return;
+    const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    if (d.quote) { document.getElementById('q').textContent = d.quote.q; document.getElementById('qa').innerHTML = `<b>${esc(d.quote.a)}</b>${d.quote.via ? ` <span class="via">· via ${esc(d.quote.via)}</span>` : ''}`; }
+    if (d.word) { document.getElementById('w').textContent = d.word.w; document.getElementById('pr').textContent = d.word.pr || ''; document.getElementById('pos').textContent = d.word.pos || ''; document.getElementById('def').textContent = d.word.def;
+      const ex = document.getElementById('ex'); if (d.word.ex) { ex.innerHTML = esc(d.word.ex).replace(new RegExp(`\\b(${d.word.w}\\w*)`, 'i'), '<b>$1</b>'); ex.hidden = false; } else ex.hidden = true; }
+  }
   gate.addEventListener('submit', async e => {
     e.preventDefault();
     if (pass.hidden) return location.href = 'today.html';
