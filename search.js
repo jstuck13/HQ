@@ -8,7 +8,7 @@
   const SOURCES = [
     ['calendar', d => (d.series || []).map(s => ({ area: 'Calendar', title: s.title, sub: [day(s.date), s.sub].filter(Boolean).join(' · '), href: `calendar.html?d=${s.date}&e=${encodeURIComponent(s.id)}` }))],
     ['school', d => [...(d.courses || []).map(c => ({ area: 'School', title: c.name, sub: 'course', href: 'school.html' })),
-                     ...(d.items || []).map(i => ({ area: 'School', title: i.title, sub: [(d.courses || []).find(c => c.id === i.course)?.name, i.due ? 'due ' + day(i.due) : '', i.done ? 'done' : ''].filter(Boolean).join(' · '), href: 'school.html' }))]],
+                     ...(d.items || []).map(i => ({ area: 'School', title: i.title, sub: [(d.courses || []).find(c => c.id === i.course)?.name, i.due ? 'due ' + clock.monthShort(clock.fromISO(i.due)) + ' ' + clock.fromISO(i.due).getDate() : '', i.done ? 'done' : ''].filter(Boolean).join(' · '), href: 'school.html' }))]],
     ['library', d => (d.books || []).map(b => ({ area: 'Library', title: b.title, sub: [b.author, { reading: 'reading', toread: 'to read', read: 'read' }[b.shelf]].filter(Boolean).join(' · '), href: `library.html?open=${encodeURIComponent(b.id)}` }))],
     ['finances.' + today().slice(0, 7), d => [...(d.tx || []).map(t => ({ area: 'Finances', title: t.what || '', sub: [day(t.date), t.amt != null ? '$' + t.amt : ''].filter(Boolean).join(' · '), href: 'finances.html' })),
                             ...(d.cats || []).map(c => ({ area: 'Finances', title: c.name, sub: c.limit ? 'limit $' + c.limit : 'category', href: 'finances.html' }))]],

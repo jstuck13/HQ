@@ -239,11 +239,11 @@
   const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const course = id => S.courses.find(c=>c.id===id);
   const days = iso => C.daysBetween(TODAY, iso);
-  const dmy = iso => C.short(C.fromISO(iso));
+  const dmy = iso => { const d=C.fromISO(iso); return `${C.monthShort(d)} ${d.getDate()}`; };   // Sep 15
   const dayOf = t => C.parseDay(t);
   const hrs = m => m>=60 ? (m%60 ? `${Math.floor(m/60)} h ${m%60}` : `${m/60} h`) : `${m} min`;
   const weekMin = cid => S.sessions.filter(s=>s.course===cid && days(s.date)>-7 && days(s.date)<=0).reduce((n,s)=>n+s.min,0);
-  const dueWord = iso => { const d=days(iso); return d<0?'overdue':d===0?'due today':d===1?'due tomorrow':d<7?'due '+dmy(iso).split(' ')[0]:'due '+dmy(iso); };
+  const dueWord = iso => { const d=days(iso); return d<0?'overdue':d===0?'due today':d===1?'due tomorrow':d<7?'due '+C.dayShort(C.fromISO(iso)):'due '+dmy(iso); };
 
   // ---- the mix: nearest due, weakest confidence, least studied lately ----
   function score(it){

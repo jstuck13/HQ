@@ -271,7 +271,7 @@
     // school
     if(d.school){ const items=(d.school.items||[]).filter(i=>!i.done).sort((a,b)=>a.due<b.due?-1:1), nx=items[0], cn=id=>(d.school.courses||[]).find(c=>c.id===id);
       const dd = nx ? C.daysBetween(TODAY, nx.due) : null;
-      const note = nx ? `${esc(cn(nx.course)?.name||'')} — ${esc(nx.title)}, ${dd<0?'overdue':dd===0?'due today':dd===1?'due tomorrow':'due '+C.short(C.fromISO(nx.due))}` : 'Nothing due';
+      const note = nx ? `${esc(cn(nx.course)?.name||'')} — ${esc(nx.title)}, ${dd<0?'overdue':dd===0?'due today':dd===1?'due tomorrow':'due '+C.monthShort(C.fromISO(nx.due))+' '+C.fromISO(nx.due).getDate()}` : 'Nothing due';
       rows.push(row('School','school.html',note,`${items.length}`,`open ${items.length===1?'item':'items'}`, dd!==null && dd<=0));
     } else rows.push(row('School','school.html','Open School to add your courses','','no courses yet'));
     // calendar
