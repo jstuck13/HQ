@@ -31,6 +31,9 @@
   };
   const now = new Date();
   window.clock = { now, today: iso(now), iso, fromISO, addDays, monday, time, hourLabel, dayName, dayShort, monthName, monthShort, long, short, dayMonth, dayMonthLong, weekdayDayMonth, month, full, greeting, daysBetween, parseDay };
+  // lamplight: from eight in the evening until six the pages take a warmer, dimmer palette
+  const lamp = () => { const h = new Date().getHours(); document.documentElement.dataset.light = (h >= 20 || h < 6) ? 'evening' : ''; };
+  lamp(); setInterval(lamp, 60000);
   // the band's date line, on every page that has one
   addEventListener('DOMContentLoaded', () => { document.querySelectorAll('.band .date').forEach(el => { el.textContent = `${long(now)} · ${time(now)}`; }); });
 })();
