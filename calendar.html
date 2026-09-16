@@ -133,6 +133,8 @@
   .field .pair{display:flex;gap:12px;align-items:baseline}
   .field .pair span{color:var(--ink-3);font-size:12.5px}
   .add .textbtn{margin-top:16px;margin-right:18px;color:var(--ink);font-size:14px}
+  .scope{margin:14px 0 0;font-size:13.5px;color:var(--ink-2)} .scope .textbtn{margin:0;font-size:13.5px} .scope b{font-weight:400;color:var(--ink)}
+  .scope[hidden]{display:none} .add.asking #submit,.add.asking #remove,.add.asking #cancel{display:none}
   .add #remove{color:var(--ox)}
   .ev.open{outline:1.5px solid var(--ox);outline-offset:-1.5px}
 
@@ -260,6 +262,7 @@
       <div class="field"><span class="lbl" id="rep-l">Repeats</span><div class="dows" id="a-rep" role="group" aria-labelledby="rep-l"><label><input type="checkbox" value="0"><span>M</span></label><label><input type="checkbox" value="1"><span>T</span></label><label><input type="checkbox" value="2"><span>W</span></label><label><input type="checkbox" value="3"><span>T</span></label><label><input type="checkbox" value="4"><span>F</span></label><label><input type="checkbox" value="5"><span>S</span></label><label><input type="checkbox" value="6"><span>S</span></label></div></div>
       <div class="field"><label for="a-sub">Details</label><input id="a-sub" placeholder="Shown under the title, every time"></div>
       <div class="field"><label for="a-notes">Notes</label><textarea id="a-notes" placeholder="Notes for this one occurrence"></textarea></div>
+      <p class="scope" id="scope" hidden>Apply to <button class="textbtn" type="button" id="scope-one">this one</button> or <button class="textbtn" type="button" id="scope-all">all <b id="scope-n"></b></button>?</p>
       <button class="textbtn" type="submit" id="submit"><svg class="ic"><use href="icons.svg#plus"/></svg><span>Add to the day</span></button>
       <button class="textbtn" type="button" id="remove" hidden>Remove</button>
       <button class="textbtn" type="button" id="cancel" hidden>Cancel</button>
@@ -451,16 +454,29 @@
     F('a-title').focus(); F('add').scrollIntoView({block:'nearest'});
   }
   function reset(){
-    editing=null;
+    editing=null; pending=null; F('add').classList.remove('asking'); F('scope').hidden=true;
     F('formh').textContent='Add an entry'; F('submit').querySelector('span').textContent='Add to the day';
     F('remove').hidden=F('cancel').hidden=true;
     F('add').reset(); F('a-day').value=C.dayMonth(C.fromISO(selDay)); setRep([]); F('a-start').value='5.00 pm'; F('a-end').value='6.00 pm';
   }
+  const siblings = s => s.source ? S.series.filter(x=>x!==s && x.source===s.source && ((s.group && x.group===s.group) || (!s.group && x.title===s.title))) : [];
+  function applyTo(list, f){ list.forEach(x=>{ Object.assign(x, {title:f.title, cat:f.cat, sub:f.sub, start:f.start, end:f.end}); }); }
+  let pending = null;
+  F('scope-one').addEventListener('click', ()=>{ const {s,f,d,note}=pending; Object.assign(s,f); finish(s,d,note); });
+  F('scope-all').addEventListener('click', ()=>{ const {s,f,d,note}=pending; Object.assign(s,f); applyTo(siblings(s), f); finish(s,d,note); });
+  function finish(s,d,note){ pending=null; F('add').classList.remove('asking'); F('scope').hidden=true; if(note) S.notes[key(s,d)]=note; else delete S.notes[key(s,d)]; save(); open={id:s.id, d}; goto(d); reset(); }
   F('add').addEventListener('submit', e=>{
     e.preventDefault();
     const start=parse(F('a-start').value), end=parse(F('a-end').value);
     if(start==null||end==null||end<=start){ F('a-start').focus(); return; }
     const s = editing ? S.series.find(x=>x.id===editing.id) : {id:Date.now()};
+    if(editing && s.source){
+      // an imported entry keeps its date; ask whether the change is for this one or its whole series
+      const f = {title:F('a-title').value.trim(), cat:F('a-area').value, sub:F('a-sub').value.trim(), start, end};
+      const sib = siblings(s), d = editing.d, note = F('a-notes').value.trim();
+      if(sib.length){ pending={s,f,d,note}; F('scope-n').textContent = `${sib.length+1} “${s.title}”`; F('scope').hidden=false; F('add').classList.add('asking'); return; }
+      Object.assign(s,f); finish(s,d,note); return;
+    }
     const date = C.parseDay(F('a-day').value);
     Object.assign(s, {title:F('a-title').value.trim(), date, start, end, cat:F('a-area').value, rep:getRep(), sub:F('a-sub').value.trim()});
     if(!editing){ s.short=short(s.title); S.series.push(s); }

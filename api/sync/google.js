@@ -27,6 +27,8 @@ export default syncRoute('google', async ({ getDoc, putDoc }) => {
   cal.series ??= []; cal.ignored ??= []; cal.cats ??= [];
   if (!cal.cats.some(c => c.id === 'cal')) cal.cats.unshift({ id: 'cal', name: 'Appointments', tint: '#E9EEF3' });
   const seen = new Set(); let added = 0, updated = 0;
+  // a category you gave one instance of a repeating event applies to its siblings, new ones included
+  const groupCat = {}; for (const s of cal.series) if (s.group && s.cat && s.cat !== 'cal') groupCat[s.group] = s.cat;
 
   for (const c of chosen) {
     const u = new URL(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(c.id)}/events`);
@@ -41,9 +43,11 @@ export default syncRoute('google', async ({ getDoc, putDoc }) => {
       else { date = e.start.date; start = 8; end = 8.5; sub = ['All day', sub].filter(Boolean).join(' · '); }
       if (start < 8) { start = 8; if (end <= 8) end = 8.5; }
       if (start >= 20) continue;                       // outside the drawn day; skipped rather than mis-placed
-      const record = { id, date, start: Math.round(start * 4) / 4, end: Math.min(20, Math.round(end * 4) / 4), title: e.summary || '(no title)', cat: 'cal', sub: [sub, e.location].filter(Boolean).join(' · '), rep: [], source: 'google', url: e.htmlLink };
+      const group = e.recurringEventId ? `google:${e.recurringEventId}` : undefined;
+      const record = { id, group, date, start: Math.round(start * 4) / 4, end: Math.min(20, Math.round(end * 4) / 4), title: e.summary || '(no title)', sub: [sub, e.location].filter(Boolean).join(' · '), rep: [], source: 'google', url: e.htmlLink };
       const existing = cal.series.find(s => s.id === id);
-      if (existing) { Object.assign(existing, record); updated++; } else { cal.series.push(record); added++; }
+      if (existing) { Object.assign(existing, record, { cat: existing.cat || 'cal' }); updated++; }
+      else { cal.series.push({ ...record, cat: (group && groupCat[group]) || 'cal' }); added++; }
     }
   }
   // events that vanished from Google inside the window vanish here too (notes on them are kept)
