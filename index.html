@@ -40,6 +40,9 @@
   blockquote::after{content:"”";color:var(--band-muted)}
   .quote{position:relative;padding-left:.5em}
   figcaption{margin-top:20px;font-size:15px;color:var(--band-muted)}
+  /* the masthead ornament: a lozenge between two rules, opening and closing the quote */
+  .orn{width:160px;height:12px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='12' viewBox='0 0 160 12'%3E%3Cpath d='M0 6.5h62M98 6.5h62' stroke='%23F2ECDF' stroke-opacity='.35'/%3E%3Cpath d='M80 1.5l5 5-5 5-5-5z' fill='%23B9C9BE'/%3E%3C/svg%3E") left center/160px 12px no-repeat}
+  .quote .orn{margin:0 0 26px} .quote .orn.end{margin:30px 0 0}
   figcaption b{font-weight:500;color:var(--band-ink)}
 
   .word h2{margin:0 0 18px;font-family:var(--serif);font-weight:400;font-size:22px;padding-bottom:10px;border-bottom:1px solid var(--band-rule)}
@@ -87,9 +90,11 @@
 
   <main class="cover">
     <figure class="quote">
+      <div class="orn" aria-hidden="true"></div>
       <p class="greet" id="greet">Good morning, Jacob.</p>
       <blockquote id="q">The impediment to action advances action. What stands in the way becomes the way.</blockquote>
       <figcaption id="qa"><b>Marcus Aurelius</b>, Meditations</figcaption>
+      <div class="orn end" aria-hidden="true"></div>
     </figure>
 
     <section class="word" aria-labelledby="wotd">
@@ -143,7 +148,7 @@
   document.getElementById('pos').textContent = pos;
   document.getElementById('def').textContent = def;
   document.getElementById('ex').innerHTML = ex;
-  document.getElementById('date').textContent = now.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  document.getElementById('date').textContent = now.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long', year:'numeric'}) + ` · No. ${day}`;   // the issue number: day of the year
   const h = now.getHours();
   document.getElementById('greet').textContent = (h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + ', Jacob.';
   // The front door. With the API present, the passcode sets the session cookie; on a plain static server it just opens.
