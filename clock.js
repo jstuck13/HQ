@@ -34,6 +34,20 @@
   // lamplight: from eight in the evening until six the pages take a warmer, dimmer palette
   const lamp = () => { const h = new Date().getHours(); document.documentElement.dataset.light = (h >= 20 || h < 6) ? 'evening' : ''; };
   lamp(); setInterval(lamp, 60000);
+  // motion, restrained: pages arrive, the now line breathes, a ticked line strikes through. All off under reduced motion.
+  const motion = document.createElement('style');
+  motion.textContent = `@media (prefers-reduced-motion:no-preference){
+    @keyframes hq-arrive{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    .band .mast{animation:hq-arrive .4s ease-out both}
+    main>*{animation:hq-arrive .45s ease-out both}
+    main>*:nth-child(2){animation-delay:.06s} main>*:nth-child(3){animation-delay:.12s} main>*:nth-child(n+4){animation-delay:.18s}
+    @keyframes hq-breathe{0%,100%{opacity:1}50%{opacity:.65}}
+    .now{animation:hq-breathe 4s ease-in-out infinite}
+    @keyframes hq-strike{from{background-size:0 1px}to{background-size:100% 1px}}
+    html[data-ready] .todo input:checked+label,html[data-ready] .pills input:checked+label{animation:hq-strike .3s ease-out both}
+  }`;
+  document.head.appendChild(motion);
+  addEventListener('DOMContentLoaded', () => setTimeout(() => { document.documentElement.dataset.ready = '1'; }, 800));   // strikes animate only after the page has settled
   // the band's date line, on every page that has one
   addEventListener('DOMContentLoaded', () => { document.querySelectorAll('.band .date').forEach(el => { el.textContent = `${long(now)} · ${time(now)}`; }); });
 })();

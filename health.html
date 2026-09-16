@@ -84,7 +84,7 @@
   .pills input:checked{background:var(--band);border-color:var(--band)}
   .pills input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
   .pills label{cursor:pointer;flex:1}
-  .pills input:checked + label{color:var(--ink-3);text-decoration:line-through}
+  .pills input:checked + label{color:var(--ink-3);background:linear-gradient(currentColor,currentColor) left 58%/100% 1px no-repeat}
   .pills .w{font-size:12.5px;color:var(--ink-3)}
   .next{margin-top:34px}
   .addl{display:grid;grid-template-columns:1fr 110px auto;gap:12px;padding:12px 0;border-bottom:1px dotted var(--rule);align-items:baseline}
@@ -228,7 +228,7 @@
   });
   function renderPills(){
     const meds=H.meds||[];
-    F('pillsn').textContent = meds.length ? `${L.pills.filter(p=>meds.some(m=>m.id===p)).length} of ${meds.length}` : 'none yet';
+    const ps=pillStreak(); F('pillsn').textContent = meds.length ? `${L.pills.filter(p=>meds.some(m=>m.id===p)).length} of ${meds.length}${ps>=2?` · ${ps}-day streak`:''}` : 'none yet';
     F('pills').innerHTML = meds.length ? meds.map(m=>`<li><input type="checkbox" id="p-${m.id}" data-p="${m.id}" ${L.pills.includes(m.id)?'checked':''}><label for="p-${m.id}">${esc(m.name)}</label><span class="w">${esc(m.when||'')}</span><button class="x" type="button" data-rm="${m.id}" aria-label="Remove ${esc(m.name)}">remove</button></li>`).join('') : '<li class="empty">Add the pills and vitamins you take; they become a daily checklist.</li>';
   }
   function renderNext(){
@@ -312,7 +312,12 @@
     });
   }
 
+  // a streak: days in a row ending today that pass the test; today is skipped, not broken, while it is still open
+  const streak = (days, ok, open = () => false) => { let n=0; for(let i=0;i<400;i++){ const d=days[C.iso(C.addDays(C.fromISO(TODAY),-i))]||{}; if(!ok(d)){ if(i===0 && open(d)) continue; break; } n++; } return n; };
+  const pillStreak = () => { const meds=H.meds||[]; return meds.length ? streak(H.days, d=>meds.every(m=>(d.pills||[]).includes(m.id)), ()=>true) : 0; };
+  const sleepStreak = () => streak(H.days, d=>+d.sleep>=7, d=>d.sleep==null);
   function renderLogged(){
+    const ss=sleepStreak(); document.querySelector('#ledger li[data-k="sleep"] .n small').textContent = ss>=2 ? `Hours, and when · ${ss} days of 7 h+` : 'Hours, and when';
     document.querySelectorAll('#ledger li[data-k]').forEach(li=>{ const k=li.dataset.k; li.classList.toggle('logged', L[k]!=null); });
     const meds=(H.meds||[]).length, taken=L.pills.filter(p=>(H.meds||[]).some(m=>m.id===p)).length;
     const n = ['sleep','weight','hr'].filter(k=>L[k]!=null).length + (meds && taken===meds ? 1 : 0);

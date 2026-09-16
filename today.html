@@ -115,7 +115,7 @@
   .todo input[type=checkbox]:checked{background:var(--band);border-color:var(--band)}
   .todo input[type=checkbox]:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
   .todo label{cursor:pointer;flex:1}
-  .todo input[type=checkbox]:checked + label{color:var(--ink-3);text-decoration:line-through}
+  .todo input[type=checkbox]:checked + label{color:var(--ink-3);background:linear-gradient(currentColor,currentColor) left 58%/100% 1px no-repeat}
   .todo .w{font-size:12.5px;color:var(--ink-3)}
   .todo .w.due{color:var(--ox)}
   .todo .x{opacity:0} .todo li:hover .x,.todo li:focus-within .x{opacity:1} .todo .x:hover{color:var(--ox)}
@@ -217,6 +217,8 @@
   }
 
   // ---- morning report: last night and the body, from the Health document ----
+  // a streak: days in a row ending today that pass the test; today is skipped, not broken, while it is still open
+  const streak = (days, ok, open = () => false) => { let n=0; for(let i=0;i<400;i++){ const d=days[C.iso(C.addDays(C.fromISO(TODAY),-i))]||{}; if(!ok(d)){ if(i===0 && open(d)) continue; break; } n++; } return n; };
   const hm = sec => { const m=Math.round(sec/60); return m>=60 ? `${Math.floor(m/60)} h${m%60?' '+(m%60):''}` : `${m} min`; };
   const num = n => Number(n).toLocaleString('en-US');
   function renderReport(H){
@@ -226,7 +228,8 @@
     el.className='card rep'; let html='';
     if(L.sleep!=null){
       const sum=(G.deep||0)+(G.light||0)+(G.rem||0)+(G.awake||0);
-      html += `<div class="big"><b>${L.sleep}<i>h</i></b><span>asleep${G.nap?` · ${hm(G.nap)} nap`:''}</span><small>${[L.bed&&L.woke?`${L.bed} to ${L.woke}`:'', G.score!=null?`score ${G.score}`:''].filter(Boolean).join(' · ')}</small></div>`;
+      const ss=streak(H.days, d=>+d.sleep>=7, d=>d.sleep==null);
+      html += `<div class="big"><b>${L.sleep}<i>h</i></b><span>asleep${G.nap?` · ${hm(G.nap)} nap`:''}${ss>=3?` · ${ss} days of 7 h+`:''}</span><small>${[L.bed&&L.woke?`${L.bed} to ${L.woke}`:'', G.score!=null?`score ${G.score}`:''].filter(Boolean).join(' · ')}</small></div>`;
       if(sum){ const seg=(k,v)=>v?`<i class="${k}" style="flex:${v}"></i>`:''; html += `<div><div class="stages">${seg('deep',G.deep)}${seg('light',G.light)}${seg('rem',G.rem)}${seg('awake',G.awake)}</div><p class="legend">${[G.deep&&`<b>${hm(G.deep)}</b> deep`,G.light&&`<b>${hm(G.light)}</b> light`,G.rem&&`<b>${hm(G.rem)}</b> REM`,G.awake&&`<b>${hm(G.awake)}</b> awake`].filter(Boolean).join(' · ')}</p></div>`; }
       else html += `<div><p class="legend" style="margin-top:14px">${G.feedback ? esc(String(G.feedback).replace(/_/g,' ').toLowerCase()) : 'Logged by hand'}</p></div>`;
     } else html += `<div class="big"><b>—</b><span>no sleep logged</span></div><div></div>`;
@@ -291,9 +294,18 @@
   }
   function renderGreeting(d){
     const parts=[];
-    if(d.school){ const nx=(d.school.items||[]).filter(i=>!i.done).sort((a,b)=>a.due<b.due?-1:1)[0]; if(nx){ const dd=C.daysBetween(TODAY,nx.due); if(dd<=2) parts.push(`${esc(nx.title)} is due ${dd<=0?'today':dd===1?'tomorrow':'in two days'}`); } }
+    // an exam today comes first, with how much studying went into it this week
+    const items=d.school ? (d.school.items||[]).filter(i=>!i.done) : [];
+    const exam=items.find(i=>i.due===TODAY && /exam|test|quiz|midterm|final/i.test(i.title+' '+(i.type||'')));
+    if(exam){ const min=(d.school.sessions||[]).filter(s=>s.course===exam.course && C.daysBetween(s.date,TODAY)>=0 && C.daysBetween(s.date,TODAY)<7).reduce((n,s)=>n+s.min,0); parts.push(`${esc(exam.title)} is today${min?` and you have put in ${hrs(min)} this week`:' and you have not studied for it this week'}`); }
+    else { const nx=items.sort((a,b)=>a.due<b.due?-1:1)[0]; if(nx){ const dd=C.daysBetween(TODAY,nx.due); if(dd<=2) parts.push(`${esc(nx.title)} is due ${dd<=0?'today':dd===1?'tomorrow':'in two days'}`); } }
     if(d.fin){ const due=d.fin.cats.find(c=>c.due===C.now.getDate()); if(due) parts.push(`${esc((due.bill||due.name).toLowerCase())} wants paying today`); }
-    const s = parts.length ? parts.join('; ') : 'nothing pressing';
+    // last night against the week
+    if(d.H && d.H.days && d.H.days[TODAY] && d.H.days[TODAY].sleep!=null){ const s=+d.H.days[TODAY].sleep, prev=Object.keys(d.H.days).filter(k=>k<TODAY && +d.H.days[k].sleep>0).sort().slice(-7).map(k=>+d.H.days[k].sleep), avg=prev.length>=3?prev.reduce((a,b)=>a+b)/prev.length:null;
+      if(avg && s<avg-0.5) parts.push(`you slept ${s} h, under your week’s ${avg.toFixed(1)}`); else if(s>=7.5) parts.push(`a good ${s} h of sleep`); }
+    // pills, once the evening is here
+    if(d.health && d.health.meds && C.now.getHours()>=18){ const left=d.health.meds-(d.health.pills||[]).length; if(left>0) parts.push(`${left} ${left===1?'pill':'pills'} still to take`); }
+    const s = parts.length ? parts.slice(0,3).join('; ') : 'nothing pressing';
     F('greet').innerHTML = `${C.greeting(C.now)}, Jacob. <em>${s[0].toUpperCase()+s.slice(1)}.</em>`;
   }
 
@@ -314,7 +326,7 @@
     const [cal, fin, H, lib, school, today] = await Promise.all([store.load('calendar'), store.load('finances.'+YM), store.load('health'), store.load('library'), store.load('school'), store.load(TKEY)]);
     if(today) T = today;
     const health = H && H.days ? Object.assign({meds:(H.meds||[]).length}, H.days[TODAY] || {pills:[]}) : null;
-    const d = { fin, health, lib, school };
+    const d = { fin, health, lib, school, H };
     renderReport(H);
     d.day = renderDay(cal);
     renderAffairs(d); renderGreeting(d); renderUpNext(d.day); renderTodo();
