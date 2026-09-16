@@ -91,6 +91,9 @@
   .addl input:focus{outline:none;border-bottom-color:var(--ink)}
   .addl input::placeholder{color:var(--ink-3);font-style:italic}
   .addl .textbtn{font-size:13.5px}
+  .syncline{margin:8px 0 2px;font-size:12.5px;color:var(--ink-3)}
+  .syncline .textbtn{font-size:12.5px;color:var(--ink-2);margin-left:8px} .syncline .textbtn:hover{color:var(--ink)}
+  .syncline .bad{color:var(--ox)}
   .pills .x,.next .x{color:var(--ink-3);font-size:12px;opacity:0;margin-left:10px} .pills li:hover .x,.next li:hover .x,.pills li:focus-within .x,.next li:focus-within .x{opacity:1}
   .next .x{grid-column:1;grid-row:2;justify-self:start;margin:0}
   .pills .empty,.next .empty{padding:12px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif);border:0;display:block}
@@ -165,8 +168,7 @@
   <div class="log">
     <section>
       <h2>Today<small id="todayn"></small></h2>
-
-
+      <p class="syncline" id="syncline" hidden></p>
       <ul class="ledger" id="ledger">
         <li class="head"><span>Reading</span><span>Today</span><span class="l">Last</span><span class="a">30-day avg</span></li>
         <li data-k="sleep"><span class="n">Sleep<small>Hours, and when</small></span>
@@ -329,7 +331,14 @@
   F('nx-date').placeholder = C.dayMonth(C.addDays(C.now, 2));
   renderAll();
   F('newentry').onclick = ()=>F('sleep').focus();
-  store.load(KEY).then(doc => { if (doc && doc.days) { H = doc; H.meds ??= []; H.next ??= []; L = H.days[TODAY] || { pills: [] }; L.pills ??= []; applyLog(); } });
+  const adopt = doc => { H = doc; H.meds ??= []; H.next ??= []; L = H.days[TODAY] || { pills: [] }; L.pills ??= []; applyLog(); };
+  async function renderSync(){
+    const led = await store.ledger(), g = led.garmin; const el=F('syncline'); if(!g && !navigator.onLine){ el.hidden=true; return; }
+    el.hidden=false; const ago = g ? Math.round((Date.now()-new Date(g.last))/60000) : 0;
+    el.innerHTML = (g ? (g.ok ? `Garmin synced ${ago<1?'just now':ago<60?ago+' min ago':Math.round(ago/60)+' h ago'} · ${g.days} days` : `<span class="bad">Garmin sync failed: ${esc(g.error||'')}</span>`) : 'Garmin not synced yet') + ` <button class="textbtn" type="button" id="syncnow">Sync now</button>`;
+    F('syncnow').addEventListener('click', async ()=>{ F('syncnow').textContent='Syncing…'; const r = await store.sync('garmin'); if(r && r.ok){ const doc = await store.load(KEY); if(doc && doc.days) adopt(doc); } renderSync(); });
+  }
+  store.load(KEY).then(doc => { if (doc && doc.days) adopt(doc); renderSync(); });
 </script>
 <script>document.getElementById('menubtn').addEventListener('click', e=>{ const b=document.querySelector('.band'); b.classList.toggle('nav-open'); e.currentTarget.setAttribute('aria-expanded', b.classList.contains('nav-open')); });</script>
 </body>
