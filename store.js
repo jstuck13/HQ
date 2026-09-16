@@ -6,7 +6,7 @@
     get: k => { try { return JSON.parse(localStorage.getItem('hq.' + k)); } catch { return null; } },
     set: (k, v) => { try { localStorage.setItem('hq.' + k, JSON.stringify(v)); } catch {} },
   };
-  const timers = {}, loaded = {};   // a key can be saved only after its load has answered; earlier renders must not clobber the cache or the server
+  const timers = {}, loaded = {}, seen = {}, pending = {};   // a key can be saved only after its load has answered; `seen` is the server's updated_at we last read
 
   async function load(key) {
     const cached = ls.get(key);
@@ -18,7 +18,7 @@
       if (r.status === 401) { window.store.signedOut = true; return cached; }
       if (!r.ok) return cached;
       const doc = await r.json();
-      if (doc && doc.data !== undefined) { ls.set(key, doc.data); return doc.data; }
+      if (doc && doc.data !== undefined) { ls.set(key, doc.data); seen[key] = doc.updated_at; return doc.data; }
       if (cached) { loaded[key] = true; save(key, cached); }   // first run against an empty server: seed it from the cache
       return cached;
     } catch { return cached; }                 // offline or no API (plain static server): cache it is
@@ -27,12 +27,39 @@
   function save(key, doc) {
     if (!loaded[key]) return;                  // still waiting on the server: nothing to save yet
     ls.set(key, doc);
-    clearTimeout(timers[key]);                 // ponytail: debounce, last write wins; no conflict handling for one user
-    timers[key] = setTimeout(() => {
-      fetch(`/api/state?key=${encodeURIComponent(key)}`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(doc) })
-        .catch(() => {});
-    }, 400);
+    clearTimeout(timers[key]); pending[key] = doc;
+    timers[key] = setTimeout(() => put(key), 400);   // debounced; a stale base comes back as a conflict
   }
+  async function put(key, keepalive = false) {
+    const doc = pending[key]; if (doc === undefined) return; delete pending[key]; clearTimeout(timers[key]);
+    try {
+      const headers = { 'content-type': 'application/json' }; if (seen[key]) headers['x-hq-base'] = seen[key];
+      const r = await fetch(`/api/state?key=${encodeURIComponent(key)}`, { method: 'PUT', headers, body: JSON.stringify(doc), keepalive });
+      if (r.status === 409) { const cur = await r.json(); ls.set(key, cur.data); seen[key] = cur.updated_at; changedElsewhere(); return; }
+      if (r.ok) { const j = await r.json().catch(() => ({})); if (j.updated_at) seen[key] = j.updated_at; }
+    } catch {}
+  }
+  // another device wrote this document since the page loaded: take the newer copy and start again from it
+  let told = false;
+  function changedElsewhere() {
+    if (told) return; told = true;
+    const t = document.createElement('div');
+    t.textContent = 'Changed on another device — showing the latest. Redo your last edit if it is missing.';
+    t.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);max-width:calc(100vw - 40px);background:var(--band,#1F3A2E);color:var(--band-ink,#F2ECDF);font:14px/1.4 var(--sans,system-ui);padding:12px 18px;border-radius:10px;box-shadow:0 6px 18px -6px rgba(0,0,0,.3);z-index:50;text-align:center';
+    document.body.appendChild(t);
+    setTimeout(() => location.reload(), 2800);
+  }
+  // back to a tab after a while: if any document moved on the server and nothing is half-typed here, take the fresh copy
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState !== 'visible' || Object.keys(pending).length) return;
+    const keys = Object.keys(seen).filter(k => k !== 'sync'); if (!keys.length) return;   // the sync ledger is read, never edited here
+    for (const key of keys) {
+      try { const r = await fetch(`/api/state?key=${encodeURIComponent(key)}`, { cache: 'no-store' }); if (!r.ok) continue; const doc = await r.json();
+        if (doc && doc.updated_at && new Date(doc.updated_at).getTime() !== new Date(seen[key]).getTime()) { ls.set(key, doc.data); location.reload(); return; } } catch {}
+    }
+  });
+  // leaving the page: flush anything still waiting in the debounce
+  addEventListener('pagehide', () => { for (const key of Object.keys(pending)) put(key, true); });
 
   async function signIn(passcode) {
     const r = await fetch('/api/login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ passcode }) });

@@ -18,9 +18,15 @@ export default async function handler(req, res) {
   if (req.method === 'PUT') {
     const data = req.body;
     if (data === undefined || data === null) return res.status(400).json({ error: 'no body' });
-    await sql`INSERT INTO documents (key, data, updated_at) VALUES (${key}, ${JSON.stringify(data)}::jsonb, now())
-              ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data, updated_at = now()`;
-    return res.status(200).json({ ok: true });
+    // the client says which copy it was editing (x-hq-base = updated_at it loaded); a newer copy on the server means another device wrote — refuse, hand it back
+    const base = req.headers['x-hq-base'];
+    if (base) {
+      const cur = await sql`SELECT data, updated_at FROM documents WHERE key = ${key}`;
+      if (cur[0] && new Date(cur[0].updated_at).getTime() !== new Date(base).getTime()) return res.status(409).json({ conflict: true, data: cur[0].data, updated_at: cur[0].updated_at });
+    }
+    const rows = await sql`INSERT INTO documents (key, data, updated_at) VALUES (${key}, ${JSON.stringify(data)}::jsonb, now())
+              ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data, updated_at = now() RETURNING updated_at`;
+    return res.status(200).json({ ok: true, updated_at: rows[0].updated_at });
   }
   res.setHeader('Allow', 'GET, PUT');
   return res.status(405).end();
