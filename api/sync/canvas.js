@@ -5,8 +5,9 @@ import { syncRoute, fetchAll } from './_run.js';
 const iso = d => d.toISOString().slice(0, 10);
 
 export default syncRoute('canvas', async ({ getDoc, putDoc }) => {
-  const base = (process.env.CANVAS_URL || '').replace(/\/$/, ''), token = process.env.CANVAS_TOKEN;
-  if (!base || !token) throw new Error('CANVAS_URL and CANVAS_TOKEN are not set');
+  const base = (process.env.CANVAS_URL || process.env.CANVAS_LINK || '').trim().replace(/\/$/, ''), token = (process.env.CANVAS_TOKEN || '').trim();
+  if (!base || !token) throw new Error('CANVAS_URL (or CANVAS_LINK) and CANVAS_TOKEN are not set');
+  if (!/^https?:\/\//.test(base)) throw new Error('CANVAS_URL should start with https://');
   const headers = { Authorization: `Bearer ${token}` };
 
   const courses = await fetchAll(`${base}/api/v1/courses?enrollment_state=active&per_page=50`, headers);
