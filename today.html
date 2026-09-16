@@ -125,7 +125,8 @@
   .todo .w{font-size:12.5px;color:var(--ink-3)}
   .todo .w.due{color:var(--ox)}
   .todo .w.from{font-style:italic;font-family:var(--serif)}
-  .todo .x{opacity:0} .todo li:hover .x,.todo li:focus-within .x{opacity:1} .todo .x:hover{color:var(--ox)}
+  .todo li{position:relative} .todo .x{opacity:0;position:absolute;right:0;top:50%;transform:translateY(-50%);background:var(--paper);padding-left:10px}   /* out of the flow, so the time sits flush right */
+  .todo li:hover .x,.todo li:focus-within .x{opacity:1} .todo .x:hover{color:var(--ox)}
   .addt{display:grid;grid-template-columns:1fr auto;gap:12px;padding:12px 0;align-items:baseline}
   .addt input{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0}
   .addt input:focus{outline:none;border-bottom-color:var(--ink)}
