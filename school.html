@@ -11,41 +11,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="hq.css">
 <style>
-  :root{
-    --band:#1F3A2E; --band-ink:#F2ECDF; --band-muted:#B9C9BE;
-    --paper:#F5F0E6; --card:#FFFDF9; --ink:#1E1B16; --ink-2:#4D463C; --ink-3:#6A6256; --rule:#D3C9B6; --ox:#7A2E2B; --study:#ECE6F3;
-    --serif:"Libre Caslon Text",Georgia,serif; --sans:"Figtree",system-ui,sans-serif;
-    --shadow:0 1px 2px rgba(30,27,22,.05), 0 6px 18px -6px rgba(30,27,22,.12);
-  }
-  /* lamplight: after eight in the evening the paper warms a shade and the ink softens (clock.js sets it) */
-  :root[data-light=evening]{--paper:#EBE1CD; --paper-2:#E1D5BE; --tint:#DDD1B9; --card:#F8F0E0; --ink:#2B2419; --ink-2:#5A4D3F; --ink-3:#7A6D5D; --rule:#CDBFA5; --today:#EBE1CD}
-  *{box-sizing:border-box}
-  html{color-scheme:light}
-  body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;font-variant-numeric:oldstyle-nums tabular-nums}
-  ::selection{background:var(--band);color:var(--band-ink)}
-  :focus-visible{outline:2px solid var(--ox);outline-offset:3px}
-  a{color:inherit;text-decoration:none}
-  button,input,select{font:inherit;color:inherit;background:none;border:0;padding:0}
-  button{cursor:pointer}
-  [hidden]{display:none!important}
-  h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0}
-  ul{list-style:none;margin:0;padding:0}
-  .ic{width:16px;height:16px;flex:none}
 
-  .band{background:var(--band);color:var(--band-ink)}
-  .band .in{max-width:1180px;margin:0 auto;padding:16px 40px 22px}
-  .row{display:flex;align-items:center;gap:26px}
-  .mark{font-family:var(--serif);font-size:20px;letter-spacing:.14em;font-weight:700}
-  .date{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted)}
-  nav{display:flex;gap:20px;font-size:13.5px;letter-spacing:.04em;color:var(--band-muted);margin-left:10px}
-  nav a:hover{color:var(--band-ink)}
-  nav a[aria-current]{color:var(--band-ink);border-bottom:1px solid var(--band-ink);padding-bottom:2px}
-  .row .right{margin-left:auto;display:flex;gap:18px;align-items:center;font-size:13.5px}
-  .textbtn{display:inline-flex;align-items:center;gap:8px;letter-spacing:.04em;border-bottom:1px solid transparent;transition:border-color .15s;white-space:nowrap}
-  .textbtn:hover{border-color:currentColor}
-  .ib{color:var(--band-muted)} .ib:hover{color:var(--band-ink)}
-  .menu{display:none}
   .mast{margin-top:20px;padding-top:18px;border-top:1px solid rgba(242,236,223,.28);display:flex;align-items:baseline;gap:22px;flex-wrap:wrap}
   h1{font-size:32px;line-height:1.3}
   .mast .sub{font-family:var(--serif);font-style:italic;color:var(--band-muted)}
@@ -53,8 +21,6 @@
 
   main{max-width:1180px;margin:0 auto;padding:34px 40px 44px;display:grid;grid-template-columns:8fr 4fr;grid-template-rows:auto 1fr;gap:0 56px}
   main > aside{grid-column:2;grid-row:1/3}
-  h2{font-size:22px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:4px;display:flex;align-items:baseline;gap:12px}
-  h2 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
   h3{font-size:17px;display:flex;align-items:baseline;gap:10px}
   h3 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
 
@@ -74,7 +40,7 @@
   .next .sess .stop{color:var(--ox)}
   .empty{padding:14px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif);display:block}
   .empty{display:block!important;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
-  .empty::before{content:"";display:block;width:160px;height:12px;margin:0 auto 10px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='12' viewBox='0 0 160 12'%3E%3Cpath d='M0 6.5h62M98 6.5h62' stroke='%23D3C9B6'/%3E%3Cpath d='M80 1.5l5 5-5 5-5-5z' fill='%236A6256'/%3E%3C/svg%3E") center/160px 12px no-repeat}
+  .empty::before{content:"";display:block;width:160px;height:12px;margin:0 auto 10px;background:var(--ornament)}
 
   /* course tiles */
   .courses{margin-top:40px}
@@ -141,14 +107,10 @@
   .syncline .textbtn{font-size:12.5px;color:var(--ink-2);margin-left:8px} .syncline .textbtn:hover{color:var(--ink)}
   .syncline .bad{color:var(--ox)}
   .ledger .w a{border-bottom:1px solid var(--rule)} .ledger .w a:hover{border-color:var(--ink)}
-  .foot{max-width:1180px;margin:0 auto;padding:0 40px 32px;font-size:12.5px;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
   .foot .textbtn{font-style:normal;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:8px} .foot .textbtn.ox{color:var(--ox)} .foot .textbtn:hover{color:var(--ink)}
 
   @media (prefers-reduced-motion:reduce){.textbtn{transition:none}}
   @media (max-width:1000px){main{grid-template-columns:1fr;grid-template-rows:auto;gap:34px} main > aside{grid-column:1;grid-row:auto} .courses{order:3;margin-top:0} .tiles{grid-template-columns:1fr}}
-  @media (max-width:900px){
-    .band .in{padding:14px 20px 20px} .date{display:none} .row{flex-wrap:wrap;gap:14px} .menu{display:grid;place-items:center;width:32px;height:32px;color:var(--band-ink)} nav{display:none;order:9;width:100%;flex-wrap:wrap;gap:10px 18px;margin:12px 0 0;padding-top:12px;border-top:1px solid rgba(242,236,223,.28)} .band.nav-open nav{display:flex} h1{font-size:26px}
-  }
   @media (max-width:760px){
     main{padding:24px 20px 36px} .foot{padding:0 20px 28px}
     .next{grid-template-columns:1fr} .next .sess{grid-column:1;grid-row:auto;align-items:flex-start;text-align:left}
@@ -223,25 +185,23 @@
 <p class="foot">Courses, items, links and sessions are saved to your HQ account (and cached in this browser). <button class="textbtn" type="button" id="clear-ask">Clear everything</button><span id="clear-sure" hidden>Remove every course, item, link and session? <button class="textbtn ox" type="button" id="clear-yes">Yes, clear</button> <button class="textbtn" type="button" id="clear-no">Keep them</button></span></p>
 
 <script src="clock.js"></script>
+<script src="hq.js"></script>
 <script src="store.js"></script>
 <script src="bell.js"></script>
 <script src="search.js"></script>
 <script>
   // ---- state ----
   // ponytail: localStorage; becomes the school store later.
-  const F = id => document.getElementById(id);
   const C = clock, TODAY = C.today;
   const inDays = n => C.iso(C.addDays(C.now, n));
   const seed = () => ({ courses: [], items: [], sessions: [] });
   let S = seed();
   const save = () => store.save('school', S);
 
-  const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const course = id => S.courses.find(c=>c.id===id);
   const days = iso => C.daysBetween(TODAY, iso);
   const dmy = iso => { const d=C.fromISO(iso); return `${C.monthShort(d)} ${d.getDate()}`; };   // Sep 15
   const dayOf = t => C.parseDay(t);
-  const hrs = m => m>=60 ? (m%60 ? `${Math.floor(m/60)} h ${m%60}` : `${m/60} h`) : `${m} min`;
   const weekMin = cid => S.sessions.filter(s=>s.course===cid && days(s.date)>-7 && days(s.date)<=0).reduce((n,s)=>n+s.min,0);
   const dueWord = iso => { const d=days(iso); return d<0?'overdue':d===0?'due today':d===1?'due tomorrow':d<7?'due '+C.dayShort(C.fromISO(iso)):'due '+dmy(iso); };
 
@@ -349,6 +309,5 @@
   render();
   store.load('school').then(doc => { if (doc) { S = doc; render(); } else save(); renderSync(); });
 </script>
-<script>document.getElementById('menubtn').addEventListener('click', e=>{ const b=document.querySelector('.band'); b.classList.toggle('nav-open'); e.currentTarget.setAttribute('aria-expanded', b.classList.contains('nav-open')); });</script>
 </body>
 </html>

@@ -11,43 +11,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="hq.css">
 <style>
-  :root{
-    --band:#1F3A2E; --band-ink:#F2ECDF; --band-muted:#B9C9BE;
-    --paper:#F5F0E6; --card:#FFFDF9; --ink:#1E1B16; --ink-2:#4D463C; --ink-3:#6A6256; --rule:#D3C9B6; --ox:#7A2E2B;
-    --a-cal:#E9EEF3; --a-fit:#F6E6DC; --a-health:#F5E4E6; --a-study:#ECE6F3; --today:#F5F0E6;
-    --serif:"Libre Caslon Text",Georgia,serif; --sans:"Figtree",system-ui,sans-serif; --hour:44px;
-    --shadow:0 1px 2px rgba(30,27,22,.05), 0 6px 18px -6px rgba(30,27,22,.12);
-  }
-  /* lamplight: after eight in the evening the paper warms a shade and the ink softens (clock.js sets it) */
-  :root[data-light=evening]{--paper:#EBE1CD; --paper-2:#E1D5BE; --tint:#DDD1B9; --card:#F8F0E0; --ink:#2B2419; --ink-2:#5A4D3F; --ink-3:#7A6D5D; --rule:#CDBFA5; --today:#EBE1CD}
-  *{box-sizing:border-box}
-  html{color-scheme:light}
-  body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;font-variant-numeric:oldstyle-nums tabular-nums}
-  ::selection{background:var(--band);color:var(--band-ink)}
-  :focus-visible{outline:2px solid var(--ox);outline-offset:3px}
-  a{color:inherit;text-decoration:none}
-  button,input,select,textarea{font:inherit;color:inherit;background:none;border:0;padding:0}
-  [hidden]{display:none!important}
-  button{cursor:pointer}
-  h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0}
-  ul{list-style:none;margin:0;padding:0}
-  .ic{width:16px;height:16px;flex:none}
 
   /* band, as on the home */
-  .band{background:var(--band);color:var(--band-ink)}
-  .band .in{max-width:1180px;margin:0 auto;padding:16px 40px 22px}
-  .row{display:flex;align-items:center;gap:26px}
-  .mark{font-family:var(--serif);font-size:20px;letter-spacing:.14em;font-weight:700}
-  .date{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted)}
-  nav{display:flex;gap:20px;font-size:13.5px;letter-spacing:.04em;color:var(--band-muted);margin-left:10px}
-  nav a:hover{color:var(--band-ink)}
-  nav a[aria-current]{color:var(--band-ink);border-bottom:1px solid var(--band-ink);padding-bottom:2px}
-  .row .right{margin-left:auto;display:flex;gap:18px;align-items:center;font-size:13.5px}
-  .textbtn{display:inline-flex;align-items:center;gap:8px;letter-spacing:.04em;border-bottom:1px solid transparent;transition:border-color .15s;white-space:nowrap}
-  .textbtn:hover{border-color:currentColor}
-  .ib{color:var(--band-muted)} .ib:hover{color:var(--band-ink)}
-  .menu{display:none}
   .mast{margin-top:20px;padding-top:18px;border-top:1px solid rgba(242,236,223,.28);display:flex;align-items:baseline;gap:22px;flex-wrap:wrap}
   h1{font-size:32px;line-height:1.3}
   .mast .nav{display:flex;gap:16px;align-items:center;align-self:center;font-size:13.5px;letter-spacing:.04em;color:var(--band-muted)}
@@ -58,8 +25,6 @@
 
   main{max-width:1180px;margin:0 auto;padding:34px 40px 44px;display:grid;grid-template-columns:1.8fr 7.4fr 2.8fr;gap:36px}
   main > *{min-width:0}
-  h2{font-size:22px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:4px;display:flex;align-items:baseline;gap:12px}
-  h2 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
 
   /* left rail: mini month + filters */
   .mini{width:100%;table-layout:fixed;border-collapse:collapse;margin-top:12px;font-size:13px}
@@ -139,7 +104,7 @@
   .ledger .d{color:var(--ink-3);font-size:12.5px;white-space:nowrap}
   .ledger .empty{padding:14px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif);cursor:default;display:block}
   .ledger .empty{display:block!important;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
-  .ledger .empty::before{content:"";display:block;width:160px;height:12px;margin:0 auto 10px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='12' viewBox='0 0 160 12'%3E%3Cpath d='M0 6.5h62M98 6.5h62' stroke='%23D3C9B6'/%3E%3Cpath d='M80 1.5l5 5-5 5-5-5z' fill='%236A6256'/%3E%3C/svg%3E") center/160px 12px no-repeat}
+  .ledger .empty::before{content:"";display:block;width:160px;height:12px;margin:0 auto 10px;background:var(--ornament)}
   .right h2{font-size:20px} .right h2 small{white-space:nowrap}
   .syncline{margin:0 0 14px;font-size:12.5px;color:var(--ink-3)}
   .syncline .textbtn{font-size:12.5px;color:var(--ink-2);margin-left:8px} .syncline .textbtn:hover{color:var(--ink)}
@@ -183,7 +148,7 @@
   .entry .acts .textbtn{color:var(--ink);font-size:14px}
   .entry .empty{padding:14px 0 0;color:var(--ink-3);font-style:italic;font-family:var(--serif);margin:0}
   .entry .empty{display:block!important;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
-  .entry .empty::before{content:"";display:block;width:160px;height:12px;margin:0 auto 10px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='12' viewBox='0 0 160 12'%3E%3Cpath d='M0 6.5h62M98 6.5h62' stroke='%23D3C9B6'/%3E%3Cpath d='M80 1.5l5 5-5 5-5-5z' fill='%236A6256'/%3E%3C/svg%3E") center/160px 12px no-repeat}
+  .entry .empty::before{content:"";display:block;width:160px;height:12px;margin:0 auto 10px;background:var(--ornament)}
 
   /* categories: add one inline */
   .newcat{display:none;padding:10px 0 4px;border-bottom:1px dotted var(--rule)}
@@ -198,15 +163,11 @@
   .clear{margin:18px 0 0;font-size:12.5px;color:var(--ink-3)}
   .clear .textbtn{font-size:12.5px;color:var(--ink-3);margin-right:8px} .clear .textbtn.ox{color:var(--ox)} .clear .textbtn:hover{color:var(--ink)}
   .clear b{font-weight:400;color:var(--ink)}
-  .foot{max-width:1180px;margin:0 auto;padding:0 40px 32px;font-size:12.5px;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
 
   @media (prefers-reduced-motion:reduce){.ev,.textbtn{transition:none}}
   @media (max-width:1100px){
     main{grid-template-columns:1fr 3fr;gap:32px}
     .right{grid-column:1/-1}
-  }
-  @media (max-width:900px){
-    .band .in{padding:14px 20px 20px} .date{display:none} .row{flex-wrap:wrap;gap:14px} .menu{display:grid;place-items:center;width:32px;height:32px;color:var(--band-ink)} nav{display:none;order:9;width:100%;flex-wrap:wrap;gap:10px 18px;margin:12px 0 0;padding-top:12px;border-top:1px solid rgba(242,236,223,.28)} .band.nav-open nav{display:flex} h1{font-size:26px}
   }
   @media (max-width:760px){
     main > aside:first-child{order:3} main > section{order:2} main > .right{order:1}
@@ -304,6 +265,7 @@
 <p class="foot">Entries, categories and notes are saved to your HQ account (and cached in this browser).</p>
 
 <script src="clock.js"></script>
+<script src="hq.js"></script>
 <script src="store.js"></script>
 <script src="bell.js"></script>
 <script src="search.js"></script>
@@ -353,11 +315,9 @@
   const save = () => store.save('calendar', S);
 
   const cat = id => S.cats.find(c=>c.id===id) || S.cats[0];
-  const h12 = h => { const hr=Math.floor(h), m=Math.round((h%1)*60); return `${hr%12||12}.${String(m).padStart(2,'0')} ${hr<12?'am':'pm'}`; };
   const parse = t => { const m=/(\d{1,2})[.:](\d{2})\s*(am|pm)?/i.exec(t); if(!m) return null; let h=+m[1]%12; if((m[3]||'').toLowerCase()==='pm') h+=12; return h+(+m[2])/60; };
   const dur = (a,b) => { const m=Math.round((b-a)*60); return m>=60 ? (m%60 ? `${Math.floor(m/60)} h ${m%60}` : `${m/60} h`) : `${m} min`; };
   const short = t => t.length>14 ? t.split(/ — |, /)[0].slice(0,16) : t;
-  const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const wd = d => (C.fromISO(d).getDay()+6)%7;                     // Mon=0
   const isWeekly = s => (s.rep||[]).length > 0;                    // any ticked day means it comes back every week
   const repDays = s => [...new Set([wd(s.date), ...(s.rep||[])])].sort();
@@ -365,7 +325,6 @@
   const occurs = (s,d) => isWeekly(s) ? (d>=s.date && repDays(s).includes(wd(d))) : s.date===d;
   const occ = d => S.series.filter(s=>occurs(s,d) && !S.hidden.includes(s.cat)).sort((a,b)=>a.start-b.start);
   const key = (s,d) => `${s.id}@${d}`;
-  const F = id => document.getElementById(id);
 
   let weekStart = thisMon, selDay = TODAY, open = null, view = 'week';   // open = {id, d}
   const dateOf = i => onDay(weekStart, i);
@@ -603,6 +562,5 @@
   store.load('calendar').then(doc => { if (doc) { S = doc; migrate(); renderAll(); reset(); } else save(); if(!store.signedOut) renderSync();
     const q = new URLSearchParams(location.search); if(q.get('d')){ const e=q.get('e'); if(e && S.series.some(s=>String(s.id)===e)) openEntry(idOf(e), q.get('d')); else goto(q.get('d')); history.replaceState(null,'',location.pathname); } });
 </script>
-<script>document.getElementById('menubtn').addEventListener('click', e=>{ const b=document.querySelector('.band'); b.classList.toggle('nav-open'); e.currentTarget.setAttribute('aria-expanded', b.classList.contains('nav-open')); });</script>
 </body>
 </html>
