@@ -301,6 +301,7 @@
 <script src="clock.js"></script>
 <script src="store.js"></script>
 <script src="bell.js"></script>
+<script src="search.js"></script>
 <script>
   // ---- data model ----
   // A series is one entry. rep = weekdays it repeats on (Mon=0); an empty rep is a one-off on `date`.
@@ -561,7 +562,8 @@
   }
   function renderAll(){ renderCats(); renderMini(); renderGrid(); renderMonth(); renderLedger(); renderEntry(); }
   renderAll(); reset();
-  store.load('calendar').then(doc => { if (doc) { S = doc; migrate(); renderAll(); reset(); } else save(); if(!store.signedOut) renderSync(); });
+  store.load('calendar').then(doc => { if (doc) { S = doc; migrate(); renderAll(); reset(); } else save(); if(!store.signedOut) renderSync();
+    const q = new URLSearchParams(location.search); if(q.get('d')){ const e=q.get('e'); if(e && S.series.some(s=>String(s.id)===e)) openEntry(idOf(e), q.get('d')); else goto(q.get('d')); history.replaceState(null,'',location.pathname); } });
 </script>
 <script>document.getElementById('menubtn').addEventListener('click', e=>{ const b=document.querySelector('.band'); b.classList.toggle('nav-open'); e.currentTarget.setAttribute('aria-expanded', b.classList.contains('nav-open')); });</script>
 </body>

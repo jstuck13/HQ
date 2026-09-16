@@ -208,6 +208,7 @@
 <script src="clock.js"></script>
 <script src="store.js"></script>
 <script src="bell.js"></script>
+<script src="search.js"></script>
 <script>
   // ---- state ----
   // One document, 'library', via store.js (server + localStorage cache). Cover art by ISBN from Open Library.
@@ -309,7 +310,9 @@
   F('clear-no').addEventListener('click', ()=>{ F('clear-ask').hidden=false; F('clear-sure').hidden=true; });
   F('clear-yes').addEventListener('click', ()=>{ S={open:null, books:[]}; F('clear-ask').hidden=false; F('clear-sure').hidden=true; render(); });
   render();
-  store.load('library').then(doc => { if (doc) { S = doc; render(); } else save(); });
+  store.load('library').then(doc => { if (doc) { S = doc; } else save();
+    const o = new URLSearchParams(location.search).get('open'); if(o && S.books.some(b=>String(b.id)===o)){ S.open = isNaN(+o) ? o : +o; history.replaceState(null,'',location.pathname); }
+    render(); });
 </script>
 <script>document.getElementById('menubtn').addEventListener('click', e=>{ const b=document.querySelector('.band'); b.classList.toggle('nav-open'); e.currentTarget.setAttribute('aria-expanded', b.classList.contains('nav-open')); });</script>
 </body>

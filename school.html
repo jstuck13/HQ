@@ -225,6 +225,7 @@
 <script src="clock.js"></script>
 <script src="store.js"></script>
 <script src="bell.js"></script>
+<script src="search.js"></script>
 <script>
   // ---- state ----
   // ponytail: localStorage; becomes the school store later.
@@ -264,7 +265,7 @@
     const open = S.items.filter(i=>!i.done).sort((a,b)=>score(b)-score(a));
     const tests = S.items.filter(i=>i.type==='test' && !i.done).sort((a,b)=>a.due<b.due?-1:1)[0];
     const doneMin = S.courses.reduce((n,c)=>n+weekMin(c.id),0);
-    F('sub').innerHTML = `${C.now.getMonth()>=7||C.now.getMonth()<=0?'Autumn':'Spring'} term · ${S.courses.length} courses${tests?` · <b>${esc(course(tests.course)?.name||'')} ${tests.title.toLowerCase().startsWith('exam')?'exam':'test'} in ${days(tests.due)} days</b>`:''} · ${hrs(doneMin)} studied this week`;
+    F('sub').innerHTML = `${C.now.getMonth()>=7||C.now.getMonth()<=0?'Autumn':'Spring'} term · ${S.courses.length} courses${tests?` · <b>${esc(course(tests.course)?.name||'')} ${tests.title.toLowerCase().startsWith('exam')?'exam':'test'} ${days(tests.due)<=0?'today':days(tests.due)===1?'tomorrow':'in '+days(tests.due)+' days'}</b>`:''} · ${hrs(doneMin)} studied this week`;
 
     // study next
     const top = open[0];
