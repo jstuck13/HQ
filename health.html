@@ -285,7 +285,7 @@
         <svg viewBox="0 0 ${W} ${H_}" role="img" aria-label="${s.name}, last 30 days, ${s.fmt(lo)} to ${s.fmt(hi)}, average ${s.fmt(avg)}">
           <line class="ax" x1="${P.l}" x2="${W-P.r}" y1="${H_-P.b}" y2="${H_-P.b}"/>
           <line class="avg" x1="${P.l}" x2="${W-P.r}" y1="${y(avg).toFixed(1)}" y2="${y(avg).toFixed(1)}"/>
-          <path class="ln" d="${path}"/>
+          <path class="ln" pathLength="1" d="${path}"/>
           ${pts.map(p=>`<circle class="pt" r="3" cx="${x(p.i).toFixed(1)}" cy="${y(p.v).toFixed(1)}"/>`).join('')}
           <circle class="dot ${last.d===TODAY?'':'past'}" r="4.5" cx="${x(last.i).toFixed(1)}" cy="${y(last.v).toFixed(1)}"/>
           <text class="tk" x="${P.l}" y="${H_-6}">${fmtDay(days[0])}</text><text class="tk" x="${W-P.r}" y="${H_-6}" text-anchor="end">today</text>
@@ -339,7 +339,7 @@
     el.innerHTML = (g ? (g.ok ? `Garmin synced ${ago<1?'just now':ago<60?ago+' min ago':Math.round(ago/60)+' h ago'} · ${g.days} days` : `<span class="bad">Garmin sync failed: ${esc(g.error||'')}</span>`) : 'Garmin not synced yet') + ` <button class="textbtn" type="button" id="syncnow">Sync now</button>`;
     F('syncnow').addEventListener('click', async ()=>{ F('syncnow').textContent='Syncing…'; const r = await store.sync('garmin'); if(r && r.ok){ const doc = await store.load(KEY); if(doc && doc.days) adopt(doc); } renderSync(); });
   }
-  store.load(KEY).then(doc => { if (doc && doc.days) adopt(doc); renderSync(); });
+  store.load(KEY).then(doc => { if (doc && doc.days) adopt(doc); renderSync(); C.countIn('.chart .fig'); });
 </script>
 <script>document.getElementById('menubtn').addEventListener('click', e=>{ const b=document.querySelector('.band'); b.classList.toggle('nav-open'); e.currentTarget.setAttribute('aria-expanded', b.classList.contains('nav-open')); });</script>
 </body>

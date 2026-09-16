@@ -118,6 +118,7 @@
   .todo input[type=checkbox]:checked + label{color:var(--ink-3);background:linear-gradient(currentColor,currentColor) left 58%/100% 1px no-repeat}
   .todo .w{font-size:12.5px;color:var(--ink-3)}
   .todo .w.due{color:var(--ox)}
+  .todo .w.from{font-style:italic;font-family:var(--serif)}
   .todo .x{opacity:0} .todo li:hover .x,.todo li:focus-within .x{opacity:1} .todo .x:hover{color:var(--ox)}
   .addt{display:grid;grid-template-columns:1fr auto;gap:12px;padding:12px 0;align-items:baseline}
   .addt input{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0}
@@ -311,11 +312,12 @@
 
   // ---- to do: the home's own document, one per day ----
   const TKEY = 'today.' + TODAY; let T = {items:[]};
+  const YDAY = C.iso(C.addDays(C.fromISO(TODAY),-1));
   const saveT = () => store.save(TKEY, T);
   function renderTodo(){
     const done=T.items.filter(i=>i.done).length;
     F('todon').textContent = T.items.length ? `${done} of ${T.items.length}` : 'nothing yet';
-    F('todo').innerHTML = T.items.length ? T.items.map((i,k)=>`<li><input type="checkbox" id="t${k}" ${i.done?'checked':''} data-k="${k}"><label for="t${k}">${esc(i.text)}</label><button class="w x" type="button" data-rm="${k}" aria-label="Remove">remove</button></li>`).join('') : '<li class="empty">Nothing on the list. Add the one thing today needs.</li>';
+    F('todo').innerHTML = T.items.length ? T.items.map((i,k)=>`<li><input type="checkbox" id="t${k}" ${i.done?'checked':''} data-k="${k}"><label for="t${k}">${esc(i.text)}</label>${i.from?`<span class="w from">from ${i.from===YDAY?'yesterday':C.short(C.fromISO(i.from))}</span>`:''}<button class="w x" type="button" data-rm="${k}" aria-label="Remove">remove</button></li>`).join('') : '<li class="empty">Nothing on the list. Add the one thing today needs.</li>';
   }
   F('todo').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ T.items[+e.target.dataset.k].done=e.target.checked; saveT(); renderTodo(); } });
   F('todo').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ T.items.splice(+b.dataset.rm,1); saveT(); renderTodo(); } });
@@ -325,11 +327,16 @@
   (async () => {
     const [cal, fin, H, lib, school, today] = await Promise.all([store.load('calendar'), store.load('finances.'+YM), store.load('health'), store.load('library'), store.load('school'), store.load(TKEY)]);
     if(today) T = today;
+    else {   // first look at a new day: unfinished items from the last few days come along, marked
+      for(let i=1;i<=3 && !T.items.length;i++){ const k=C.iso(C.addDays(C.fromISO(TODAY),-i)), prev=await store.load('today.'+k); if(prev && prev.items){ T.items = prev.items.filter(x=>!x.done).map(x=>({text:x.text, done:false, from:x.from||k})); break; } }
+      if(T.items.length) saveT();
+    }
     const health = H && H.days ? Object.assign({meds:(H.meds||[]).length}, H.days[TODAY] || {pills:[]}) : null;
     const d = { fin, health, lib, school, H };
     renderReport(H);
     d.day = renderDay(cal);
     renderAffairs(d); renderGreeting(d); renderUpNext(d.day); renderTodo();
+    C.countIn('.affairs .v, .rep .big b, .rep .facts b');
     // the now line, "in 40 min" and the live event move with the clock
     setInterval(() => { const n=new Date(); if(C.iso(n)!==TODAY){ location.reload(); return; } NOW = n.getHours()+n.getMinutes()/60; d.day = renderDay(cal); renderAffairs(d); renderUpNext(d.day); }, 60000);
     F('foot').textContent = store.signedOut ? 'Showing this browser’s copy. Sign in on the welcome page to sync.' : 'Everything here is read from the other pages; only the to-do list lives on Today.';
