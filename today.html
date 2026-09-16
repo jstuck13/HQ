@@ -64,6 +64,15 @@
   .ev small{color:var(--ink-3);font-size:12.5px}
   .now{position:absolute;left:46px;right:0;height:0;border-top:1.5px solid var(--ox);z-index:2;pointer-events:none}
   .now::after{content:attr(data-t);position:absolute;right:0;top:-21px;font-family:var(--serif);font-size:12px;color:var(--band-ink);background:var(--ox);padding:2px 8px;border-radius:6px}
+  .ev.live b{color:var(--ox)}
+  .card.clear{padding:34px 28px 32px;text-align:center}
+  .card.clear b{display:block;font-family:var(--serif);font-weight:400;font-style:italic;font-size:22px;margin-bottom:6px}
+  .card.clear small{color:var(--ink-3);font-size:13px}
+  .card.clear a{border-bottom:1px solid var(--rule)} .card.clear a:hover{border-color:var(--ink)}
+  .upnext{margin:10px 0 0;font-size:14px;color:var(--band-muted);display:flex;flex-wrap:wrap;gap:6px 22px}
+  .upnext .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--band-ink);margin-right:8px}
+  .upnext b{font-family:var(--serif);font-weight:400;color:var(--band-ink)}
+  .upnext .t{white-space:nowrap}
 
   .affairs li{display:grid;grid-template-columns:1fr auto;gap:2px 20px;padding:13px 0;border-bottom:1px solid var(--rule);align-items:baseline}
   .affairs .n{grid-column:1;grid-row:1;font-family:var(--serif);font-size:17px;border-bottom:1px solid transparent}
@@ -113,7 +122,7 @@
         <button class="ib menu" type="button" aria-label="Menu" aria-expanded="false" id="menubtn"><svg class="ic"><use href="icons.svg#menu"/></svg></button>
       </div>
     </div>
-    <div class="mast"><h1 id="greet">Good morning, Jacob.</h1></div>
+    <div class="mast"><h1 id="greet">Good morning, Jacob.</h1><p class="upnext" id="upnext" hidden></p></div>
   </div>
 </header>
 
@@ -146,7 +155,7 @@
   const h12 = h => { const hr=Math.floor(h), m=Math.round((h%1)*60); return `${hr%12||12}.${String(m).padStart(2,'0')} ${hr<12?'am':'pm'}`; };
   const hrs = m => m>=60 ? (m%60 ? `${Math.floor(m/60)} h ${m%60}` : `${m/60} h`) : `${m} min`;
   const $0 = n => (n<0?'−':'') + '$' + Math.round(Math.abs(n)).toLocaleString('en-US');
-  const NOW = C.now.getHours() + C.now.getMinutes()/60;
+  let NOW = C.now.getHours() + C.now.getMinutes()/60;
   const wd = d => (C.fromISO(d).getDay()+6)%7;
   const YM = TODAY.slice(0,7);
 
@@ -160,11 +169,13 @@
       const isWeekly = s => (s.rep||[]).length>0, repDays = s => [...new Set([wd(s.date), ...(s.rep||[])])];
       const occurs = s => isWeekly(s) ? (TODAY>=s.date && repDays(s).includes(wd(TODAY))) : s.date===TODAY;
       list = cal.series.filter(s=>s.date && occurs(s) && !(cal.hidden||[]).includes(s.cat)).sort((a,b)=>a.start-b.start);
-      html += list.map(s=>`<a href="calendar.html" class="ev" style="--c:${cat(s.cat).tint};top:calc(var(--hour)*${s.start-8} + 9px);height:calc(var(--hour)*${s.end-s.start} - 4px)"><b>${esc(s.title)}</b>${s.end-s.start>=0.75&&s.sub?`<small>${esc(s.sub)}</small>`:''}</a>`).join('');
+      html += list.map(s=>`<a href="calendar.html" class="ev ${s.start<=NOW&&s.end>NOW?'live':''}" style="--c:${cat(s.cat).tint};top:calc(var(--hour)*${s.start-8} + 9px);height:calc(var(--hour)*${s.end-s.start} - 4px)"><b>${esc(s.title)}</b>${s.end-s.start>=0.75&&s.sub?`<small>${esc(s.sub)}</small>`:''}</a>`).join('');
     }
-    if(NOW>=8 && NOW<=20) html += `<div class="now" style="top:calc(var(--hour)*${NOW-8} + 9px)" data-t="${C.time(C.now)}"></div>`;
-    tl.innerHTML = html;
-    F('dayn').textContent = cal ? `${list.length} ${list.length===1?'item':'items'} · 8 am to 8 pm` : 'open Calendar to plan the day';
+    if(NOW>=8 && NOW<=20) html += `<div class="now" style="top:calc(var(--hour)*${NOW-8} + 9px)" data-t="${C.time(new Date())}"></div>`;
+    const card = tl.parentElement; card.classList.toggle('clear', !list.length); card.querySelector('.clearmsg')?.remove();
+    tl.hidden = !list.length; tl.innerHTML = html;
+    if(!list.length) card.insertAdjacentHTML('beforeend', `<div class="clearmsg"><b>A clear day.</b><small>Nothing on the calendar · <a href="calendar.html">plan it</a></small></div>`);
+    F('dayn').textContent = cal ? (list.length ? `${list.length} ${list.length===1?'item':'items'} · 8 am to 8 pm` : C.time(new Date())) : 'open Calendar to plan the day';
     return list;
   }
 
@@ -184,7 +195,7 @@
     if(d.health){ const L=d.health, meds=L.meds||0, pills=(L.pills||[]).length, total=meds?4:3, n=['sleep','weight','hr'].filter(k=>L[k]!=null).length+(meds&&pills>=meds?1:0);
       const note = L.sleep ? `Slept ${L.sleep} h${L.hr?' · resting pulse '+L.hr:''}` : 'Nothing logged yet today';
       rows.push(row('Health','health.html',note,`${n} of ${total}`,`logged today${meds&&pills<meds?' · '+(meds-pills)+(meds-pills===1?' pill':' pills')+' to take':''}`, false));
-    } else rows.push(row('Health','health.html','Nothing logged yet today','0 of 4','logged today'));
+    } else rows.push(row('Health','health.html','Nothing logged yet today','0 of 3','logged today'));
     // library
     if(d.lib){ const b=(d.lib.books||[]).find(x=>x.shelf==='reading'), toread=(d.lib.books||[]).filter(x=>x.shelf==='toread').length;
       if(b) rows.push(row('Library','library.html',`${esc(b.title)}, ${esc(b.author)}`, b.pages?`p. ${b.page||0}`:'reading', b.pages?`of ${b.pages} · ${Math.round((b.page||0)/b.pages*100)}%`:'', false));
@@ -199,18 +210,24 @@
     // calendar
     { const list=d.day||[], later=list.filter(s=>s.start>NOW), next=later[0];
       const lastEnd = list.length ? Math.max(...list.map(s=>s.end)) : null;
-      const note = next ? `Next: ${esc(next.title)} at ${h12(next.start)}` : lastEnd!==null && lastEnd<=NOW ? 'Nothing more today' : list.length ? 'Underway' : 'A clear day';
-      rows.push(row('Calendar','calendar.html',note + (lastEnd!==null && lastEnd>NOW ? ` · free after ${h12(lastEnd)}` : ''), `${list.length}`, `${list.length===1?'item':'items'} today`, false)); }
+      const note = !list.length ? 'A clear day' : lastEnd<=NOW ? 'Nothing more today' : `Free after ${h12(lastEnd)}`;
+      rows.push(row('Calendar','calendar.html',note, `${list.length}`, `${list.length===1?'item':'items'} today`, false)); }
     F('affairs').innerHTML = rows.join('');
     F('affn').textContent = C.now.getHours()<12 ? 'this morning' : C.now.getHours()<18 ? 'this afternoon' : 'this evening';
   }
   const ordinal = n => (n%10===1&&n!==11)?'st':(n%10===2&&n!==12)?'nd':(n%10===3&&n!==13)?'rd':'th';
 
   // ---- greeting with the insight sentence ----
+  function renderUpNext(list){
+    const cur=list.find(s=>s.start<=NOW&&s.end>NOW), next=list.filter(s=>s.start>NOW)[0], el=F('upnext'), bits=[];
+    if(cur) bits.push(`<span><span class="k">Now</span><b>${esc(cur.title)}</b> <span class="t">· until ${h12(cur.end)}</span></span>`);
+    if(next){ const mins=Math.round((next.start-NOW)*60); bits.push(`<span><span class="k">Next</span><b>${esc(next.title)}</b> <span class="t">· ${h12(next.start)}, ${mins<60?'in '+mins+' min':'in '+Math.round(mins/60)+' h'}</span></span>`); }
+    else if(cur) bits.push(`<span><span class="k">Then</span>free for the rest of the day</span>`);
+    else if(list.length) bits.push(`<span><span class="k">Done</span>nothing more today</span>`);
+    el.hidden = !bits.length; el.innerHTML = bits.join('');
+  }
   function renderGreeting(d){
-    const list=d.day||[], next=list.filter(s=>s.start>NOW)[0]; const parts=[];
-    if(next){ const mins=Math.round((next.start-NOW)*60); parts.push(`${esc(next.title)} at ${h12(next.start)}, ${mins<60?'in '+mins+' minutes':'in '+Math.round(mins/60)+' hours'}`); }
-    else if(list.length) parts.push('the day’s items are done');
+    const parts=[];
     if(d.school){ const nx=(d.school.items||[]).filter(i=>!i.done).sort((a,b)=>a.due<b.due?-1:1)[0]; if(nx){ const dd=C.daysBetween(TODAY,nx.due); if(dd<=2) parts.push(`${esc(nx.title)} is due ${dd<=0?'today':dd===1?'tomorrow':'in two days'}`); } }
     if(d.fin){ const due=d.fin.cats.find(c=>c.due===C.now.getDate()); if(due) parts.push(`${esc((due.bill||due.name).toLowerCase())} wants paying today`); }
     const s = parts.length ? parts.join('; ') : 'nothing pressing';
@@ -235,7 +252,9 @@
     if(today) T = today;
     const d = { fin, health, lib, school };
     d.day = renderDay(cal);
-    renderAffairs(d); renderGreeting(d); renderTodo();
+    renderAffairs(d); renderGreeting(d); renderUpNext(d.day); renderTodo();
+    // the now line, "in 40 min" and the live event move with the clock
+    setInterval(() => { const n=new Date(); if(C.iso(n)!==TODAY){ location.reload(); return; } NOW = n.getHours()+n.getMinutes()/60; d.day = renderDay(cal); renderAffairs(d); renderUpNext(d.day); }, 60000);
     F('foot').textContent = store.signedOut ? 'Showing this browser’s copy. Sign in on the welcome page to sync.' : 'Everything here is read from the other pages; only the to-do list lives on Today.';
   })();
   document.getElementById('menubtn').addEventListener('click', e=>{ const b=document.querySelector('.band'); b.classList.toggle('nav-open'); e.currentTarget.setAttribute('aria-expanded', b.classList.contains('nav-open')); });
