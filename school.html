@@ -239,9 +239,9 @@
 
   function render(){
     const open = S.items.filter(i=>!i.done).sort((a,b)=>score(b)-score(a));
-    const tests = S.items.filter(i=>i.type==='test' && !i.done).sort((a,b)=>a.due<b.due?-1:1)[0];
+    const tests = S.items.filter(i=>!i.done && kindOf(i).w>=4 && days(i.due)>=0).sort((a,b)=>a.due<b.due?-1:1)[0];   // the nearest exam or test, whatever Canvas called it
     const doneMin = S.courses.reduce((n,c)=>n+weekMin(c.id),0);
-    F('sub').innerHTML = `${C.now.getMonth()>=7||C.now.getMonth()<=0?'Autumn':'Spring'} term · ${S.courses.length} courses${tests?` · <b>${esc(course(tests.course)?.name||'')} ${tests.title.toLowerCase().startsWith('exam')?'exam':'test'} ${days(tests.due)<=0?'today':days(tests.due)===1?'tomorrow':'in '+days(tests.due)+' days'}</b>`:''} · ${hrs(doneMin)} studied this week`;
+    F('sub').innerHTML = `${C.now.getMonth()>=7||C.now.getMonth()<=0?'Autumn':'Spring'} term · ${S.courses.length} courses${tests?` · <b>${esc(course(tests.course)?.name||'')} ${kindOf(tests).name} ${days(tests.due)<=0?'today':days(tests.due)===1?'tomorrow':'in '+days(tests.due)+' days'}</b>`:''} · ${hrs(doneMin)} studied this week`;
 
     // study next
     const top = open[0];
