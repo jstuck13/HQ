@@ -235,7 +235,7 @@
     const r=e.target.closest('[data-rate]'); if(r){ o.rating=+r.dataset.rate; render(); return; }
     const a=e.target.closest('[data-act]'); if(a){
       const act=a.dataset.act;
-      if(act==='start'){ S.books.forEach(b=>{ if(b.shelf==='reading'){ b.shelf='toread'; } }); o.shelf='reading'; o.started=TODAY; o.finished=null; o.page=0; }
+      if(act==='start'){ S.books.forEach(b=>{ if(b.shelf==='reading'){ b.shelf='toread'; } }); o.shelf='reading'; o.started=TODAY; o.finished=null; o.page=0; o.log={[TODAY]:0}; }   // day one, page nought: the pace counts from here
       if(act==='finish'){ o.shelf='read'; o.finished=TODAY; }
       if(act==='shelve'){ o.shelf='toread'; o.started=null; o.page=0; }
       if(act==='remove'){ S.books=S.books.filter(b=>b.id!==o.id); S.open=null; }
@@ -251,9 +251,10 @@
   // pace: pages a day from the page log (last fortnight), else from the start date; then the day it finishes
   function pace(o){
     if(!o.pages || !o.page) return '';
-    const log=Object.entries(o.log||{}).filter(([d])=>C.daysBetween(d,TODAY)<=14).sort(), first=log[0];
-    const span = first && first[0]!==TODAY ? C.daysBetween(first[0],TODAY) : o.started ? Math.max(1,C.daysBetween(o.started,TODAY)) : 0;
-    const read = first && first[0]!==TODAY ? o.page-first[1] : o.page;
+    // only what the page log says: from the earliest entry in the last fortnight to today's page. One entry is not a pace.
+    const log=Object.entries(o.log||{}).filter(([d])=>C.daysBetween(d,TODAY)<=14 && d<TODAY).sort(), first=log[0];
+    if(!first) return Object.keys(o.log||{}).length ? 'log your page over a few days and the pace appears' : '';
+    const span = C.daysBetween(first[0],TODAY), read = o.page-first[1];
     if(!span || read<=0) return '';
     const perDay=read/span, left=Math.ceil((o.pages-o.page)/perDay);
     const when = left<=0 ? 'today' : left===1 ? 'tomorrow' : left<7 ? C.dayName(C.addDays(C.now,left)) : C.dayMonth(C.addDays(C.now,left));
