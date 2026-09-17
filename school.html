@@ -215,7 +215,7 @@
   function kindOf(it){
     const hit = KINDS.find(([re]) => re.test(it.title));
     let [w, name] = hit ? [hit[1], hit[2]] : it.type==='test' ? [4,'test'] : it.type==='reading' ? [1,'reading'] : [2,'assignment'];
-    if(it.pts!=null && it.pts>0) w = Math.max(w, Math.min(5, 1 + it.pts/25));   // 100 points reads as an exam whatever it is called
+    if(it.pts!=null && it.pts>0){ const pw = Math.min(5, 1 + it.pts/25); if(pw > w){ w = pw; if(!hit && pw >= 4.5) name = 'exam'; } }   // 100 points reads as an exam whatever it is called
     return { w, name };
   }
   // the mix: what it is worth first, then how soon, then confidence and neglect
