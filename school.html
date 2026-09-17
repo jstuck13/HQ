@@ -204,17 +204,34 @@
   const weekMin = cid => S.sessions.filter(s=>s.course===cid && days(s.date)>-7 && days(s.date)<=0).reduce((n,s)=>n+s.min,0);
   const dueWord = iso => { const d=days(iso); return d<0?'overdue':d===0?'due today':d===1?'due tomorrow':d<7?'due '+C.dayShort(C.fromISO(iso)):'due '+dmy(iso); };
 
-  // ---- the mix: nearest due, weakest confidence, least studied lately ----
+  // ---- what an item is worth: read from its title (and its points, when Canvas says), 1 to 5 ----
+  // an exam is a 5, a quiz or a project a 3, homework a 2, a pre-lab or a discussion post a 1
+  const KINDS = [
+    [/\b(final|midterm|exam)\b/i, 5, 'exam'], [/\btest\b/i, 4, 'test'], [/\bquiz\b/i, 3, 'quiz'],
+    [/\b(project|presentation|paper|essay|report|proposal)\b/i, 3, 'project'],
+    [/\b(pre-?lab|post-?lab|lab notes|discussion|survey|attendance|check-?in|reflection|participation|syllabus)\b/i, 1, 'small task'],
+    [/\b(homework|hw|problem set|pset|worksheet|assignment)\b/i, 2, 'homework'],
+  ];
+  function kindOf(it){
+    const hit = KINDS.find(([re]) => re.test(it.title));
+    let [w, name] = hit ? [hit[1], hit[2]] : it.type==='test' ? [4,'test'] : it.type==='reading' ? [1,'reading'] : [2,'assignment'];
+    if(it.pts!=null && it.pts>0) w = Math.max(w, Math.min(5, 1 + it.pts/25));   // 100 points reads as an exam whatever it is called
+    return { w, name };
+  }
+  // the mix: what it is worth first, then how soon, then confidence and neglect
   function score(it){
     const c=course(it.course); if(!c) return 0;
-    const d=Math.max(0, days(it.due)), urgency = Math.max(0, 14-d)/14 * (it.type==='test'?3.5:3);
-    const neglected = Math.max(0, 180 - weekMin(c.id))/180 * 1;   // under 3 h this week nudges it up
-    const weak = (5-c.conf)/4 * 2;
-    return urgency + neglected + weak;
+    const w = kindOf(it).w, wf = w/5, H = 7 + 5*w;                   // how far ahead it starts to count: 12 days for a small task, a month for an exam
+    const d=Math.max(0, days(it.due)), u = Math.max(0, H-d)/H;
+    const worth = 3*u*(0.3+0.7*wf) + 1*wf;                          // a quiz tomorrow, then an exam in three weeks, then the pre-lab
+    const neglected = Math.max(0, 180 - weekMin(c.id))/180 * 0.75;   // under 3 h this week nudges it up
+    const weak = (5-c.conf)/4 * 1;
+    return worth + neglected + weak;
   }
   function sentence(it){
-    const c=course(it.course), d=days(it.due), m=weekMin(c.id);
-    const when = d<0?'It was due '+dmy(it.due):d===0?'It is due today':d===1?'It is due tomorrow':d<7?'It is due '+C.dayName(C.fromISO(it.due)):'It is due '+dmy(it.due);
+    const c=course(it.course), d=days(it.due), m=weekMin(c.id), k=kindOf(it);
+    const what = `${/^[aeiou]/i.test(k.name)?'an':'a'} ${k.name}${it.pts?` worth ${it.pts} points`:''}`;
+    const when = `It is ${what}, ${d<0?'was due '+dmy(it.due):d===0?'due today':d===1?'due tomorrow':d<7?'due '+C.dayName(C.fromISO(it.due)):'due '+dmy(it.due)}`;
     const conf = c.conf<=2?'your confidence there is lowest':c.conf===3?'your confidence there is middling':'your confidence there is good';
     const time = m ? `you have put in ${hrs(m)} this week` : 'you have not studied it this week';
     return `${when}, ${conf}, and ${time}.`;
@@ -230,8 +247,8 @@
     const top = open[0];
     if(top){
       const c=course(top.course);
-      F('nextn').textContent = `${open.length} open items, ranked by due date, confidence and time spent`;
-      F('next').innerHTML = `<div class="t">${esc(c.name)} — ${esc(top.title)}<small>${top.type==='test'?'Test':top.type==='reading'?'Reading':'Assignment'} · ${dmy(top.due)}</small></div>
+      F('nextn').textContent = `${open.length} open items, ranked by what they are worth, then due date, confidence and time spent`;
+      F('next').innerHTML = `<div class="t">${esc(c.name)} — ${esc(top.title)}<small>${kindOf(top).name[0].toUpperCase()+kindOf(top).name.slice(1)} · ${dmy(top.due)}</small></div>
         <div class="sess">
           <div class="clock" id="clock">${timer.on?hrs(Math.round(timer.sec/60))||'0 min':''}${timer.on?'<small>running</small>':''}</div>
           ${timer.on ? `<button class="textbtn stop" type="button" id="stop">Stop and log</button>` : `<button class="textbtn" type="button" id="start"><svg class="ic"><use href="icons.svg#clock"/></svg>Start a session</button>`}

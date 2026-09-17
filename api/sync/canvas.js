@@ -41,7 +41,8 @@ export default syncRoute('canvas', async ({ getDoc, putDoc }) => {
     const type = kind === 'quiz' || /\b(exam|test|midterm|final)\b/i.test(title) ? 'test' : kind === 'discussion_topic' ? 'reading' : 'assignment';
     const submitted = !!(p.submissions && (p.submissions.submitted || p.submissions.graded));
     const existing = byId(school.items, id);
-    const record = { id, course: `canvas:${p.course_id}`, title, type, due: iso(new Date(due)), source: 'canvas', url: p.html_url ? `${base}${p.html_url}` : undefined };
+    const pts = p.plannable && p.plannable.points_possible != null ? +p.plannable.points_possible : undefined;
+    const record = { id, course: `canvas:${p.course_id}`, title, type, due: iso(new Date(due)), source: 'canvas', url: p.html_url ? `${base}${p.html_url}` : undefined, pts };
     if (existing) { Object.assign(existing, record, { done: existing.done || submitted }); nu++; }
     else { school.items.push({ ...record, done: submitted }); ni++; }
   }
