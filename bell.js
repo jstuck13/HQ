@@ -4,6 +4,7 @@
                     google: { name: 'Google Calendar', page: 'calendar.html', count: l => l.calendars != null ? `${l.calendars} ${l.calendars === 1 ? 'calendar' : 'calendars'}` : '' },
                     garmin: { name: 'Garmin', page: 'health.html', count: l => l.days != null ? `${l.days} days` : '' },
                     daily: { name: 'Word and quote', page: 'index.html', count: l => l.word ? `“${l.word}”` : '' },
+                    notify: { name: 'Reminders', page: 'today.html', count: l => l.said ? `last: ${esc(l.said).slice(0, 60)}${l.said.length > 60 ? '…' : ''}` : l.quiet ? 'nothing to say' : '' },
                     backup: { name: 'Nightly backup', page: 'today.html', count: l => l.documents != null ? `${l.documents} documents` : '', extra: l => l.day ? `<a class="go dl" href="/api/sync/backup?day=${l.day}" download>Download</a>` : '' } };
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   // three kinds of notice, nothing else: due today, a bill due today, pills not taken by nine in the evening
@@ -21,6 +22,21 @@
     if (health && hour >= 21) { const meds = health.meds || [], taken = (health.days && health.days[today] || {}).pills || [], left = meds.filter(m => !taken.includes(m.id)); if (left.length) due.push({ text: left.map(m => esc(m.name)).join(', '), when: 'not taken yet', late: true, href: 'health.html' }); }
     return { todos, due };
   };
+  // reminders on this device: a push subscription, kept on the server, sent to by /api/sync/notify
+  const b64 = s => { const p = '='.repeat((4 - s.length % 4) % 4), r = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(r, c => c.charCodeAt(0)); };
+  const pushState = async () => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return { can: false, why: /iPhone|iPad/.test(navigator.userAgent) && !navigator.standalone ? 'add HQ to the home screen first' : 'not supported in this browser' };
+    const reg = await navigator.serviceWorker.getRegistration(); const sub = reg && await reg.pushManager.getSubscription();
+    return { can: true, on: !!sub, sub, reg };
+  };
+  const pushOn = async () => {
+    const info = await (await fetch('/api/push')).json(); if (!info.ready) throw new Error('keys not set');
+    if ((await Notification.requestPermission()) !== 'granted') throw new Error('permission refused');
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(info.key) });
+    await fetch('/api/push', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ subscription: sub.toJSON(), label: navigator.userAgent.slice(0, 60) }) });
+  };
+  const pushOff = async () => { const { sub } = await pushState(); if (!sub) return; await fetch('/api/push', { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) }); await sub.unsubscribe(); };
   const ago = iso => { const m = Math.round((Date.now() - new Date(iso)) / 60000); return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} d ago`; };
 
   const style = document.createElement('style');
@@ -67,7 +83,12 @@
         const status = !l ? 'not connected' : l.ok ? `${ago(l.last)}${src.count(l) ? ' · ' + src.count(l) : ''}` : `failed ${ago(l.last)} · ${esc(l.error || '')}`;
         return `<li><span class="n"><a href="${src.page}">${src.name}</a></span><span class="s ${l && !l.ok ? 'bad' : ''}">${status}</span>${l ? `<button class="go" type="button" data-sync="${k}">${k === 'backup' ? 'Back up now' : 'Sync now'}</button>${src.extra && l.ok ? src.extra(l) : ''}` : k === 'backup' ? `<button class="go" type="button" data-sync="${k}">Back up now</button>` : `<a class="go" href="${src.page}">Set up</a>`}</li>`;
       });
-      pop.innerHTML = `${section('To do', notes.todos)}${section('Due', notes.due)}<h4>Syncs</h4><ul>${rows.join('')}</ul>`;
+      pop.innerHTML = `${section('To do', notes.todos)}${section('Due', notes.due)}<h4>Syncs</h4><ul>${rows.join('')}</ul><h4>This device</h4><ul><li id="pushrow"><span class="n">Reminders</span><span class="s">checking…</span></li></ul>`;
+      pushState().then(st => {
+        const li = pop.querySelector('#pushrow'); if (!li) return;
+        li.innerHTML = `<span class="n">Reminders</span><span class="s">${st.can ? (st.on ? 'on: morning, midday and evening, when there is something to say' : 'off on this device') : st.why}</span>${st.can ? `<button class="go" type="button" id="pushtoggle">${st.on ? 'Turn off' : 'Turn on'}</button>` : ''}`;
+        li.querySelector('#pushtoggle')?.addEventListener('click', async e => { e.target.textContent = '…'; try { await (st.on ? pushOff() : pushOn()); } catch (err) { li.querySelector('.s').textContent = err.message === 'keys not set' ? 'needs VAPID keys in Vercel' : err.message === 'permission refused' ? 'notifications are blocked for this site' : 'could not turn on'; li.querySelector('.s').classList.add('bad'); } render(); });
+      });
       // a tick here is the same as a tick on Today: saved, and Today redraws if it is the page underneath
       pop.querySelectorAll('input[data-k]').forEach(c => c.addEventListener('change', async () => {
         if (!todoDoc) return; todoDoc.items[+c.dataset.k].done = c.checked; store.save('today.' + clock.today, todoDoc);
