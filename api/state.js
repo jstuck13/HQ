@@ -1,4 +1,4 @@
-// One JSON document per key. GET /api/state?key=library → the document (or null).
+// One JSON document per key. GET /api/state?key=library → the document (or null); GET /api/state?keys=a,b,c → { a: doc|null, ... } in one round trip.
 // PUT /api/state?key=library with a JSON body → stored. Both need the session cookie.
 import { sql, ensureTable, isAuthed } from './_lib.js';
 
@@ -6,6 +6,15 @@ const KEY = /^[a-z0-9._-]{1,80}$/i;
 
 export default async function handler(req, res) {
   if (!isAuthed(req)) return res.status(401).json({ error: 'sign in' });
+  if (req.method === 'GET' && req.query.keys !== undefined) {
+    const keys = String(req.query.keys).split(',').filter(Boolean);
+    if (!keys.length || keys.length > 40 || keys.some(k => !KEY.test(k) || k.startsWith('_'))) return res.status(400).json({ error: 'bad key' });
+    await ensureTable();
+    const rows = await sql`SELECT key, data, updated_at FROM documents WHERE key = ANY(${keys})`;
+    const out = Object.fromEntries(keys.map(k => [k, null])); rows.forEach(r => { out[r.key] = { data: r.data, updated_at: r.updated_at }; });
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(200).json(out);
+  }
   const key = String(req.query.key || '');
   if (!KEY.test(key) || key.startsWith('_')) return res.status(400).json({ error: 'bad key' });   // _keys hold tokens; never served
   await ensureTable();

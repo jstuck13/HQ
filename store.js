@@ -7,24 +7,31 @@
     set: (k, v) => { try { localStorage.setItem('hq.' + k, JSON.stringify(v)); } catch {} },
   };
   const timers = {}, loaded = {}, seen = {}, pending = {};
-  let inflight = 0, settle; const fetching = {};   // when every load in flight has answered and nothing new starts, the page has drawn: drop the splash   // a key can be saved only after its load has answered; `seen` is the server's updated_at we last read
+  let inflight = 0, settle;                      // when every load in flight has answered and nothing new starts, the page has drawn: drop the splash
+  let queue = {}, flushing = null;               // loads asked for in the same tick travel to the server as one request   // a key can be saved only after its load has answered; `seen` is the server's updated_at we last read
 
-  // bg: a load the page is not waiting on to draw (the bell's notices), so it does not hold the splash. Concurrent loads of one key share a fetch.
+  // bg: a load the page is not waiting on to draw (the bell's notices), so it does not hold the splash
   async function load(key, bg = false) {
-    const cached = ls.get(key); if (!bg) { inflight++; clearTimeout(settle); }
-    try { return await (fetching[key] ||= fetchDoc(key, cached).finally(() => { delete fetching[key]; })); }
+    if (!bg) { inflight++; clearTimeout(settle); }
+    try { return await new Promise(resolve => { (queue[key] ||= []).push(resolve); flushing ||= setTimeout(flush, 0); }); }
     finally { loaded[key] = true; if (!bg && --inflight === 0) settle = setTimeout(() => window.hqReveal && window.hqReveal(), 80); }
   }
-  async function fetchDoc(key, cached) {
+  async function flush() {
+    const q = queue; queue = {}; flushing = null;
+    const keys = Object.keys(q), docs = await fetchDocs(keys);
+    for (const key of keys) {
+      const cached = ls.get(key), doc = docs && docs[key]; let out = cached;
+      if (doc && doc.data !== undefined) { ls.set(key, doc.data); seen[key] = doc.updated_at; out = doc.data; }
+      else if (docs && cached) { loaded[key] = true; save(key, cached); }   // first run against an empty server: seed it from the cache
+      q[key].forEach(resolve => resolve(out));
+    }
+  }
+  async function fetchDocs(keys) {           // { key: { data, updated_at } | null }, or null when the server did not answer
     try {
-      const r = await fetch(`/api/state?key=${encodeURIComponent(key)}`, { cache: 'no-store' });
-      if (r.status === 401) { window.store.signedOut = true; return cached; }
-      if (!r.ok) return cached;
-      const doc = await r.json();
-      if (doc && doc.data !== undefined) { ls.set(key, doc.data); seen[key] = doc.updated_at; return doc.data; }
-      if (cached) { loaded[key] = true; save(key, cached); }   // first run against an empty server: seed it from the cache
-      return cached;
-    } catch { return cached; }                 // offline or no API (plain static server): cache it is
+      const r = await fetch(`/api/state?keys=${keys.map(encodeURIComponent).join(',')}`, { cache: 'no-store' });
+      if (r.status === 401) { window.store.signedOut = true; return null; }
+      return r.ok ? await r.json() : null;
+    } catch { return null; }                   // offline or no API (plain static server): cache it is
   }
 
   function save(key, doc) {
@@ -56,10 +63,9 @@
   document.addEventListener('visibilitychange', async () => {
     if (document.visibilityState !== 'visible' || Object.keys(pending).length) return;
     const keys = Object.keys(seen).filter(k => k !== 'sync'); if (!keys.length) return;   // the sync ledger is read, never edited here
-    for (const key of keys) {
-      try { const r = await fetch(`/api/state?key=${encodeURIComponent(key)}`, { cache: 'no-store' }); if (!r.ok) continue; const doc = await r.json();
-        if (doc && doc.updated_at && new Date(doc.updated_at).getTime() !== new Date(seen[key]).getTime()) { ls.set(key, doc.data); location.reload(); return; } } catch {}
-    }
+    const docs = await fetchDocs(keys); if (!docs) return;
+    for (const key of keys) { const doc = docs[key];
+      if (doc && doc.updated_at && new Date(doc.updated_at).getTime() !== new Date(seen[key]).getTime()) { ls.set(key, doc.data); location.reload(); return; } }
   });
   // leaving the page: flush anything still waiting in the debounce
   addEventListener('pagehide', () => { for (const key of Object.keys(pending)) put(key, true); });
