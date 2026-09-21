@@ -6,11 +6,13 @@
     get: k => { try { return JSON.parse(localStorage.getItem('hq.' + k)); } catch { return null; } },
     set: (k, v) => { try { localStorage.setItem('hq.' + k, JSON.stringify(v)); } catch {} },
   };
-  const timers = {}, loaded = {}, seen = {}, pending = {};   // a key can be saved only after its load has answered; `seen` is the server's updated_at we last read
+  const timers = {}, loaded = {}, seen = {}, pending = {};
+  let inflight = 0, settle;                      // when every load in flight has answered and nothing new starts, the page has drawn: drop the splash   // a key can be saved only after its load has answered; `seen` is the server's updated_at we last read
 
   async function load(key) {
-    const cached = ls.get(key);
-    try { return await fetchDoc(key, cached); } finally { loaded[key] = true; }
+    const cached = ls.get(key); inflight++; clearTimeout(settle);
+    try { return await fetchDoc(key, cached); }
+    finally { loaded[key] = true; if (--inflight === 0) settle = setTimeout(() => window.hqReveal && window.hqReveal(), 80); }
   }
   async function fetchDoc(key, cached) {
     try {
