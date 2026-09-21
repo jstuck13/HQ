@@ -40,7 +40,7 @@
   .hold .t .yield{margin-top:2px} .hold input.yl{width:4.5ch;font-family:var(--serif);font-size:13px;text-align:right;border-bottom:1px dotted var(--ink-2);padding:0;color:var(--ink)} .hold input.yl:focus{outline:none;border-bottom-color:var(--ink)}
   .hold .w{position:relative;height:6px;background:var(--paper-2);border-radius:3px;align-self:center} .hold .w i{position:absolute;inset:0 auto 0 0;background:var(--band);border-radius:3px}
   .hold .x{position:absolute;right:0;top:50%;transform:translateY(-50%);font-size:12px;color:var(--ink-3);opacity:0;background:var(--paper);padding-left:8px} .hold li:hover .x{opacity:1} .hold .x:hover{color:var(--ox)}
-  .addl{display:grid;grid-template-columns:110px 1fr 90px 1fr auto;gap:12px;padding:12px 0;border-bottom:1px dotted var(--rule);align-items:baseline}
+  .addl{display:grid;grid-template-columns:110px 90px 1fr auto;gap:12px;padding:12px 0;border-bottom:1px dotted var(--rule);align-items:baseline}
   .addl input,.addl select{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0} .addl input:focus,.addl select:focus{outline:none;border-bottom-color:var(--ink)}
   .addl input::placeholder{color:var(--ink-3);font-style:italic}
   .textbtn{font-size:13.5px}
@@ -110,7 +110,6 @@
     <ul class="hold" id="hold"></ul>
     <form class="addl" id="addh" autocomplete="off">
       <input id="h-ticker" placeholder="FXAIX" aria-label="Ticker" required>
-      <input id="h-name" placeholder="name arrives with the price" aria-label="Name" disabled>
       <input id="h-shares" inputmode="decimal" placeholder="shares" aria-label="Shares" required>
       <input id="h-acct" list="accts" placeholder="Roth IRA" aria-label="Account"><datalist id="accts"><option>Roth IRA</option><option>Brokerage</option><option>401(k)</option><option>HSA</option></datalist>
       <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button>
