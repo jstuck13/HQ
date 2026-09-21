@@ -57,6 +57,24 @@ async function publix(getDoc, putDoc) {
   return { items: items.length, bogos: items.filter(x => x.bogo).length, from };
 }
 
+// Prices for the holdings on the Investments page (Yahoo Finance's chart endpoint: stocks, ETFs and mutual funds alike),
+// and a nightly total into the document's history so the worth-over-time line can be drawn.
+async function prices(getDoc, putDoc) {
+  const inv = await getDoc('investments'); if (!inv || !(inv.holdings || []).length) return null;
+  const tickers = [...new Set(inv.holdings.map(h => String(h.ticker).toUpperCase()))]; inv.prices ??= {}; let got = 0;
+  await Promise.all(tickers.map(async t => { try {
+    const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(t)}?range=5d&interval=1d`, { headers: { 'user-agent': 'Mozilla/5.0' } });
+    if (!r.ok) return; const m = (await r.json()).chart?.result?.[0]?.meta; if (!m || m.regularMarketPrice == null) return;
+    inv.prices[t] = { price: m.regularMarketPrice, chg: m.regularMarketChangePercent ?? (m.chartPreviousClose ? (m.regularMarketPrice / m.chartPreviousClose - 1) * 100 : null), name: m.longName || m.shortName || t, at: new Date().toISOString() }; got++;
+  } catch {} }));
+  const latest = {}; [...(inv.balances || [])].sort((a, b) => a.date < b.date ? -1 : 1).forEach(b => { latest[b.account] = b.value; });
+  const total = inv.holdings.reduce((n, h) => n + (inv.prices[String(h.ticker).toUpperCase()] ? h.shares * inv.prices[String(h.ticker).toUpperCase()].price : 0), 0) + Object.values(latest).reduce((n, v) => n + v, 0);
+  inv.history ??= {}; if (got) inv.history[new Date().toISOString().slice(0, 10)] = Math.round(total * 100) / 100;
+  for (const k of Object.keys(inv.history).sort().slice(0, -400)) delete inv.history[k];
+  await putDoc('investments', inv);
+  return { priced: got, of: tickers.length, worth: Math.round(total) };
+}
+
 export default syncRoute('daily', async ({ getDoc, putDoc }) => {
   const now = new Date(), date = now.toISOString().slice(0, 10);
   const doy = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 864e5);
@@ -77,7 +95,8 @@ export default syncRoute('daily', async ({ getDoc, putDoc }) => {
   { const [q, a, w] = QUOTES[doy % QUOTES.length]; out.quote = { q, a, w }; }
 
   let ad = null; try { ad = await publix(getDoc, putDoc); } catch (e) { errors.push('publix ' + e.message); }
+  let px = null; try { px = await prices(getDoc, putDoc); } catch (e) { errors.push('prices ' + e.message); }
 
   await putDoc('daily', out);
-  return { word: out.word ? out.word.w : null, quote: out.quote ? out.quote.a : null, bogos: ad ? ad.bogos : undefined, errors: errors.length ? errors.join('; ') : undefined };
+  return { word: out.word ? out.word.w : null, quote: out.quote ? out.quote.a : null, bogos: ad ? ad.bogos : undefined, priced: px ? px.priced : undefined, worth: px ? px.worth : undefined, errors: errors.length ? errors.join('; ') : undefined };
 });

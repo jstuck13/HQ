@@ -14,6 +14,7 @@
                             ...(d.cats || []).map(c => ({ area: 'Finances', title: c.name, sub: c.limit ? 'limit $' + c.limit : 'category', href: 'finances.html' }))]],
     ['health', d => [...(d.next || []).map(n => ({ area: 'Health', title: n.name, sub: [day(n.date), n.note].filter(Boolean).join(' · '), href: 'health.html' })),
                      ...(d.meds || []).map(m => ({ area: 'Health', title: m.name, sub: m.when || 'pill', href: 'health.html' }))]],
+    ['investments', d => (d.holdings || []).map(h => ({ area: 'Investments', title: h.ticker, sub: [(d.prices || {})[h.ticker] && d.prices[h.ticker].name, h.account, `${h.shares} shares`].filter(Boolean).join(' · '), href: 'investments.html' }))],
     ['groceries', d => [...(d.list || []).map(l => ({ area: 'Groceries', title: l.text, sub: l.done ? 'got it' : 'on the list', href: 'groceries.html' })),
                       ...Object.values((d.trips || []).reduce((m, t) => { t.items.forEach(i => { m[i.name.toLowerCase()] ??= { area: 'Groceries', title: i.name, sub: `${'$' + i.price} at ${t.store}, ${day(t.date)}`, href: 'groceries.html' }; }); return m; }, {}))]],
     ['today.' + today(), d => (d.items || []).map(i => ({ area: 'Today', title: i.text, sub: i.done ? 'done' : 'to do', href: 'today.html' }))],
