@@ -52,7 +52,8 @@
   .chart .fig{font-family:var(--serif);font-size:22px;margin:6px 0 0} .chart .fig small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:8px}
 
   /* contributions */
-  .cats label{display:inline-flex;align-items:center;gap:8px;margin:0 16px 8px 0;font-size:13.5px;cursor:pointer}
+  .cats{display:flex;flex-wrap:wrap;gap:8px 16px;padding:12px 0 4px}   /* flex items, not inline boxes: a tick cannot nudge the baseline */
+  .cats label{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer}
   .cats input{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px}
   .cats input:checked{background:var(--band);border-color:var(--band)}
   .cats input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
