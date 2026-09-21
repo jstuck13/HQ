@@ -15,7 +15,7 @@ async function publix(getDoc, putDoc) {
   const H = { headers: { 'user-agent': 'Mozilla/5.0' } }, base = 'https://backflipp.wishabi.com/flipp';
   const clean = n => String(n || '').replace(/\s*BOGO\*?/i, '').replace(/[^\x20-\x7E’]/g, '').replace(/\*/g, '').replace(/\s+/g, ' ').trim().replace(/[,;:\-–]+$/, '').trim();
   const saveOf = story => { const m = /save up to\s*\$?\s*([\d.]+)(\s*lb)?/i.exec(story || ''); return m ? `$${(+m[1]).toFixed(2).replace(/\.00$/, '')}${m[2] ? ' lb' : ''}` : undefined; };   // "SAVE UP TO 5.69" → "$5.69"
-  const noteOf = story => story && !/save up to/i.test(story) && !/\d/.test(story) ? String(story).toLowerCase().replace(/^\w/, c => c.toUpperCase()) : undefined;   // "SURPRISINGLY LOW PRICE" → "Surprisingly low price\"
+  const noteOf = story => { const t = String(story || '').replace(/^save up to\s*/i, '').trim(); return t && !/\d/.test(t) ? t.toLowerCase().replace(/^\w/, c => c.toUpperCase()) : undefined; };   // "SURPRISINGLY LOW PRICE" → "Surprisingly low price\"
   // deal wording, keyed by cleaned name, from two searches (each is capped at 150 items)
   const deals = {}; let flyerIds = {};
   for (const q of ['publix bogo', 'publix']) {
