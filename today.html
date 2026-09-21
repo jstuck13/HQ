@@ -269,7 +269,7 @@
     { const st=d.study, day=st && st.days && st.days[TODAY], titles={stoics:'The Stoics', socrates:'Socrates', sermon:'The Sermon on the Mount'};
       if(st && (st.pos>0 || day)){ const done=day && day.done, n=day ? (day.recall?1:0)+day.cards.length : 3, at=day ? Math.min(day.at, n) : 0;
         let run=0; for(let i=0;i<400;i++){ const k=C.iso(C.addDays(C.fromISO(TODAY),-i)); if(st.days[k] && st.days[k].done) run++; else if(i===0) continue; else break; }
-        rows.push(row('The Study','study.html', `${titles[st.path]||st.path} · card ${Math.min(st.pos+1, 42)} of 42${run>=2?` · ${run} days running`:''}`, done ? 'done' : `${at} of ${n}`, done ? 'today’s cards' : 'cards read today', false)); }
+        rows.push(row('The Study','study.html', `${titles[st.path]||st.path} · card ${Math.min(st.pos+1, st.len||42)} of ${st.len||42}${run>=2?` · ${run} days running`:''}`, done ? 'done' : `${at} of ${n}`, done ? 'today’s cards' : 'cards read today', false)); }
       else rows.push(row('The Study','study.html','Three cards a day, from the Stoics to start','','not begun')); }
     // calendar
     { const list=d.day||[], later=list.filter(s=>s.start>NOW), next=later[0];

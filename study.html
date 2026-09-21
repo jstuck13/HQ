@@ -27,7 +27,7 @@
   .stage .kind{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px}
   .stage .frame{font-size:14.5px;line-height:1.6;color:var(--ink-2);margin:0 0 22px;max-width:60ch}
   .stage .text{font-family:var(--serif);font-size:20px;line-height:1.55;margin:0;max-width:56ch;white-space:pre-line;text-wrap:pretty}
-  .stage .text.long{font-size:17.5px}
+  .stage .text.long{font-size:17.5px} .stage .text.longer{font-size:16.5px;line-height:1.5}
   .stage .src{font-size:12.5px;color:var(--ink-3);margin:16px 0 0}
   .stage .ask{margin:26px 0 0;padding-top:16px;border-top:1px solid var(--rule);font-family:var(--serif);font-style:italic;font-size:16px;color:var(--ox);max-width:56ch}
   .stage .hidden{filter:blur(6px);user-select:none}
@@ -188,7 +188,7 @@
       wire(d); return;
     }
     const c = card(d.cards[d.at - (d.recall ? 1 : 0)]);
-    F('stage').innerHTML = `<p class="kind"><span class="emblem">${emblem(S.path)}</span>${esc(P.title)} · card ${S.pos + d.at - (d.recall ? 1 : 0) + 1} of ${total}</p><p class="frame">${esc(c.frame)}</p><p class="text ${c.text.length > 420 ? 'long' : ''}">${esc(c.text)}</p><p class="src">${esc(c.source)}</p><p class="ask">${esc(c.ask)}</p>${answerBox(c)}<div class="sfoot">${d.at > 0 ? `<button class="back" type="button" id="back"><svg class="ic"><use href="icons.svg#arrow"/></svg>Back</button>` : ''}${dots}<button class="next" type="button" id="next">${d.at === n - 1 ? (d.done ? 'Today’s note' : 'Close the day') : 'Next'} <svg class="ic"><use href="icons.svg#arrow"/></svg></button></div><span class="tap" id="tap" aria-hidden="true"></span>${d.at > 0 ? '<span class="tapback" id="tapback" aria-hidden="true"></span>' : ''}`;
+    F('stage').innerHTML = `<p class="kind"><span class="emblem">${emblem(S.path)}</span>${esc(P.title)} · card ${S.pos + d.at - (d.recall ? 1 : 0) + 1} of ${total}</p><p class="frame">${esc(c.frame)}</p><p class="text ${c.text.length > 800 ? 'long longer' : c.text.length > 420 ? 'long' : ''}">${esc(c.text)}</p><p class="src">${esc(c.source)}</p><p class="ask">${esc(c.ask)}</p>${answerBox(c)}<div class="sfoot">${d.at > 0 ? `<button class="back" type="button" id="back"><svg class="ic"><use href="icons.svg#arrow"/></svg>Back</button>` : ''}${dots}<button class="next" type="button" id="next">${d.at === n - 1 ? (d.done ? 'Today’s note' : 'Close the day') : 'Next'} <svg class="ic"><use href="icons.svg#arrow"/></svg></button></div><span class="tap" id="tap" aria-hidden="true"></span>${d.at > 0 ? '<span class="tapback" id="tapback" aria-hidden="true"></span>' : ''}`;
     wire(d);
   }
   function wire(d){
@@ -222,7 +222,7 @@
   }
   F('paths').addEventListener('click', async e => { const b = e.target.closest('[data-path]'); if(!b) return; S.progress ??= {}; S.progress[S.path] = S.pos; S.path = b.dataset.path; S.pos = S.progress[S.path] || 0; if(S.days[TODAY] && !S.days[TODAY].done) delete S.days[TODAY]; save(); await loadPath(); render(); renderAside(); });
 
-  async function loadPath(){ P = await (await fetch(`paths/${S.path}.json`)).json(); }
+  async function loadPath(){ P = await (await fetch(`paths/${S.path}.json`)).json(); if(S.len !== P.cards.length){ S.len = P.cards.length; save(); } }   // len: so Today can say "card 7 of 42" without fetching the path
   Promise.all([store.load(KEY), fetch('paths/index.json').then(r => r.json())]).then(async ([doc, idx]) => {
     if(doc) S = { path: 'stoics', pos: 0, days: {}, notes: [], answers: {}, ...doc }; S.answers ??= {}; PATHS = idx;
     await loadPath(); render(); renderAside();

@@ -1,0 +1,302 @@
+{
+  "id": "socrates",
+  "title": "Socrates",
+  "sub": "The trial and the death: Euthyphro, Apology, Crito, Phaedo",
+  "blurb": "Four dialogues Plato set in the last weeks of his teacher's life, in Benjamin Jowett's translation: the argument on the courthouse steps, the speech to the jury, the night in prison, and the afternoon of the hemlock. Fourteen days, three cards a day.",
+  "cards": [
+    {
+      "id": "k01",
+      "frame": "Socrates wrote nothing. Everything we have of him is other people's: chiefly Plato, his student, who set his teacher at the centre of some thirty dialogues, and the soldier-historian Xenophon. Four of Plato's dialogues follow the last weeks of Socrates' life in 399 BC, and this path walks them in order. The first, the Euthyphro, opens on the porch of the King Archon, where indictments were lodged. A young man named Meletus has accused Socrates, then about seventy, of corrupting the young and not believing in the city's gods. Socrates describes the charge to an acquaintance with a straight face.",
+      "text": "He says he knows how the youth are corrupted and who are their corruptors. I fancy that he must be a wise man, and seeing that I am the reverse of a wise man, he has found me out, and is going to accuse me of corrupting his young friends. And of this our mother the state is to be the judge. Of all our political men he is the only one who seems to me to begin in the right way, with the cultivation of virtue in youth; like a good husbandman, he makes the young shoots his first care, and clears away us who are the destroyers of them.",
+      "source": "Plato, Euthyphro 2c–3a · Benjamin Jowett (1892)",
+      "ask": "The irony is gentle but it is there. Where in your own life do you meet a charge with a joke instead of an answer — and does it serve you?"
+    },
+    {
+      "id": "k02",
+      "frame": "Euthyphro is a religious professional, a diviner, and he is at court on his own business: he is prosecuting his father for murder, after a labourer who had killed a slave was left bound in a ditch and died. His relatives call the prosecution impious. Euthyphro is sure it is the very definition of piety. Socrates, facing a charge of impiety himself, asks him to explain what piety is — and gets an example instead of a definition. Watch what Socrates does with it.",
+      "text": "Piety is doing as I am doing; that is to say, prosecuting any one who is guilty of murder, sacrilege, or of any similar crime — whether he be your father or mother, or whoever he may be — that makes no difference; and not to prosecute them is impiety. ... Remember that I did not ask you to give me two or three examples of piety, but to explain the general idea which makes all pious things to be pious. Do you not recollect that there was one idea which made the impious impious, and the pious pious?",
+      "source": "Plato, Euthyphro 5d–6d · Jowett",
+      "ask": "This move — 'you gave me an instance, I asked for the idea' — is the Socratic method in one line. Pick a word you use every day (fair, healthy, productive). Can you say what makes every case of it a case of it?"
+    },
+    {
+      "id": "k03",
+      "frame": "Euthyphro's second try is better: piety is what is dear to the gods. But Euthyphro also believes the stories in which the gods quarrel — Zeus binding his father, the war over Troy. Socrates only has to put the two beliefs side by side. He does it without triumph, almost sorrowfully, and the definition falls of its own weight.",
+      "text": "Then, my friend, I remark with surprise that you have not answered the question which I asked. For I certainly did not ask you to tell me what action is both pious and impious: but now it would seem that what is loved by the gods is also hated by them. And therefore, Euthyphro, in thus chastising your father you may very likely be doing what is agreeable to Zeus but disagreeable to Cronos or Uranus, and what is acceptable to Hephaestus but unacceptable to Here, and there may be other gods who have similar differences of opinion.",
+      "source": "Plato, Euthyphro 8a–b · Jowett",
+      "ask": "Socrates never tells Euthyphro he is wrong; he lets two of Euthyphro's own beliefs meet. Which two of your own convictions have you never let into the same room?"
+    },
+    {
+      "id": "k04",
+      "frame": "Euthyphro amends: piety is what all the gods love. Socrates then asks the question the dialogue is remembered for, one that theologians have been answering ever since. It is only a question — but notice that it cannot be brushed aside, because both answers cost something. If the gods love the holy because it is holy, then holiness is something prior to the gods; if a thing is holy only because they love it, then holiness is arbitrary.",
+      "text": "The point which I should first wish to understand is whether the pious or holy is beloved by the gods because it is holy, or holy because it is beloved of the gods. ... It is loved because it is holy, not holy because it is loved? EUTHYPHRO: Yes. SOCRATES: And that which is dear to the gods is loved by them, and is in a state to be loved of them because it is loved of them? EUTHYPHRO: Certainly. SOCRATES: Then that which is dear to the gods, Euthyphro, is not holy, nor is that which is holy loved of God, as you affirm; but they are two different things.",
+      "source": "Plato, Euthyphro 10a–e · Jowett",
+      "ask": "Take a rule you keep. Do you keep it because it is good, or is it good because someone you trust keeps it? Does the answer change how firmly you hold it?"
+    },
+    {
+      "id": "k05",
+      "frame": "The Euthyphro ends without a definition. Euthyphro, pressed once more, remembers an appointment. This is how most of Plato's early dialogues end, and it is deliberate: the reader is left holding the question. Remember as you read Socrates' last words here that in a few weeks he will be dead on the very charge he is trying to understand.",
+      "text": "Then we must begin again and ask, What is piety? That is an enquiry which I shall never be weary of pursuing as far as in me lies; and I entreat you not to scorn me, but to apply your mind to the utmost, and tell me the truth. For, if any man knows, you are he; and therefore I must detain you, like Proteus, until you tell. If you had not certainly known the nature of piety and impiety, I am confident that you would never, on behalf of a serf, have charged your aged father with murder. ... EUTHYPHRO: Another time, Socrates; for I am in a hurry, and must go now.",
+      "source": "Plato, Euthyphro 15c–e · Jowett",
+      "ask": "'Another time.' What is the question you keep leaving for another time — and what would it cost to sit with it today?"
+    },
+    {
+      "id": "k06",
+      "frame": "The trial. An Athenian jury of 501 citizens sat for a single day; the accusers spoke first, then the defendant, then the vote. Plato's Apology — from apologia, a defence speech, not an apology — gives Socrates' three speeches: the defence, the counter-proposal after the guilty verdict, and the farewell after the death sentence. Plato was present. This is how it opens.",
+      "text": "How you, O Athenians, have been affected by my accusers, I cannot tell; but I know that they almost made me forget who I was — so persuasively did they speak; and yet they have hardly uttered a word of truth. But of the many falsehoods told by them, there was one which quite amazed me; — I mean when they said that you should be upon your guard and not allow yourselves to be deceived by the force of my eloquence. To say this, when they were certain to be detected as soon as I opened my lips and proved myself to be anything but a great speaker, did indeed appear to me most shameless — unless by the force of eloquence they mean the force of truth; for if such is their meaning, I admit that I am eloquent.",
+      "source": "Plato, Apology 17a–b · Jowett",
+      "ask": "'Unless by eloquence they mean the force of truth.' When you last had to defend yourself, did you reach for polish or for plainness? Which did the room trust?"
+    },
+    {
+      "id": "k07",
+      "frame": "Socrates asks the jury for one concession: to let him speak as he speaks in the marketplace, and to judge the matter, not the manner. He is seventy and has never been in court. The last sentence is the whole of what he asks of any listener.",
+      "text": "I am more than seventy years of age, and appearing now for the first time in a court of law, I am quite a stranger to the language of the place; and therefore I would have you regard me as if I were really a stranger, whom you would excuse if he spoke in his native tongue, and after the fashion of his country: — Am I making an unfair request of you? Never mind the manner, which may or may not be good; but think only of the truth of my words, and give heed to that: let the speaker speak truly and the judge decide justly.",
+      "source": "Plato, Apology 17d–18a · Jowett",
+      "ask": "Whose manner have you let stand in for their matter — dismissing a rough-spoken truth, or trusting a smooth-spoken nothing?"
+    },
+    {
+      "id": "k08",
+      "frame": "Before the formal charge, Socrates says, there are the older, vaguer accusers: a generation of gossip, and a caricature in Aristophanes' comedy The Clouds, staged twenty-four years earlier, where a 'Socrates' hangs in a basket studying the heavens and teaches young men to cheat their creditors. He states the old slander in its own words so he can answer it.",
+      "text": "Well, then, I must make my defence, and endeavour to clear away in a short time, a slander which has lasted a long time. ... What do the slanderers say? They shall be my prosecutors, and I will sum up their words in an affidavit: 'Socrates is an evil-doer, and a curious person, who searches into things under the earth and in heaven, and he makes the worse appear the better cause; and he teaches the aforesaid doctrines to others.' Such is the nature of the accusation: it is just what you have yourselves seen in the comedy of Aristophanes.",
+      "source": "Plato, Apology 18e–19c · Jowett",
+      "ask": "Socrates puts the caricature of himself into words before answering it. What is the caricature of you — the version people who have half-met you carry around?"
+    },
+    {
+      "id": "k09",
+      "frame": "So how did the reputation start? Socrates tells the jury a story. His impulsive friend Chaerephon once went to Delphi and asked the oracle of Apollo whether anyone was wiser than Socrates. The priestess answered that no one was. Socrates, who was sure he knew nothing, took the answer as a riddle set by the god — and set out to refute it.",
+      "text": "When I heard the answer, I said to myself, What can the god mean? and what is the interpretation of his riddle? for I know that I have no wisdom, small or great. What then can he mean when he says that I am the wisest of men? And yet he is a god, and cannot lie; that would be against his nature. After long consideration, I thought of a method of trying the question. I reflected that if I could only find a man wiser than myself, then I might go to the god with a refutation in my hand. I should say to him, 'Here is a man who is wiser than I am; but you said that I was the wisest.'",
+      "source": "Plato, Apology 21a–c · Jowett",
+      "ask": "Socrates' first response to being called wise was to try to prove it false. When you were last praised, did you test it or bank it?"
+    },
+    {
+      "id": "k10",
+      "frame": "He went first to a politician with a reputation for wisdom. The conversation went badly, and produced the sentence the whole Socratic project rests on. Read the last line slowly: the advantage he claims is slight, and he says so.",
+      "text": "When I began to talk with him, I could not help thinking that he was not really wise, although he was thought wise by many, and still wiser by himself; and thereupon I tried to explain to him that he thought himself wise, but was not really wise; and the consequence was that he hated me, and his enmity was shared by several who were present and heard me. So I left him, saying to myself, as I went away: Well, although I do not suppose that either of us knows anything really beautiful and good, I am better off than he is, — for he knows nothing, and thinks that he knows; I neither know nor think that I know. In this latter particular, then, I seem to have slightly the advantage of him.",
+      "source": "Plato, Apology 21c–d · Jowett",
+      "ask": "'He knows nothing, and thinks that he knows.' Name one subject where you talk with more confidence than you have earned."
+    },
+    {
+      "id": "k11",
+      "frame": "After the politicians, the poets — who could not explain their own poems — and then the craftsmen, who really did know things. Here Socrates finds the most interesting failure of all, and the most common: real skill in one field mistaken for wisdom in every field.",
+      "text": "At last I went to the artisans. I was conscious that I knew nothing at all, as I may say, and I was sure that they knew many fine things; and here I was not mistaken, for they did know many things of which I was ignorant, and in this they certainly were wiser than I was. But I observed that even the good artisans fell into the same error as the poets; — because they were good workmen they thought that they also knew all sorts of high matters, and this defect in them overshadowed their wisdom; and therefore I asked myself on behalf of the oracle, whether I would like to be as I was, neither having their knowledge nor their ignorance, or like them in both; and I made answer to myself and to the oracle that I was better off as I was.",
+      "source": "Plato, Apology 22c–e · Jowett",
+      "ask": "What are you genuinely good at — and where has that competence quietly given you opinions it did not earn?"
+    },
+    {
+      "id": "k12",
+      "frame": "Socrates' conclusion about the oracle. Note what he does with it: not a private insight to be enjoyed, but a job — a mission from the god — which has cost him everything a respectable Athenian valued. Poverty, no public career, and the hatred that has brought him to this courtroom.",
+      "text": "The truth is, O men of Athens, that God only is wise; and by his answer he intends to show that the wisdom of men is worth little or nothing; he is not speaking of Socrates, he is only using my name by way of illustration, as if he said, He, O men, is the wisest, who, like Socrates, knows that his wisdom is in truth worth nothing. And so I go about the world, obedient to the god, and search and make enquiry into the wisdom of any one, whether citizen or stranger, who appears to be wise; and if he is not wise, then in vindication of the oracle I show him that he is not wise; and my occupation quite absorbs me, and I have no time to give either to any public matter of interest or to any concern of my own, but I am in utter poverty by reason of my devotion to the god.",
+      "source": "Plato, Apology 23a–c · Jowett",
+      "ask": "Socrates treated a piece of knowledge about himself as an assignment. Is there something true about you that you have merely noted, when it was asking to be acted on?"
+    },
+    {
+      "id": "k13",
+      "frame": "Now the formal charge. Athenian procedure allowed the defendant to cross-examine his accuser, and Socrates calls Meletus. Who, he asks, improves the young? Meletus says: the laws, the jurors, the councillors, the assembly — everyone in Athens, in fact, except Socrates. Socrates draws the picture out with a horse.",
+      "text": "Happy indeed would be the condition of youth if they had one corrupter only, and all the rest of the world were their improvers. But you, Meletus, have sufficiently shown that you never had a thought about the young: your carelessness is seen in your not caring about the very things which you bring against me. ... Does any one like to be injured? Certainly not. And when you accuse me of corrupting and deteriorating the youth, do you allege that I corrupt them intentionally or unintentionally? Intentionally, I say. But you have just admitted that the good do their neighbours good, and the evil do them evil. Now, is that a truth which your superior wisdom has recognized thus early in life, and am I, at my age, in such darkness and ignorance as not to know that if a man with whom I have to live is corrupted by me, I am very likely to be harmed by him; and yet I corrupt him, and intentionally, too — so you say, although neither I nor any other human being is ever likely to be convinced by you.",
+      "source": "Plato, Apology 25b–e · Jowett",
+      "ask": "Meletus had never thought about the thing he was prosecuting. What do you hold a strong opinion about that you have never actually spent an hour thinking through?"
+    },
+    {
+      "id": "k14",
+      "frame": "Someone will ask, Socrates says, whether he is not ashamed of a way of life that has brought him here. His answer reaches for Homer. Achilles, told by his mother Thetis that killing Hector means his own death will follow, answers without hesitation. Socrates, who fought in the phalanx at Potidaea, Amphipolis and Delium, then applies the soldier's rule to himself.",
+      "text": "The son of Thetis above all, who altogether despised danger in comparison with disgrace; and when he was so eager to slay Hector, his goddess mother said to him, that if he avenged his companion Patroclus, and slew Hector, he would die himself — 'Fate,' she said, in these or the like words, 'waits for you next after Hector;' he, receiving this warning, utterly despised danger and death, and instead of fearing them, feared rather to live in dishonour, and not to avenge his friend. 'Let me die forthwith,' he replies, 'and be avenged of my enemy, rather than abide here by the beaked ships, a laughing-stock and a burden of the earth.' Had Achilles any thought of death and danger? For wherever a man's place is, whether the place which he has chosen or that in which he has been placed by a commander, there he ought to remain in the hour of danger; he should not think of death or of anything but of disgrace.",
+      "source": "Plato, Apology 28c–d · Jowett",
+      "ask": "'Wherever a man's place is … there he ought to remain.' Where is your post right now — the thing you have taken on and are tempted to drift from?"
+    },
+    {
+      "id": "k15",
+      "frame": "Why is Socrates not afraid? Because fearing death would mean pretending to know what he does not know. This is not bravado; it is his one principle, applied to the largest case. He is not certain death is harmless. He is certain that nobody knows, and that acting as if you knew is the very fault he has spent his life exposing.",
+      "text": "Strange, indeed, would be my conduct, O men of Athens, if I who, when I was ordered by the generals whom you chose to command me at Potidaea and Amphipolis and Delium, remained where they placed me, like any other man, facing death — if now, when, as I conceive and imagine, God orders me to fulfil the philosopher's mission of searching into myself and other men, I were to desert my post through fear of death, or any other fear; that would indeed be strange. ... For the fear of death is indeed the pretence of wisdom, and not real wisdom, being a pretence of knowing the unknown; and no one knows whether death, which men in their fear apprehend to be the greatest evil, may not be the greatest good.",
+      "source": "Plato, Apology 28e–29a · Jowett",
+      "ask": "What do you fear that you have never actually examined — a fear you inherited whole?"
+    },
+    {
+      "id": "k16",
+      "frame": "Here is the moment the jury could have saved him. Suppose, Socrates says, you acquit me on condition that I stop. He gives his answer before they can offer. The last sentence is the sermon he has preached in the marketplace for forty years, and he preaches it once more to the men who will vote on his life.",
+      "text": "If you say to me, Socrates, this time we will not mind Anytus, and you shall be let off, but upon one condition, that you are not to enquire and speculate in this way any more, and that if you are caught doing so again you shall die; — if this was the condition on which you let me go, I should reply: Men of Athens, I honour and love you; but I shall obey God rather than you, and while I have life and strength I shall never cease from the practice and teaching of philosophy, exhorting any one whom I meet and saying to him after my manner: You, my friend, — a citizen of the great and mighty and wise city of Athens, — are you not ashamed of heaping up the greatest amount of money and honour and reputation, and caring so little about wisdom and truth and the greatest improvement of the soul, which you never regard or heed at all?",
+      "source": "Plato, Apology 29c–e · Jowett",
+      "ask": "Money, honour, reputation — and the soul, 'which you never regard or heed at all.' Where did this week's hours actually go, by that ledger?"
+    },
+    {
+      "id": "k17",
+      "frame": "He continues, and states his teaching in its shortest form. Read the claim about money carefully: not that money is bad, but that the order of dependence runs the other way from the one people assume.",
+      "text": "For I do nothing but go about persuading you all, old and young alike, not to take thought for your persons or your properties, but first and chiefly to care about the greatest improvement of the soul. I tell you that virtue is not given by money, but that from virtue comes money and every other good of man, public as well as private. This is my teaching, and if this is the doctrine which corrupts the youth, I am a mischievous person. But if any one says that this is not my teaching, he is speaking an untruth. Wherefore, O men of Athens, I say to you, do as Anytus bids or not as Anytus bids, and either acquit me or not; but whichever you do, understand that I shall never alter my ways, not even if I have to die many times.",
+      "source": "Plato, Apology 30a–c · Jowett",
+      "ask": "'From virtue comes money … not the reverse.' Is there a good you are chasing directly that would follow on its own if you became a certain kind of person?"
+    },
+    {
+      "id": "k18",
+      "frame": "The most famous image in the speech. A gadfly is the biting fly that torments horses and cattle in summer. Socrates picks it on purpose — he says so — because it is ridiculous. He is telling the jury that the irritation they feel is his gift to them.",
+      "text": "For if you kill me you will not easily find a successor to me, who, if I may use such a ludicrous figure of speech, am a sort of gadfly, given to the state by God; and the state is a great and noble steed who is tardy in his motions owing to his very size, and requires to be stirred into life. I am that gadfly which God has attached to the state, and all day long and in all places am always fastening upon you, arousing and persuading and reproaching you. You will not easily find another like me, and therefore I would advise you to spare me. I dare say that you may feel out of temper (like a person who is suddenly awakened from sleep), and you think that you might easily strike me dead as Anytus advises, and then you would sleep on for the remainder of your lives, unless God in his care of you sent you another gadfly.",
+      "source": "Plato, Apology 30e–31a · Jowett",
+      "ask": "Who is the gadfly in your life — the person whose questions irritate you precisely because they land? Have you been trying to swat them?"
+    },
+    {
+      "id": "k19",
+      "frame": "Why, then, did Socrates never go into politics, where a man who cared about the city could do the most good? His answer has two parts: a strange private voice that has stopped him since childhood, and a hard-won judgement about what happens to honest men in public life. Both were true, and they said the same thing.",
+      "text": "You have heard me speak at sundry times and in divers places of an oracle or sign which comes to me, and is the divinity which Meletus ridicules in the indictment. This sign, which is a kind of voice, first began to come to me when I was a child; it always forbids but never commands me to do anything which I am going to do. This is what deters me from being a politician. And rightly, as I think. For I am certain, O men of Athens, that if I had engaged in politics, I should have perished long ago, and done no good either to you or to myself. ... For the truth is, that no man who goes to war with you or any other multitude, honestly striving against the many lawless and unrighteous deeds which are done in a state, will save his life; he who will fight for the right, if he would live even for a brief space, must have a private station and not a public one.",
+      "source": "Plato, Apology 31c–32a · Jowett",
+      "ask": "The sign 'always forbids but never commands.' Do you have an inner check that stops you — and do you treat it as a nuisance or as counsel?"
+    },
+    {
+      "id": "k20",
+      "frame": "Socrates gives the jury two occasions when he did act in public — and both times alone. The second is the more dangerous. In 404 BC, after Athens lost the war with Sparta, a junta of thirty men ruled by terror. They ordered Socrates and four others to arrest a citizen named Leon so he could be executed and his property seized. The other four went to Salamis. Socrates went home.",
+      "text": "When the oligarchy of the Thirty was in power, they sent for me and four others into the rotunda, and bade us bring Leon the Salaminian from Salamis, as they wanted to put him to death. This was a specimen of the sort of commands which they were always giving with the view of implicating as many as possible in their crimes; and then I showed, not in word only but in deed, that, if I may be allowed to use such an expression, I cared not a straw for death, and that my great and only care was lest I should do an unrighteous or unholy thing. For the strong arm of that oppressive power did not frighten me into doing wrong; and when we came out of the rotunda the other four went to Salamis and fetched Leon, but I went quietly home.",
+      "source": "Plato, Apology 32c–d · Jowett",
+      "ask": "'The other four went to Salamis … but I went quietly home.' No speech, no protest — just a refusal. When did you last quietly not do the thing everyone else was doing?"
+    },
+    {
+      "id": "k21",
+      "frame": "To the charge of teaching, Socrates answers that he has never had pupils, never charged a fee, and never turned anyone away. This is the difference between him and the Sophists, the paid teachers of rhetoric with whom the comedy had lumped him. It is also his account of what he has actually been doing all these years.",
+      "text": "If any one likes to come and hear me while I am pursuing my mission, whether he be young or old, he is not excluded. Nor do I converse only with those who pay; but any one, whether he be rich or poor, may ask and answer me and listen to my words; and whether he turns out to be a bad man or a good one, neither result can be justly imputed to me; for I never taught or professed to teach him anything. And if any one says that he has ever learned or heard anything from me in private which all the world has not heard, let me tell you that he is lying.",
+      "source": "Plato, Apology 33a–b · Jowett",
+      "ask": "'Anyone may ask and answer me.' Who do you talk seriously with — and is the door as open as you think it is?"
+    },
+    {
+      "id": "k22",
+      "frame": "Defendants were expected to weep, to bring their children into court, to beg. Socrates has three sons and will not do it. His reason is not pride but a view about what a court is for — and a jab at the jurors' oath that they will have felt.",
+      "text": "There seems to be something wrong in asking a favour of a judge, and thus procuring an acquittal, instead of informing and convincing him. For his duty is, not to make a present of justice, but to give judgment; and he has sworn that he will judge according to the laws, and not according to his own good pleasure; and we ought not to encourage you, nor should you allow yourselves to be encouraged, in this habit of perjury — there can be no piety in that. Do not then require me to do what I consider dishonourable and impious and wrong, especially now, when I am being tried for impiety on the indictment of Meletus.",
+      "source": "Plato, Apology 35b–d · Jowett",
+      "ask": "He would rather lose fairly than win by an appeal he thinks corrupt. Is there a way of winning you have decided you will not use — and have you actually been tested on it?"
+    },
+    {
+      "id": "k23",
+      "frame": "The vote: guilty, by a margin of about sixty out of five hundred. Under Athenian law, the prosecution proposed a penalty — death — and the defendant proposed an alternative, and the jury chose between them. A fine or exile would almost certainly have been accepted. Socrates proposes, instead, what he thinks he actually deserves.",
+      "text": "And so he proposes death as the penalty. And what shall I propose on my part, O men of Athens? Clearly that which is my due. And what is my due? What return shall be made to the man who has never had the wit to be idle during his whole life; but has been careless of what the many care for — wealth, and family interests, and military offices, and speaking in the assembly, and magistracies, and plots, and parties. ... What shall be done to such an one? Doubtless some good thing, O men of Athens, if he has his reward; and the good should be of a kind suitable to him. What would be a reward suitable to a poor man who is your benefactor, and who desires leisure that he may instruct you? There can be no reward so fitting as maintenance in the Prytaneum.",
+      "source": "Plato, Apology 36b–d · Jowett",
+      "ask": "Free meals for life at public expense, the honour given Olympic victors — proposed to a jury that has just convicted him. Is this integrity or provocation? Could it be both?"
+    },
+    {
+      "id": "k24",
+      "frame": "Exile, then? He could go and be quiet somewhere else. The passage in which he refuses contains the sentence most often quoted from all of Plato. Notice that it comes not as a slogan but as the second half of an admission: he does not expect to be believed.",
+      "text": "Some one will say: Yes, Socrates, but cannot you hold your tongue, and then you may go into a foreign city, and no one will interfere with you? Now I have great difficulty in making you understand my answer to this. For if I tell you that to do as you say would be a disobedience to the God, and therefore that I cannot hold my tongue, you will not believe that I am serious; and if I say again that daily to discourse about virtue, and of those other things about which you hear me examining myself and others, is the greatest good of man, and that the unexamined life is not worth living, you are still less likely to believe me. Yet I say what is true, although a thing of which it is hard for me to persuade you.",
+      "source": "Plato, Apology 37e–38a · Jowett",
+      "ask": "'The unexamined life is not worth living.' Not the unsuccessful life, or the unhappy one. When did you last examine yours — not review it, examine it?"
+    },
+    {
+      "id": "k25",
+      "frame": "The second vote: death, by a larger margin than the conviction. Socrates' third speech begins with a race. He is old and slow; death has caught him. But his accusers were racing too, and something faster than death has caught them.",
+      "text": "Not much time will be gained, O Athenians, in return for the evil name which you will get from the detractors of the city, who will say that you killed Socrates, a wise man; for they will call me wise, even although I am not wise, when they want to reproach you. If you had waited a little while, your desire would have been fulfilled in the course of nature. ... The difficulty, my friends, is not to avoid death, but to avoid unrighteousness; for that runs faster than death. I am old and move slowly, and the slower runner has overtaken me, and my accusers are keen and quick, and the faster runner, who is unrighteousness, has overtaken them.",
+      "source": "Plato, Apology 38c–39b · Jowett",
+      "ask": "'Unrighteousness runs faster than death.' Is there a shortcut you took recently that has already caught up with you — or is about to?"
+    },
+    {
+      "id": "k26",
+      "frame": "Now he turns to the jurors who voted to acquit, whom alone he calls judges, and tells them something remarkable. The inner voice that has checked him all his life about the smallest things said nothing at all today. He reads that silence.",
+      "text": "O my judges — for you I may truly call judges — I should like to tell you of a wonderful circumstance. Hitherto the divine faculty of which the internal oracle is the source has constantly been in the habit of opposing me even about trifles, if I was going to make a slip or error in any matter; and now as you see there has come upon me that which may be thought, and is generally believed to be, the last and worst evil. But the oracle made no sign of opposition, either when I was leaving my house in the morning, or when I was on my way to the court, or while I was speaking, at anything which I was going to say; and yet I have often been stopped in the middle of a speech, but now in nothing I either said or did touching the matter in hand has the oracle opposed me. What do I take to be the explanation of this silence? I will tell you. It is an intimation that what has happened to me is a good, and that those of us who think that death is an evil are in error.",
+      "source": "Plato, Apology 40a–c · Jowett",
+      "ask": "He trusts a lifetime's pattern over a single day's terror. What has your own experience taught you reliably, that a bad day tempts you to forget?"
+    },
+    {
+      "id": "k27",
+      "frame": "His argument that death is not to be feared. He does not claim to know what it is; he lays out the two possibilities and finds neither frightening. The first — nothing, a sleep without dreams — is the one he lingers on, and the comparison he makes is homely on purpose.",
+      "text": "Let us reflect in another way, and we shall see that there is great reason to hope that death is a good; for one of two things — either death is a state of nothingness and utter unconsciousness, or, as men say, there is a change and migration of the soul from this world to another. Now if you suppose that there is no consciousness, but a sleep like the sleep of him who is undisturbed even by dreams, death will be an unspeakable gain. For if a person were to select the night in which his sleep was undisturbed even by dreams, and were to compare with this the other days and nights of his life, and then were to tell us how many days and nights he had passed in the course of his life better and more pleasantly than this one, I think that any man, I will not say a private man, but even the great king will not find many such days or nights, when compared with the others.",
+      "source": "Plato, Apology 40c–e · Jowett",
+      "ask": "Count honestly: how many days in the last year were better than a night of perfect, dreamless sleep? What does the number tell you about what you are afraid of losing?"
+    },
+    {
+      "id": "k28",
+      "frame": "The end of the Apology. He asks one favour of the men who condemned him — for his sons — and then leaves. The last two sentences are among the most quoted in Greek literature, and they refuse to claim more than he knows.",
+      "text": "Still I have a favour to ask of them. When my sons are grown up, I would ask you, O my friends, to punish them; and I would have you trouble them, as I have troubled you, if they seem to care about riches, or anything, more than about virtue; or if they pretend to be something when they are really nothing, — then reprove them, as I have reproved you, for not caring about that for which they ought to care, and thinking that they are something when they are really nothing. And if you do this, both I and my sons will have received justice at your hands. The hour of departure has arrived, and we go our ways — I to die, and you to live. Which is better God only knows.",
+      "source": "Plato, Apology 41e–42a · Jowett",
+      "ask": "'Trouble them, as I have troubled you.' Would you want someone to do that for the people you love — and are you willing to be that person for anyone?"
+    },
+    {
+      "id": "k29",
+      "frame": "The Crito. Execution was delayed a month by a religious festival: a sacred ship had gone to Delos, and no one could be put to death until it returned. On the night it is sighted, Socrates' oldest friend Crito comes to the prison before dawn with a plan and money for an escape. He finds Socrates asleep, and waits.",
+      "text": "SOCRATES: Why have you come at this hour, Crito? it must be quite early. CRITO: Yes, certainly. SOCRATES: What is the exact time? CRITO: The dawn is breaking. ... SOCRATES: And are you only just arrived? CRITO: No, I came some time ago. SOCRATES: Then why did you sit and say nothing, instead of at once awakening me? CRITO: I should not have liked myself, Socrates, to be in such great trouble and unrest as you are — indeed I should not: I have been watching with amazement your peaceful slumbers; and for that reason I did not awake you, because I wished to minimize the pain. I have always thought you to be of a happy disposition; but never did I see anything like the easy, tranquil manner in which you bear this calamity. SOCRATES: Why, Crito, when a man has reached my age he ought not to be repining at the approach of death.",
+      "source": "Plato, Crito 43a–b · Jowett",
+      "ask": "Crito could not sleep; Socrates could. What was the last thing that kept you awake — and, in the morning, was it in your control?"
+    },
+    {
+      "id": "k30",
+      "frame": "Crito's first argument is what people will think: that he and Socrates' other friends valued money over a friend's life. Socrates' answer sets the terms for the whole dialogue. He does not deny the many have power. He denies they have the only power that matters.",
+      "text": "CRITO: But you see, Socrates, that the opinion of the many must be regarded, for what is now happening shows that they can do the greatest evil to any one who has lost their good opinion. SOCRATES: I only wish it were so, Crito; and that the many could do the greatest evil; for then they would also be able to do the greatest good — and what a fine thing this would be! But in reality they can do neither; for they cannot make a man either wise or foolish; and whatever they do is the result of chance.",
+      "source": "Plato, Crito 44c–d · Jowett",
+      "ask": "'They cannot make a man either wise or foolish.' What has public opinion — likes, reviews, the room's mood — actually changed about who you are? Anything?"
+    },
+    {
+      "id": "k31",
+      "frame": "Crito presses with practical arguments: money is no object, Thessaly is welcoming, the children need a father. Socrates answers with the argument from expertise. An athlete in training listens to one trainer, not the crowd; a man deciding how to live should listen to the one who understands, not the many. It leads to a question he and Crito have agreed on many times before.",
+      "text": "But why, my dear Crito, should we care about the opinion of the many? Good men, and they are the only persons who are worth considering, will think of these things truly as they occurred. ... And I should like to know whether I may say the same of another proposition — that not life, but a good life, is to be chiefly valued? CRITO: Yes, that also remains unshaken. SOCRATES: And a good life is equivalent to a just and honorable one — that holds also? CRITO: Yes, it does. SOCRATES: From these premisses I proceed to argue the question whether I ought or ought not to try and escape without the consent of the Athenians: and if I am clearly right in escaping, then I will make the attempt; but if not, I will abstain.",
+      "source": "Plato, Crito 48a–b · Jowett",
+      "ask": "'Not life, but a good life.' Whose opinion do you actually consult about how to live — and is that person the one who understands, or the one who is nearest?"
+    },
+    {
+      "id": "k32",
+      "frame": "The principle on which everything turns. It is not that Socrates thinks the verdict just — he does not. It is that he holds one rule without exception, and he knows how rare that is. Notice him pause to ask Crito whether he really means it, because most people do not.",
+      "text": "Then we must do no wrong? CRITO: Certainly not. SOCRATES: Nor when injured injure in return, as the many imagine; for we must injure no one at all? ... CRITO: Clearly not. SOCRATES: Again, Crito, may we do evil? CRITO: Surely not, Socrates. SOCRATES: And what of doing evil in return for evil, which is the morality of the many — is that just or not? CRITO: Not just. ... SOCRATES: Then we ought not to retaliate or render evil for evil to any one, whatever evil we may have suffered from him. But I would have you consider, Crito, whether you really mean what you are saying. For this opinion has never been held, and never will be held, by any considerable number of persons; and those who are agreed and those who are not agreed upon this point have no common ground, and can only despise one another when they see how widely they differ.",
+      "source": "Plato, Crito 49b–d · Jowett",
+      "ask": "'Whatever evil we may have suffered from him.' Four centuries before the Sermon on the Mount. Is there someone you are, right now, planning to pay back?"
+    },
+    {
+      "id": "k33",
+      "frame": "Socrates imagines the Laws of Athens themselves coming to the prison to argue with him. It is a rhetorical device, and it lets him put the case for staying in a voice that is not quite his own. They begin with the question of what an escape would actually do.",
+      "text": "Tell us, Socrates, they say; what are you about? are you not going by an act of yours to overturn us — the laws, and the whole state, as far as in you lies? Do you imagine that a state can subsist and not be overthrown, in which the decisions of law have no power, but are set aside and trampled upon by individuals? ... Was that our agreement with you? the law would answer; or were you to abide by the sentence of the state? And if I were to express my astonishment at their words, the law would probably add: Answer, Socrates, instead of opening your eyes — you are in the habit of asking and answering questions.",
+      "source": "Plato, Crito 50a–c · Jowett",
+      "ask": "'You are in the habit of asking and answering questions.' Socrates' own method turned on him. Would your principles survive being applied to you by someone else?"
+    },
+    {
+      "id": "k34",
+      "frame": "The Laws make their strongest claim: that the city stands to a citizen as a parent does to a child, and more. Readers have argued about this passage for two thousand years — it seems to go further than the Socrates of the Apology, who told the jury he would disobey them rather than the god. Notice the escape clause the Laws themselves leave open: persuade, or obey.",
+      "text": "Has a philosopher like you failed to discover that our country is more to be valued and higher and holier far than mother or father or any ancestor, and more to be regarded in the eyes of the gods and of men of understanding? also to be soothed, and gently and reverently entreated when angry, even more than a father, and either to be persuaded, or if not persuaded, to be obeyed? And when we are punished by her, whether with imprisonment or stripes, the punishment is to be endured in silence; and if she lead us to wounds or death in battle, thither we follow as is right; neither may any one yield or retreat or leave his rank, but whether in battle or in a court of law, or in any other place, he must do what his city and his country order him; or he must change their view of what is just: and if he may do no violence to his father or mother, much less may he do violence to his country.",
+      "source": "Plato, Crito 51a–c · Jowett",
+      "ask": "'Either persuade her, or obey.' Is there a rule in your life you neither follow nor try to change — just quietly break?"
+    },
+    {
+      "id": "k35",
+      "frame": "The Laws' final argument is about consent. Any Athenian who disliked the city could leave with his property. Socrates never did — never even travelled, except once to the Isthmian games and on campaign. Seventy years of staying, the Laws say, is an agreement.",
+      "text": "Any one who does not like us and the city, and who wants to emigrate to a colony or to any other city, may go where he likes, retaining his property. But he who has experience of the manner in which we order justice and administer the state, and still remains, has entered into an implied contract that he will do as we command him. ... You, Socrates, are breaking the covenants and agreements which you made with us at your leisure, not in any haste or under any compulsion or deception, but after you have had seventy years to think of them, during which time you were at liberty to leave the city, if we were not to your mind, or if our covenants appeared to you to be unfair. You had your choice, and might have gone either to Lacedaemon or Crete, both which states are often praised by you for their good government, or to some other Hellenic or foreign state. Whereas you, above all other Athenians, seemed to be so fond of the state, or, in other words, of us her laws (and who would care about a state which has no laws?), that you never stirred out of her; the halt, the blind, the maimed, were not more stationary in her than you were.",
+      "source": "Plato, Crito 51d–52c · Jowett",
+      "ask": "What have you agreed to simply by staying — in a job, a city, a relationship — that you have never said yes to out loud?"
+    },
+    {
+      "id": "k36",
+      "frame": "The end of the Crito. The Laws have finished, and Socrates tells his friend what it is like to have heard them. The Corybantes were worshippers whose ecstatic rites were driven by flute music; once the tune was in your ears, nothing else could be heard.",
+      "text": "This, dear Crito, is the voice which I seem to hear murmuring in my ears, like the sound of the flute in the ears of the mystic; that voice, I say, is humming in my ears, and prevents me from hearing any other. And I know that anything more which you may say will be vain. Yet speak, if you have anything to say. CRITO: I have nothing to say, Socrates. SOCRATES: Leave me then, Crito, to fulfil the will of God, and to follow whither he leads.",
+      "source": "Plato, Crito 54d–e · Jowett",
+      "ask": "'I have nothing to say.' Crito loses the argument and loses his friend. Have you ever been argued out of rescuing someone — and were they right?"
+    },
+    {
+      "id": "k37",
+      "frame": "The Phaedo. The ship has come. On the last afternoon, in the prison, Socrates' friends gather and he spends the hours arguing for the immortality of the soul — and, more than that, showing them how a philosopher dies. The dialogue is narrated afterwards by Phaedo to a friend in another city. Early on, Socrates explains why a philosopher of all people should not fear death.",
+      "text": "And now, O my judges, I desire to prove to you that the real philosopher has reason to be of good cheer when he is about to die, and that after death he may hope to obtain the greatest good in the other world. And how this may be, Simmias and Cebes, I will endeavour to explain. For I deem that the true votary of philosophy is likely to be misunderstood by other men; they do not perceive that he is always pursuing death and dying; and if this be so, and he has had the desire of death all his life long, why when his time comes should he repine at that which he has been always pursuing and desiring?",
+      "source": "Plato, Phaedo 63e–64a · Jowett",
+      "ask": "'Always pursuing death' — meaning: always practising letting go of the body's demands. What have you been practising all your life without naming it? Is it something you'd want to be good at when it counts?"
+    },
+    {
+      "id": "k38",
+      "frame": "His friends are afraid to press him with objections on his last day. Socrates laughs at them, and reaches for the swans, which were sacred to Apollo and were said to sing once, just before they died. Men think it is grief. Socrates thinks men are projecting.",
+      "text": "Will you not allow that I have as much of the spirit of prophecy in me as the swans? For they, when they perceive that they must die, having sung all their life long, do then sing more lustily than ever, rejoicing in the thought that they are about to go away to the god whose ministers they are. But men, because they are themselves afraid of death, slanderously affirm of the swans that they sing a lament at the last, not considering that no bird sings when cold, or hungry, or in pain, not even the nightingale, nor the swallow, nor yet the hoopoe; which are said indeed to tune a lay of sorrow, although I do not believe this to be true of them any more than of the swans. But because they are sacred to Apollo, they have the gift of prophecy, and anticipate the good things of another world, wherefore they sing and rejoice in that day more than they ever did before.",
+      "source": "Plato, Phaedo 84e–85b · Jowett",
+      "ask": "'Because they are themselves afraid, they affirm it of the swans.' Whose behaviour have you explained by a fear that was really yours?"
+    },
+    {
+      "id": "k39",
+      "frame": "Two of the friends raise real objections, and the room falls into despair — if the argument can fail, perhaps all arguments can. Socrates rallies them, and in doing so gives the clearest statement of what he thinks argument is for. Note the warning against 'misology': giving up on reasoning because a particular argument let you down.",
+      "text": "Let us then, in the first place, he said, be careful of allowing or of admitting into our souls the notion that there is no health or soundness in any arguments at all. Rather say that we have not yet attained to soundness in ourselves, and that we must struggle manfully and do our best to gain health of mind — you and all other men having regard to the whole of your future life, and I myself in the prospect of death. For at this moment I am sensible that I have not the temper of a philosopher; like the vulgar, I am only a partisan. Now the partisan, when he is engaged in a dispute, cares nothing about the rights of the question, but is anxious only to convince his hearers of his own assertions. And the difference between him and me at the present moment is merely this — that whereas he seeks to convince his hearers that what he says is true, I am rather seeking to convince myself; to convince my hearers is a secondary matter with me.",
+      "source": "Plato, Phaedo 90e–91a · Jowett",
+      "ask": "'I am rather seeking to convince myself.' In your last real disagreement, which were you doing — and how could you tell?"
+    },
+    {
+      "id": "k40",
+      "frame": "He continues, and asks his friends for the one thing he has asked of every interlocutor for fifty years. It is the last instruction he gives about how to treat him, and it is to disregard him.",
+      "text": "And I would ask you to be thinking of the truth and not of Socrates: agree with me, if I seem to you to be speaking the truth; or if not, withstand me might and main, that I may not deceive you as well as myself in my enthusiasm, and like the bee, leave my sting in you before I die.",
+      "source": "Plato, Phaedo 91b–c · Jowett",
+      "ask": "'Think of the truth and not of Socrates.' Who do you agree with because of who they are rather than what they said? Would they want that?"
+    },
+    {
+      "id": "k41",
+      "frame": "Evening. Socrates has bathed, seen his wife and sons, and returned. Crito urges him to wait — the sun is still on the hills, and other condemned men eat and drink and enjoy themselves until late. Socrates declines, and the jailer brings the cup. Plato gives the scene in Phaedo's voice.",
+      "text": "Yes, Crito, and they of whom you speak are right in so acting, for they think that they will be gainers by the delay; but I am right in not following their example, for I do not think that I should gain anything by drinking the poison a little later; I should only be ridiculous in my own eyes for sparing and saving a life which is already forfeit. Please then to do as I say, and not to refuse me. ... Then raising the cup to his lips, quite readily and cheerfully he drank off the poison. And hitherto most of us had been able to control our sorrow; but now when we saw him drinking, and saw too that he had finished the draught, we could no longer forbear, and in spite of myself my own tears were flowing fast; so that I covered my face and wept, not for him, but at the thought of my own calamity in having to part from such a friend.",
+      "source": "Plato, Phaedo 116e–117c · Jowett",
+      "ask": "'Not for him, but at the thought of my own calamity.' Phaedo is honest about what grief is partly made of. When you last grieved, how much of it was for the other person?"
+    },
+    {
+      "id": "k42",
+      "frame": "The last card. The poison works upward from the feet. Socrates' final words have puzzled readers for two millennia: Asclepius was the god of healing, and a cock was the offering of thanks for a cure. Then Phaedo closes the dialogue, and Plato closes the life, in a single sentence. You have walked from the courthouse porch to here.",
+      "text": "He was beginning to grow cold about the groin, when he uncovered his face, for he had covered himself up, and said — they were his last words — he said: Crito, I owe a cock to Asclepius; will you remember to pay the debt? The debt shall be paid, said Crito; is there anything else? There was no answer to this question; but in a minute or two a movement was heard, and the attendants uncovered him; his eyes were set, and Crito closed his eyes and mouth. Such was the end, Echecrates, of our friend; concerning whom I may truly say, that of all the men of his time whom I have known, he was the wisest and justest and best.",
+      "source": "Plato, Phaedo 118a · Jowett",
+      "ask": "A thank-offering for a cure, at the moment of death. What did he think he was being healed of? And what, after fourteen days with him, would you say he has been trying to cure in you?"
+    }
+  ]
+}

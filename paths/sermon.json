@@ -1,0 +1,302 @@
+{
+  "id": "sermon",
+  "title": "The Sermon on the Mount",
+  "sub": "Matthew 5–7, line by line",
+  "blurb": "The three chapters of Matthew's Gospel that the Christian tradition has treated as its constitution, read in order and in full, in the King James Version. Fourteen days, three cards a day, one passage at a time.",
+  "cards": [
+    {
+      "id": "m01",
+      "frame": "Matthew's Gospel was written in Greek, probably in the 80s AD, for a community of Jewish Christians. It gathers Jesus' teaching into five long speeches, and this is the first and most famous. The setting is deliberate: a teacher goes up a mountain and sits down — the posture of a rabbi — and Matthew's first readers would have heard Moses on Sinai behind every line. The text here is the King James Version of 1611, the English in which these chapters have been most read.",
+      "text": "And seeing the multitudes, he went up into a mountain: and when he was set, his disciples came unto him: And he opened his mouth, and taught them, saying,",
+      "source": "Matthew 5:1–2 · King James Version (1611)",
+      "ask": "Two audiences: the crowds below, and the disciples who came up. As you begin, which are you — and what would it take to be the other?"
+    },
+    {
+      "id": "m02",
+      "frame": "The Beatitudes — from beatus, Latin for 'blessed' — are eight short sayings that open the sermon, each naming a condition the world does not envy and calling it blessed. The word in Greek, makarios, means something closer to 'fortunate' or 'to be congratulated' than 'holy'. The first two are the hardest to hear as good news.",
+      "text": "Blessed are the poor in spirit: for theirs is the kingdom of heaven. Blessed are they that mourn: for they shall be comforted.",
+      "source": "Matthew 5:3–4 · KJV",
+      "ask": "'Poor in spirit' — empty, aware of need. When were you last that, and did anything come of it that fullness would have blocked?"
+    },
+    {
+      "id": "m03",
+      "frame": "The third beatitude quotes Psalm 37 — 'the meek shall inherit the earth' — a psalm written for people watching the wicked prosper. Meekness in the Bible is not weakness; it is strength that does not need to assert itself. The fourth turns a bodily ache into a picture of desire.",
+      "text": "Blessed are the meek: for they shall inherit the earth. Blessed are they which do hunger and thirst after righteousness: for they shall be filled.",
+      "source": "Matthew 5:5–6 · KJV",
+      "ask": "Hunger is not a preference; it is a need that will not be argued with. Is there anything good you want that badly? What do you hunger for instead?"
+    },
+    {
+      "id": "m04",
+      "frame": "Three more. 'Pure in heart' — the Greek means unmixed, undivided, a heart that wants one thing. 'Peacemakers' is a single word in Greek, and it is active: not the peaceful, but those who make peace where there was none.",
+      "text": "Blessed are the merciful: for they shall obtain mercy. Blessed are the pure in heart: for they shall see God. Blessed are the peacemakers: for they shall be called the children of God.",
+      "source": "Matthew 5:7–9 · KJV",
+      "ask": "Peace-keeping avoids the conflict; peace-making walks into it. Where is there a quarrel you have been keeping the peace around rather than making peace in?"
+    },
+    {
+      "id": "m05",
+      "frame": "The last beatitude is doubled and turned to the listeners directly — 'blessed are ye' — and it is the only one with a command in it: rejoice. Matthew's first readers, thrown out of synagogues and sometimes worse, will have read it as written to them. Notice that persecution is blessed only 'for righteousness' sake'; being disliked is not the same thing.",
+      "text": "Blessed are they which are persecuted for righteousness' sake: for theirs is the kingdom of heaven. Blessed are ye, when men shall revile you, and persecute you, and shall say all manner of evil against you falsely, for my sake. Rejoice, and be exceeding glad: for great is your reward in heaven: for so persecuted they the prophets which were before you.",
+      "source": "Matthew 5:10–12 · KJV",
+      "ask": "'Falsely.' When you are criticised, how quickly do you check whether it is false before reaching for the comfort of being persecuted?"
+    },
+    {
+      "id": "m06",
+      "frame": "Two images for what the disciples are, both about things whose whole use is for something else. Salt in the ancient world preserved food and made it worth eating; it was also, in the Hebrew Bible, the sign of a covenant. Salt that has lost its savour is not bad salt — it is not salt.",
+      "text": "Ye are the salt of the earth: but if the salt have lost his savour, wherewith shall it be salted? it is thenceforth good for nothing, but to be cast out, and to be trodden under foot of men.",
+      "source": "Matthew 5:13 · KJV",
+      "ask": "Salt is only ever noticed by its absence. What do you add to the rooms you are in that would be missed — and what would make you lose it?"
+    },
+    {
+      "id": "m07",
+      "frame": "The second image. Palestine's hill towns were built of pale limestone and could be seen for miles. The lamp is a small clay dish of oil, and the bushel a grain measure — a basket. The point of both images is the same: what the disciples are is for others, and hiding it makes it pointless. The last verse gives the purpose of the whole sermon.",
+      "text": "Ye are the light of the world. A city that is set on an hill cannot be hid. Neither do men light a candle, and put it under a bushel, but on a candlestick; and it giveth light unto all that are in the house. Let your light so shine before men, that they may see your good works, and glorify your Father which is in heaven.",
+      "source": "Matthew 5:14–16 · KJV",
+      "ask": "'That they may see your good works, and glorify your Father' — not you. Is there a good thing you do that you have been careful to be credited for?"
+    },
+    {
+      "id": "m08",
+      "frame": "Now the sermon's most important hinge. What follows will sound as though Jesus is overturning the Law of Moses. He says first, in the strongest possible terms, that he is not. 'Jot' is the Hebrew letter yod, the smallest; 'tittle' is a tiny stroke that distinguishes one letter from another.",
+      "text": "Think not that I am come to destroy the law, or the prophets: I am not come to destroy, but to fulfil. For verily I say unto you, Till heaven and earth pass, one jot or one tittle shall in no wise pass from the law, till all be fulfilled.",
+      "source": "Matthew 5:17–18 · KJV",
+      "ask": "'Not to destroy, but to fulfil.' Is there a rule from your upbringing you threw out when you might have grown into it?"
+    },
+    {
+      "id": "m09",
+      "frame": "The scribes were the professional interpreters of the law, and the Pharisees the lay movement most serious about keeping it. To the crowd they were the top of the scale. Jesus tells his listeners that their righteousness must exceed them — and the next six passages will explain what he means by 'exceed'. It is not more rules. It is going inward.",
+      "text": "Whosoever therefore shall break one of these least commandments, and shall teach men so, he shall be called the least in the kingdom of heaven: but whosoever shall do and teach them, the same shall be called great in the kingdom of heaven. For I say unto you, That except your righteousness shall exceed the righteousness of the scribes and Pharisees, ye shall in no case enter into the kingdom of heaven.",
+      "source": "Matthew 5:19–20 · KJV",
+      "ask": "'Shall do and teach them.' In what area do you teach — to children, colleagues, friends — a standard you don't keep?"
+    },
+    {
+      "id": "m10",
+      "frame": "The first of six 'antitheses': 'Ye have heard … but I say unto you.' Each takes a commandment and follows it to its root. Murder is the act; the root is anger and contempt. 'Raca' is an Aramaic insult, roughly 'empty-head'. The council is the Sanhedrin, the highest court; hell fire is Gehenna, the burning rubbish valley south of Jerusalem.",
+      "text": "Ye have heard that it was said by them of old time, Thou shalt not kill; and whosoever shall kill shall be in danger of the judgment: But I say unto you, That whosoever is angry with his brother without a cause shall be in danger of the judgment: and whosoever shall say to his brother, Raca, shall be in danger of the council: but whosoever shall say, Thou fool, shall be in danger of hell fire.",
+      "source": "Matthew 5:21–22 · KJV",
+      "ask": "Contempt — 'Thou fool' — is put on a level with murder. Who do you hold in contempt, and have you told yourself it is harmless because you have never acted on it?"
+    },
+    {
+      "id": "m11",
+      "frame": "The practical corollary. A worshipper has come to the Temple in Jerusalem with an offering — possibly a journey of days — and is at the altar itself. Jesus says: leave it there. Reconciliation with a person outranks the most sacred act available.",
+      "text": "Therefore if thou bring thy gift to the altar, and there rememberest that thy brother hath ought against thee; Leave there thy gift before the altar, and go thy way; first be reconciled to thy brother, and then come and offer thy gift.",
+      "source": "Matthew 5:23–24 · KJV",
+      "ask": "'Thy brother hath ought against thee' — not you against him. Who has something against you that you have been waiting for them to raise?"
+    },
+    {
+      "id": "m12",
+      "frame": "A second practical picture, from the law courts: a debtor on the road to court with his creditor. Settle now, on the way, while it is still between the two of you. A farthing was the smallest Roman coin. The saying is about the cost of letting a quarrel harden into a case.",
+      "text": "Agree with thine adversary quickly, whiles thou art in the way with him; lest at any time the adversary deliver thee to the judge, and the judge deliver thee to the officer, and thou be cast into prison. Verily I say unto thee, Thou shalt by no means come out thence, till thou hast paid the uttermost farthing.",
+      "source": "Matthew 5:25–26 · KJV",
+      "ask": "'Whiles thou art in the way with him.' Is there a disagreement still small enough to settle on the road, that will not be if you wait?"
+    },
+    {
+      "id": "m13",
+      "frame": "The second antithesis. As anger is the root of murder, so the look is the root of adultery. The word 'lust' in the KJV means desire strongly — the Greek is the same word used elsewhere for good desires. The point is not a glance but a look that has already decided.",
+      "text": "Ye have heard that it was said by them of old time, Thou shalt not commit adultery: But I say unto you, That whosoever looketh on a woman to lust after her hath committed adultery with her already in his heart.",
+      "source": "Matthew 5:27–28 · KJV",
+      "ask": "'Already in his heart.' The sermon keeps insisting that the inner act is the real one. Where in your life is the inside already somewhere the outside has not gone?"
+    },
+    {
+      "id": "m14",
+      "frame": "One of the sermon's hardest sayings, and one that no serious reader has taken literally — Origen, who reportedly did, was condemned for it. It is hyperbole, the deliberate exaggeration Jesus uses often. But hyperbole is not a joke: it says that some things are worth any price to be rid of.",
+      "text": "And if thy right eye offend thee, pluck it out, and cast it from thee: for it is profitable for thee that one of thy members should perish, and not that thy whole body should be cast into hell. And if thy right hand offend thee, cut it off, and cast it from thee: for it is profitable for thee that one of thy members should perish, and not that thy whole body should be cast into hell.",
+      "source": "Matthew 5:29–30 · KJV",
+      "ask": "What in your life would you need to cut off — an app, a habit, a place, a person — to be rid of something that is doing you harm? What is the hand you keep reaching with?"
+    },
+    {
+      "id": "m15",
+      "frame": "The third antithesis. The Law of Moses (Deuteronomy 24) permitted a man to divorce his wife with a written notice; in Jesus' day the schools argued only about the grounds. Jesus narrows it to almost nothing. The passage has been read in many ways; what is not in doubt is the direction — towards the permanence of promises.",
+      "text": "It hath been said, Whosoever shall put away his wife, let him give her a writing of divorcement: But I say unto you, That whosoever shall put away his wife, saving for the cause of fornication, causeth her to commit adultery: and whosoever shall marry her that is divorced committeth adultery.",
+      "source": "Matthew 5:31–32 · KJV",
+      "ask": "Set the specific case aside for a moment. What promise have you made that you have quietly begun treating as revisable?"
+    },
+    {
+      "id": "m16",
+      "frame": "The fourth antithesis, on oaths. Jewish practice had developed elaborate distinctions about which oaths were binding — by heaven, by the Temple, by one's own head. Jesus abolishes the whole apparatus: not because oaths are wrong, but because needing them means your ordinary word cannot be trusted.",
+      "text": "Again, ye have heard that it hath been said by them of old time, Thou shalt not forswear thyself, but shalt perform unto the Lord thine oaths: But I say unto you, Swear not at all; neither by heaven; for it is God's throne: Nor by the earth; for it is his footstool: neither by Jerusalem; for it is the city of the great King. Neither shalt thou swear by thy head, because thou canst not make one hair white or black. But let your communication be, Yea, yea; Nay, nay: for whatsoever is more than these cometh of evil.",
+      "source": "Matthew 5:33–37 · KJV",
+      "ask": "'Yea, yea; Nay, nay.' When you say 'honestly' or 'I promise' or 'I swear', what are you admitting about the rest of your sentences?"
+    },
+    {
+      "id": "m17",
+      "frame": "The fifth antithesis, and the one that has shaped history most: Tolstoy built a creed on it, Gandhi read it daily, King preached it. 'An eye for an eye' was itself a limit — no more than an eye — and Jesus goes further. A blow on the right cheek, from a right-handed man, is a backhand: an insult, not an assault.",
+      "text": "Ye have heard that it hath been said, An eye for an eye, and a tooth for a tooth: But I say unto you, That ye resist not evil: but whosoever shall smite thee on thy right cheek, turn to him the other also.",
+      "source": "Matthew 5:38–39 · KJV",
+      "ask": "The Stoics said the insult cannot reach you. This says something different: let it reach you, and answer with the other cheek. Which is harder? Which have you actually tried?"
+    },
+    {
+      "id": "m18",
+      "frame": "Three more pictures of non-retaliation, each rooted in first-century life. The coat is the inner tunic, the cloak the outer garment that by law could not be kept overnight as a pledge — so Jesus says give up even what the law protects. A Roman soldier could compel a civilian to carry his pack one mile; go two. The last line is about lending, in a world without banks.",
+      "text": "And if any man will sue thee at the law, and take away thy coat, let him have thy cloak also. And whosoever shall compel thee to go a mile, go with him twain. Give to him that asketh thee, and from him that would borrow of thee turn not thou away.",
+      "source": "Matthew 5:40–42 · KJV",
+      "ask": "'Go with him twain.' The second mile is the one nobody can make you walk. Where could you do the second mile this week — and would it change who is in charge?"
+    },
+    {
+      "id": "m19",
+      "frame": "The sixth and last antithesis, and the summit of the chapter. 'Hate thine enemy' is not in the Law; it is what people had drawn from it. The reason given for loving enemies is not that it works, but that it is what God is like: the sun and rain fall on everyone without checking who deserves them.",
+      "text": "Ye have heard that it hath been said, Thou shalt love thy neighbour, and hate thine enemy. But I say unto you, Love your enemies, bless them that curse you, do good to them that hate you, and pray for them which despitefully use you, and persecute you; That ye may be the children of your Father which is in heaven: for he maketh his sun to rise on the evil and on the good, and sendeth rain on the just and on the unjust.",
+      "source": "Matthew 5:43–45 · KJV",
+      "ask": "Name an actual enemy — someone who has done you real harm. The command is to pray for them. Can you, tonight, for one minute?"
+    },
+    {
+      "id": "m20",
+      "frame": "The chapter closes. Publicans were tax collectors for Rome — collaborators, despised. The point is that ordinary decency is not remarkable; everyone loves those who love them back. The last verse has troubled readers for centuries; 'perfect' translates teleios, which means complete, whole, grown to full purpose — not flawless.",
+      "text": "For if ye love them which love you, what reward have ye? do not even the publicans the same? And if ye salute your brethren only, what do ye more than others? do not even the publicans so? Be ye therefore perfect, even as your Father which is in heaven is perfect.",
+      "source": "Matthew 5:46–48 · KJV",
+      "ask": "'What do ye more than others?' Strip away everything you do that anyone decent would do. What is left?"
+    },
+    {
+      "id": "m21",
+      "frame": "Chapter six turns from the law to religious practice — giving, praying, fasting — and to a single danger that runs through all three: doing them to be seen. The theme is announced first, then applied. 'Alms' is money for the poor. The trumpet may be literal; there were trumpet-shaped collection chests in the Temple.",
+      "text": "Take heed that ye do not your alms before men, to be seen of them: otherwise ye have no reward of your Father which is in heaven. Therefore when thou doest thine alms, do not sound a trumpet before thee, as the hypocrites do in the synagogues and in the streets, that they may have glory of men. Verily I say unto you, They have their reward. But when thou doest alms, let not thy left hand know what thy right hand doeth: That thine alms may be in secret: and thy Father which seeth in secret himself shall reward thee openly.",
+      "source": "Matthew 6:1–4 · KJV",
+      "ask": "'They have their reward' — that is, they got exactly what they were after, and nothing more. What good thing did you do lately that you made sure someone knew about? You were paid in full."
+    },
+    {
+      "id": "m22",
+      "frame": "Prayer, the same way. The 'closet' is the storeroom, the only room in a Palestinian house with a door. The picture is not against public prayer — Jesus prayed in public — but against prayer that is really a performance for the people watching.",
+      "text": "And when thou prayest, thou shalt not be as the hypocrites are: for they love to pray standing in the synagogues and in the corners of the streets, that they may be seen of men. Verily I say unto you, They have their reward. But thou, when thou prayest, enter into thy closet, and when thou hast shut thy door, pray to thy Father which is in secret; and thy Father which seeth in secret shall reward thee openly.",
+      "source": "Matthew 6:5–6 · KJV",
+      "ask": "Is there anything in your life that you do only in secret — that no one will ever know about or credit? If not, what does that say?"
+    },
+    {
+      "id": "m23",
+      "frame": "A second fault in prayer, this one from the pagan world: the belief that gods must be worn down by repetition and volume. The Greek word translated 'vain repetitions' is battalogeo — a made-up word that sounds like babbling. The reason given is the ground for the prayer that follows.",
+      "text": "But when ye pray, use not vain repetitions, as the heathen do: for they think that they shall be heard for their much speaking. Be not ye therefore like unto them: for your Father knoweth what things ye have need of, before ye ask him.",
+      "source": "Matthew 6:7–8 · KJV",
+      "ask": "'Knoweth what things ye have need of, before ye ask.' If asking is not for information, what is it for?"
+    },
+    {
+      "id": "m24",
+      "frame": "The Lord's Prayer, which Christians have said more than any other words. It is short — a corrective to 'much speaking' — and its first half is not about us at all. Three petitions, each about God: his name, his kingdom, his will. Only after that does it turn to bread.",
+      "text": "After this manner therefore pray ye: Our Father which art in heaven, Hallowed be thy name. Thy kingdom come. Thy will be done in earth, as it is in heaven.",
+      "source": "Matthew 6:9–10 · KJV",
+      "ask": "'Thy will be done' — before a single request for yourself. What would it mean to begin a day by saying that, and meaning it?"
+    },
+    {
+      "id": "m25",
+      "frame": "The second half: three petitions for ourselves — bread, forgiveness, protection. 'Daily' translates a Greek word, epiousios, found almost nowhere else in the language; it may mean 'for the coming day', bread enough for tomorrow and no more. The closing doxology ('For thine is the kingdom…') is not in the oldest manuscripts, but the KJV has it and generations have prayed it.",
+      "text": "Give us this day our daily bread. And forgive us our debts, as we forgive our debtors. And lead us not into temptation, but deliver us from evil: For thine is the kingdom, and the power, and the glory, for ever. Amen.",
+      "source": "Matthew 6:11–13 · KJV",
+      "ask": "'This day' — not the month, not the year. What are you asking for, right now, that is really a demand for security far beyond today?"
+    },
+    {
+      "id": "m26",
+      "frame": "Of the six petitions, only one gets a comment afterwards — and it is a warning. The forgiveness clause of the prayer is not a wish; it is a condition, stated twice, in both directions.",
+      "text": "For if ye forgive men their trespasses, your heavenly Father will also forgive you: But if ye forgive not men their trespasses, neither will your Father forgive your trespasses.",
+      "source": "Matthew 6:14–15 · KJV",
+      "ask": "'As we forgive our debtors' means you are asking to be treated the way you treat others. Say the prayer with one specific person in mind. Do you still want to say it?"
+    },
+    {
+      "id": "m27",
+      "frame": "The third practice: fasting. Devout Jews fasted twice a week, and a fast could be made visible — ashes, unwashed face, a look of suffering. Jesus does not question the fasting; he tells them to hide it, to the point of appearing festive.",
+      "text": "Moreover when ye fast, be not, as the hypocrites, of a sad countenance: for they disfigure their faces, that they may appear unto men to fast. Verily I say unto you, They have their reward. But thou, when thou fastest, anoint thine head, and wash thy face; That thou appear not unto men to fast, but unto thy Father which is in secret: and thy Father, which seeth in secret, shall reward thee openly.",
+      "source": "Matthew 6:16–18 · KJV",
+      "ask": "Anointing and washing were what you did for a feast. Could you make a hard discipline look, from outside, like nothing at all — like a good day?"
+    },
+    {
+      "id": "m28",
+      "frame": "The second half of the chapter is about money and worry, and it begins with a picture of two kinds of wealth. In a world where riches were cloth, grain and coin, the three thieves were literal: moths, 'rust' (the Greek means 'eating', probably vermin), and men who dug through mud-brick walls. The last verse is the diagnosis.",
+      "text": "Lay not up for yourselves treasures upon earth, where moth and rust doth corrupt, and where thieves break through and steal: But lay up for yourselves treasures in heaven, where neither moth nor rust doth corrupt, and where thieves do not break through nor steal: For where your treasure is, there will your heart be also.",
+      "source": "Matthew 6:19–21 · KJV",
+      "ask": "Not 'where your heart is, your treasure will follow' — the other way round. Look at where your money and hours actually went this month. That is where your heart is. Is it where you thought?"
+    },
+    {
+      "id": "m29",
+      "frame": "A short, strange saying about the eye. In ancient thought the eye was a lamp that let light into the body, not a window that let it in from outside. 'Single' translates haplous — simple, undivided, generous; its opposite, the 'evil eye', was the idiom for stinginess. Read next to the passage before it, this is about what you look at, and how.",
+      "text": "The light of the body is the eye: if therefore thine eye be single, thy whole body shall be full of light. But if thine eye be evil, thy whole body shall be full of darkness. If therefore the light that is in thee be darkness, how great is that darkness!",
+      "source": "Matthew 6:22–23 · KJV",
+      "ask": "'If the light that is in thee be darkness.' What do you spend most of your day looking at — and what is it filling you with?"
+    },
+    {
+      "id": "m30",
+      "frame": "The sharpest line in the chapter. 'Mammon' is an Aramaic word for wealth or property, left untranslated here and by the KJV; Jesus personifies it as a rival master. The claim is not that money is evil but that it is a master — it gives orders — and that no one can take orders from two.",
+      "text": "No man can serve two masters: for either he will hate the one, and love the other; or else he will hold to the one, and despise the other. Ye cannot serve God and mammon.",
+      "source": "Matthew 6:24 · KJV",
+      "ask": "What order did money give you this week that you obeyed without noticing it was an order?"
+    },
+    {
+      "id": "m31",
+      "frame": "'Therefore' — because you cannot serve two masters — do not worry. The KJV's 'take no thought' meant, in 1611, 'do not be anxious'. The birds are the first argument: fed without farming. Then the second, which is simply that worry does not work. A cubit is about eighteen inches; the Greek may mean adding to one's height or to one's lifespan.",
+      "text": "Therefore I say unto you, Take no thought for your life, what ye shall eat, or what ye shall drink; nor yet for your body, what ye shall put on. Is not the life more than meat, and the body than raiment? Behold the fowls of the air: for they sow not, neither do they reap, nor gather into barns; yet your heavenly Father feedeth them. Are ye not much better than they? Which of you by taking thought can add one cubit unto his stature?",
+      "source": "Matthew 6:25–27 · KJV",
+      "ask": "'Which of you by taking thought can add one cubit?' Take your largest current worry. Has any of the worrying, as distinct from the acting, changed anything?"
+    },
+    {
+      "id": "m32",
+      "frame": "The lilies of the field — probably the scarlet anemones that cover the Galilean hills in spring. Solomon was the byword for royal splendour. The grass was fuel: in a treeless country, dried wildflowers went into the bread oven. 'O ye of little faith' is Matthew's phrase; he uses it four times.",
+      "text": "And why take ye thought for raiment? Consider the lilies of the field, how they grow; they toil not, neither do they spin: And yet I say unto you, That even Solomon in all his glory was not arrayed like one of these. Wherefore, if God so clothe the grass of the field, which to day is, and to morrow is cast into the oven, shall he not much more clothe you, O ye of little faith?",
+      "source": "Matthew 6:28–30 · KJV",
+      "ask": "'Consider the lilies' is an instruction to look at something. When did you last look at a living thing long enough to be reassured by it?"
+    },
+    {
+      "id": "m33",
+      "frame": "The chapter ends by stating the alternative to worry — not carelessness, but a different first priority — and then a saying that is almost proverbial in its plainness. Note that it does not promise there will be no trouble. It promises the trouble will come one day at a time.",
+      "text": "Therefore take no thought, saying, What shall we eat? or, What shall we drink? or, Wherewithal shall we be clothed? (For after all these things do the Gentiles seek:) for your heavenly Father knoweth that ye have need of all these things. But seek ye first the kingdom of God, and his righteousness; and all these things shall be added unto you. Take therefore no thought for the morrow: for the morrow shall take thought for the things of itself. Sufficient unto the day is the evil thereof.",
+      "source": "Matthew 6:31–34 · KJV",
+      "ask": "'Sufficient unto the day is the evil thereof.' How much of today's weight is actually tomorrow's, carried early?"
+    },
+    {
+      "id": "m34",
+      "frame": "Chapter seven. The sermon turns to how the disciples treat other people's faults — and the first word is a warning. The mote is a speck of sawdust; the beam is a roof timber. Jesus, a carpenter's son, may have been drawing on the workshop. The joke is broad; the point is not.",
+      "text": "Judge not, that ye be not judged. For with what judgment ye judge, ye shall be judged: and with what measure ye mete, it shall be measured to you again. And why beholdest thou the mote that is in thy brother's eye, but considerest not the beam that is in thine own eye? Or how wilt thou say to thy brother, Let me pull out the mote out of thine eye; and, behold, a beam is in thine own eye? Thou hypocrite, first cast out the beam out of thine own eye; and then shalt thou see clearly to cast out the mote out of thy brother's eye.",
+      "source": "Matthew 7:1–5 · KJV",
+      "ask": "Not 'never help with the mote' — 'first the beam'. Whose fault have you been rehearsing lately? Name your own version of it."
+    },
+    {
+      "id": "m35",
+      "frame": "A hard saying, placed right after 'judge not' as if to balance it. Dogs and swine were unclean animals; 'holy' probably means the meat of sacrifice. The teaching seems to be that discernment is still required: there are people to whom, at a given moment, the most precious thing you have cannot be given.",
+      "text": "Give not that which is holy unto the dogs, neither cast ye your pearls before swine, lest they trample them under their feet, and turn again and rend you.",
+      "source": "Matthew 7:6 · KJV",
+      "ask": "Is there something precious to you that you have been offering to someone who only ever tramples it? What would it mean to stop — without contempt?"
+    },
+    {
+      "id": "m36",
+      "frame": "Three verbs, rising in intensity, and a promise attached to each. Then an argument from the lesser to the greater — 'how much more' — which is a standard form of rabbinic reasoning. Notice that the earthly fathers are called evil, and still trusted to feed their children.",
+      "text": "Ask, and it shall be given you; seek, and ye shall find; knock, and it shall be opened unto you: For every one that asketh receiveth; and he that seeketh findeth; and to him that knocketh it shall be opened. Or what man is there of you, whom if his son ask bread, will he give him a stone? Or if he ask a fish, will he give him a serpent? If ye then, being evil, know how to give good gifts unto your children, how much more shall your Father which is in heaven give good things to them that ask him?",
+      "source": "Matthew 7:7–11 · KJV",
+      "ask": "Ask, seek, knock — all three are things a person does who does not yet have what they want and has not given up. What have you stopped asking for?"
+    },
+    {
+      "id": "m37",
+      "frame": "The Golden Rule. Versions of it exist in many traditions, usually in the negative — do not do to others what you would not want done to you. Hillel, a generation before Jesus, gave it that way and called it the whole Law. Jesus states it positively, which asks much more, and he too calls it the whole Law and the prophets.",
+      "text": "Therefore all things whatsoever ye would that men should do to you, do ye even so to them: for this is the law and the prophets.",
+      "source": "Matthew 7:12 · KJV",
+      "ask": "The negative rule can be kept by doing nothing. The positive one cannot. What would you want done for you today, that you could do for someone else?"
+    },
+    {
+      "id": "m38",
+      "frame": "The sermon's closing section is a series of choices, each with two options and no third. The first is a gate and a road. 'Strait' means narrow, not straight. The saying is a warning against taking the crowd as evidence.",
+      "text": "Enter ye in at the strait gate: for wide is the gate, and broad is the way, that leadeth to destruction, and many there be which go in thereat: Because strait is the gate, and narrow is the way, which leadeth unto life, and few there be that find it.",
+      "source": "Matthew 7:13–14 · KJV",
+      "ask": "'Many there be which go in thereat.' Where in your life have you taken 'everyone does it' as a reason?"
+    },
+    {
+      "id": "m39",
+      "frame": "The second choice: whom to trust. 'Prophets' here are teachers claiming to speak for God, and the test given is not their words or their manner but what their lives produce over time. The image is agricultural and patient — fruit takes a season.",
+      "text": "Beware of false prophets, which come to you in sheep's clothing, but inwardly they are ravening wolves. Ye shall know them by their fruits. Do men gather grapes of thorns, or figs of thistles? Even so every good tree bringeth forth good fruit; but a corrupt tree bringeth forth evil fruit. A good tree cannot bring forth evil fruit, neither can a corrupt tree bring forth good fruit. Every tree that bringeth not forth good fruit is hewn down, and cast into the fire. Wherefore by their fruits ye shall know them.",
+      "source": "Matthew 7:15–20 · KJV",
+      "ask": "'By their fruits.' Think of the voices you listen to most — online, in books, in person. What has each one actually produced in the people who follow it, over years?"
+    },
+    {
+      "id": "m40",
+      "frame": "The third choice turns on the listeners themselves. It is the most unsettling passage in the sermon: people who called Jesus Lord, who prophesied and worked wonders in his name, and are told he never knew them. The test, once more, is not words or even results, but doing the will of the Father — which is what the sermon has been describing.",
+      "text": "Not every one that saith unto me, Lord, Lord, shall enter into the kingdom of heaven; but he that doeth the will of my Father which is in heaven. Many will say to me in that day, Lord, Lord, have we not prophesied in thy name? and in thy name have cast out devils? and in thy name done many wonderful works? And then will I profess unto them, I never knew you: depart from me, ye that work iniquity.",
+      "source": "Matthew 7:21–23 · KJV",
+      "ask": "'Have we not done many wonderful works?' Impressive output, and no relationship. Is there a part of your life where you are producing a great deal and known by no one?"
+    },
+    {
+      "id": "m41",
+      "frame": "The last parable, and the summary of the whole sermon. Two builders, two houses, one storm. The wadis of Palestine are dry most of the year and become torrents in the winter rains; a house on the sand of a river bed looks fine until then. The difference between the two men is a single verb: doeth.",
+      "text": "Therefore whosoever heareth these sayings of mine, and doeth them, I will liken him unto a wise man, which built his house upon a rock: And the rain descended, and the floods came, and the winds blew, and beat upon that house; and it fell not: for it was founded upon a rock. And every one that heareth these sayings of mine, and doeth them not, shall be likened unto a foolish man, which built his house upon the sand: And the rain descended, and the floods came, and the winds blew, and beat upon that house; and it fell: and great was the fall of it.",
+      "source": "Matthew 7:24–27 · KJV",
+      "ask": "Both men heard. Both men built. You have now read the whole sermon; which single saying from it will you actually do this week?"
+    },
+    {
+      "id": "m42",
+      "frame": "The last card. Matthew closes the sermon by stepping back and reporting the crowd's reaction. The scribes taught by citing authorities — Rabbi so-and-so said. This teacher had said 'but I say unto you' six times. You have now read all one hundred and eleven verses. What the crowd noticed is worth noticing too.",
+      "text": "And it came to pass, when Jesus had ended these sayings, the people were astonished at his doctrine: For he taught them as one having authority, and not as the scribes.",
+      "source": "Matthew 7:28–29 · KJV",
+      "ask": "'Astonished.' Fourteen days in, are you? If the astonishment has worn off, go back to the card that first produced it, and read it again."
+    }
+  ]
+}

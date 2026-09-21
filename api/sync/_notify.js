@@ -42,7 +42,7 @@ export default syncRoute('notify', async ({ getDoc, putDoc }) => {
     const book = lib && (lib.books || []).find(b => b.shelf === 'reading');
     if (book && !(book.log && book.log[today])) { const left = book.pages ? book.pages - (book.page || 0) : null; lines.push(`Twenty pages of ${book.title} before bed?${left ? ` ${left} to go.` : ''}`); if (!open.length) url = 'library.html'; }
     if (meds.length) { const left = meds.filter(m => !(L.pills || []).includes(m.id)); if (left.length) lines.push(`${left.map(m => m.name).join(', ')} not ticked yet.`); }
-    if (study && study.pos > 0 && !(study.days && study.days[today] && study.days[today].done)) { lines.push('Three cards before bed? The Stoics are waiting.'); if (!open.length) url = 'study.html'; }
+    if (study && study.pos > 0 && !(study.days && study.days[today] && study.days[today].done)) { lines.push(`Three cards before bed? ${({ stoics: 'The Stoics are', socrates: 'Socrates is', sermon: 'The Sermon is' })[study.path] || 'The Study is'} waiting.`); if (!open.length) url = 'study.html'; }
     if (school) { const weekMin = cid => (school.sessions || []).filter(s => s.course === cid && days(s.date, today) >= 0 && days(s.date, today) < 7).reduce((n, s) => n + s.min, 0);
       const soon = (school.items || []).filter(i => !i.done && heavy(i) && days(today, i.due) >= 0 && days(today, i.due) <= 3 && weekMin(i.course) === 0)[0];
       if (soon) { const d = days(today, soon.due); lines.push(`${soon.title} is ${d === 0 ? 'today' : d === 1 ? 'tomorrow' : `in ${d} days`} and nothing has been studied this week.`); } }
