@@ -27,7 +27,11 @@
   .find{display:flex;gap:12px;align-items:baseline;padding:10px 0 6px}
   .find input{flex:1;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0} .find input:focus{outline:none;border-bottom-color:var(--ink)}
   .find input::placeholder{color:var(--ink-3);font-style:italic}
-  .bogos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px 12px;margin-top:10px}
+  .find .seg{display:inline-flex;gap:8px;align-items:baseline;font-size:13px;color:var(--ink-3);white-space:nowrap}
+  .find .seg button{color:var(--ink-3);border-bottom:1px solid transparent;letter-spacing:.04em} .find .seg button[aria-pressed="true"]{color:var(--ink);border-color:var(--ink)} .find .seg button:hover{color:var(--ink)}
+  .adwrap{max-height:560px;overflow:auto;margin-top:10px;padding:4px 6px 8px 2px;border-bottom:1px solid var(--rule);scrollbar-width:thin;scrollbar-color:var(--rule) transparent}   /* the ad scrolls inside its box, not the page */
+  .bogos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px 12px}
+  .bogo .price{font-family:var(--serif);font-size:15px}
   .bogo{background:var(--card);border-radius:10px;box-shadow:var(--shadow);padding:10px 10px 12px;display:flex;flex-direction:column;gap:6px;position:relative}
   .bogo img{width:100%;aspect-ratio:1;object-fit:contain;background:#fff;border-radius:6px}
   .bogo b{font-family:var(--serif);font-weight:400;font-size:13.5px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -124,10 +128,9 @@
 
 <main>
   <section>
-    <h2>This week at Publix<small id="adn">buy one, get one</small></h2>
-    <div class="find"><input id="adq" placeholder="Search the ad — bacon, cereal, coffee…" aria-label="Search the ad"></div>
-    <div class="bogos" id="bogos"></div>
-    <p class="more" id="admore" hidden><button class="textbtn" type="button" id="adall">Show them all</button></p>
+    <h2>This week at Publix<small id="adn">the weekly ad</small></h2>
+    <div class="find"><input id="adq" placeholder="Search the ad — bacon, cereal, coffee…" aria-label="Search the ad"><span class="seg" role="group" aria-label="Show"><button type="button" data-only="bogo" aria-pressed="true">BOGO</button><span>·</span><button type="button" data-only="all" aria-pressed="false">Every deal</button></span></div>
+    <div class="adwrap"><div class="bogos" id="bogos"></div></div>
 
     <h3>Price book<small id="bookn"></small></h3>
     <ul class="book" id="book"></ul>
@@ -175,17 +178,19 @@
   const dmy = d => `${C.monthShort(C.fromISO(d))} ${C.fromISO(d).getDate()}`;
   const norm = s => String(s).toLowerCase().replace(/bogo\*?|†|\*/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
   const KEY='groceries', FKEY='finances.'+YM;
-  let G = { zip:'', trips:[], list:[] }, AD = { weeks:{} }, FIN = null, pending = { items:[] }, showAll = false;
+  let G = { zip:'', trips:[], list:[] }, AD = { weeks:{} }, FIN = null, pending = { items:[] };
   const save = () => store.save(KEY, G);
 
   // ---- the ad ----
   const weeks = () => Object.values(AD.weeks||{}).sort((a,b)=>a.from<b.from?1:-1);
+  const bogoNames = w => w.bogos || (w.items||[]).filter(i=>i.bogo).map(i=>i.name);   // a past week keeps only its BOGO names
+  let only = 'bogo';
   const current = () => { const live = weeks().filter(w => w.from<=TODAY && w.to>=TODAY).sort((a,b)=>(b.items||[]).length-(a.items||[]).length); return live[0] || weeks()[0]; };   // the fullest ad covering today
   // an ad item and a thing you buy match when every word of the shorter name is in the longer
   const matches = (a, b) => { const x=norm(a).split(' ').filter(w=>w.length>2), y=norm(b).split(' ').filter(w=>w.length>2); if(!x.length||!y.length) return false; const [s,l]=x.length<=y.length?[x,y]:[y,x]; return s.every(w=>l.some(v=>v.startsWith(w)||w.startsWith(v))); };
   // when Publix has run a BOGO on this before: how often, and when next
   function cycle(name){
-    const seen = weeks().filter(w => (w.items||[]).some(i => matches(i.name, name))).map(w=>w.from).sort();
+    const seen = weeks().filter(w => bogoNames(w).some(n => matches(n, name))).map(w=>w.from).sort();
     if(!seen.length) return null;
     const gaps = seen.slice(1).map((d,i)=>C.daysBetween(seen[i], d)/7), avg = gaps.length ? gaps.reduce((a,b)=>a+b)/gaps.length : null;
     const next = avg ? C.iso(C.addDays(C.fromISO(seen[seen.length-1]), Math.round(avg*7))) : null;
@@ -193,18 +198,18 @@
   }
   function renderAd(){
     const w = current(), q = norm(F('adq').value);
-    if(!w){ F('adn').textContent = 'buy one, get one'; F('bogos').innerHTML = `<p class="empty" style="grid-column:1/-1">${G.zip ? 'The ad arrives with the nightly fetch — or press Sync now in the bell.' : 'Put your ZIP code in the note at the foot of the page and the ad will fetch itself.'}</p>`; F('admore').hidden=true; return; }
-    const items = (w.items||[]).filter(i => !q || norm(i.name).includes(q));
-    F('adn').textContent = `${w.items.length} BOGOs · ${dmy(w.from)} – ${dmy(w.to)}`;
-    const shown = showAll || q ? items : items.slice(0, 18);
-    F('bogos').innerHTML = shown.length ? shown.map(i => { const on = G.list.some(l => !l.done && matches(l.text, i.name)), cy = cycle(i.name);
-      return `<div class="bogo"><img src="${esc(i.img||'')}" alt="" loading="lazy" onerror="this.style.display='none'"><b>${esc(i.name)}</b>${i.save?`<small>save up to ${esc(i.save)}</small>`:''}${cy && cy.times>1 && cy.every ? `<span class="cyc">about every ${cy.every} ${cy.every===1?'week':'weeks'}</span>` : ''}<button class="add ${on?'on':''}" type="button" data-add="${esc(i.name)}" aria-label="${on?'On the list':'Add to the list'}"><svg class="ic"><use href="icons.svg#${on?'check':'plus'}"/></svg></button></div>`; }).join('')
+    if(!w || !w.items){ F('adn').textContent = 'the weekly ad'; F('bogos').innerHTML = `<p class="empty" style="grid-column:1/-1">${G.zip ? 'The ad arrives with the nightly fetch — or press Sync now in the bell.' : 'Put your ZIP code in the note at the foot of the page and the ad will fetch itself.'}</p>`; return; }
+    const all = w.items, bog = all.filter(i=>i.bogo);
+    const items = (only==='bogo' ? bog : all).filter(i => !q || norm(i.name).includes(q));
+    F('adn').textContent = `${bog.length} BOGOs of ${all.length} deals · ${dmy(w.from)} – ${dmy(w.to)}`;
+    F('bogos').innerHTML = items.length ? items.map(i => { const on = G.list.some(l => !l.done && matches(l.text, i.name)), cy = i.bogo ? cycle(i.name) : null;
+      const line = i.bogo ? `<small>BOGO${i.save?` · save up to ${esc(i.save)}`:''}</small>` : i.price ? `<span class="price">${$(i.price)}${i.deal&&!/^\$?[\d.]+$/.test(i.deal)?` <small>${esc(i.deal)}</small>`:''}</span>` : i.deal ? `<small>${esc(i.deal)}</small>` : '<small>in the ad</small>';
+      return `<div class="bogo"><img src="${esc(i.img||'')}" alt="" loading="lazy" onerror="this.style.display='none'"><b>${esc(i.name)}</b>${line}${cy && cy.times>1 && cy.every ? `<span class="cyc">about every ${cy.every} ${cy.every===1?'week':'weeks'}</span>` : ''}<button class="add ${on?'on':''}" type="button" data-add="${esc(i.name)}" aria-label="${on?'On the list':'Add to the list'}"><svg class="ic"><use href="icons.svg#${on?'check':'plus'}"/></svg></button></div>`; }).join('')
       : '<p class="empty" style="grid-column:1/-1">Nothing in this week’s ad matches.</p>';
-    F('admore').hidden = showAll || q || items.length <= 18; F('adall').textContent = `Show all ${items.length}`;
   }
   F('adq').addEventListener('input', renderAd);
-  F('adall').addEventListener('click', ()=>{ showAll=true; renderAd(); });
-  F('bogos').addEventListener('click', e=>{ const b=e.target.closest('[data-add]'); if(!b) return; const name=b.dataset.add.replace(/\s*BOGO\*?$/i,'').trim(); if(!G.list.some(l=>!l.done && matches(l.text,name))) G.list.push({text:name, done:false, bogo:true}); save(); renderList(); renderAd(); });
+  document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', ()=>{ only=b.dataset.only; document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed', x===b)); renderAd(); }));
+  F('bogos').addEventListener('click', e=>{ const b=e.target.closest('[data-add]'); if(!b) return; const name=b.dataset.add.replace(/\s*BOGO\*?$/i,'').trim(); if(!G.list.some(l=>!l.done && matches(l.text,name))){ const it=(current()&&current().items||[]).find(i=>i.name===name); G.list.push({text:name, done:false, bogo:!!(it&&it.bogo), deal:it&&!it.bogo&&(it.price?$(it.price):it.deal)||undefined}); } save(); renderList(); renderAd(); });
 
   // ---- the price book: everything ever bought, from the trips ----
   function book(){
@@ -225,7 +230,7 @@
   function renderList(){
     const open=G.list.filter(l=>!l.done).length;
     F('listn').textContent = G.list.length ? `${open} to get` : 'nothing yet';
-    F('list').innerHTML = G.list.length ? G.list.map((l,k)=>`<li><input type="checkbox" id="l${k}" data-k="${k}" ${l.done?'checked':''}><label for="l${k}">${esc(l.text)}</label>${l.bogo?'<span class="w">BOGO this week</span>':''}<button class="x" type="button" data-rm="${k}">remove</button></li>`).join('') : '<li class="empty">Nothing on the list. Add from the ad, or type what you need.</li>';
+    F('list').innerHTML = G.list.length ? G.list.map((l,k)=>`<li><input type="checkbox" id="l${k}" data-k="${k}" ${l.done?'checked':''}><label for="l${k}">${esc(l.text)}</label>${l.bogo?'<span class="w">BOGO this week</span>':l.deal?`<span class="w">${esc(l.deal)} this week</span>`:''}<button class="x" type="button" data-rm="${k}">remove</button></li>`).join('') : '<li class="empty">Nothing on the list. Add from the ad, or type what you need.</li>';
   }
   F('addl').addEventListener('submit', e=>{ e.preventDefault(); const t=F('l-text').value.trim(); if(!t) return; G.list.push({text:t, done:false}); F('addl').reset(); save(); renderList(); renderAd(); });
   F('list').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ G.list[+e.target.dataset.k].done=e.target.checked; save(); renderList(); } });
