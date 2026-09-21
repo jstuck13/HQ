@@ -57,6 +57,7 @@
   .cats input:checked{background:var(--band);border-color:var(--band)}
   .cats input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
   .months li{display:grid;grid-template-columns:1fr auto;gap:12px;padding:8px 0;border-bottom:1px dotted var(--rule);font-size:14px} .months .a{font-family:var(--serif);font-size:16px}
+  .months small{color:var(--ink-3);font-size:12.5px} .months .textbtn{font-size:12.5px;color:var(--ink-2)}
   .bal li{display:grid;grid-template-columns:64px 1fr auto;gap:12px;padding:8px 0;border-bottom:1px dotted var(--rule);align-items:baseline;position:relative}
   .bal .d{font-family:var(--serif);color:var(--ink-2);font-size:14px} .bal .a{font-family:var(--serif);font-size:16px}
   .bal .x{position:absolute;right:0;font-size:12px;color:var(--ink-3);opacity:0;background:var(--paper);padding-left:8px} .bal li:hover .x{opacity:1} .bal .x:hover{color:var(--ox)}
@@ -162,6 +163,10 @@
 
   // ---- contributions: transactions in the ticked categories, by month ----
   const contribSince = d => Object.values(MONTHS).reduce((n, doc) => { const ids=(doc.cats||[]).filter(c=>I.contribCats.includes(c.name.toLowerCase())).map(c=>c.id); return n + (doc.tx||[]).filter(t=>ids.includes(t.cat) && t.date>=d).reduce((m,t)=>m+t.amt,0); }, 0);
+  // every contribution transaction, with the holding its description names ("Roth IRA · FXAIX", "SPAXX")
+  const contribTx = () => Object.entries(MONTHS).flatMap(([ym, doc]) => { const ids=(doc.cats||[]).filter(c=>I.contribCats.includes(c.name.toLowerCase())).map(c=>c.id); return (doc.tx||[]).filter(t=>ids.includes(t.cat)).map(t=>({ ...t, ym, key:`${ym}:${t.id}`, ticker:(I.holdings.map(h=>h.ticker.toUpperCase()).find(tk => new RegExp(`\b${tk}\b`,'i').test(t.what||''))||null) })); }).sort((a,b)=>a.date<b.date?1:-1);
+  // a contribution that names a holding buys into it: cash at $1 exactly, anything else at today's price
+  function applyTx(t){ const h=I.holdings.find(x=>x.ticker.toUpperCase()===t.ticker), p=h&&price(h.ticker); if(!h||!p) return false; h.shares = Math.round((h.shares + t.amt/p.price)*10000)/10000; I.applied=[...new Set([...(I.applied||[]), t.key])]; return true; }
   const contribByMonth = () => Object.entries(MONTHS).map(([ym, doc]) => { const ids=(doc.cats||[]).filter(c=>I.contribCats.includes(c.name.toLowerCase())).map(c=>c.id); return [ym, (doc.tx||[]).filter(t=>ids.includes(t.cat)).reduce((n,t)=>n+t.amt,0)]; }).filter(([,v])=>v>0).sort((a,b)=>a[0]<b[0]?1:-1);
 
   function render(){
@@ -195,7 +200,10 @@
     // contributions
     const names = {}; Object.values(MONTHS).forEach(doc => (doc.cats||[]).forEach(c => { names[c.name.toLowerCase()] = c.name; }));
     F('cats').innerHTML = Object.keys(names).length ? Object.entries(names).sort().map(([k,n])=>`<label><input type="checkbox" value="${esc(k)}" ${I.contribCats.includes(k)?'checked':''}>${esc(n)}</label>`).join('') : '<p class="empty">Categories from Finances appear here; tick the ones that are money going in.</p>';
-    F('months').innerHTML = cm.length ? cm.slice(0,8).map(([ym,v])=>`<li><span>${C.monthName(C.fromISO(ym+'-01'))} ${ym.slice(0,4)}</span><span class="a">${$(v)}</span></li>`).join('') + (cm.length>1?`<li><span><b>All told</b></span><span class="a">${$(allIn)}</span></li>`:'') : (I.contribCats.length ? '<li class="empty">Nothing in those categories yet this year.</li>' : '');
+    const txs = contribTx(), applied = I.applied||[];
+    F('months').innerHTML = txs.length ? txs.slice(0,10).map(t=>{ const done=applied.includes(t.key), h=t.ticker&&I.holdings.find(x=>x.ticker.toUpperCase()===t.ticker), p=h&&price(h.ticker);
+        const note = t.ticker ? (done ? `<small>added to ${t.ticker}</small>` : p ? `<button class="textbtn" type="button" data-apply="${t.key}">Add to ${t.ticker} at ${$2(p.price)}</button>` : `<small>${t.ticker} has no price yet</small>`) : `<small>name a holding in the description to add it — “${esc(t.what||'')}”</small>`;
+        return `<li><span>${dmy(t.date)} · ${esc(t.what||'')}${note?`<br>${note}`:''}</span><span class="a">${$(t.amt)}</span></li>`; }).join('') + (cm.length>1?`<li><span><b>All told</b></span><span class="a">${$(allIn)}</span></li>`:'') : (I.contribCats.length ? '<li class="empty">Nothing in those categories yet this year.</li>' : '');
 
     // balances
     const lb = latestBalances().sort((a,b)=>b.value-a.value);
@@ -209,6 +217,7 @@
   F('hold').addEventListener('change', e=>{ if(e.target.classList.contains('yl')){ const h=I.holdings.find(x=>x.id===+e.target.closest('li').dataset.id), v=num(e.target.value); if(h){ h.yield = v!=null ? v : undefined; save(); render(); } return; }
     if(e.target.classList.contains('sh')){ const h=I.holdings.find(x=>x.id===+e.target.closest('li').dataset.id), v=num(e.target.value); if(h && v!=null){ h.shares=v; save(); render(); } } });
   F('hold').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ I.holdings=I.holdings.filter(h=>h.id!==+b.dataset.rm); save(); render(); } });
+  F('months').addEventListener('click', e=>{ const b=e.target.closest('[data-apply]'); if(b){ const t=contribTx().find(x=>x.key===b.dataset.apply); if(t && applyTx(t)){ save(); render(); } } });
   F('cats').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ I.contribCats = e.target.checked ? [...new Set([...I.contribCats, e.target.value])] : I.contribCats.filter(c=>c!==e.target.value); save(); render(); } });
   F('addb').addEventListener('submit', e=>{ e.preventDefault(); const v=num(F('b-value').value); if(v==null) return F('b-value').focus(); I.balances.push({id:Date.now(), account:F('b-acct').value.trim(), value:v, date:C.parseDay(F('b-date').value)}); F('b-value').value=''; save(); render(); });
   F('bal').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ I.balances=I.balances.filter(x=>x.id!==+b.dataset.rm); save(); render(); } });
@@ -219,6 +228,8 @@
   Promise.all([store.load(KEY), ...months.map(m=>store.load('finances.'+m))]).then(([doc, ...fin]) => {
     if(doc) I = { holdings:[], balances:[], prices:{}, history:{}, contribCats:[], ...doc };
     months.forEach((m,i)=>{ if(fin[i]) MONTHS[m]=fin[i]; });
+    let auto=0; contribTx().forEach(t=>{ const h=t.ticker&&I.holdings.find(x=>x.ticker.toUpperCase()===t.ticker), p=h&&price(h.ticker); if(h && p && p.price===1 && !(I.applied||[]).includes(t.key) && applyTx(t)) auto++; });
+    if(auto) save();
     render();
   });
 </script>
