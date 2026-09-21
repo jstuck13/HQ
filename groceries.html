@@ -203,8 +203,8 @@
     const items = (only==='bogo' ? bog : all).filter(i => !q || norm(i.name).includes(q));
     F('adn').textContent = `${bog.length} BOGOs of ${all.length} deals · ${dmy(w.from)} – ${dmy(w.to)}`;
     F('bogos').innerHTML = items.length ? items.map(i => { const on = G.list.some(l => !l.done && matches(l.text, i.name)), cy = i.bogo ? cycle(i.name) : null;
-      const line = i.bogo ? `<small>BOGO${i.save?` · save up to ${esc(i.save)}`:''}</small>` : i.price ? `<span class="price">${$(i.price)}${i.deal&&!/^\$?[\d.]+$/.test(i.deal)?` <small>${esc(i.deal)}</small>`:''}</span>` : i.deal ? `<small>${esc(i.deal)}</small>` : '<small>in the ad</small>';
-      return `<div class="bogo"><img src="${esc(i.img||'')}" alt="" loading="lazy" onerror="this.style.display='none'"><b>${esc(i.name)}</b>${line}${cy && cy.times>1 && cy.every ? `<span class="cyc">about every ${cy.every} ${cy.every===1?'week':'weeks'}</span>` : ''}<button class="add ${on?'on':''}" type="button" data-add="${esc(i.name)}" aria-label="${on?'On the list':'Add to the list'}"><svg class="ic"><use href="icons.svg#${on?'check':'plus'}"/></svg></button></div>`; }).join('')
+      const line = i.bogo ? `<small>BOGO${i.save?` · save up to ${esc(i.save)}`:''}</small>` : i.deal ? `<span class="price">${esc(i.deal)}</span>` : i.price ? `<span class="price">${$(i.price)}</span>` : '<small>in the ad</small>';
+      return `<div class="bogo"><img src="${esc(i.img||'')}" alt="" loading="lazy" onerror="this.style.display='none'"><b title="${esc(i.desc||'')}">${esc(i.name)}</b>${line}${cy && cy.times>1 && cy.every ? `<span class="cyc">about every ${cy.every} ${cy.every===1?'week':'weeks'}</span>` : ''}<button class="add ${on?'on':''}" type="button" data-add="${esc(i.name)}" aria-label="${on?'On the list':'Add to the list'}"><svg class="ic"><use href="icons.svg#${on?'check':'plus'}"/></svg></button></div>`; }).join('')
       : '<p class="empty" style="grid-column:1/-1">Nothing in this week’s ad matches.</p>';
   }
   F('adq').addEventListener('input', renderAd);

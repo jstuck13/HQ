@@ -3,6 +3,7 @@
 // Free Dictionary API. Quote: one of the philosophers' lines in quotes.js, rotating by day of year.
 import { syncRoute } from './_run.js';
 import QUOTES from './_quotes.js';
+export const maxDuration = 60;   // the ad's item pages take a few seconds in parallel
 
 const WORDS = ['equanimity', 'assiduous', 'halcyon', 'lacuna', 'sanguine', 'perspicacious', 'vestige', 'ephemeral', 'sonorous', 'tenacity', 'verdant', 'laconic', 'penumbra', 'quiescent', 'erudite', 'susurrus', 'liminal', 'winsome', 'apricity', 'petrichor', 'sagacious', 'mellifluous', 'nadir', 'zenith', 'candor', 'diligent', 'ebullient', 'fastidious', 'gregarious', 'idyllic', 'juxtapose', 'kinetic', 'luminous', 'magnanimous', 'nascent', 'obdurate', 'placid', 'quixotic', 'resolute', 'serendipity', 'taciturn', 'ubiquitous', 'vicarious', 'wistful', 'abstruse', 'benevolent', 'circumspect', 'demure', 'eloquent', 'felicity', 'gossamer', 'harbinger', 'incandescent', 'jubilant', 'languid', 'meticulous', 'nonchalant', 'opulent', 'pellucid', 'redolent', 'salient', 'temperate', 'unfettered', 'venerable', 'zephyr', 'alacrity', 'brevity', 'cogent', 'dulcet', 'effervescent', 'fortitude', 'guile', 'impetus', 'lucid', 'mirth', 'nuance', 'ostensible', 'prudent', 'quandary', 'reverie', 'stoic', 'tranquil', 'umbrage', 'vivacious', 'wry', 'ardent', 'buoyant', 'copious', 'deft', 'earnest', 'fervent', 'genial', 'hallowed', 'intrepid', 'keen', 'lithe', 'modest', 'nimble', 'oblique', 'patient', 'quaint', 'rustic', 'sincere', 'tender', 'upright', 'valiant', 'wholesome'];
 
@@ -22,12 +23,28 @@ async function publix(getDoc, putDoc) {
   }
   const flyerId = Object.keys(flyerIds).sort((a, b) => flyerIds[b] - flyerIds[a])[0]; if (!flyerId) return { items: 0 };
   const fr = await fetch(`${base}/flyers/${flyerId}?locale=en-us&postal_code=${encodeURIComponent(zip)}`, H); if (!fr.ok) throw new Error('flyer ' + fr.status);
-  const raw = (await fr.json()).items || [], seen = new Set(), items = []; let from, to;
+  const raw = ((await fr.json()).items || []).filter(i => { const n = clean(i.name); return n && n.length >= 3 && !/^publix(\.com.*)?$/i.test(n) && !/publix\.com|clubpublix|^save$|^assorted$/i.test(n); });
+  // each item's own page carries the wording ("2 FOR" $5, "BUY 2 GET 1 FREE", "SAVE UP TO…"); fetched in parallel, a few seconds for the whole ad
+  const detail = {}; const t0 = Date.now();
+  for (let k = 0; k < raw.length && Date.now() - t0 < 20000; k += 25) {
+    await Promise.all(raw.slice(k, k + 25).map(async i => { try { const r = await fetch(`${base}/items/${i.id}?locale=en-us`, H); if (r.ok) { const j = await r.json(); detail[i.id] = j.item || j; } } catch {} }));
+  }
+  const wording = (pre, price, story) => {
+    const p = String(pre || '').trim(), n = /^(\d+)\s*(?:for|\/)/i.exec(p);
+    if (/buy 1 get 1/i.test(p)) return 'Buy one, get one free';
+    if (n && price) return `${n[1]} for $${(+price).toFixed(2).replace(/\.00$/, '')}`;
+    if (/buy \d+ get \d+/i.test(p)) return p.toLowerCase().replace(/^b/, 'B');
+    if (p && !n) return p.toLowerCase().replace(/^\w/, c => c.toUpperCase());
+    return story ? String(story).toLowerCase().replace(/^\w/, c => c.toUpperCase()) : undefined;
+  };
+  const seen = new Set(), items = []; let from, to;
   for (const i of raw) {
-    const name = clean(i.name); if (!name || seen.has(name) || /^publix(\.com.*)?$/i.test(name) || name.length < 3) continue; seen.add(name);
-    const d = deals[name.toLowerCase()] || {}, bogo = /bogo/i.test(i.name) || /buy 1 get 1/i.test(d.deal || '');
-    const price = i.price && +i.price ? +i.price : (d.price ? +d.price : undefined);
-    items.push({ name, bogo: bogo || undefined, price, deal: bogo ? 'Buy one, get one free' : (d.deal || undefined), save: d.save || undefined, img: (i.cutout_image_url || d.img || '').replace(/^http:/, 'https:') || undefined });
+    const name = clean(i.name); if (seen.has(name)) continue; seen.add(name);
+    const dt = detail[i.id] || {}, d = deals[name.toLowerCase()] || {};
+    const pre = dt.pre_price_text || d.deal || '', bogo = /bogo/i.test(i.name) || /buy 1 get 1/i.test(pre);
+    const price = (dt.current_price && +dt.current_price) || (i.price && +i.price) || (d.price && +d.price) || undefined;
+    const multi = /^(\d+)\s*(?:for|\/)/i.exec(pre);
+    items.push({ name, bogo: bogo || undefined, price: multi ? undefined : price, deal: bogo ? undefined : wording(pre, price, dt.sale_story || d.deal), save: bogo ? ((dt.sale_story || d.save || '').replace(/^save up to\s*/i, '') || undefined) : undefined, desc: dt.description ? String(dt.description).slice(0, 90) : undefined, img: (i.cutout_image_url || d.img || '').replace(/^http:/, 'https:') || undefined });
     from ??= (i.valid_from || '').slice(0, 10); to ??= (i.valid_to || '').slice(0, 10);
   }
   if (!items.length || !from) return { items: 0 };
