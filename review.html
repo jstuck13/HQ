@@ -43,6 +43,18 @@
   .empty{display:block!important;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
   .empty::before{content:"";display:block;width:160px;height:12px;margin:0 auto 10px;background:var(--ornament)}
 
+  h3{font-size:17px;margin:34px 0 4px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;align-items:baseline;gap:12px}
+  h3 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
+  .portrait{margin-top:12px}
+  .prow{display:grid;grid-template-columns:34px 1fr 96px;gap:0 12px;align-items:center;padding:3px 0}
+  .prow .pd{font-family:var(--serif);font-size:12.5px;color:var(--ink-3)}
+  .prow .ph{display:grid;grid-template-columns:repeat(24,1fr);gap:1px;height:14px}
+  .prow .ph i{display:block;border-radius:1px;background:var(--paper-2)}
+  .prow .ph i.sleep{background:#7F9C8C} .prow .ph i.busy{background:#A9BBC9} .prow .ph i.study{background:#C9B8DB} .prow .ph i.free{background:var(--paper-2)}
+  .prow.future .ph i{background:transparent;border-bottom:1px dotted var(--rule);border-radius:0}
+  .prow .ps{font-size:12px;color:var(--ink-3);white-space:nowrap} .prow .ps b{font-weight:500;color:var(--ink-2)}
+  .pscale{display:grid;grid-template-columns:34px 1fr 96px;gap:0 12px;margin-bottom:4px} .pscale span:nth-child(2){display:flex;justify-content:space-between} .pscale em{font-family:var(--serif);font-style:normal;font-size:11px;color:var(--ink-3)}
+  .pkey{margin:10px 0 0;font-size:12px;color:var(--ink-3)} .pkey i{display:inline-block;width:10px;height:10px;border-radius:1px;vertical-align:-1px;margin:0 4px 0 10px;background:var(--paper-2)} .pkey i.sleep{background:#7F9C8C} .pkey i.busy{background:#A9BBC9} .pkey i.study{background:#C9B8DB}
   .streaks li{display:grid;grid-template-columns:auto 1fr;gap:16px;padding:12px 0;border-bottom:1px dotted var(--rule);align-items:baseline}
   .streaks .k{font-family:var(--serif);font-size:24px;min-width:3ch;text-align:right}
   .streaks .k i{font-style:normal;font-size:13px;color:var(--ink-3)}
@@ -83,6 +95,8 @@
   <section>
     <h2>Area by area<small id="rangen"></small></h2>
     <ul class="wk" id="wk"></ul>
+    <h3>Portrait of the week<small>every hour, every day</small></h3>
+    <div class="portrait" id="portrait"></div>
   </section>
   <aside>
     <h2>Streaks<small>as of today</small></h2>
@@ -118,7 +132,7 @@
   async function build(){
     const days=week(ws), prev=week(C.iso(C.addDays(C.fromISO(ws),-7))), we=days[6], future = ws>TODAY;
     const months=[...new Set([...days,...prev].map(d=>d.slice(0,7)))];
-    const [H, school, lib, ...rest] = await Promise.all([store.load('health'), store.load('school'), store.load('library'), ...months.map(m=>store.load('finances.'+m)), ...days.map(d=>store.load('today.'+d))]);
+    const [H, school, lib, cal, ...rest] = await Promise.all([store.load('health'), store.load('school'), store.load('library'), store.load('calendar'), ...months.map(m=>store.load('finances.'+m)), ...days.map(d=>store.load('today.'+d))]);
     const fin = Object.fromEntries(months.map((m,i)=>[m, rest[i]])), todos = rest.slice(months.length);
     const rows=[];
     F('title').textContent = ws===thisMon ? 'This week.' : `The week of ${C.dayMonthLong(C.fromISO(ws))}.`;
@@ -175,6 +189,7 @@
       if(all.length) rows.push(li('To do','today.html', `<b>${done}</b> of ${all.length} ticked${all.length-done?` · ${all.length-done} still open`:''}`, all.length?Math.round(done/all.length*100):0, '%', 'done', bars(todos.map((t,i)=>t&&t.items&&t.items.length?t.items.filter(x=>x.done).length:(days[i]<=TODAY?0:null)), v=>`${v} done`, '#B9C9BE')));
     }
     F('wk').innerHTML = rows.length ? rows.join('') : '<li class="empty">Nothing logged in this week yet. The other pages fill this one in.</li>';
+    portrait(days, H, cal, school);
 
     // streaks, as of today
     const sk=[]; if(H && H.days){
@@ -195,6 +210,24 @@
     F('said').textContent = said.length ? `${ws===thisMon?'So far this week':'That week'} ${said.length>1 ? said.slice(0,-1).join(', ')+' and '+said[said.length-1] : said[0]}.` : 'Once the week has some numbers in it, they will be summed up here.';
   }
 
+  // the portrait: each day a row of 24 hours — asleep (from the watch's bed and woke times), busy (the calendar), free
+  const clockOf = t => { const m=/(\d{1,2})[.:](\d{2})\s*(am|pm)/i.exec(t||''); if(!m) return null; let h=+m[1]%12; if(m[3].toLowerCase()==='pm') h+=12; return h+(+m[2])/60; };
+  function portrait(days, H, cal, school){
+    const el=F('portrait'); if(!el) return;
+    const cats=cal&&cal.cats||[], isWeekly=s=>(s.rep||[]).length>0, repDays=s=>[...new Set([wd(s.date),...(s.rep||[])])], occurs=(s,d)=>isWeekly(s)?(d>=s.date&&repDays(s).includes(wd(d))):s.date===d;
+    let any=false;
+    const rowsHtml = days.map(d => {
+      const cells = Array(24).fill('free'); const day=H&&H.days&&H.days[d]||{};
+      // sleep: from bed (the night before, so it belongs to this morning) to woke
+      const bed=clockOf(day.bed), woke=clockOf(day.woke);
+      if(bed!=null && woke!=null){ any=true; for(let h=0;h<24;h++){ const c=h+0.5; const asleep = bed>woke ? (c>=bed || c<woke) : (c>=bed && c<woke); if(asleep) cells[h]='sleep'; } }
+      if(cal){ (cal.series||[]).filter(s=>occurs(s,d)).forEach(s=>{ any=true; for(let h=Math.floor(s.start); h<Math.ceil(s.end) && h<24; h++) cells[h]= (cats.find(c=>c.id===s.cat)||{}).name==='Study' ? 'study' : 'busy'; }); }
+      const studied=(school&&school.sessions||[]).filter(s=>s.date===d).reduce((n,s)=>n+s.min,0);
+      const future = d>TODAY;
+      return `<div class="prow ${future?'future':''}"><span class="pd">${C.dayShort(C.fromISO(d))}</span><span class="ph">${cells.map((k,h)=>`<i class="${future?'':k}" title="${C.dayShort(C.fromISO(d))} ${h%12||12} ${h<12?'am':'pm'} · ${k}"></i>`).join('')}</span><span class="ps">${studied?`<b>${hrs(studied)}</b> studied`:''}</span></div>`;
+    }).join('');
+    el.innerHTML = any ? `<div class="pscale"><span></span><span>${['12 am','6 am','12 pm','6 pm','12 am'].map(t=>`<em>${t}</em>`).join('')}</span><span></span></div>${rowsHtml}<p class="pkey"><i class="sleep"></i> asleep <i class="busy"></i> on the calendar <i class="study"></i> studying <i class="free"></i> free</p>` : '<p class="empty">The portrait draws itself from the watch’s nights and the calendar’s days.</p>';
+  }
   const go = start => { ws=start; history.replaceState(null,'',ws===thisMon?location.pathname:`?w=${ws}`); build(); };
   F('prev').addEventListener('click', ()=>go(C.iso(C.addDays(C.fromISO(ws),-7))));
   F('next').addEventListener('click', ()=>go(C.iso(C.addDays(C.fromISO(ws),7))));

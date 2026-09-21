@@ -31,6 +31,15 @@
   .stage .src{font-size:12.5px;color:var(--ink-3);margin:16px 0 0}
   .stage .ask{margin:26px 0 0;padding-top:16px;border-top:1px solid var(--rule);font-family:var(--serif);font-style:italic;font-size:16px;color:var(--ox);max-width:56ch}
   .stage .hidden{filter:blur(6px);user-select:none}
+  @media (prefers-reduced-motion:no-preference){
+    @keyframes turn-in-r{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+    @keyframes turn-in-l{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+    .stage.turn-r > *{animation:turn-in-r .28s cubic-bezier(.2,.8,.2,1) both} .stage.turn-l > *{animation:turn-in-l .28s cubic-bezier(.2,.8,.2,1) both}
+    .stage.turn-r > *:nth-child(2),.stage.turn-l > *:nth-child(2){animation-delay:.03s} .stage.turn-r > *:nth-child(3),.stage.turn-l > *:nth-child(3){animation-delay:.06s} .stage.turn-r > *:nth-child(n+4),.stage.turn-l > *:nth-child(n+4){animation-delay:.09s}
+    @keyframes ink-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    .lines li.new{animation:ink-in .6s cubic-bezier(.2,.8,.2,1) both}
+    .close .done{animation:ink-in .5s ease-out .15s both}
+  }
   .stage .answer{display:block;width:100%;max-width:56ch;min-height:44px;margin-top:10px;font-family:var(--serif);font-size:15.5px;line-height:1.5;color:var(--ink);border-bottom:1px dotted var(--ink-2);padding:4px 0;resize:vertical;cursor:text}
   .stage .answer:focus{outline:none;border-bottom-color:var(--ink)} .stage .answer::placeholder{color:var(--ink-3);font-style:italic}
   .answers li{padding:10px 0;border-bottom:1px solid var(--rule)} .answers .q{font-family:var(--serif);font-style:italic;font-size:13.5px;color:var(--ink-2)} .answers .a{font-family:var(--serif);font-size:15.5px;line-height:1.5;margin-top:2px} .answers .d{font-size:12px;color:var(--ink-3);margin-top:2px}
@@ -53,7 +62,10 @@
   .lines li{padding:10px 0;border-bottom:1px solid var(--rule)}
   .lines .d{font-size:12.5px;color:var(--ink-3)} .lines .t{font-family:var(--serif);font-size:15.5px;line-height:1.5;margin-top:2px}
   .lines ul{border-left:1px solid color-mix(in srgb, var(--ox) 32%, transparent);padding-left:14px}
-  .paths li{padding:12px 0;border-bottom:1px solid var(--rule);display:grid;grid-template-columns:1fr auto;gap:2px 14px;align-items:baseline}
+  .paths li{padding:12px 0;border-bottom:1px solid var(--rule);display:grid;grid-template-columns:32px 1fr auto;gap:2px 14px;align-items:baseline}
+  .paths .em{grid-row:1/3;align-self:start;width:28px;height:28px;color:var(--ink-3)} .paths .em svg{width:28px;height:28px} .paths .cur .em{color:var(--ox)}
+  .paths .bar{grid-column:2/-1} .paths .go{grid-column:3}
+  .stage .emblem{display:inline-block;width:16px;height:16px;vertical-align:-3px;margin-right:8px;color:var(--ink-3)} .stage .emblem svg{width:16px;height:16px}
   .paths .n{font-family:var(--serif);font-size:16px} .paths .n small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
   .paths .p{font-size:12.5px;color:var(--ink-3);white-space:nowrap} .paths .cur .n{color:var(--ox)}
   .paths .bar{grid-column:1/-1;height:4px;background:var(--paper-2);border-radius:2px;overflow:hidden} .paths .bar i{display:block;height:100%;background:var(--band)}
@@ -119,11 +131,19 @@
   // The Study: one path at a time, three cards a day, then it stops. Progress, days and your lines live in `study`;
   // the cards live in paths/<id>.json. Every fourth day the first card is recall of an earlier one.
   const C = clock, TODAY = C.today, KEY = 'study', PER_DAY = 3;
-  let S = { path: 'stoics', pos: 0, days: {}, notes: [], answers: {} }, PATHS = [], P = null;   // P = the loaded path
+  let S = { path: 'stoics', pos: 0, days: {}, notes: [], answers: {} }, PATHS = [], P = null, turn = '', justKept = false;   // P = the loaded path
   const answerBox = c => `<textarea class="answer" id="answer" data-card="${c.id}" placeholder="Your answer, if you have one…">${esc((S.answers[c.id] || {}).text || '')}</textarea>`;
   const save = () => store.save(KEY, S);
   const dmy = d => `${C.monthShort(C.fromISO(d))} ${C.fromISO(d).getDate()}`;
   const card = id => P.cards.find(c => c.id === id);
+  // path emblems: line art in the ornament's manner — a column for the Stoics, an owl for Socrates, a hill for the Sermon
+  const EMBLEM = {
+    stoics: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 27h20M8 24h16M11 24V10M21 24V10M9 10h14M8 8h16M12 6h8"/></svg>',
+    socrates: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 8l3 3M23 8l-3 3M10 11h12v9a6 6 0 0 1-12 0z"/><circle cx="13" cy="15" r="1.3"/><circle cx="19" cy="15" r="1.3"/><path d="M16 17l-1 2h2z M12 26v2M20 26v2"/></svg>',
+    sermon: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 26c5-9 9-13 12-13s7 4 12 13M9 26c3-5 5-7 7-7s4 2 7 7M16 5v6M13 8h6"/></svg>',
+  };
+  const emblem = id => EMBLEM[id] || '';
+
 
   // today's session: built once, then walked
   function session(){
@@ -138,6 +158,7 @@
   const steps = d => (d.recall ? 1 : 0) + d.cards.length;   // the recall counts as a card
 
   function render(){
+    const st = F('stage'); st.classList.remove('turn-r', 'turn-l'); if(turn){ void st.offsetWidth; st.classList.add(turn); turn = ''; }
     if(!P){ F('stage').innerHTML = '<p class="empty">Loading the path…</p>'; return; }
     const d = session(), total = P.cards.length, n = steps(d);
     const finished = S.pos >= total && !d.cards.length;
@@ -154,25 +175,25 @@
       const teaser = next ? next.frame.split(/(?<=\.)\s/)[0] : 'the end of the path';
       F('stage').innerHTML = `<div class="close"><p class="kind">That’s today</p><p class="big">Three cards. Stop here.</p><p class="tomorrow">Tomorrow: ${esc(teaser)}</p>
         ${d.done ? `<span class="done">Kept. See you tomorrow.</span>` : `<textarea id="line" placeholder="One line — what struck you today?">${esc(d.draft || '')}</textarea>`}<div class="sfoot"><button class="back" type="button" id="back"><svg class="ic"><use href="icons.svg#arrow"/></svg>Back</button>${d.done ? '' : `<button class="textbtn" type="button" id="keep" style="margin-left:auto"><svg class="ic"><use href="icons.svg#check"/></svg>Keep it and close the day</button>`}</div></div>`;
-      F('back')?.addEventListener('click', e => { e.stopPropagation(); d.at = n - 1; save(); render(); });
+      F('back')?.addEventListener('click', e => { e.stopPropagation(); d.at = n - 1; turn = 'turn-l'; save(); render(); });
       F('line')?.addEventListener('input', e => { d.draft = e.target.value; save(); });
       F('line')?.addEventListener('click', e => e.stopPropagation());
-      F('keep')?.addEventListener('click', () => { const t = F('line').value.trim(); if(t) S.notes.push({ date: TODAY, path: S.path, card: d.cards[d.cards.length - 1], text: t }); delete d.draft; d.done = true; S.pos += d.cards.length; save(); render(); });
+      F('keep')?.addEventListener('click', () => { const t = F('line').value.trim(); if(t) S.notes.push({ date: TODAY, path: S.path, card: d.cards[d.cards.length - 1], text: t }); delete d.draft; d.done = true; S.pos += d.cards.length; justKept = !!t; save(); render(); });
       return;
     }
     // a recall card first, on recall days
     if(d.recall && d.at === 0){ const c = card(d.recall);
-      F('stage').innerHTML = `<p class="kind">Recall · from a few days ago</p><p class="frame">${esc(c.frame.split(/(?<=\.)\s/)[0])}</p><p class="text ${c.text.length > 420 ? 'long' : ''} ${d.revealed ? '' : 'hidden'}" id="rtext">${esc(c.text)}</p><p class="src">${esc(c.source)}</p>${d.revealed ? `<p class="ask">${esc(c.ask)}</p>${answerBox(c)}` : `<button class="textbtn reveal" type="button" id="reveal">Say it to yourself first — then reveal</button>`}<div class="sfoot">${dots}${d.revealed ? `<button class="next" type="button" id="next">Next <svg class="ic"><use href="icons.svg#arrow"/></svg></button>` : ''}</div>${d.revealed ? '<span class="tap" id="tap" aria-hidden="true"></span>' : ''}`;
+      F('stage').innerHTML = `<p class="kind"><span class="emblem">${emblem(S.path)}</span>Recall · from a few days ago</p><p class="frame">${esc(c.frame.split(/(?<=\.)\s/)[0])}</p><p class="text ${c.text.length > 420 ? 'long' : ''} ${d.revealed ? '' : 'hidden'}" id="rtext">${esc(c.text)}</p><p class="src">${esc(c.source)}</p>${d.revealed ? `<p class="ask">${esc(c.ask)}</p>${answerBox(c)}` : `<button class="textbtn reveal" type="button" id="reveal">Say it to yourself first — then reveal</button>`}<div class="sfoot">${dots}${d.revealed ? `<button class="next" type="button" id="next">Next <svg class="ic"><use href="icons.svg#arrow"/></svg></button>` : ''}</div>${d.revealed ? '<span class="tap" id="tap" aria-hidden="true"></span>' : ''}`;
       F('reveal')?.addEventListener('click', e => { e.stopPropagation(); d.revealed = true; save(); render(); });
       wire(d); return;
     }
     const c = card(d.cards[d.at - (d.recall ? 1 : 0)]);
-    F('stage').innerHTML = `<p class="kind">${esc(P.title)} · card ${S.pos + d.at - (d.recall ? 1 : 0) + 1} of ${total}</p><p class="frame">${esc(c.frame)}</p><p class="text ${c.text.length > 420 ? 'long' : ''}">${esc(c.text)}</p><p class="src">${esc(c.source)}</p><p class="ask">${esc(c.ask)}</p>${answerBox(c)}<div class="sfoot">${d.at > 0 ? `<button class="back" type="button" id="back"><svg class="ic"><use href="icons.svg#arrow"/></svg>Back</button>` : ''}${dots}<button class="next" type="button" id="next">${d.at === n - 1 ? (d.done ? 'Today’s note' : 'Close the day') : 'Next'} <svg class="ic"><use href="icons.svg#arrow"/></svg></button></div><span class="tap" id="tap" aria-hidden="true"></span>${d.at > 0 ? '<span class="tapback" id="tapback" aria-hidden="true"></span>' : ''}`;
+    F('stage').innerHTML = `<p class="kind"><span class="emblem">${emblem(S.path)}</span>${esc(P.title)} · card ${S.pos + d.at - (d.recall ? 1 : 0) + 1} of ${total}</p><p class="frame">${esc(c.frame)}</p><p class="text ${c.text.length > 420 ? 'long' : ''}">${esc(c.text)}</p><p class="src">${esc(c.source)}</p><p class="ask">${esc(c.ask)}</p>${answerBox(c)}<div class="sfoot">${d.at > 0 ? `<button class="back" type="button" id="back"><svg class="ic"><use href="icons.svg#arrow"/></svg>Back</button>` : ''}${dots}<button class="next" type="button" id="next">${d.at === n - 1 ? (d.done ? 'Today’s note' : 'Close the day') : 'Next'} <svg class="ic"><use href="icons.svg#arrow"/></svg></button></div><span class="tap" id="tap" aria-hidden="true"></span>${d.at > 0 ? '<span class="tapback" id="tapback" aria-hidden="true"></span>' : ''}`;
     wire(d);
   }
   function wire(d){
     const a = F('answer'); if(a){ a.addEventListener('click', e => e.stopPropagation()); a.addEventListener('input', e => { S.answers[a.dataset.card] = { date: TODAY, text: e.target.value }; save(); }); }
-    const go = step => { d.at = Math.max(0, d.at + step); save(); render(); F('stage').scrollIntoView({ block: 'start', behavior: 'smooth' }); };
+    const go = step => { d.at = Math.max(0, d.at + step); turn = step > 0 ? 'turn-r' : 'turn-l'; save(); render(); F('stage').scrollIntoView({ block: 'start', behavior: 'smooth' }); };
     F('next')?.addEventListener('click', e => { e.stopPropagation(); go(1); });
     F('back')?.addEventListener('click', e => { e.stopPropagation(); go(-1); });
     F('tap')?.addEventListener('click', () => go(1)); F('tapback')?.addEventListener('click', () => go(-1));
@@ -189,14 +210,15 @@
     // your lines
     const notes = [...S.notes].sort((a, b) => a.date < b.date ? 1 : -1);
     F('linesn').textContent = notes.length ? `${notes.length} kept` : '';
-    F('lines').innerHTML = notes.length ? notes.slice(0, 12).map(n => `<li><div class="d">${dmy(n.date)}${P && card(n.card) ? ` · after ${esc(card(n.card).source.split(' · ')[0])}` : ''}</div><div class="t">${esc(n.text)}</div></li>`).join('') : '<li class="empty">The line you keep at the end of each day collects here — a commonplace book, a sentence at a time.</li>';
+    F('lines').innerHTML = notes.length ? notes.slice(0, 12).map((n, i) => `<li class="${i === 0 && justKept ? 'new' : ''}"><div class="d">${dmy(n.date)}${P && card(n.card) ? ` · after ${esc(card(n.card).source.split(' · ')[0])}` : ''}</div><div class="t">${esc(n.text)}</div></li>`).join('') : '<li class="empty">The line you keep at the end of each day collects here — a commonplace book, a sentence at a time.</li>';
     // answers, newest first
     const ans = Object.entries(S.answers || {}).filter(([, a]) => a.text && a.text.trim()).sort((a, b) => a[1].date < b[1].date ? 1 : -1);
     F('answersn').textContent = ans.length ? `${ans.length} written` : '';
     F('answers').innerHTML = ans.length ? ans.slice(0, 8).map(([id, a]) => { const c = P && card(id); return `<li>${c ? `<div class="q">${esc(c.ask)}</div>` : ''}<div class="a">${esc(a.text)}</div><div class="d">${dmy(a.date)}${c ? ` · ${esc(c.source.split(' · ')[0])}` : ''}</div></li>`; }).join('') : '<li class="empty">Answer a card’s question in the box beneath it and it is kept here, apart from your lines.</li>';
+    justKept = false;
     // paths
     F('paths').innerHTML = PATHS.map(p => { const cur = p.id === S.path, prog = cur ? S.pos : (S.progress && S.progress[p.id]) || 0;
-      return `<li class="${cur ? 'cur' : ''}"><span class="n">${esc(p.title)}<small>${esc(p.sub)}</small></span><span class="p">${p.ready ? (cur ? `${prog} of ${p.cards}` : prog ? `${prog} of ${p.cards} · paused` : `${p.cards} cards`) : 'soon'}</span>${p.ready ? `<span class="bar"><i style="width:${p.cards ? prog / p.cards * 100 : 0}%"></i></span>` : ''}${p.ready && !cur ? `<button class="textbtn go" type="button" data-path="${p.id}">Walk this one</button>` : ''}</li>`; }).join('');
+      return `<li class="${cur ? 'cur' : ''}"><span class="em">${emblem(p.id)}</span><span class="n">${esc(p.title)}<small>${esc(p.sub)}</small></span><span class="p">${p.ready ? (cur ? `${prog} of ${p.cards}` : prog ? `${prog} of ${p.cards} · paused` : `${p.cards} cards`) : 'soon'}</span>${p.ready ? `<span class="bar"><i style="width:${p.cards ? prog / p.cards * 100 : 0}%"></i></span>` : ''}${p.ready && !cur ? `<button class="textbtn go" type="button" data-path="${p.id}">Walk this one</button>` : ''}</li>`; }).join('');
   }
   F('paths').addEventListener('click', async e => { const b = e.target.closest('[data-path]'); if(!b) return; S.progress ??= {}; S.progress[S.path] = S.pos; S.path = b.dataset.path; S.pos = S.progress[S.path] || 0; if(S.days[TODAY] && !S.days[TODAY].done) delete S.days[TODAY]; save(); await loadPath(); render(); renderAside(); });
 

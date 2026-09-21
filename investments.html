@@ -23,7 +23,10 @@
   h3{font-size:17px;margin:30px 0 4px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;align-items:baseline;gap:12px}
   h3 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
 
-  .figs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:14px 0 10px;border-bottom:1px solid var(--rule)}
+  .figs{display:grid;grid-template-columns:auto repeat(3,1fr);gap:16px 22px;padding:14px 0 10px;border-bottom:1px solid var(--rule);align-items:center}
+  .ring{width:84px;height:84px} .ring svg{width:100%;height:100%;display:block;overflow:visible} .ring circle{fill:none;stroke-width:9;transition:stroke-dasharray .6s ease}
+  .ring .track{stroke:var(--paper-2)}
+  .ring:empty{display:none}
   .fig .k{font-size:12.5px;color:var(--ink-3)}
   .fig .v{font-family:var(--serif);font-size:26px;line-height:1.1;margin-top:2px}
   .fig .n{font-size:12.5px;color:var(--ink-3)}
@@ -74,7 +77,7 @@
   @media (max-width:900px){
     .mast{gap:10px 18px} .mast .back{margin-left:0}
     main{grid-template-columns:1fr;gap:36px;padding:24px 20px 36px} .foot{padding:0 20px 28px}
-    .figs{grid-template-columns:1fr 1fr} .hold li{grid-template-columns:1fr 72px 90px} .hold li > :nth-child(4),.hold li > :nth-child(5){display:none}
+    .figs{grid-template-columns:auto 1fr} .ring{width:72px;height:72px} .hold li{grid-template-columns:1fr 72px 90px} .hold li > :nth-child(4),.hold li > :nth-child(5){display:none}
     .addl{grid-template-columns:1fr 1fr} .addb{grid-template-columns:1fr 1fr} .addl .textbtn,.addb .textbtn{grid-column:1/-1;justify-self:start}
   }
 </style>
@@ -104,6 +107,7 @@
   <section>
     <h2>Portfolio<small id="pricedn"></small></h2>
     <div class="figs">
+      <div class="ring" id="ring" aria-hidden="true"></div>
       <div class="fig"><div class="k">Worth today</div><div class="v" id="worth">—</div><div class="n" id="worthn"></div></div>
       <div class="fig"><div class="k">Put in</div><div class="v" id="putin">—</div><div class="n" id="putinn"></div></div>
       <div class="fig"><div class="k">Gain</div><div class="v" id="gain">—</div><div class="n" id="gainn"></div></div>
@@ -185,6 +189,10 @@
     if(I.baseline && T){ const ga = T - allIn; F('gain').innerHTML = `<span class="${ga>=0?'up':'down'}">${ga>=0?'+':'−'}${$(Math.abs(ga))}</span>`; F('gainn').textContent = `${pct(ga/allIn*100)} on the ${$(allIn)} put in`; }
     else { F('gain').innerHTML = g!=null && base ? `<span class="${g>=0?'up':'down'}">${g>=0?'+':'−'}${$(Math.abs(g))}</span>` : '—'; F('gainn').textContent = g!=null && base ? `${pct(g/(base+since)*100)} since ${dmy(firstDay)}, net of what went in` : (I.holdings.length ? 'measured from the first nightly price' : ''); }
 
+    // the ring: each holding's share of the whole, cash and hand balances included
+    { const parts=[...I.holdings.map(h=>({k:h.ticker.toUpperCase(), v:holdingValue(h)})), ...latestBalances().map(b=>({k:b.account, v:b.value}))].filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+      const sum=parts.reduce((n,x)=>n+x.v,0), R=32, CIRC=2*Math.PI*R, tints=['#1F3A2E','#7F9C8C','#B9AE99','#C9B8DB','#A9BBC9','#D9C79A','#C9A9AE','#7A2E2B'];
+      let off=0; F('ring').innerHTML = sum ? `<svg viewBox="0 0 84 84"><circle class="track" cx="42" cy="42" r="${R}"/>${parts.map((x,i)=>{ const len=x.v/sum*CIRC, el=`<circle cx="42" cy="42" r="${R}" stroke="${tints[i%tints.length]}" stroke-dasharray="${(len-2).toFixed(2)} ${(CIRC-len+2).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 42 42)"><title>${esc(x.k)} · ${Math.round(x.v/sum*100)}%</title></circle>`; off+=len; return el; }).join('')}</svg>` : ''; }
     // holdings
     const rows = I.holdings.map(h=>{ const p=price(h.ticker), v=holdingValue(h); return {h,p,v}; }).sort((a,b)=>b.v-a.v);
     F('hold').innerHTML = (rows.length ? `<li class="head"><span>Holding</span><span class="r">Shares</span><span class="r">Price</span><span class="r">Worth</span><span>Weight</span></li>` : '') + (rows.length ? rows.map(({h,p,v})=>`<li data-id="${h.id}"><span class="t">${esc(h.ticker.toUpperCase())}<small>${esc(p&&p.name||'')}${h.account?` · ${esc(h.account)}`:''}</small>${p&&p.price===1&&/money ?market/i.test(p.name||'') ? `<small class="yield">yield <input class="yl" value="${h.yield!=null?h.yield:''}" inputmode="decimal" placeholder="—" aria-label="Yield of ${esc(h.ticker)}">%${h.yield?` · earns ${$2(v*h.yield/100/52)} a week, ${$(v*h.yield/100)} a year`:' · type Fidelity’s 7-day yield'}</small>` : ''}</span><span class="r"><input class="sh" value="${h.shares}" inputmode="decimal" aria-label="Shares of ${esc(h.ticker)}"></span><span class="r">${p?$2(p.price):'—'}${p&&p.chg!=null&&!(p.price===1&&/money ?market/i.test(p.name||''))?`<small class="${p.chg>=0?'up':'down'}">${pct(p.chg)}</small>`:''}</span><span class="r">${p?$(v):'—'}</span><span class="w"><i style="width:${T?v/T*100:0}%"></i></span><button class="x" type="button" data-rm="${h.id}">remove</button></li>`).join('') : '<li class="empty">Add what you hold — ticker, shares, account. Fidelity funds like FXAIX work; prices come with the nightly fetch.</li>');
