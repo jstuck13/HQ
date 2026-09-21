@@ -7,12 +7,13 @@
     set: (k, v) => { try { localStorage.setItem('hq.' + k, JSON.stringify(v)); } catch {} },
   };
   const timers = {}, loaded = {}, seen = {}, pending = {};
-  let inflight = 0, settle;                      // when every load in flight has answered and nothing new starts, the page has drawn: drop the splash   // a key can be saved only after its load has answered; `seen` is the server's updated_at we last read
+  let inflight = 0, settle; const fetching = {};   // when every load in flight has answered and nothing new starts, the page has drawn: drop the splash   // a key can be saved only after its load has answered; `seen` is the server's updated_at we last read
 
-  async function load(key) {
-    const cached = ls.get(key); inflight++; clearTimeout(settle);
-    try { return await fetchDoc(key, cached); }
-    finally { loaded[key] = true; if (--inflight === 0) settle = setTimeout(() => window.hqReveal && window.hqReveal(), 80); }
+  // bg: a load the page is not waiting on to draw (the bell's notices), so it does not hold the splash. Concurrent loads of one key share a fetch.
+  async function load(key, bg = false) {
+    const cached = ls.get(key); if (!bg) { inflight++; clearTimeout(settle); }
+    try { return await (fetching[key] ||= fetchDoc(key, cached).finally(() => { delete fetching[key]; })); }
+    finally { loaded[key] = true; if (!bg && --inflight === 0) settle = setTimeout(() => window.hqReveal && window.hqReveal(), 80); }
   }
   async function fetchDoc(key, cached) {
     try {
@@ -70,7 +71,7 @@
   const signOut = () => fetch('/api/login', { method: 'DELETE' });
   // run a source's sync now; resolves to the ledger entry ({ ok, last, ... }) or null when there is no API
   const sync = async name => { try { const r = await fetch(`/api/sync/${name}`, { method: 'POST' }); return await r.json(); } catch { return null; } };
-  const ledger = async () => (await load('sync')) || {};
+  const ledger = async () => (await load('sync', true)) || {};
 
   window.store = { load, save, signIn, signOut, sync, ledger, signedOut: false };
 })();

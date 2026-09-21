@@ -14,7 +14,7 @@
   let todoDoc = null;   // today's to-do document, kept so a tick from the bell can be saved
   const notices = async () => {
     const today = clock.today, ym = today.slice(0, 7), hour = new Date().getHours(), todos = [], due = [];
-    const [school, fin, health, todo] = await Promise.all([store.load('school'), store.load('finances.' + ym), store.load('health'), store.load('today.' + today)].map(p => p.catch(() => null)));
+    const [school, fin, health, todo] = await Promise.all([store.load('school', true), store.load('finances.' + ym, true), store.load('health', true), store.load('today.' + today, true)].map(p => p.catch(() => null)));
     const nowH = new Date().getHours() + new Date().getMinutes() / 60, h12 = h => { const hr = Math.floor(h), m = Math.round((h % 1) * 60); return `${hr % 12 || 12}.${String(m).padStart(2, '0')} ${hr < 12 ? 'am' : 'pm'}`; };
     (todo && todo.items || []).forEach((i, k) => { if (!i.done && i.at != null) todos.push({ k, at: i.at, text: esc(i.text), when: i.at < nowH ? `was due by ${h12(i.at)}` : `by ${h12(i.at)}`, late: i.at < nowH, href: 'today.html' }); });
     todos.sort((a, b) => a.at - b.at); todoDoc = todo;
