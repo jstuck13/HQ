@@ -32,6 +32,7 @@ async function publix(getDoc, putDoc) {
   const wording = (pre, price, story) => {
     const p = String(pre || '').trim(), n = /^(\d+)\s*(?:for|\/)/i.exec(p);
     if (/buy 1 get 1/i.test(p)) return 'Buy one, get one free';
+    if (/^(per\s*)?lb\.?$/i.test(p) && price) return `$${(+price).toFixed(2)} lb`;
     if (n && price) return `${n[1]} for $${(+price).toFixed(2).replace(/\.00$/, '')}`;
     if (/buy \d+ get \d+/i.test(p)) return p.toLowerCase().replace(/^b/, 'B');
     if (p && !n) return p.toLowerCase().replace(/^\w/, c => c.toUpperCase());
