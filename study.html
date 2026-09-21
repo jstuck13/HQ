@@ -36,6 +36,8 @@
   .stage .dots{display:flex;gap:8px} .stage .dots i{width:8px;height:8px;border-radius:50%;background:var(--rule)} .stage .dots i.on{background:var(--band)} .stage .dots i.now{outline:1.5px solid var(--band);outline-offset:2px}
   .stage .next{margin-left:auto;font-family:var(--serif);font-size:17px;display:inline-flex;align-items:center;gap:8px;border-bottom:1px solid transparent} .stage .next:hover{border-color:currentColor}
   .stage .tap{position:absolute;right:0;top:0;bottom:80px;width:40%;cursor:e-resize}
+  .stage .tapback{position:absolute;left:0;top:0;bottom:80px;width:22%;cursor:w-resize}
+  .stage .back{font-family:var(--serif);font-size:15px;color:var(--ink-3);display:inline-flex;align-items:center;gap:6px;border-bottom:1px solid transparent} .stage .back:hover{color:var(--ink);border-color:currentColor} .stage .back .ic{transform:rotate(180deg)}
   /* the closing card */
   .close .big{font-family:var(--serif);font-size:30px;line-height:1.25;margin:0 0 10px}
   .close .tomorrow{font-size:14.5px;color:var(--ink-2);margin:0 0 22px;max-width:60ch}
@@ -141,11 +143,12 @@
     const dots = `<span class="dots">${Array.from({length: n}, (_, i) => `<i class="${i < d.at ? 'on' : ''} ${i === d.at ? 'now' : ''}"></i>`).join('')}</span>`;
 
     if(finished){ F('stage').innerHTML = `<div class="close"><p class="kind">The end of the path</p><p class="big">You have walked ${esc(P.title)}.</p><p class="tomorrow">${total} cards, ${dayNo} days. Pick the next path on the right when it is ready, or begin this one again.</p><button class="textbtn" type="button" id="again">Begin again</button></div>`; F('again')?.addEventListener('click', () => { S.pos = 0; delete S.days[TODAY]; save(); render(); }); return; }
-    if(d.done || d.at >= n){
+    if(d.at >= n){
       const next = P.cards[S.pos + (d.done ? 0 : d.cards.length)] ;
       const teaser = next ? next.frame.split(/(?<=\.)\s/)[0] : 'the end of the path';
       F('stage').innerHTML = `<div class="close"><p class="kind">That’s today</p><p class="big">Three cards. Stop here.</p><p class="tomorrow">Tomorrow: ${esc(teaser)}</p>
-        ${d.done ? `<span class="done">Kept. See you tomorrow.</span>` : `<textarea id="line" placeholder="One line — what struck you today?"></textarea><div class="sfoot"><button class="textbtn" type="button" id="keep"><svg class="ic"><use href="icons.svg#check"/></svg>Keep it and close the day</button></div>`}</div>`;
+        ${d.done ? `<span class="done">Kept. See you tomorrow.</span>` : `<textarea id="line" placeholder="One line — what struck you today?"></textarea>`}<div class="sfoot"><button class="back" type="button" id="back"><svg class="ic"><use href="icons.svg#arrow"/></svg>Back</button>${d.done ? '' : `<button class="textbtn" type="button" id="keep" style="margin-left:auto"><svg class="ic"><use href="icons.svg#check"/></svg>Keep it and close the day</button>`}</div></div>`;
+      F('back')?.addEventListener('click', e => { e.stopPropagation(); d.at = n - 1; save(); render(); });
       F('keep')?.addEventListener('click', () => { const t = F('line').value.trim(); if(t) S.notes.push({ date: TODAY, path: S.path, card: d.cards[d.cards.length - 1], text: t }); d.done = true; S.pos += d.cards.length; save(); render(); });
       return;
     }
@@ -156,14 +159,15 @@
       wire(d); return;
     }
     const c = card(d.cards[d.at - (d.recall ? 1 : 0)]);
-    F('stage').innerHTML = `<p class="kind">${esc(P.title)} · card ${S.pos + d.at - (d.recall ? 1 : 0) + 1} of ${total}</p><p class="frame">${esc(c.frame)}</p><p class="text ${c.text.length > 420 ? 'long' : ''}">${esc(c.text)}</p><p class="src">${esc(c.source)}</p><p class="ask">${esc(c.ask)}</p><div class="sfoot">${dots}<button class="next" type="button" id="next">${d.at === n - 1 ? 'Close the day' : 'Next'} <svg class="ic"><use href="icons.svg#arrow"/></svg></button></div><span class="tap" id="tap" aria-hidden="true"></span>`;
+    F('stage').innerHTML = `<p class="kind">${esc(P.title)} · card ${S.pos + d.at - (d.recall ? 1 : 0) + 1} of ${total}</p><p class="frame">${esc(c.frame)}</p><p class="text ${c.text.length > 420 ? 'long' : ''}">${esc(c.text)}</p><p class="src">${esc(c.source)}</p><p class="ask">${esc(c.ask)}</p><div class="sfoot">${d.at > 0 ? `<button class="back" type="button" id="back"><svg class="ic"><use href="icons.svg#arrow"/></svg>Back</button>` : ''}${dots}<button class="next" type="button" id="next">${d.at === n - 1 ? (d.done ? 'Today’s note' : 'Close the day') : 'Next'} <svg class="ic"><use href="icons.svg#arrow"/></svg></button></div><span class="tap" id="tap" aria-hidden="true"></span>${d.at > 0 ? '<span class="tapback" id="tapback" aria-hidden="true"></span>' : ''}`;
     wire(d);
   }
   function wire(d){
-    const adv = () => { d.at++; save(); render(); F('stage').scrollIntoView({ block: 'start', behavior: 'smooth' }); };
-    F('next')?.addEventListener('click', e => { e.stopPropagation(); adv(); });
-    F('tap')?.addEventListener('click', adv);
-    document.onkeydown = e => { if(e.key === 'ArrowRight' && !/INPUT|TEXTAREA/.test(document.activeElement.tagName) && F('next')) adv(); };
+    const go = step => { d.at = Math.max(0, d.at + step); save(); render(); F('stage').scrollIntoView({ block: 'start', behavior: 'smooth' }); };
+    F('next')?.addEventListener('click', e => { e.stopPropagation(); go(1); });
+    F('back')?.addEventListener('click', e => { e.stopPropagation(); go(-1); });
+    F('tap')?.addEventListener('click', () => go(1)); F('tapback')?.addEventListener('click', () => go(-1));
+    document.onkeydown = e => { if(/INPUT|TEXTAREA/.test(document.activeElement.tagName)) return; if(e.key === 'ArrowRight' && F('next')) go(1); if(e.key === 'ArrowLeft' && d.at > 0) go(-1); };
   }
 
   function renderAside(){
