@@ -180,7 +180,7 @@
 
   // ---- the ad ----
   const weeks = () => Object.values(AD.weeks||{}).sort((a,b)=>a.from<b.from?1:-1);
-  const current = () => weeks().find(w => w.from<=TODAY && w.to>=TODAY) || weeks()[0];
+  const current = () => { const live = weeks().filter(w => w.from<=TODAY && w.to>=TODAY).sort((a,b)=>(b.items||[]).length-(a.items||[]).length); return live[0] || weeks()[0]; };   // the fullest ad covering today
   // an ad item and a thing you buy match when every word of the shorter name is in the longer
   const matches = (a, b) => { const x=norm(a).split(' ').filter(w=>w.length>2), y=norm(b).split(' ').filter(w=>w.length>2); if(!x.length||!y.length) return false; const [s,l]=x.length<=y.length?[x,y]:[y,x]; return s.every(w=>l.some(v=>v.startsWith(w)||w.startsWith(v))); };
   // when Publix has run a BOGO on this before: how often, and when next
