@@ -265,6 +265,12 @@
       const note = nx ? `${esc(cn(nx.course)?.name||'')} — ${esc(nx.title)}, ${dd<0?'overdue':dd===0?'due today':dd===1?'due tomorrow':'due '+C.monthShort(C.fromISO(nx.due))+' '+C.fromISO(nx.due).getDate()}` : 'Nothing due';
       rows.push(row('School','school.html',note,`${items.length}`,`open ${items.length===1?'item':'items'}`, dd!==null && dd<=0));
     } else rows.push(row('School','school.html','Open School to add your courses','','no courses yet'));
+    // the study: three cards a day
+    { const st=d.study, day=st && st.days && st.days[TODAY], titles={stoics:'The Stoics', socrates:'Socrates', sermon:'The Sermon on the Mount'};
+      if(st && (st.pos>0 || day)){ const done=day && day.done, n=day ? (day.recall?1:0)+day.cards.length : 3, at=day ? Math.min(day.at, n) : 0;
+        let run=0; for(let i=0;i<400;i++){ const k=C.iso(C.addDays(C.fromISO(TODAY),-i)); if(st.days[k] && st.days[k].done) run++; else if(i===0) continue; else break; }
+        rows.push(row('The Study','study.html', `${titles[st.path]||st.path} · card ${Math.min(st.pos+1, 42)} of 42${run>=2?` · ${run} days running`:''}`, done ? 'done' : `${at} of ${n}`, done ? 'today’s cards' : 'cards read today', false)); }
+      else rows.push(row('The Study','study.html','Three cards a day, from the Stoics to start','','not begun')); }
     // calendar
     { const list=d.day||[], later=list.filter(s=>s.start>NOW), next=later[0];
       const lastEnd = list.length ? Math.max(...list.map(s=>s.end)) : null;
@@ -322,14 +328,14 @@
   window.onTodoChange = doc => { T = doc; renderTodo(); d.day = renderDay(CAL); };   // a tick in the bell shows here at once
   // ---- load everything the other pages keep, then draw ----
   (async () => {
-    const [cal, fin, H, lib, school, today, inv] = await Promise.all([store.load('calendar'), store.load('finances.'+YM), store.load('health'), store.load('library'), store.load('school'), store.load(TKEY), store.load('investments')]);
+    const [cal, fin, H, lib, school, today, inv, study] = await Promise.all([store.load('calendar'), store.load('finances.'+YM), store.load('health'), store.load('library'), store.load('school'), store.load(TKEY), store.load('investments'), store.load('study')]);
     if(today){ T = today; if(migrateAt()) saveT(); }
     else {   // first look at a new day: unfinished items from the last few days come along, marked
       for(let i=1;i<=3 && !T.items.length;i++){ const k=C.iso(C.addDays(C.fromISO(TODAY),-i)), prev=await store.load('today.'+k); if(prev && prev.items){ T.items = prev.items.filter(x=>!x.done).map(x=>({text:x.text, done:false, from:x.from||k})); break; } }
       if(T.items.length) saveT();
     }
     const health = H && H.days ? Object.assign({meds:(H.meds||[]).length}, H.days[TODAY] || {pills:[]}) : null;
-    Object.assign(d, { fin, health, lib, school, H, inv }); CAL = cal;
+    Object.assign(d, { fin, health, lib, school, H, inv, study }); CAL = cal;
     renderReport(H);
     d.day = renderDay(cal);
     renderAffairs(d); renderGreeting(d); renderUpNext(d.day); renderTodo(); renderWeather();

@@ -1,0 +1,5 @@
+[
+  { "id": "stoics", "title": "The Stoics", "sub": "Epictetus, Seneca, Marcus Aurelius — and where they part", "cards": 42, "ready": true },
+  { "id": "socrates", "title": "Socrates", "sub": "The trial and the death: Euthyphro, Apology, Crito, Phaedo", "cards": 0, "ready": false },
+  { "id": "sermon", "title": "The Sermon on the Mount", "sub": "Matthew 5–7, line by line", "cards": 0, "ready": false }
+]

@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1F3A2E">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>HQ — The Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="hq.css">
+<style>
+  .mast{margin-top:20px;padding-top:18px;border-top:1px solid rgba(242,236,223,.28);display:flex;align-items:baseline;gap:22px;flex-wrap:wrap}
+  h1{font-size:32px;line-height:1.3}
+  .mast .sub{font-family:var(--serif);font-style:italic;color:var(--band-muted)}
+  .mast .sub b{font-weight:400;color:var(--band-ink)}
+
+  main{max-width:1180px;margin:0 auto;padding:34px 40px 44px;display:grid;grid-template-columns:1.4fr 1fr;gap:64px}
+  h3{font-size:17px;margin:30px 0 4px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;align-items:baseline;gap:12px}
+  h3 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
+
+  /* the stage: one card, big type, tap to turn */
+  .stage{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:34px 40px 30px;margin-top:14px;min-height:420px;display:flex;flex-direction:column;position:relative;cursor:pointer;user-select:text}
+  .stage .kind{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px}
+  .stage .frame{font-size:14.5px;line-height:1.6;color:var(--ink-2);margin:0 0 22px;max-width:60ch}
+  .stage .text{font-family:var(--serif);font-size:20px;line-height:1.55;margin:0;max-width:56ch;white-space:pre-line;text-wrap:pretty}
+  .stage .text.long{font-size:17.5px}
+  .stage .src{font-size:12.5px;color:var(--ink-3);margin:16px 0 0}
+  .stage .ask{margin:26px 0 0;padding-top:16px;border-top:1px solid var(--rule);font-family:var(--serif);font-style:italic;font-size:16px;color:var(--ox);max-width:56ch}
+  .stage .hidden{filter:blur(6px);user-select:none}
+  .stage .reveal{margin-top:12px;font-size:13.5px}
+  .stage .sfoot{margin-top:auto;padding-top:26px;display:flex;align-items:center;gap:18px}
+  .stage .dots{display:flex;gap:8px} .stage .dots i{width:8px;height:8px;border-radius:50%;background:var(--rule)} .stage .dots i.on{background:var(--band)} .stage .dots i.now{outline:1.5px solid var(--band);outline-offset:2px}
+  .stage .next{margin-left:auto;font-family:var(--serif);font-size:17px;display:inline-flex;align-items:center;gap:8px;border-bottom:1px solid transparent} .stage .next:hover{border-color:currentColor}
+  .stage .tap{position:absolute;right:0;top:0;bottom:80px;width:40%;cursor:e-resize}
+  /* the closing card */
+  .close .big{font-family:var(--serif);font-size:30px;line-height:1.25;margin:0 0 10px}
+  .close .tomorrow{font-size:14.5px;color:var(--ink-2);margin:0 0 22px;max-width:60ch}
+  .close textarea{width:100%;min-height:72px;font-family:var(--serif);font-size:17px;line-height:1.5;border-bottom:1px dotted var(--ink-2);padding:6px 0;resize:vertical;color:var(--ink)}
+  .close textarea:focus{outline:none;border-bottom-color:var(--ink)} .close textarea::placeholder{color:var(--ink-3);font-style:italic}
+  .close .done{display:block;font-family:var(--serif);font-style:italic;font-size:22px;margin-top:8px}
+  .textbtn{font-size:13.5px}
+
+  /* aside */
+  .lines li{padding:10px 0;border-bottom:1px solid var(--rule)}
+  .lines .d{font-size:12.5px;color:var(--ink-3)} .lines .t{font-family:var(--serif);font-size:15.5px;line-height:1.5;margin-top:2px}
+  .lines ul{border-left:1px solid color-mix(in srgb, var(--ox) 32%, transparent);padding-left:14px}
+  .paths li{padding:12px 0;border-bottom:1px solid var(--rule);display:grid;grid-template-columns:1fr auto;gap:2px 14px;align-items:baseline}
+  .paths .n{font-family:var(--serif);font-size:16px} .paths .n small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
+  .paths .p{font-size:12.5px;color:var(--ink-3);white-space:nowrap} .paths .cur .n{color:var(--ox)}
+  .paths .bar{grid-column:1/-1;height:4px;background:var(--paper-2);border-radius:2px;overflow:hidden} .paths .bar i{display:block;height:100%;background:var(--band)}
+  .paths .go{grid-column:2;font-size:12.5px}
+  .streak{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px} .streak i{width:14px;height:14px;border-radius:2px;background:var(--paper-2)} .streak i.on{background:var(--band)} .streak i.today{outline:1.5px solid var(--ox);outline-offset:1px}
+
+  .empty{padding:14px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
+  .empty{display:block!important;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
+  .empty::before{content:"";display:block;width:160px;height:12px;margin:0 auto 10px;background:var(--ornament)}
+  .foot{max-width:1180px;margin:0 auto;padding:0 40px 32px;font-size:12.5px;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
+
+  @media (max-width:900px){
+    .mast{gap:10px 18px}
+    main{grid-template-columns:1fr;gap:36px;padding:20px 20px 36px} .foot{padding:0 20px 28px}
+    .stage{padding:24px 22px 22px;min-height:0;border-radius:12px} .stage .text{font-size:18px} .stage .text.long{font-size:16px} .stage .tap{width:50%}
+  }
+</style>
+</head>
+<body>
+<header class="band">
+  <div class="in">
+    <div class="row">
+      <a class="mark" href="today.html">HQ</a>
+      <span class="date"></span>
+      <nav aria-label="Areas"><a href="today.html">Today</a><a href="calendar.html">Calendar</a><a href="finances.html">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="health.html">Health</a></nav>
+      <div class="right">
+        <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
+        <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
+        <button class="ib menu" type="button" aria-label="Menu" aria-expanded="false" id="menubtn"><svg class="ic"><use href="icons.svg#menu"/></svg></button>
+      </div>
+    </div>
+    <div class="mast">
+      <h1>The Study</h1>
+      <span class="sub" id="sub">three cards a day</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section>
+    <h2 id="pathh">Today’s cards<small id="cardn"></small></h2>
+    <div class="stage" id="stage"></div>
+  </section>
+  <aside>
+    <h2>Days<small id="daysn"></small></h2>
+    <div class="streak" id="streak"></div>
+    <h3>Your lines<small id="linesn"></small></h3>
+    <div class="lines"><ul id="lines"></ul></div>
+    <h3>Paths<small>one at a time</small></h3>
+    <ul class="paths" id="paths"></ul>
+  </aside>
+</main>
+<p class="foot">Three cards, then it stops. The passages are the texts themselves, in public-domain translations; the frames and questions are HQ’s. Every fourth day the first card asks you what an earlier one said.</p>
+
+<script src="clock.js"></script>
+<script src="hq.js"></script>
+<script src="store.js"></script>
+<script src="bell.js"></script>
+<script src="search.js"></script>
+<script>
+  // The Study: one path at a time, three cards a day, then it stops. Progress, days and your lines live in `study`;
+  // the cards live in paths/<id>.json. Every fourth day the first card is recall of an earlier one.
+  const C = clock, TODAY = C.today, KEY = 'study', PER_DAY = 3;
+  let S = { path: 'stoics', pos: 0, days: {}, notes: [] }, PATHS = [], P = null;   // P = the loaded path
+  const save = () => store.save(KEY, S);
+  const dmy = d => `${C.monthShort(C.fromISO(d))} ${C.fromISO(d).getDate()}`;
+  const card = id => P.cards.find(c => c.id === id);
+
+  // today's session: built once, then walked
+  function session(){
+    if(S.days[TODAY]) return S.days[TODAY];
+    const daysDone = Object.values(S.days).filter(d => d.done && d.path === S.path).length;
+    const ids = P.cards.slice(S.pos, S.pos + PER_DAY).map(c => c.id);
+    let recall = null;
+    if(daysDone > 0 && daysDone % 4 === 3 && S.pos >= 6){ const earlier = P.cards.slice(Math.max(0, S.pos - 9), S.pos - 3); recall = earlier[Math.floor(Math.random() * earlier.length)].id; }
+    S.days[TODAY] = { path: S.path, cards: ids, recall, at: 0, done: false, revealed: false };
+    save(); return S.days[TODAY];
+  }
+  const steps = d => (d.recall ? 1 : 0) + d.cards.length;   // the recall counts as a card
+
+  function render(){
+    if(!P){ F('stage').innerHTML = '<p class="empty">Loading the path…</p>'; return; }
+    const d = session(), total = P.cards.length, n = steps(d);
+    const finished = S.pos >= total && !d.cards.length;
+    F('pathh').firstChild.textContent = P.title;
+    const dayNo = Object.values(S.days).filter(x => x.path === S.path).length;
+    const readIdx = Math.max(0, d.at - (d.recall ? 1 : 0));
+    F('sub').innerHTML = `<b>${esc(P.title)}</b> · day ${dayNo} · ${d.done ? `${S.pos} of ${total} read` : `card ${Math.min(total, S.pos + Math.min(d.cards.length, readIdx + 1))} of ${total}`}`;
+    F('cardn').textContent = d.done ? 'done for today' : `${Math.min(d.at, n)} of ${n} read`;
+    const dots = `<span class="dots">${Array.from({length: n}, (_, i) => `<i class="${i < d.at ? 'on' : ''} ${i === d.at ? 'now' : ''}"></i>`).join('')}</span>`;
+
+    if(finished){ F('stage').innerHTML = `<div class="close"><p class="kind">The end of the path</p><p class="big">You have walked ${esc(P.title)}.</p><p class="tomorrow">${total} cards, ${dayNo} days. Pick the next path on the right when it is ready, or begin this one again.</p><button class="textbtn" type="button" id="again">Begin again</button></div>`; F('again')?.addEventListener('click', () => { S.pos = 0; delete S.days[TODAY]; save(); render(); }); return; }
+    if(d.done || d.at >= n){
+      const next = P.cards[S.pos + (d.done ? 0 : d.cards.length)] ;
+      const teaser = next ? next.frame.split(/(?<=\.)\s/)[0] : 'the end of the path';
+      F('stage').innerHTML = `<div class="close"><p class="kind">That’s today</p><p class="big">Three cards. Stop here.</p><p class="tomorrow">Tomorrow: ${esc(teaser)}</p>
+        ${d.done ? `<span class="done">Kept. See you tomorrow.</span>` : `<textarea id="line" placeholder="One line — what struck you today?"></textarea><div class="sfoot"><button class="textbtn" type="button" id="keep"><svg class="ic"><use href="icons.svg#check"/></svg>Keep it and close the day</button></div>`}</div>`;
+      F('keep')?.addEventListener('click', () => { const t = F('line').value.trim(); if(t) S.notes.push({ date: TODAY, path: S.path, card: d.cards[d.cards.length - 1], text: t }); d.done = true; S.pos += d.cards.length; save(); render(); });
+      return;
+    }
+    // a recall card first, on recall days
+    if(d.recall && d.at === 0){ const c = card(d.recall);
+      F('stage').innerHTML = `<p class="kind">Recall · from a few days ago</p><p class="frame">${esc(c.frame.split(/(?<=\.)\s/)[0])}</p><p class="text ${c.text.length > 420 ? 'long' : ''} ${d.revealed ? '' : 'hidden'}" id="rtext">${esc(c.text)}</p><p class="src">${esc(c.source)}</p>${d.revealed ? `<p class="ask">${esc(c.ask)}</p>` : `<button class="textbtn reveal" type="button" id="reveal">Say it to yourself first — then reveal</button>`}<div class="sfoot">${dots}${d.revealed ? `<button class="next" type="button" id="next">Next <svg class="ic"><use href="icons.svg#arrow"/></svg></button>` : ''}</div>${d.revealed ? '<span class="tap" id="tap" aria-hidden="true"></span>' : ''}`;
+      F('reveal')?.addEventListener('click', e => { e.stopPropagation(); d.revealed = true; save(); render(); });
+      wire(d); return;
+    }
+    const c = card(d.cards[d.at - (d.recall ? 1 : 0)]);
+    F('stage').innerHTML = `<p class="kind">${esc(P.title)} · card ${S.pos + d.at - (d.recall ? 1 : 0) + 1} of ${total}</p><p class="frame">${esc(c.frame)}</p><p class="text ${c.text.length > 420 ? 'long' : ''}">${esc(c.text)}</p><p class="src">${esc(c.source)}</p><p class="ask">${esc(c.ask)}</p><div class="sfoot">${dots}<button class="next" type="button" id="next">${d.at === n - 1 ? 'Close the day' : 'Next'} <svg class="ic"><use href="icons.svg#arrow"/></svg></button></div><span class="tap" id="tap" aria-hidden="true"></span>`;
+    wire(d);
+  }
+  function wire(d){
+    const adv = () => { d.at++; save(); render(); F('stage').scrollIntoView({ block: 'start', behavior: 'smooth' }); };
+    F('next')?.addEventListener('click', e => { e.stopPropagation(); adv(); });
+    F('tap')?.addEventListener('click', adv);
+    document.onkeydown = e => { if(e.key === 'ArrowRight' && !/INPUT|TEXTAREA/.test(document.activeElement.tagName) && F('next')) adv(); };
+  }
+
+  function renderAside(){
+    // the last 28 days, as squares
+    const days = Array.from({length: 28}, (_, i) => C.iso(C.addDays(C.now, i - 27)));
+    F('streak').innerHTML = days.map(d => `<i class="${S.days[d] && S.days[d].done ? 'on' : ''} ${d === TODAY ? 'today' : ''}" title="${dmy(d)}"></i>`).join('');
+    let run = 0; for(let i = 0; i < 400; i++){ const d = C.iso(C.addDays(C.now, -i)); if(S.days[d] && S.days[d].done) run++; else if(i === 0) continue; else break; }
+    const doneDays = Object.values(S.days).filter(x => x.done).length;
+    F('daysn').textContent = run >= 2 ? `${run} in a row · ${doneDays} in all` : doneDays ? `${doneDays} ${doneDays === 1 ? 'day' : 'days'} in all` : '';
+    // your lines
+    const notes = [...S.notes].sort((a, b) => a.date < b.date ? 1 : -1);
+    F('linesn').textContent = notes.length ? `${notes.length} kept` : '';
+    F('lines').innerHTML = notes.length ? notes.slice(0, 12).map(n => `<li><div class="d">${dmy(n.date)}${P && card(n.card) ? ` · after ${esc(card(n.card).source.split(' · ')[0])}` : ''}</div><div class="t">${esc(n.text)}</div></li>`).join('') : '<li class="empty">The line you keep at the end of each day collects here — a commonplace book, a sentence at a time.</li>';
+    // paths
+    F('paths').innerHTML = PATHS.map(p => { const cur = p.id === S.path, prog = cur ? S.pos : (S.progress && S.progress[p.id]) || 0;
+      return `<li class="${cur ? 'cur' : ''}"><span class="n">${esc(p.title)}<small>${esc(p.sub)}</small></span><span class="p">${p.ready ? (cur ? `${prog} of ${p.cards}` : prog ? `${prog} of ${p.cards} · paused` : `${p.cards} cards`) : 'soon'}</span>${p.ready ? `<span class="bar"><i style="width:${p.cards ? prog / p.cards * 100 : 0}%"></i></span>` : ''}${p.ready && !cur ? `<button class="textbtn go" type="button" data-path="${p.id}">Walk this one</button>` : ''}</li>`; }).join('');
+  }
+  F('paths').addEventListener('click', async e => { const b = e.target.closest('[data-path]'); if(!b) return; S.progress ??= {}; S.progress[S.path] = S.pos; S.path = b.dataset.path; S.pos = S.progress[S.path] || 0; if(S.days[TODAY] && !S.days[TODAY].done) delete S.days[TODAY]; save(); await loadPath(); render(); renderAside(); });
+
+  async function loadPath(){ P = await (await fetch(`paths/${S.path}.json`)).json(); }
+  Promise.all([store.load(KEY), fetch('paths/index.json').then(r => r.json())]).then(async ([doc, idx]) => {
+    if(doc) S = { path: 'stoics', pos: 0, days: {}, notes: [], ...doc }; PATHS = idx;
+    await loadPath(); render(); renderAside();
+  });
+  // keep the aside in step with the stage
+  const _render = render; render = function(){ _render(); renderAside(); };
+</script>
+</body>
+</html>
