@@ -57,6 +57,7 @@
   .cats input:checked{background:var(--band);border-color:var(--band)}
   .cats input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
   .months li{display:grid;grid-template-columns:1fr auto;gap:12px;padding:8px 0;border-bottom:1px dotted var(--rule);font-size:14px} .months .a{font-family:var(--serif);font-size:16px}
+  .before{margin:14px 0 0;font-size:13.5px;color:var(--ink-2)} .before input{width:7ch;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:0 2px} .before input:focus{outline:none;border-bottom-color:var(--ink)}
   .months small{color:var(--ink-3);font-size:12.5px} .months .textbtn{font-size:12.5px;color:var(--ink-2)}
   .bal li{display:grid;grid-template-columns:64px 1fr auto;gap:12px;padding:8px 0;border-bottom:1px dotted var(--rule);align-items:baseline;position:relative}
   .bal .d{font-family:var(--serif);color:var(--ink-2);font-size:14px} .bal .a{font-family:var(--serif);font-size:16px}
@@ -124,6 +125,8 @@
     <div class="cats" id="cats"></div>
     <ul class="months" id="months"></ul>
 
+    <p class="before">Put in before HQ started counting: $<input id="baseline" inputmode="decimal" placeholder="0" aria-label="Contributed before HQ"></p>
+
     <h3>Balances by hand<small>for accounts without a ticker</small></h3>
     <ul class="bal" id="bal"></ul>
     <form class="addb" id="addb" autocomplete="off">
@@ -171,14 +174,16 @@
 
   function render(){
     const T = total(), dc = dayChange(), priced = I.holdings.filter(h=>price(h.ticker)).length, at = Object.values(I.prices).map(p=>p.at).sort().pop();
-    const cm = contribByMonth(), thisMonth = (cm.find(([ym])=>ym===YM)||[0,0])[1], allIn = cm.reduce((n,[,v])=>n+v,0), first = cm.length ? cm[cm.length-1][0] : null;
+    const cm = contribByMonth(), thisMonth = (cm.find(([ym])=>ym===YM)||[0,0])[1], allIn = cm.reduce((n,[,v])=>n+v,0) + (I.baseline||0), first = cm.length ? cm[cm.length-1][0] : null;
+    F('baseline').value = I.baseline ? I.baseline.toLocaleString('en-US') : '';
     F('sub').innerHTML = I.holdings.length || I.balances.length ? `<b>${$(T)}</b>${priced ? ` · <span class="${dc>=0?'up':'down'}">${dc>=0?'up':'down'} ${$(Math.abs(dc))} today</span>` : ''}${thisMonth ? ` · ${$(thisMonth)} in this month` : ''}` : 'nothing held yet';
     F('pricedn').textContent = at ? `prices as of ${dmy(at.slice(0,10))}` : (I.holdings.length ? 'prices arrive with the nightly fetch, or Sync now in the bell' : '');
     const earning = I.holdings.reduce((n,h)=>n + (h.yield ? holdingValue(h)*h.yield/100 : 0), 0);
     F('worth').textContent = $(T); F('worthn').innerHTML = (priced ? `<span class="${dc>=0?'up':'down'}">${dc>=0?'+':'−'}${$(Math.abs(dc))} today</span>` : (I.holdings.length ? 'no prices yet' : '')) + (earning ? ` · cash earns about ${$2(earning/52)} a week, ${$(earning)} a year at today's yield` : '');
-    F('putin').textContent = allIn ? $(allIn) : '—'; F('putinn').textContent = allIn ? `since ${C.monthName(C.fromISO(first+'-01'))} ${first.slice(0,4)}` : 'tick the categories that are investing';
+    F('putin').textContent = allIn ? $(allIn) : '—'; F('putinn').textContent = allIn ? (I.baseline ? `${$(I.baseline)} before HQ${first?`, the rest since ${C.monthName(C.fromISO(first+'-01'))} ${first.slice(0,4)}`:''}` : `since ${C.monthName(C.fromISO(first+'-01'))} ${first.slice(0,4)}`) : 'tick the categories that are investing';
     const firstDay = Object.keys(I.history).sort()[0], base = firstDay ? I.history[firstDay] : null, since = firstDay ? contribSince(firstDay) : 0, g = base!=null ? T - base - since : null;
-    F('gain').innerHTML = g!=null && base ? `<span class="${g>=0?'up':'down'}">${g>=0?'+':'−'}${$(Math.abs(g))}</span>` : '—'; F('gainn').textContent = g!=null && base ? `${pct(g/(base+since)*100)} since ${dmy(firstDay)}, net of what went in` : (I.holdings.length ? 'measured from the first nightly price' : '');
+    if(I.baseline && T){ const ga = T - allIn; F('gain').innerHTML = `<span class="${ga>=0?'up':'down'}">${ga>=0?'+':'−'}${$(Math.abs(ga))}</span>`; F('gainn').textContent = `${pct(ga/allIn*100)} on the ${$(allIn)} put in`; }
+    else { F('gain').innerHTML = g!=null && base ? `<span class="${g>=0?'up':'down'}">${g>=0?'+':'−'}${$(Math.abs(g))}</span>` : '—'; F('gainn').textContent = g!=null && base ? `${pct(g/(base+since)*100)} since ${dmy(firstDay)}, net of what went in` : (I.holdings.length ? 'measured from the first nightly price' : ''); }
 
     // holdings
     const rows = I.holdings.map(h=>{ const p=price(h.ticker), v=holdingValue(h); return {h,p,v}; }).sort((a,b)=>b.v-a.v);
@@ -218,6 +223,7 @@
     if(e.target.classList.contains('sh')){ const h=I.holdings.find(x=>x.id===+e.target.closest('li').dataset.id), v=num(e.target.value); if(h && v!=null){ h.shares=v; save(); render(); } } });
   F('hold').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ I.holdings=I.holdings.filter(h=>h.id!==+b.dataset.rm); save(); render(); } });
   F('months').addEventListener('click', e=>{ const b=e.target.closest('[data-apply]'); if(b){ const t=contribTx().find(x=>x.key===b.dataset.apply); if(t && applyTx(t)){ save(); render(); } } });
+  F('baseline').addEventListener('change', e=>{ const v=num(e.target.value); I.baseline = v||undefined; save(); render(); });
   F('cats').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ I.contribCats = e.target.checked ? [...new Set([...I.contribCats, e.target.value])] : I.contribCats.filter(c=>c!==e.target.value); save(); render(); } });
   F('addb').addEventListener('submit', e=>{ e.preventDefault(); const v=num(F('b-value').value); if(v==null) return F('b-value').focus(); I.balances.push({id:Date.now(), account:F('b-acct').value.trim(), value:v, date:C.parseDay(F('b-date').value)}); F('b-value').value=''; save(); render(); });
   F('bal').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ I.balances=I.balances.filter(x=>x.id!==+b.dataset.rm); save(); render(); } });
