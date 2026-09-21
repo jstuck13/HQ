@@ -75,7 +75,7 @@
   .trip input,.trip select{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0} .trip input:focus,.trip select:focus{outline:none;border-bottom-color:var(--ink)}
   .trip input::placeholder{color:var(--ink-3);font-style:italic}
   .trip .amt{text-align:right}
-  .trip .bg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-3);cursor:pointer;white-space:nowrap}
+  .trip .bg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-3);cursor:pointer;white-space:nowrap;align-self:center}   /* centred in its cell, not on the baseline, so the tick cannot nudge it */
   .trip .bg input{width:13px;height:13px;appearance:none;border:1px solid var(--ink-2);border-radius:2px;display:grid;place-items:center;padding:0}
   .trip .bg input:checked{background:var(--band);border-color:var(--band)}
   .trip .bg input:checked::after{content:"";width:6px;height:3px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
