@@ -68,6 +68,12 @@
   .ev.short{padding:2px 7px;line-height:1.1} .ev.short b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .ev b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-family:var(--serif);font-weight:400;font-size:12.5px;overflow:hidden}
   .ev small{display:block;color:var(--ink-3);font-size:11px;margin-top:1px}
+  .nav button[aria-pressed="true"]{color:var(--band-ink);border-bottom:1px solid var(--band-ink)}
+  /* planning: free hours shaded, School's dates pinned at the top of their day */
+  .gap{position:absolute;left:3px;right:2px;border-radius:6px;background:repeating-linear-gradient(-45deg,transparent 0 6px,rgba(31,58,46,.05) 6px 7px);border:1px dashed rgba(31,58,46,.25);font-size:11px;color:var(--band);padding:4px 7px;pointer-events:none}
+  .pin{position:absolute;left:3px;right:2px;top:2px;z-index:2;background:var(--ox);color:var(--band-ink);border-radius:4px;font-size:11px;line-height:1.2;padding:3px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--serif)}
+  .pin + .pin{top:22px}
+  .col:has(.pin) .gap{padding-top:26px} .col:has(.pin + .pin) .gap{padding-top:46px}   /* the free-time label steps below the pins */
   .now{position:absolute;left:50px;right:0;border-top:1.5px solid var(--ox);z-index:3;pointer-events:none}
   .now::before{content:"";position:absolute;left:-1px;top:-4px;width:7px;height:7px;border-radius:50%;background:var(--ox)}
   .now::after{content:attr(data-t);position:absolute;right:calc(100% + 8px);top:-9px;font-family:var(--serif);font-size:11.5px;color:var(--ox);white-space:nowrap;background:var(--card);padding:0 2px}
@@ -195,7 +201,7 @@
     </div>
     <div class="mast">
       <h1><button type="button" id="monthh" aria-expanded="false" aria-controls="mgrid">September 2026<svg class="ic"><use href="icons.svg#chevron-down"/></svg></button></h1>
-      <div class="nav" aria-label="Change week"><button type="button" id="prev"><svg class="ic"><use href="icons.svg#chevron-left"/></svg>Previous</button><button type="button" id="todaybtn">Today</button><button type="button" id="next">Next<svg class="ic"><use href="icons.svg#chevron-right"/></svg></button></div>
+      <div class="nav" aria-label="Change week"><button type="button" id="prev"><svg class="ic"><use href="icons.svg#chevron-left"/></svg>Previous</button><button type="button" id="todaybtn">Today</button><button type="button" id="next">Next<svg class="ic"><use href="icons.svg#chevron-right"/></svg></button><button type="button" id="planbtn" aria-pressed="false">Plan the week</button></div>
       <span class="week"></span>
     </div>
   </div>
@@ -325,7 +331,7 @@
   const occ = d => S.series.filter(s=>occurs(s,d) && !S.hidden.includes(s.cat)).sort((a,b)=>a.start-b.start);
   const key = (s,d) => `${s.id}@${d}`;
 
-  let weekStart = thisMon, selDay = TODAY, open = null, view = 'week';   // open = {id, d}
+  let weekStart = thisMon, selDay = TODAY, open = null, view = 'week', plan = false, SCHOOL = null;   // open = {id, d}
   const dateOf = i => onDay(weekStart, i);
   let NOW = C.now.getHours() + C.now.getMinutes()/60, H0=8, H1=20;
   const hourLabel = h => h===12 ? '12 pm' : h===24 || h===0 ? '12 am' : h<12 ? `${h} am` : `${h-12} pm`;
@@ -402,6 +408,16 @@
         a.title=`${s.title}, ${h12(s.start)} – ${h12(s.end)}`; a.innerHTML=`<b>${esc(s.short||short(s.title))}</b>${s.end-s.start>=1.5?`<small>${h12(s.start)}</small>`:''}`; c.appendChild(a);
       });
     });
+    if(plan){
+      document.querySelectorAll('.col').forEach(c=>{
+        const d=c.dataset.d, list=occ(d).sort((a,b)=>a.start-b.start);
+        // free stretches of an hour or more between 8 am and 8 pm
+        let t=Math.max(H0,8); const end=Math.min(H1,20);
+        [...list, {start:end, end:end}].forEach(s=>{ const gapEnd=Math.min(s.start, end); if(gapEnd - t >= 1){ const g=document.createElement('div'); g.className='gap'; g.style.top=`calc(var(--hour)*${t-H0} + 2px)`; g.style.height=`calc(var(--hour)*${gapEnd-t} - 4px)`; g.textContent=`free ${dur(t,gapEnd)}`; c.appendChild(g); } t=Math.max(t, s.end); });
+        // School's exams, quizzes and due items, pinned to their day
+        (SCHOOL && SCHOOL.items || []).filter(i=>!i.done && i.due===d).slice(0,2).forEach(i=>{ const p=document.createElement('div'); p.className='pin'; p.textContent=i.title; p.title=`${i.title} — due ${d}`; c.appendChild(p); });
+      });
+    }
     // one line across the whole week, so the hour reads against every day
     if(weekStart<=TODAY && TODAY<=dateOf(6) && NOW>=H0 && NOW<=H1){ const n=document.createElement('div'); n.className='now'; n.dataset.t=C.time(new Date()); n.style.top=`calc(var(--hour)*${NOW-H0})`; grid.appendChild(n);
       F('rail').querySelectorAll('span').forEach(sp=>{ if(Math.abs(+sp.dataset.h-NOW)<0.4) sp.style.visibility='hidden'; }); }   // the hour label steps aside for the time
@@ -491,6 +507,8 @@
   F('prev').addEventListener('click', ()=>step(-1));
   F('next').addEventListener('click', ()=>step(1));
   F('todaybtn').addEventListener('click', ()=>goto(TODAY));
+  // Plan the week: next week (this week, on a Monday), the free hours shaded and School's dates pinned; press again to stop
+  F('planbtn').addEventListener('click', async ()=>{ plan=!plan; F('planbtn').setAttribute('aria-pressed', plan); if(plan){ if(!SCHOOL) SCHOOL = await store.load('school'); view='week'; const wd=C.now.getDay(); goto(wd===1 ? TODAY : onDay(thisMon, 7)); } else renderAll(); });
 
   const getRep = () => [...F('a-rep').querySelectorAll('input:checked')].map(i=>+i.value);
   const setRep = d => F('a-rep').querySelectorAll('input').forEach(i=>i.checked=d.includes(+i.value));

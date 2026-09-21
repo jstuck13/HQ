@@ -68,6 +68,10 @@
   .addt input{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0} .addt input:focus{outline:none;border-bottom-color:var(--ink)}
   .addt input::placeholder{color:var(--ink-3);font-style:italic}
   .textbtn{font-size:13.5px}
+  .fromlist{margin:4px 0 0}
+  .trip .items li{grid-template-columns:1fr 64px 36px auto 60px auto}
+  .trip .items input{width:100%;font-family:var(--serif);font-size:14px;border-bottom:1px dotted var(--ink-2);padding:0;text-align:right} .trip .items input:focus{outline:none;border-bottom-color:var(--ink)}
+  .trip .items input.nm{text-align:left} .trip .items .p{min-width:5ch;text-align:right}
 
   .trip{margin-top:34px}
   .trip .head{display:grid;grid-template-columns:1fr 100px;gap:12px;padding:10px 0;border-bottom:1px dotted var(--rule)}
@@ -145,6 +149,7 @@
     <h2>Next trip<small id="listn"></small></h2>
     <div class="list"><ul id="list"></ul></div>
     <form class="addt" id="addl"><input id="l-text" placeholder="Add to the list" required><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
+    <p class="fromlist" id="fromlist" hidden><button class="textbtn" type="button" id="fromlistbtn"><svg class="ic"><use href="icons.svg#check"/></svg>Start the trip from what’s ticked</button></p>
 
     <div class="trip">
       <h2>Log a trip<small id="tripn"></small></h2>
@@ -249,7 +254,9 @@
   // ---- the trip being logged ----
   const tripTotal = () => pending.items.reduce((n,i)=>n + i.price * (i.bogo ? Math.ceil(i.qty/2) : i.qty), 0);
   function renderTrip(){
-    F('titems').innerHTML = pending.items.map((i,k)=>`<li><span>${esc(i.name)}${i.qty>1?` × ${i.qty}`:''}</span><span class="p">${$(i.price*(i.bogo?Math.ceil(i.qty/2):i.qty))}${i.bogo?' <small>BOGO</small>':''}</span><button class="x" type="button" data-rm="${k}">remove</button></li>`).join('');
+    // every pending line is editable in place: name, price, quantity, BOGO
+    F('titems').innerHTML = pending.items.map((i,k)=>`<li data-k="${k}"><input class="nm" value="${esc(i.name)}" aria-label="Item"><input class="pr" inputmode="decimal" value="${i.price?i.price:''}" placeholder="$" aria-label="Price"><input class="qt" inputmode="numeric" value="${i.qty}" aria-label="Quantity"><label class="bg"><input type="checkbox" class="bo" ${i.bogo?'checked':''}>BOGO</label><span class="p">${i.price?$(i.price*(i.bogo?Math.ceil(i.qty/2):i.qty)):'—'}</span><button class="x" type="button" data-rm="${k}">remove</button></li>`).join('');
+    const ticked = G.list.filter(l=>l.done).length; F('fromlist').hidden = !ticked; F('fromlistbtn').lastChild.textContent = `Start the trip from what’s ticked (${ticked})`;
     const n=pending.items.length; F('tcount').textContent = n ? `${n} ${n===1?'item':'items'}` : 'nothing yet'; F('ttotal').textContent = $(tripTotal());
     F('tsave').hidden = !n; F('tripn').textContent = n ? `${F('t-store').value||'Publix'} · ${F('t-date').value}` : '';
     if(FIN){ const cats=FIN.cats||[], cur=F('t-cat').value; F('t-cat').innerHTML = cats.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join(''); const g = cats.find(c=>/groc|food/i.test(c.name)); F('t-cat').value = cur && cats.some(c=>c.id===cur) ? cur : (g ? g.id : (cats[0]&&cats[0].id)); }
@@ -259,9 +266,15 @@
     F('additem').reset(); F('i-qty').value='1'; F('i-name').focus(); renderTrip(); });
   F('i-name').addEventListener('change', ()=>{ const e=book().find(x=>norm(x.name)===norm(F('i-name').value)); if(e && !F('i-price').value) F('i-price').placeholder = `${$(e.last.price)} last time`; });
   F('titems').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ pending.items.splice(+b.dataset.rm,1); renderTrip(); } });
+  F('titems').addEventListener('change', e=>{ const li=e.target.closest('li[data-k]'); if(!li) return; const i=pending.items[+li.dataset.k]; if(!i) return;
+    if(e.target.classList.contains('nm')) i.name=e.target.value.trim(); if(e.target.classList.contains('pr')) i.price=num(e.target.value)||0; if(e.target.classList.contains('qt')) i.qty=Math.max(1,parseInt(e.target.value)||1); if(e.target.classList.contains('bo')) i.bogo=e.target.checked;
+    if(!e.target.classList.contains('nm')) renderTrip(); else { const n=pending.items.length; F('tcount').textContent = `${n} ${n===1?'item':'items'}`; } });
+  // the ticked list becomes the trip's lines, prices to fill at the checkout; the last price paid is offered
+  F('fromlistbtn').addEventListener('click', ()=>{ const bk=book(); G.list.filter(l=>l.done).forEach(l=>{ if(pending.items.some(i=>matches(i.name,l.text))) return; const known=bk.find(x=>norm(x.name)===norm(l.text)) || bk.find(x=>matches(x.name,l.text)); pending.items.push({ name:l.text, price:known?known.last.price:0, qty:1, bogo:!!l.bogo }); }); renderTrip(); F('titems').querySelector('input.pr')?.focus(); });
   F('cleartrip').addEventListener('click', ()=>{ pending={items:[]}; renderTrip(); });
   F('savetrip').addEventListener('click', ()=>{
     if(!pending.items.length) return;
+    const unpriced = pending.items.find(i=>!i.price); if(unpriced){ F('titems').querySelectorAll('li').forEach(li=>{ if(pending.items[+li.dataset.k]===unpriced) li.querySelector('input.pr').focus(); }); return; }
     const trip = { id:Date.now(), date:C.parseDay(F('t-date').value), store:F('t-store').value.trim()||'Publix', items:pending.items, total:Math.round(tripTotal()*100)/100 };
     G.trips.push(trip);
     // things bought come off the list

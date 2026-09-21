@@ -241,6 +241,14 @@
       const note = due ? `${esc(due.bill||due.name)} ${due.due===C.now.getDate()?'due today':'due on the '+due.due+ordinal(due.due)}` : next ? `Next paycheck ${C.short(C.fromISO(next.date))}, ${$0(next.amt)}` : `${$0(spent)} spent so far`;
       rows.push(row('Finances','finances.html',note,$0(left),`of ${$0(limits)} remaining`, due && due.due===C.now.getDate()));
     } else rows.push(row('Finances','finances.html','Open Finances to set this month’s budget','','not started'));
+    // investments: worth at the last price, the day's move, what the cash earns
+    if(d.inv && ((d.inv.holdings||[]).length || (d.inv.balances||[]).length)){ const P=d.inv.prices||{}, px=t=>P[String(t).toUpperCase()];
+      const latest={}; [...(d.inv.balances||[])].sort((a,b)=>a.date<b.date?-1:1).forEach(b=>{ latest[b.account]=b.value; });
+      const worth=(d.inv.holdings||[]).reduce((n,h)=>n+(px(h.ticker)?h.shares*px(h.ticker).price:0),0)+Object.values(latest).reduce((n,v)=>n+v,0);
+      const move=(d.inv.holdings||[]).reduce((n,h)=>{ const p=px(h.ticker); if(!p||p.chg==null) return n; const v=h.shares*p.price; return n+(v-v/(1+p.chg/100)); },0);
+      const earn=(d.inv.holdings||[]).reduce((n,h)=>n+(h.yield&&px(h.ticker)?h.shares*px(h.ticker).price*h.yield/100/52:0),0);
+      const priced=(d.inv.holdings||[]).some(h=>px(h.ticker));
+      rows.push(row('Investments','investments.html', priced ? `${move>=0?'Up':'Down'} ${$0(Math.abs(move))} today${earn?` · cash earns ${'$'+earn.toFixed(2)} a week`:''}` : 'No prices yet — Sync now in the bell', $0(worth), 'portfolio', false)); }
     // health
     if(d.health){ const L=d.health, meds=L.meds||0, pills=(L.pills||[]).length, total=meds?4:3, n=['sleep','weight','hr'].filter(k=>L[k]!=null).length+(meds&&pills>=meds?1:0);
       const note = L.sleep ? `Slept ${L.sleep} h${L.hr?' · resting pulse '+L.hr:''}` : 'Nothing logged yet today';
@@ -314,14 +322,14 @@
   window.onTodoChange = doc => { T = doc; renderTodo(); d.day = renderDay(CAL); };   // a tick in the bell shows here at once
   // ---- load everything the other pages keep, then draw ----
   (async () => {
-    const [cal, fin, H, lib, school, today] = await Promise.all([store.load('calendar'), store.load('finances.'+YM), store.load('health'), store.load('library'), store.load('school'), store.load(TKEY)]);
+    const [cal, fin, H, lib, school, today, inv] = await Promise.all([store.load('calendar'), store.load('finances.'+YM), store.load('health'), store.load('library'), store.load('school'), store.load(TKEY), store.load('investments')]);
     if(today){ T = today; if(migrateAt()) saveT(); }
     else {   // first look at a new day: unfinished items from the last few days come along, marked
       for(let i=1;i<=3 && !T.items.length;i++){ const k=C.iso(C.addDays(C.fromISO(TODAY),-i)), prev=await store.load('today.'+k); if(prev && prev.items){ T.items = prev.items.filter(x=>!x.done).map(x=>({text:x.text, done:false, from:x.from||k})); break; } }
       if(T.items.length) saveT();
     }
     const health = H && H.days ? Object.assign({meds:(H.meds||[]).length}, H.days[TODAY] || {pills:[]}) : null;
-    Object.assign(d, { fin, health, lib, school, H }); CAL = cal;
+    Object.assign(d, { fin, health, lib, school, H, inv }); CAL = cal;
     renderReport(H);
     d.day = renderDay(cal);
     renderAffairs(d); renderGreeting(d); renderUpNext(d.day); renderTodo(); renderWeather();
