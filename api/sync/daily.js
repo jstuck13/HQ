@@ -21,7 +21,7 @@ async function publix(getDoc, putDoc) {
   for (const q of ['publix bogo', 'publix']) {
     const r = await fetch(`${base}/items/search?locale=en-us&postal_code=${encodeURIComponent(zip)}&q=${encodeURIComponent(q)}`, H); if (!r.ok) throw new Error('flipp ' + r.status);
     for (const i of (await r.json()).items || []) { if (i.merchant_name !== 'Publix') continue; flyerIds[i.flyer_id] = (flyerIds[i.flyer_id] || 0) + 1;
-      const k = clean(i.name).toLowerCase(); deals[k] ??= { deal: i.pre_price_text || i.sale_story || i.post_price_text || '', save: (i.sale_story || '').replace(/^save up to\s*/i, ''), price: i.current_price, img: i.clean_image_url }; }
+      const k = clean(i.name).toLowerCase(); deals[k] ??= { deal: i.pre_price_text || i.sale_story || i.post_price_text || '', story: i.sale_story || '', save: (i.sale_story || '').replace(/^save up to\s*/i, ''), price: i.current_price, img: i.clean_image_url }; }
   }
   const flyerId = Object.keys(flyerIds).sort((a, b) => flyerIds[b] - flyerIds[a])[0]; if (!flyerId) return { items: 0 };
   const fr = await fetch(`${base}/flyers/${flyerId}?locale=en-us&postal_code=${encodeURIComponent(zip)}`, H); if (!fr.ok) throw new Error('flyer ' + fr.status);
@@ -47,7 +47,7 @@ async function publix(getDoc, putDoc) {
     const pre = dt.pre_price_text || d.deal || '', bogo = /bogo/i.test(i.name) || /buy 1 get 1/i.test(pre);
     const price = (dt.current_price && +dt.current_price) || (i.price && +i.price) || (d.price && +d.price) || undefined;
     const multi = /^(\d+)\s*(?:for|\/)/i.exec(pre);
-    items.push({ name, bogo: bogo || undefined, price: multi ? undefined : price, deal: bogo ? undefined : wording(pre, price, dt.sale_story || d.deal), save: bogo ? saveOf(dt.sale_story || (d.save ? 'save up to ' + d.save : '')) : undefined, note: noteOf(dt.sale_story || d.deal), desc: dt.description ? String(dt.description).slice(0, 90) : undefined, img: (i.cutout_image_url || d.img || '').replace(/^http:/, 'https:') || undefined });
+    items.push({ name, bogo: bogo || undefined, price: multi ? undefined : price, deal: bogo ? undefined : wording(pre, price, dt.sale_story || d.deal), save: bogo ? saveOf(dt.sale_story || d.story) : undefined, note: noteOf(dt.sale_story || d.story), desc: dt.description ? String(dt.description).slice(0, 90) : undefined, img: (i.cutout_image_url || d.img || '').replace(/^http:/, 'https:') || undefined });
     from ??= (i.valid_from || '').slice(0, 10); to ??= (i.valid_to || '').slice(0, 10);
   }
   if (!items.length || !from) return { items: 0 };
