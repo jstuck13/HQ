@@ -79,7 +79,7 @@
 
   /* four trends on paper */
   .trends{margin-top:44px}
-  .strip{display:grid;grid-template-columns:repeat(3,1fr);gap:36px;margin-top:14px}
+  .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:36px;margin-top:14px}
   .chart h3{font-family:var(--serif);font-weight:400;font-size:17px;margin:0 0 2px;display:flex;align-items:baseline;gap:8px}
   .chart h3 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
   .chart .fig{font-family:var(--serif);font-size:24px;line-height:1.1;margin:0}
@@ -100,7 +100,7 @@
   .chart .rng{font-size:12.5px;color:var(--ink-3);margin:6px 0 0}
 
   @media (prefers-reduced-motion:reduce){.textbtn,.chart .tip{transition:none}}
-  @media (max-width:1000px){.log{grid-template-columns:1fr;gap:34px}.strip{grid-template-columns:repeat(2,1fr)}.strip .chart:last-child{grid-column:1/-1}}
+  @media (max-width:1000px){.log{grid-template-columns:1fr;gap:34px}.strip{grid-template-columns:repeat(2,1fr)}}
   @media (max-width:760px){
     main{padding:24px 20px 36px} .foot{padding:0 20px 28px}
     .ledger li{grid-template-columns:1fr auto;gap:6px 12px} .ledger .head{display:none} .ledger .l,.ledger .a{grid-column:1/-1;text-align:left;display:inline}
@@ -149,6 +149,9 @@
         <li data-k="hr"><span class="n">Resting heart rate<small>From the watch, on waking</small></span>
           <span class="v"><input id="hr" inputmode="numeric" placeholder="—"><span class="u">bpm</span></span>
           <span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>
+        <li data-k="steps"><span class="n">Steps<small>So far today, from the watch</small></span>
+          <span class="v"><input id="steps" inputmode="numeric" placeholder="—"></span>
+          <span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>
       </ul>
     </section>
 
@@ -187,9 +190,9 @@
   const num = v => { const n = parseFloat(String(v ?? '').replace(/[^0-9.]/g, '')); return isNaN(n) ? null : n; };
 
   // readings
-  const applyLog = () => { ['sleep','bed','woke','weight','hr'].forEach(k=>{ F(k).value = L[k]!=null ? L[k] : ''; }); renderAll(); };
-  ['sleep','bed','woke','weight','hr'].forEach(k=>{
-    F(k).addEventListener('change', ()=>{ const v=F(k).value.trim(); if(v) L[k]=v; else delete L[k]; save(); renderAll(); });
+  const applyLog = () => { ['sleep','bed','woke','weight','hr','steps'].forEach(k=>{ F(k).value = L[k]!=null ? L[k] : ''; }); renderAll(); };
+  ['sleep','bed','woke','weight','hr','steps'].forEach(k=>{
+    F(k).addEventListener('change', ()=>{ const v=F(k).value.trim(); if(v) L[k]=v; else delete L[k]; if(k==='steps') L.stepsFrom = v ? 'hand' : undefined; save(); renderAll(); });
   });
   function renderPills(){
     const meds=H.meds||[];
@@ -219,8 +222,9 @@
     {name:'Sleep', key:'sleep', fmt:v=>`${Math.floor(v)} h ${String(Math.round((v%1)*60)).padStart(2,'0')}`, level:.1, delta:v=>`${Math.round(v*60)} min`},
     {name:'Weight', key:'weight', fmt:v=>`${v.toFixed(1)} lb`, level:.5, delta:v=>`${v.toFixed(1)} lb`},
     {name:'Resting HR', key:'hr', fmt:v=>`${Math.round(v)} bpm`, level:.5, delta:v=>`${Math.round(v)}`},
+    {name:'Steps', key:'steps', fmt:v=>Math.round(v).toLocaleString('en-US'), level:300, delta:v=>Math.round(v).toLocaleString('en-US'), partial:true},
   ];
-  const pointsFor = s => isoDays.map((d,i)=>({i, d, v: num((d===TODAY ? L : H.days[d]||{})[s.key])})).filter(p=>p.v!=null);
+  const pointsFor = s => isoDays.map((d,i)=>({i, d, v: (s.partial && d===TODAY) ? null : num((d===TODAY ? L : H.days[d]||{})[s.key])})).filter(p=>p.v!=null);   // a day still being counted is not a point
   const trendOf = (s, pts) => {
     if(pts.length<4) return null;
     const avg = a => a.reduce((x,p)=>x+p.v,0)/a.length, half=Math.floor(pts.length/2), diff=avg(pts.slice(half))-avg(pts.slice(0,half));
@@ -285,7 +289,7 @@
   const sleepStreak = () => streak(H.days, d=>+d.sleep>=7, d=>d.sleep==null);
   function renderLogged(){
     const ss=sleepStreak(); document.querySelector('#ledger li[data-k="sleep"] .n small').textContent = ss>=2 ? `Hours, and when · ${ss} days of 7 h+` : 'Hours, and when';
-    document.querySelectorAll('#ledger li[data-k]').forEach(li=>{ const k=li.dataset.k; li.classList.toggle('logged', L[k]!=null); });
+    document.querySelectorAll('#ledger li[data-k]').forEach(li=>{ const k=li.dataset.k; li.classList.toggle('logged', L[k]!=null && k!=='steps'); });
     const meds=(H.meds||[]).length, taken=L.pills.filter(p=>(H.meds||[]).some(m=>m.id===p)).length;
     const n = ['sleep','weight','hr'].filter(k=>L[k]!=null).length + (meds && taken===meds ? 1 : 0);
     const st=trendOf(series[0], pointsFor(series[0])), wt=trendOf(series[1], pointsFor(series[1]));
@@ -298,7 +302,7 @@
   F('range').addEventListener('click', e=>{ const b=e.target.closest('button[data-n]'); if(b){ setRange(+b.dataset.n); renderAll(); } });
   F('nx-date').placeholder = C.dayMonth(C.addDays(C.now, 2));
   renderAll();
-  const adopt = doc => { H = doc; H.meds ??= []; H.next ??= []; L = H.days[TODAY] || { pills: [] }; L.pills ??= []; applyLog(); };
+  const adopt = doc => { H = doc; H.meds ??= []; H.next ??= []; Object.values(H.days).forEach(d=>{ if(d.steps==null && d.garmin && d.garmin.steps!=null){ d.steps=String(d.garmin.steps); d.stepsFrom='garmin'; } });   /* days the watch counted before Steps had a row */ L = H.days[TODAY] || { pills: [] }; L.pills ??= []; applyLog(); };
   async function renderSync(){
     const led = await store.ledger(), g = led.garmin; const el=F('syncline'); if(!g && !navigator.onLine){ el.hidden=true; return; }
     el.hidden=false; const ago = g ? Math.round((Date.now()-new Date(g.last))/60000) : 0;

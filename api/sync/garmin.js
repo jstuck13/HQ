@@ -32,7 +32,7 @@ export default syncRoute('garmin', async ({ getDoc, putDoc }) => {
       for (const k of Object.keys(g)) if (g[k] == null) delete g[k]; } } catch {}
     try { const h = await client.getHeartRate(d); if (h && h.restingHeartRate) { set('hr', h.restingHeartRate, v => String(v)); if (h.lastSevenDaysAvgRestingHeartRate) day.garmin.hr7 = h.lastSevenDaysAvgRestingHeartRate; } } catch {}
     try { const w = await client.getDailyWeightInPounds(d); if (w && w > 0) set('weight', w, v => (Math.round(v * 10) / 10).toString()); } catch {}
-    try { const st = await client.getSteps(d); if (st != null) day.garmin.steps = st; } catch {}
+    try { const st = await client.getSteps(d); if (st != null) { day.garmin.steps = st; if (day.steps == null || day.stepsFrom === 'garmin') { day.steps = String(st); day.stepsFrom = 'garmin'; } } } catch {}   // today's count grows through the day, so the watch may overwrite its own number
     health.days[key] = day; days++;
   }
   await putDoc('health', health);

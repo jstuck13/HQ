@@ -140,6 +140,14 @@
       if(w.length) bits.push(`weight <b>${w[w.length-1].toFixed(1)} lb</b>${pw.length?` (${w[w.length-1]-pw[pw.length-1]>=0?'+':'−'}${Math.abs(w[w.length-1]-pw[pw.length-1]).toFixed(1)} on last week)`:''}`);
       if(bits.length) rows.push(li('Body','health.html', bits.join(' · '), avg(hr.filter(Boolean))!=null?Math.round(avg(hr.filter(Boolean))):'—', avg(hr.filter(Boolean))!=null?'bpm':'', 'resting', bars(hr, v=>`${v} bpm`, '#C9A9AE')));
     }
+    // steps: complete days only (today is still being counted)
+    if(H && H.days){
+      const stepsOf = d => { const x=H.days[d]||{}; return +(x.steps ?? (x.garmin&&x.garmin.steps)) || null; };
+      const st = days.map(d=>d<TODAY ? stepsOf(d) : null), pst = prev.map(stepsOf);
+      const a=avg(st.filter(Boolean)), pa=avg(pst.filter(Boolean));
+      if(a!=null){ const best=st.reduce((b,v,i)=>v!=null&&(b==null||v>st[b])?i:b, null);
+        rows.push(li('Steps','health.html', `${st.filter(Boolean).length} ${st.filter(Boolean).length===1?'day':'days'} counted${best!=null?` · best <b>${C.dayShort(C.fromISO(days[best]))}</b> at ${Math.round(st[best]).toLocaleString('en-US')}`:''}${delta(a,pa,v=>Math.round(v).toLocaleString('en-US'))}`, Math.round(a).toLocaleString('en-US'), '', 'a day', bars(st, v=>Math.round(v).toLocaleString('en-US'), '#9DB4A4'))); }
+    }
     // money
     { const tx = months.flatMap(m => (fin[m]&&fin[m].tx)||[]), inc = months.flatMap(m => (fin[m]&&fin[m].income)||[]);
       const spent = tx.filter(t=>inWeek(t.date,days)).reduce((n,t)=>n+t.amt,0), pspent = tx.filter(t=>inWeek(t.date,prev)).reduce((n,t)=>n+t.amt,0);
