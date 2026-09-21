@@ -4,6 +4,7 @@
                     google: { name: 'Google Calendar', page: 'calendar.html', count: l => l.calendars != null ? `${l.calendars} ${l.calendars === 1 ? 'calendar' : 'calendars'}` : '' },
                     garmin: { name: 'Garmin', page: 'health.html', count: l => l.days != null ? `${l.days} days` : '' },
                     daily: { name: 'Word and quote', page: 'index.html', count: l => l.word ? `“${l.word}”` : '' },
+                    bills: { name: 'Scheduled expenses', page: 'finances.html', count: l => l.rules != null ? `${l.rules} ${l.rules === 1 ? 'rule' : 'rules'}${l.posted ? ' · ' + l.posted + ' posted' : ''}` : '' },
                     notify: { name: 'Reminders', page: 'today.html', count: l => l.said ? `last: ${esc(l.said).slice(0, 60)}${l.said.length > 60 ? '…' : ''}` : l.quiet ? 'nothing to say' : '' },
                     backup: { name: 'Nightly backup', page: 'today.html', count: l => l.documents != null ? `${l.documents} documents` : '', extra: l => l.day ? `<a class="go dl" href="/api/sync/backup?day=${l.day}" download>Download</a>` : '' } };
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));

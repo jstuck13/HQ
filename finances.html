@@ -58,6 +58,11 @@
   .addl{display:grid;gap:12px;padding:12px 0;border-bottom:1px dotted var(--rule);align-items:baseline}
   .addl.in{grid-template-columns:1fr 84px 72px auto}
   .addl.out{grid-template-columns:1fr 84px 120px 72px auto}
+  .addl.rule{grid-template-columns:1fr 84px 120px auto}
+  .addl.rule .freq{grid-column:1/-2;display:flex;gap:8px;align-items:baseline;font-size:13px;color:var(--ink-3)}
+  .addl.rule .freq input{width:3ch;text-align:center} .addl.rule .freq select{width:auto} .addl.rule .freq #r-day{width:9ch}
+  .addl.rule .textbtn{grid-column:-2/-1;grid-row:2}
+  .ledger .w .rule{display:inline-block;margin-left:8px;font-family:var(--sans);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
   .addl input,.addl select{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0}
   .addl input:focus,.addl select:focus{outline:none;border-bottom-color:var(--ink)}
   .addl input::placeholder{color:var(--ink-3);font-style:italic}
@@ -130,7 +135,7 @@
     .ledger li{grid-template-columns:56px 1fr auto 20px;gap:10px} .ledger li > .a{grid-column:3;grid-row:1} .ledger li > .x{grid-column:4;grid-row:1;opacity:1;justify-self:end;align-self:center} .ledger .x span{display:none} .ledger .x .m-{display:block}
     .cats li{grid-template-columns:1fr auto;grid-template-rows:auto auto auto} .cats .ctl{opacity:1;grid-column:1/-1;grid-row:3;justify-self:end;margin:6px 0 0} .cats .x span{display:none} .cats .x .m-{display:block} .cats .x{color:var(--ink-3)}
     .addl.in{grid-template-columns:1fr 84px} .addl.in input[id$=date]{grid-column:1} .addl.out{grid-template-columns:1fr 84px} .addl .textbtn{grid-column:1/-1;justify-self:start}
-    .addl.in,.addl.out,.addc{grid-template-columns:1fr 1fr}
+    .addl.in,.addl.out,.addc{grid-template-columns:1fr 1fr} .addl.rule{grid-template-columns:1fr 1fr} .addl.rule .freq{grid-column:1/-1;flex-wrap:wrap} .addl.rule .textbtn{grid-column:1/-1;grid-row:auto}
     .charts{grid-template-columns:1fr}
   }
 </style>
@@ -188,6 +193,16 @@
         <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button>
       </form>
 
+      <h3>Scheduled<small id="ruln">expenses that repeat</small></h3>
+      <ul class="ledger" id="rull"></ul>
+      <form class="addl rule" id="addrule">
+        <input id="r-what" placeholder="Rent, Spotify, insurance…" required>
+        <input id="r-amt" class="amt" inputmode="decimal" placeholder="$0" required>
+        <select id="r-cat"></select>
+        <span class="freq"><span>every</span><input id="r-n" value="1" inputmode="numeric" aria-label="Every how many"><select id="r-every" aria-label="Period"><option value="month">month</option><option value="week">week</option><option value="year">year</option></select><span>on</span><input id="r-day" placeholder="the 1st" aria-label="Which day"></span>
+        <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Schedule</button>
+      </form>
+
       <h3>This month<small id="logn"></small></h3>
       <form class="addl out" id="addout">
         <input id="x-what" placeholder="What was it?" required>
@@ -230,7 +245,31 @@
   });
   let showAll = false;
   let S = seed();
-  const KEY = 'finances.' + YM;
+  const KEY = 'finances.' + YM, RKEY = 'finances.rules';
+  let R = { rules: [] };   // expenses that repeat: {id, what, amt, cat, every:'month'|'week'|'year', n, day, start}
+  const saveR = () => store.save(RKEY, R);
+  // the dates a rule falls on between two ISO days, inclusive
+  function occurrences(r, from, to){
+    const out=[], start=r.start||from, n=r.n||1;
+    if(r.every==='month'){ const s=new Date(+start.slice(0,4), +start.slice(5,7)-1, 1);
+      for(let d=new Date(+from.slice(0,4), +from.slice(5,7)-1, 1); C.iso(d)<=to; d=new Date(d.getFullYear(), d.getMonth()+1, 1)){
+        const months=(d.getFullYear()-s.getFullYear())*12+(d.getMonth()-s.getMonth()); if(months<0||months%n) continue;
+        const dim=new Date(d.getFullYear(), d.getMonth()+1, 0).getDate(), iso=C.iso(new Date(d.getFullYear(), d.getMonth(), Math.min(+r.day, dim), 12));
+        if(iso>=start && iso>=from && iso<=to) out.push(iso); } }
+    if(r.every==='week'){ const s=C.monday(C.fromISO(start));
+      for(let d=C.fromISO(from); C.iso(d)<=to; d=C.addDays(d,1)){ if((d.getDay()+6)%7!==+r.day) continue; const weeks=Math.round((C.monday(d)-s)/6048e5); if(weeks<0||weeks%n) continue; const iso=C.iso(d); if(iso>=start) out.push(iso); } }
+    if(r.every==='year'){ for(let y=+from.slice(0,4); y<=+to.slice(0,4); y++){ const years=y-+start.slice(0,4); if(years<0||years%n) continue; const iso=`${y}-${r.day}`; if(iso>=start&&iso>=from&&iso<=to) out.push(iso); } }
+    return out;
+  }
+  const nextOf = r => occurrences(r, C.today, C.iso(C.addDays(C.now, 400)))[0];
+  const WD = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const ruleWhen = r => `every ${r.n>1?r.n+' ':''}${r.every}${r.n>1?'s':''} on ${r.every==='month'?'the '+r.day+ordinal(+r.day):r.every==='week'?WD[+r.day]:C.dayMonth(C.fromISO('2001-'+r.day))}`;
+  // this month's occurrences up to today land in the log once each (a posted one carries its rule and date)
+  function postRules(){
+    let n=0; const from=`${YM}-01`;
+    R.rules.forEach(r=>{ if(!cat(r.cat)) return; occurrences(r, from, C.today).forEach(on=>{ if(S.tx.some(t=>t.rule===r.id && t.on===on)) return; S.tx.push({id:Date.now()+n, date:on, what:r.what, cat:r.cat, amt:r.amt, rule:r.id, on}); n++; }); });
+    return n;
+  }
   const save = () => store.save(KEY, S);
 
   const $ = n => (n<0?'−':'') + '$' + Math.abs(n).toLocaleString('en-US',{minimumFractionDigits: Number.isInteger(n)?0:2, maximumFractionDigits:2});
@@ -270,10 +309,14 @@
     }).join('') : '<li class="empty">No categories yet. Add one below with a monthly limit.</li>';
     const lastCat = F('x-cat').value || (S.tx.length ? [...S.tx].sort((a,b)=>b.id-a.id)[0].cat : S.cats[1]?.id);
     F('x-cat').innerHTML = S.cats.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join(''); if(lastCat && cat(lastCat)) F('x-cat').value = lastCat;
+    F('r-cat').innerHTML = S.cats.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+    const rules=[...R.rules].map(r=>({r, next:nextOf(r)})).sort((a,b)=>(a.next||'9')<(b.next||'9')?-1:1);
+    F('ruln').textContent = rules.length ? `${rules.length} · ${$0(rules.filter(x=>x.r.every==='month').reduce((n,x)=>n+x.r.amt/(x.r.n||1),0))} a month` : 'expenses that repeat';
+    F('rull').innerHTML = rules.length ? rules.map(({r,next})=>`<li data-id="${r.id}"><span class="d">${next?C.monthShort(C.fromISO(next))+' '+C.fromISO(next).getDate():'—'}</span><span class="w">${esc(r.what)}<small>${esc(cat(r.cat)?.name||'—')} · ${ruleWhen(r)}</small></span><button class="x" type="button" aria-label="Remove ${esc(r.what)}"><span>remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button><span class="a">${$(r.amt)}</span></li>`).join('') : '<li class="empty">Nothing scheduled. Rent, subscriptions, insurance — add one below and it posts itself.</li>';
     const tx = [...S.tx].sort((a,b)=>a.date<b.date?1:(a.date>b.date?-1:b.id-a.id));
     F('logn').textContent = `${tx.length} entries · ${$0(spent)}`;
     const shown = showAll ? tx : tx.slice(0,6);
-    F('outl').innerHTML = tx.length ? shown.map(t=>`<li data-id="${t.id}"><span class="d">${dmy(t.date)}</span><span class="w">${esc(t.what)}<small>${esc(cat(t.cat)?.name||'—')}</small></span><button class="x" type="button" aria-label="Remove ${esc(t.what)}"><span>remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button><span class="a">${$(t.amt)}</span></li>`).join('') + (tx.length>6 ? `<li class="more"><button class="textbtn" type="button" id="more">${showAll?'Show the latest six':'Show all '+tx.length}</button></li>` : '') : '<li class="empty">Nothing spent yet. Enjoy it.</li>';
+    F('outl').innerHTML = tx.length ? shown.map(t=>`<li data-id="${t.id}"><span class="d">${dmy(t.date)}</span><span class="w">${esc(t.what)}${t.rule?'<span class="rule">scheduled</span>':''}<small>${esc(cat(t.cat)?.name||'—')}</small></span><button class="x" type="button" aria-label="Remove ${esc(t.what)}"><span>remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button><span class="a">${$(t.amt)}</span></li>`).join('') + (tx.length>6 ? `<li class="more"><button class="textbtn" type="button" id="more">${showAll?'Show the latest six':'Show all '+tx.length}</button></li>` : '') : '<li class="empty">Nothing spent yet. Enjoy it.</li>';
     charts(landed, spent, limits);
     save();
   }
@@ -287,6 +330,14 @@
     S.tx.push({id:Date.now(), date:dayOf(F('x-date').value), what:F('x-what').value.trim(), cat:F('x-cat').value, amt}); const keep=F('x-cat').value; F('addout').reset(); F('x-cat').value=keep; F('x-date').value=C.dayMonth(NOWD); render(); F('x-what').focus(); });
   F('addcat').addEventListener('submit', e=>{ e.preventDefault(); const name=F('c-name').value.trim(), limit=num(F('c-limit').value)||0; if(!name) return F('c-name').focus();
     S.cats.push({id:'c'+Date.now(), name, limit}); F('addcat').reset(); render(); });
+  F('r-every').addEventListener('change', ()=>{ F('r-day').placeholder = {month:'the 1st', week:'Monday', year:'15 Sep'}[F('r-every').value]; });
+  F('addrule').addEventListener('submit', e=>{ e.preventDefault(); const amt=num(F('r-amt').value), every=F('r-every').value, n=Math.max(1, parseInt(F('r-n').value)||1), raw=F('r-day').value.trim();
+    if(amt==null) return F('r-amt').focus(); if(!S.cats.length) return F('c-name').focus();
+    let day; if(every==='month'){ day=parseInt(raw); if(!(day>=1&&day<=31)) return F('r-day').focus(); }
+    else if(every==='week'){ day=WD.findIndex(w=>raw.toLowerCase().startsWith(w.toLowerCase())); if(day<0) return F('r-day').focus(); }
+    else { day=C.parseDay(raw).slice(5); if(!raw) return F('r-day').focus(); }
+    R.rules.push({id:'r'+Date.now(), what:F('r-what').value.trim(), amt, cat:F('r-cat').value, every, n, day, start:C.today}); saveR(); F('addrule').reset(); F('r-n').value='1'; postRules(); render(); });
+  F('rull').addEventListener('click', e=>{ const b=e.target.closest('.x'); if(b){ const id=b.closest('li').dataset.id; R.rules=R.rules.filter(r=>r.id!==id); saveR(); render(); } });
   F('inl').addEventListener('click', e=>{ const b=e.target.closest('.x'); if(b){ const id=+b.closest('li').dataset.id; S.income=S.income.filter(i=>i.id!==id); render(); } });
   F('outl').addEventListener('click', e=>{ const b=e.target.closest('.x'); if(b){ const id=+b.closest('li').dataset.id; S.tx=S.tx.filter(t=>t.id!==id); render(); } });
   F('cats').addEventListener('click', e=>{
@@ -304,13 +355,14 @@
     const remainingLimit = S.cats.reduce((n,c)=>n+Math.max(0,c.limit-spentIn(c.id)),0), rent = S.cats.find(c=>c.id==='rent');
     const perDay = (remainingLimit - (rent && spentIn('rent')===0 ? rent.limit : 0)) / Math.max(1, DIM-DAY);
     const proj=[act[act.length-1]]; let r=proj[0];
-    for(let d=DAY+1; d<=DIM; d++){ r -= perDay; S.plan.forEach(p=>{ if(+p.date.slice(-2)===d) r+=p.amt; }); if(rent && spentIn('rent')===0 && d===rent.due) r-=rent.limit; proj.push(r); }
+    const coming = R.rules.flatMap(rl => occurrences(rl, C.iso(C.addDays(C.now,1)), `${YM}-${DIM}`).map(on=>({d:+on.slice(-2), amt:rl.amt, l:rl.what.toLowerCase().slice(0,12)})));
+    for(let d=DAY+1; d<=DIM; d++){ r -= perDay; S.plan.forEach(p=>{ if(+p.date.slice(-2)===d) r+=p.amt; }); if(rent && spentIn('rent')===0 && d===rent.due) r-=rent.limit; coming.forEach(c=>{ if(c.d===d) r-=c.amt; }); proj.push(r); }
     const all=[...act,...proj.slice(1)], lo=Math.min(0,...all), hi=Math.max(...all), pad=(hi-lo)*.1||1;
     const x=d=>P.l+(W-P.l-P.r)*(d-1)/(DIM-1), y=v=>P.t+(H-P.t-P.b)*(1-(v-lo+pad)/(hi-lo+2*pad));
     const pa=act.map((v,i)=>`${x(i+1).toFixed(1)},${y(v).toFixed(1)}`), pp=proj.map((v,i)=>`${x(DAY+i).toFixed(1)},${y(v).toFixed(1)}`);
     const end = proj[proj.length-1];
     F('cashn').textContent = `ends around ${$0(end)} ${end>=0?'ahead':'short'}`;
-    const marks = [rent && spentIn('rent')===0 ? {d:rent.due,l:'rent'} : null, ...S.plan.map(p=>({d:+p.date.slice(-2), l:'paycheck'}))].filter(Boolean);
+    const marks = [rent && spentIn('rent')===0 ? {d:rent.due,l:'rent'} : null, ...S.plan.map(p=>({d:+p.date.slice(-2), l:'paycheck'})), ...coming.filter(c=>c.amt>=50)].filter(Boolean);
     F('cash').innerHTML = `<p class="fig">${$0(act[act.length-1])}<small>net this month, from $0 on 1 Sep: ${$0(landed)} in, ${$0(spent)} out</small></p>
       <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cash left through ${MONTH}; ${$0(act[act.length-1])} today, projected ${$0(end)} at month end">
         <line class="ax" x1="${P.l}" x2="${W-P.r}" y1="${y(0).toFixed(1)}" y2="${y(0).toFixed(1)}"/>
@@ -358,7 +410,17 @@
   F('clear-no').addEventListener('click', ()=>{ F('clear-ask').hidden=false; F('clear-sure').hidden=true; });
   F('clear-yes').addEventListener('click', ()=>{ S=blank(); showAll=false; F('clear-ask').hidden=false; F('clear-sure').hidden=true; render(); });
   render();
-  store.load(KEY).then(doc => { if (doc) { S = doc; render(); } else save(); C.countIn('.figs .v.num, .chart .fig, .cats .amt .num'); });
+  const PREV = `finances.${new Date(NOWD.getFullYear(), NOWD.getMonth()-1, 1, 12).toISOString().slice(0,7)}`;
+  Promise.all([store.load(KEY), store.load(RKEY), store.load(PREV)]).then(([doc, rules, prev]) => {
+    if (rules && rules.rules) R = rules;
+    if (doc) S = doc;
+    else if (prev && (prev.cats||[]).length) {   // a new month starts from the last one: same categories and limits, same expected pay, the history rolled on
+      const landed = sum((prev.income||[]).map(i=>i.amt)), spent = sum((prev.tx||[]).map(t=>t.amt));
+      S = { ...blank(), expected: prev.expected||0, cats: prev.cats.map(c=>({...c})), history: [...(prev.history||[]).slice(-5), [C.monthShort(new Date(NOWD.getFullYear(), NOWD.getMonth()-1, 1)), landed, spent]] };
+    }
+    postRules(); render();
+    C.countIn('.figs .v.num, .chart .fig, .cats .amt .num');
+  });
   let rt; addEventListener('resize', ()=>{ clearTimeout(rt); rt=setTimeout(render,150); });
 </script>
 </body>
