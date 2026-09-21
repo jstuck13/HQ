@@ -9,16 +9,17 @@ const WORDS = ['equanimity', 'assiduous', 'halcyon', 'lacuna', 'sanguine', 'pers
 // The Publix weekly ad, by way of Flipp's aggregator: every BOGO for the week, keyed by the ad's first day; 26 weeks kept.
 async function publix(getDoc, putDoc) {
   const g = await getDoc('groceries'); const zip = g && g.zip; if (!zip) return null;
-  const r = await fetch(`https://backflipp.wishabi.com/flipp/items/search?locale=en-us&postal_code=${encodeURIComponent(zip)}&q=publix`, { headers: { 'user-agent': 'Mozilla/5.0' } });
+  const r = await fetch(`https://backflipp.wishabi.com/flipp/items/search?locale=en-us&postal_code=${encodeURIComponent(zip)}&q=${encodeURIComponent('publix bogo')}`, { headers: { 'user-agent': 'Mozilla/5.0' } });   // "publix bogo" surfaces the whole BOGO set; "publix" alone is capped at 150 mixed items
   if (!r.ok) throw new Error('flipp ' + r.status);
   const j = await r.json(), seen = new Set(), items = [];
   for (const i of j.items || []) {
-    if (!/buy 1 get 1/i.test(i.pre_price_text || '') || !i.valid_from) continue;
-    const name = String(i.name || '').replace(/\s*BOGO\*?/i, '').replace(/[†*]/g, '').replace(/\s+/g, ' ').trim(); if (!name || seen.has(name)) continue; seen.add(name);
+    if (i.merchant_name !== 'Publix' || !/buy 1 get 1/i.test(i.pre_price_text || '') || !i.valid_from) continue;
+    const name = String(i.name || '').replace(/\s*BOGO\*?/i, '').replace(/[^ -~’]/g, '').replace(/\*/g, '').replace(/\s+/g, ' ').trim(); if (!name || seen.has(name)) continue; seen.add(name);
     items.push({ name, save: (i.sale_story || '').replace(/^save up to\s*/i, '') || undefined, img: i.clean_image_url || undefined, from: i.valid_from.slice(0, 10), to: i.valid_to ? i.valid_to.slice(0, 10) : undefined });
   }
   if (!items.length) return { bogos: 0 };
-  const from = items.map(i => i.from).sort().pop(), week = items.filter(i => i.from === from);
+  // the ad is the start date most items share (a stray item dated a day later is not a new week)
+  const by = {}; items.forEach(i => { by[i.from] = (by[i.from] || 0) + 1; }); const from = Object.keys(by).sort((a, b) => by[b] - by[a] || (a < b ? 1 : -1))[0], week = items.filter(i => i.from === from);
   const doc = (await getDoc('publix')) || { weeks: {} }; doc.weeks ??= {};
   doc.weeks[from] = { from, to: week[0].to, zip, fetched: new Date().toISOString(), items: week.map(({ name, save, img }) => ({ name, save, img })) };
   for (const k of Object.keys(doc.weeks).sort().slice(0, -26)) delete doc.weeks[k];
