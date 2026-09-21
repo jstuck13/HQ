@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1F3A2E">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>HQ — Groceries</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="hq.css">
+<style>
+  .mast{margin-top:20px;padding-top:18px;border-top:1px solid rgba(242,236,223,.28);display:flex;align-items:baseline;gap:22px;flex-wrap:wrap}
+  h1{font-size:32px;line-height:1.3}
+  .mast .sub{font-family:var(--serif);font-style:italic;color:var(--band-muted)}
+  .mast .sub b{font-weight:400;color:var(--band-ink)}
+  .mast .back{margin-left:auto;font-size:13.5px;color:var(--band-muted);border-bottom:1px solid transparent} .mast .back:hover{color:var(--band-ink);border-color:currentColor}
+
+  main{max-width:1180px;margin:0 auto;padding:34px 40px 44px;display:grid;grid-template-columns:1.15fr 1fr;gap:64px}
+  h3{font-size:17px;margin:30px 0 4px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;align-items:baseline;gap:12px}
+  h3 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
+
+  /* the ad */
+  .find{display:flex;gap:12px;align-items:baseline;padding:10px 0 6px}
+  .find input{flex:1;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0} .find input:focus{outline:none;border-bottom-color:var(--ink)}
+  .find input::placeholder{color:var(--ink-3);font-style:italic}
+  .bogos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px 12px;margin-top:10px}
+  .bogo{background:var(--card);border-radius:10px;box-shadow:var(--shadow);padding:10px 10px 12px;display:flex;flex-direction:column;gap:6px;position:relative}
+  .bogo img{width:100%;aspect-ratio:1;object-fit:contain;background:#fff;border-radius:6px}
+  .bogo b{font-family:var(--serif);font-weight:400;font-size:13.5px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .bogo small{color:var(--ink-3);font-size:12px}
+  .bogo .cyc{color:var(--band);font-size:12px}
+  .bogo .add{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;background:var(--paper);display:grid;place-items:center;color:var(--ink-2);opacity:0;transition:opacity .15s}
+  .bogo:hover .add,.bogo:focus-within .add{opacity:1} .bogo .add:hover{background:var(--band);color:var(--band-ink)}
+  .bogo .add.on{opacity:1;background:var(--band);color:var(--band-ink)}
+  .more{margin-top:12px;font-size:13.5px;color:var(--ink-2)}
+
+  /* price book */
+  .book li{display:grid;grid-template-columns:1fr auto auto;gap:4px 18px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+  .book .n{font-family:var(--serif);font-size:15.5px}
+  .book .n small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
+  .book .p{font-family:var(--serif);font-size:17px;text-align:right;white-space:nowrap}
+  .book .p small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3)}
+  .book .best{color:var(--band)}
+
+  /* the list and the trip */
+  .list li{display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px solid var(--rule);position:relative}
+  .list ul{border-left:1px solid color-mix(in srgb, var(--ox) 32%, transparent);padding-left:14px}
+  .list input[type=checkbox]{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px;flex:none}
+  .list input[type=checkbox]:checked{background:var(--band);border-color:var(--band)}
+  .list input[type=checkbox]:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+  .list label{cursor:pointer;margin-right:auto}
+  .list input[type=checkbox]:checked + label{color:var(--ink-3);background:linear-gradient(currentColor,currentColor) left 58%/100% 1px no-repeat}
+  .list .w{font-size:12.5px;color:var(--ink-3)}
+  .list .x{opacity:0;position:absolute;right:0;top:50%;transform:translateY(-50%);background:var(--paper);padding-left:10px;font-size:12.5px;color:var(--ink-3)} .list li:hover .x,.list li:focus-within .x{opacity:1} .list .x:hover{color:var(--ox)}
+  .addt{display:grid;grid-template-columns:1fr auto;gap:12px;padding:12px 0;align-items:baseline}
+  .addt input{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0} .addt input:focus{outline:none;border-bottom-color:var(--ink)}
+  .addt input::placeholder{color:var(--ink-3);font-style:italic}
+  .textbtn{font-size:13.5px}
+
+  .trip{margin-top:34px}
+  .trip .head{display:grid;grid-template-columns:1fr 100px;gap:12px;padding:10px 0;border-bottom:1px dotted var(--rule)}
+  .trip .row{display:grid;grid-template-columns:1fr 72px 44px auto;gap:12px;padding:8px 0;border-bottom:1px dotted var(--rule);align-items:baseline}
+  .trip input,.trip select{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0} .trip input:focus,.trip select:focus{outline:none;border-bottom-color:var(--ink)}
+  .trip input::placeholder{color:var(--ink-3);font-style:italic}
+  .trip .amt{text-align:right}
+  .trip .bg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-3);cursor:pointer;white-space:nowrap}
+  .trip .bg input{width:13px;height:13px;appearance:none;border:1px solid var(--ink-2);border-radius:2px;display:grid;place-items:center;padding:0}
+  .trip .bg input:checked{background:var(--band);border-color:var(--band)}
+  .trip .bg input:checked::after{content:"";width:6px;height:3px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+  .trip .hint{font-size:12px;color:var(--ink-3);font-style:italic;font-family:var(--serif);padding:4px 0 0}
+  .trip .items li{display:grid;grid-template-columns:1fr auto auto;gap:12px;padding:6px 0;border-bottom:1px dotted var(--rule);font-size:14px;align-items:baseline}
+  .trip .items .p{font-family:var(--serif);white-space:nowrap} .trip .items .x{color:var(--ink-3);font-size:12px} .trip .items .x:hover{color:var(--ox)}
+  .trip .tot{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0 0;font-family:var(--serif)}
+  .trip .tot b{font-weight:400;font-size:20px}
+  .trip .save{margin-top:14px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap}
+  .trip .save select{width:auto}
+
+  /* past trips */
+  .trips li{padding:10px 0;border-bottom:1px solid var(--rule)}
+  .trips .top{display:grid;grid-template-columns:64px 1fr auto;gap:14px;align-items:baseline;cursor:pointer}
+  .trips .d{font-family:var(--serif);color:var(--ink-2);font-size:14px} .trips .s{font-family:var(--serif);font-size:15.5px} .trips .s small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
+  .trips .a{font-family:var(--serif);font-size:17px}
+  .trips .items{margin:8px 0 0 78px;font-size:13px;color:var(--ink-2)} .trips .items span{display:inline-block;margin:0 14px 4px 0} .trips .items i{font-style:normal;color:var(--band);font-size:11px;letter-spacing:.06em;margin-left:4px}
+  .trips .rm{font-size:12px;color:var(--ink-3);margin-left:78px} .trips .rm:hover{color:var(--ox)}
+
+  .empty{padding:14px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
+  .empty{display:block!important;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
+  .empty::before{content:"";display:block;width:160px;height:12px;margin:0 auto 10px;background:var(--ornament)}
+  .foot{max-width:1180px;margin:0 auto;padding:0 40px 32px;font-size:12.5px;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
+  .foot input{font-family:var(--serif);font-size:12.5px;width:6ch;border-bottom:1px dotted var(--ink-2);text-align:center}
+
+  @media (max-width:900px){
+    .mast{gap:10px 18px} .mast .back{margin-left:0}
+    main{grid-template-columns:1fr;gap:36px;padding:24px 20px 36px} .foot{padding:0 20px 28px}
+    .bogos{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))} .bogo .add{opacity:1}
+    .trip .row{grid-template-columns:1fr 64px 40px} .trip .row .bg{grid-column:1/-1}
+  }
+</style>
+</head>
+<body>
+<header class="band">
+  <div class="in">
+    <div class="row">
+      <a class="mark" href="today.html">HQ</a>
+      <span class="date"></span>
+      <nav aria-label="Areas"><a href="today.html">Today</a><a href="calendar.html">Calendar</a><a href="finances.html" aria-current="page">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="health.html">Health</a></nav>
+      <div class="right">
+        <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
+        <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
+        <button class="ib menu" type="button" aria-label="Menu" aria-expanded="false" id="menubtn"><svg class="ic"><use href="icons.svg#menu"/></svg></button>
+      </div>
+    </div>
+    <div class="mast">
+      <h1>Groceries</h1>
+      <span class="sub" id="sub">September</span>
+      <a class="back" href="finances.html">← Finances, the month</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section>
+    <h2>This week at Publix<small id="adn">buy one, get one</small></h2>
+    <div class="find"><input id="adq" placeholder="Search the ad — bacon, cereal, coffee…" aria-label="Search the ad"></div>
+    <div class="bogos" id="bogos"></div>
+    <p class="more" id="admore" hidden><button class="textbtn" type="button" id="adall">Show them all</button></p>
+
+    <h3>Price book<small id="bookn"></small></h3>
+    <ul class="book" id="book"></ul>
+  </section>
+
+  <aside>
+    <h2>Next trip<small id="listn"></small></h2>
+    <div class="list"><ul id="list"></ul></div>
+    <form class="addt" id="addl"><input id="l-text" placeholder="Add to the list" required><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
+
+    <div class="trip">
+      <h2>Log a trip<small id="tripn"></small></h2>
+      <div class="head"><input id="t-store" list="stores" placeholder="Publix" aria-label="Store"><input id="t-date" aria-label="Day"></div>
+      <datalist id="stores"><option>Publix</option><option>Aldi</option><option>Costco</option><option>Trader Joe's</option><option>Walmart</option><option>Whole Foods</option></datalist>
+      <form class="row" id="additem" autocomplete="off">
+        <input id="i-name" list="known" placeholder="Eggs" aria-label="Item" required><datalist id="known"></datalist>
+        <input id="i-price" class="amt" inputmode="decimal" placeholder="$0" aria-label="Price" required>
+        <input id="i-qty" class="amt" inputmode="numeric" value="1" aria-label="Quantity">
+        <label class="bg"><input type="checkbox" id="i-bogo">BOGO</label>
+        <button class="textbtn" type="submit" hidden>Add</button>
+      </form>
+      <p class="hint" id="ihint">Price is for one. Tick BOGO when the second is free — the trip counts one price for two.</p>
+      <ul class="items" id="titems"></ul>
+      <div class="tot"><span id="tcount">nothing yet</span><b id="ttotal">$0</b></div>
+      <div class="save" id="tsave" hidden><button class="textbtn" type="button" id="savetrip"><svg class="ic"><use href="icons.svg#check"/></svg>Save the trip</button><span class="w">as <select id="t-cat" aria-label="Finances category"></select> in Finances</span><button class="textbtn" type="button" id="cleartrip">Start over</button></div>
+    </div>
+
+    <h3>Trips<small id="tripsn"></small></h3>
+    <ul class="trips" id="trips"></ul>
+  </aside>
+</main>
+<p class="foot">Trips post to the month in Finances as one expense each. The ad is Publix's, by way of Flipp, for ZIP <input id="zip" inputmode="numeric" aria-label="ZIP code" placeholder="32601">; fetched nightly.</p>
+
+<script src="clock.js"></script>
+<script src="hq.js"></script>
+<script src="store.js"></script>
+<script src="bell.js"></script>
+<script src="search.js"></script>
+<script>
+  // Groceries: a log with a memory. Trips (store, items, prices, BOGOs) → one expense each in the month's Finances;
+  // the price book is derived from the trips; the Publix ad arrives nightly (api/sync/daily) into the `publix` document.
+  const C = clock, TODAY = C.today, YM = TODAY.slice(0,7), MONTH = C.monthName(C.now);
+  const $ = n => (n<0?'−':'') + '$' + Math.abs(n).toLocaleString('en-US',{minimumFractionDigits: Number.isInteger(n)?0:2, maximumFractionDigits:2});
+  const num = s => { const v=parseFloat(String(s).replace(/[^0-9.\-]/g,'')); return isNaN(v)?null:v; };
+  const dmy = d => `${C.monthShort(C.fromISO(d))} ${C.fromISO(d).getDate()}`;
+  const norm = s => String(s).toLowerCase().replace(/bogo\*?|†|\*/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+  const KEY='groceries', FKEY='finances.'+YM;
+  let G = { zip:'', trips:[], list:[] }, AD = { weeks:{} }, FIN = null, pending = { items:[] }, showAll = false;
+  const save = () => store.save(KEY, G);
+
+  // ---- the ad ----
+  const weeks = () => Object.values(AD.weeks||{}).sort((a,b)=>a.from<b.from?1:-1);
+  const current = () => weeks().find(w => w.from<=TODAY && w.to>=TODAY) || weeks()[0];
+  // an ad item and a thing you buy match when every word of the shorter name is in the longer
+  const matches = (a, b) => { const x=norm(a).split(' ').filter(w=>w.length>2), y=norm(b).split(' ').filter(w=>w.length>2); if(!x.length||!y.length) return false; const [s,l]=x.length<=y.length?[x,y]:[y,x]; return s.every(w=>l.some(v=>v.startsWith(w)||w.startsWith(v))); };
+  // when Publix has run a BOGO on this before: how often, and when next
+  function cycle(name){
+    const seen = weeks().filter(w => (w.items||[]).some(i => matches(i.name, name))).map(w=>w.from).sort();
+    if(!seen.length) return null;
+    const gaps = seen.slice(1).map((d,i)=>C.daysBetween(seen[i], d)/7), avg = gaps.length ? gaps.reduce((a,b)=>a+b)/gaps.length : null;
+    const next = avg ? C.iso(C.addDays(C.fromISO(seen[seen.length-1]), Math.round(avg*7))) : null;
+    return { times: seen.length, last: seen[seen.length-1], every: avg ? Math.round(avg) : null, next };
+  }
+  function renderAd(){
+    const w = current(), q = norm(F('adq').value);
+    if(!w){ F('adn').textContent = 'buy one, get one'; F('bogos').innerHTML = `<p class="empty" style="grid-column:1/-1">${G.zip ? 'The ad arrives with the nightly fetch — or press Sync now in the bell.' : 'Put your ZIP code in the note at the foot of the page and the ad will fetch itself.'}</p>`; F('admore').hidden=true; return; }
+    const items = (w.items||[]).filter(i => !q || norm(i.name).includes(q));
+    F('adn').textContent = `${w.items.length} BOGOs · ${dmy(w.from)} – ${dmy(w.to)}`;
+    const shown = showAll || q ? items : items.slice(0, 18);
+    F('bogos').innerHTML = shown.length ? shown.map(i => { const on = G.list.some(l => !l.done && matches(l.text, i.name)), cy = cycle(i.name);
+      return `<div class="bogo"><img src="${esc(i.img||'')}" alt="" loading="lazy" onerror="this.style.display='none'"><b>${esc(i.name)}</b>${i.save?`<small>save up to ${esc(i.save)}</small>`:''}${cy && cy.times>1 && cy.every ? `<span class="cyc">about every ${cy.every} ${cy.every===1?'week':'weeks'}</span>` : ''}<button class="add ${on?'on':''}" type="button" data-add="${esc(i.name)}" aria-label="${on?'On the list':'Add to the list'}"><svg class="ic"><use href="icons.svg#${on?'check':'plus'}"/></svg></button></div>`; }).join('')
+      : '<p class="empty" style="grid-column:1/-1">Nothing in this week’s ad matches.</p>';
+    F('admore').hidden = showAll || q || items.length <= 18; F('adall').textContent = `Show all ${items.length}`;
+  }
+  F('adq').addEventListener('input', renderAd);
+  F('adall').addEventListener('click', ()=>{ showAll=true; renderAd(); });
+  F('bogos').addEventListener('click', e=>{ const b=e.target.closest('[data-add]'); if(!b) return; const name=b.dataset.add.replace(/\s*BOGO\*?$/i,'').trim(); if(!G.list.some(l=>!l.done && matches(l.text,name))) G.list.push({text:name, done:false, bogo:true}); save(); renderList(); renderAd(); });
+
+  // ---- the price book: everything ever bought, from the trips ----
+  function book(){
+    const m = {};
+    G.trips.forEach(t => t.items.forEach(i => { const k=norm(i.name); const e = m[k] ??= { name:i.name, buys:[] }; e.buys.push({ date:t.date, store:t.store, price:i.price, bogo:!!i.bogo }); }));
+    return Object.values(m).map(e => { e.buys.sort((a,b)=>a.date<b.date?1:-1); e.last=e.buys[0]; e.best=[...e.buys].sort((a,b)=>(a.bogo?a.price/2:a.price)-(b.bogo?b.price/2:b.price))[0]; e.cycle=cycle(e.name); return e; }).sort((a,b)=>b.buys.length-a.buys.length || (a.name>b.name?1:-1));
+  }
+  function renderBook(){
+    const b = book();
+    F('bookn').textContent = b.length ? `${b.length} ${b.length===1?'thing':'things'} you buy` : '';
+    F('known').innerHTML = b.map(e=>`<option value="${esc(e.name)}">`).join('');
+    F('book').innerHTML = b.length ? b.map(e => { const eff = x => x.bogo ? x.price/2 : x.price, cy=e.cycle;
+      return `<li><span class="n">${esc(e.name)}<small>${e.buys.length} ${e.buys.length===1?'time':'times'} · last ${dmy(e.last.date)} at ${esc(e.last.store)}${cy ? ` · Publix BOGO ${cy.times>1&&cy.every?`about every ${cy.every} weeks`:'seen once'}, last ${dmy(cy.last)}${cy.next && cy.next>TODAY ? `, likely around ${dmy(cy.next)}` : ''}` : ''}</small></span><span class="p">${$(e.last.price)}${e.last.bogo?' <small>BOGO</small>':'<small>last</small>'}</span><span class="p ${e.best!==e.last?'best':''}">${$(eff(e.best))}<small>best${e.best.bogo?', BOGO':''} · ${esc(e.best.store)}</small></span></li>`; }).join('')
+      : '<li class="empty">Log a trip and the price book writes itself: what you paid, where, and the best you have seen.</li>';
+  }
+
+  // ---- the list ----
+  function renderList(){
+    const open=G.list.filter(l=>!l.done).length;
+    F('listn').textContent = G.list.length ? `${open} to get` : 'nothing yet';
+    F('list').innerHTML = G.list.length ? G.list.map((l,k)=>`<li><input type="checkbox" id="l${k}" data-k="${k}" ${l.done?'checked':''}><label for="l${k}">${esc(l.text)}</label>${l.bogo?'<span class="w">BOGO this week</span>':''}<button class="x" type="button" data-rm="${k}">remove</button></li>`).join('') : '<li class="empty">Nothing on the list. Add from the ad, or type what you need.</li>';
+  }
+  F('addl').addEventListener('submit', e=>{ e.preventDefault(); const t=F('l-text').value.trim(); if(!t) return; G.list.push({text:t, done:false}); F('addl').reset(); save(); renderList(); renderAd(); });
+  F('list').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ G.list[+e.target.dataset.k].done=e.target.checked; save(); renderList(); } });
+  F('list').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ G.list.splice(+b.dataset.rm,1); save(); renderList(); renderAd(); } });
+
+  // ---- the trip being logged ----
+  const tripTotal = () => pending.items.reduce((n,i)=>n + i.price * (i.bogo ? Math.ceil(i.qty/2) : i.qty), 0);
+  function renderTrip(){
+    F('titems').innerHTML = pending.items.map((i,k)=>`<li><span>${esc(i.name)}${i.qty>1?` × ${i.qty}`:''}</span><span class="p">${$(i.price*(i.bogo?Math.ceil(i.qty/2):i.qty))}${i.bogo?' <small>BOGO</small>':''}</span><button class="x" type="button" data-rm="${k}">remove</button></li>`).join('');
+    const n=pending.items.length; F('tcount').textContent = n ? `${n} ${n===1?'item':'items'}` : 'nothing yet'; F('ttotal').textContent = $(tripTotal());
+    F('tsave').hidden = !n; F('tripn').textContent = n ? `${F('t-store').value||'Publix'} · ${F('t-date').value}` : '';
+    if(FIN){ const cats=FIN.cats||[], cur=F('t-cat').value; F('t-cat').innerHTML = cats.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join(''); const g = cats.find(c=>/groc|food/i.test(c.name)); F('t-cat').value = cur && cats.some(c=>c.id===cur) ? cur : (g ? g.id : (cats[0]&&cats[0].id)); }
+  }
+  F('additem').addEventListener('submit', e=>{ e.preventDefault(); const price=num(F('i-price').value); if(price==null) return F('i-price').focus();
+    pending.items.push({ name:F('i-name').value.trim(), price, qty:Math.max(1, parseInt(F('i-qty').value)||1), bogo:F('i-bogo').checked });
+    F('additem').reset(); F('i-qty').value='1'; F('i-name').focus(); renderTrip(); });
+  F('i-name').addEventListener('change', ()=>{ const e=book().find(x=>norm(x.name)===norm(F('i-name').value)); if(e && !F('i-price').value) F('i-price').placeholder = `${$(e.last.price)} last time`; });
+  F('titems').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ pending.items.splice(+b.dataset.rm,1); renderTrip(); } });
+  F('cleartrip').addEventListener('click', ()=>{ pending={items:[]}; renderTrip(); });
+  F('savetrip').addEventListener('click', ()=>{
+    if(!pending.items.length) return;
+    const trip = { id:Date.now(), date:C.parseDay(F('t-date').value), store:F('t-store').value.trim()||'Publix', items:pending.items, total:Math.round(tripTotal()*100)/100 };
+    G.trips.push(trip);
+    // things bought come off the list
+    G.list = G.list.filter(l => !trip.items.some(i => matches(i.name, l.text)));
+    // and the trip is one expense in the month
+    const ym = trip.date.slice(0,7);
+    const post = doc => { doc.tx ??= []; doc.tx.push({ id:trip.id, date:trip.date, what:`${trip.store} · ${trip.items.length} ${trip.items.length===1?'item':'items'}`, cat:F('t-cat').value, amt:trip.total, trip:trip.id }); return doc; };
+    if(ym===YM && FIN){ post(FIN); store.save(FKEY, FIN); }
+    else store.load('finances.'+ym).then(doc => { if(doc) store.save('finances.'+ym, post(doc)); });
+    pending={items:[]}; save(); renderTrip(); renderTrips(); renderBook(); renderList(); renderSub();
+  });
+
+  // ---- past trips ----
+  let openTrip = null;
+  function renderTrips(){
+    const t=[...G.trips].sort((a,b)=>a.date<b.date?1:(a.date>b.date?-1:b.id-a.id));
+    F('tripsn').textContent = t.length ? `${t.length} logged` : '';
+    F('trips').innerHTML = t.length ? t.slice(0, 12).map(x=>`<li data-id="${x.id}"><div class="top"><span class="d">${dmy(x.date)}</span><span class="s">${esc(x.store)}<small>${x.items.length} ${x.items.length===1?'item':'items'}${x.items.some(i=>i.bogo)?` · ${x.items.filter(i=>i.bogo).length} BOGO`:''}</small></span><span class="a">${$(x.total)}</span></div>${openTrip===x.id?`<div class="items">${x.items.map(i=>`<span>${esc(i.name)}${i.qty>1?' ×'+i.qty:''} ${$(i.price)}${i.bogo?'<i>BOGO</i>':''}</span>`).join('')}</div><button class="rm" type="button" data-rm="${x.id}">Remove this trip (and its expense)</button>`:''}</li>`).join('') : '<li class="empty">No trips yet.</li>';
+  }
+  F('trips').addEventListener('click', e=>{
+    const rm=e.target.closest('[data-rm]'); if(rm){ const id=+rm.dataset.rm, t=G.trips.find(x=>x.id===id); G.trips=G.trips.filter(x=>x.id!==id); if(t){ const ym=t.date.slice(0,7), fix=doc=>{ doc.tx=(doc.tx||[]).filter(x=>x.trip!==id); return doc; }; if(ym===YM && FIN){ fix(FIN); store.save(FKEY, FIN); } else store.load('finances.'+ym).then(doc=>{ if(doc) store.save('finances.'+ym, fix(doc)); }); } openTrip=null; save(); renderTrips(); renderBook(); renderSub(); return; }
+    const li=e.target.closest('li[data-id]'); if(li){ openTrip = openTrip===+li.dataset.id ? null : +li.dataset.id; renderTrips(); }
+  });
+
+  function renderSub(){
+    const m = G.trips.filter(t=>t.date.startsWith(YM)), spent = m.reduce((n,t)=>n+t.total,0);
+    const lim = FIN && (FIN.cats||[]).find(c=>/groc|food/i.test(c.name));
+    F('sub').innerHTML = `${MONTH} · <b>${$(spent)}</b> over ${m.length} ${m.length===1?'trip':'trips'}${lim ? ` · ${$(Math.max(0, lim.limit - (FIN.tx||[]).filter(t=>t.cat===lim.id).reduce((n,t)=>n+t.amt,0)))} left of the ${$(lim.limit)} limit` : ''}`;
+  }
+  F('zip').addEventListener('change', ()=>{ G.zip = F('zip').value.trim().slice(0,5); save(); });
+
+  F('t-date').value = C.dayMonth(C.now);
+  Promise.all([store.load(KEY), store.load('publix'), store.load(FKEY)]).then(([g, ad, fin]) => {
+    if(g) G = g; G.trips ??= []; G.list ??= []; if(ad && ad.weeks) AD = ad; FIN = fin;
+    F('zip').value = G.zip || '';
+    renderAd(); renderBook(); renderList(); renderTrip(); renderTrips(); renderSub();
+  });
+</script>
+</body>
+</html>
