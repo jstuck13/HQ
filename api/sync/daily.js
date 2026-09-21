@@ -13,7 +13,9 @@ const WORDS = ['equanimity', 'assiduous', 'halcyon', 'lacuna', 'sanguine', 'pers
 async function publix(getDoc, putDoc) {
   const g = await getDoc('groceries'); const zip = g && g.zip; if (!zip) return null;
   const H = { headers: { 'user-agent': 'Mozilla/5.0' } }, base = 'https://backflipp.wishabi.com/flipp';
-  const clean = n => String(n || '').replace(/\s*BOGO\*?/i, '').replace(/[^\x20-\x7E’]/g, '').replace(/\*/g, '').replace(/\s+/g, ' ').trim();
+  const clean = n => String(n || '').replace(/\s*BOGO\*?/i, '').replace(/[^\x20-\x7E’]/g, '').replace(/\*/g, '').replace(/\s+/g, ' ').trim().replace(/[,;:\-–]+$/, '').trim();
+  const saveOf = story => { const m = /save up to\s*\$?\s*([\d.]+)(\s*lb)?/i.exec(story || ''); return m ? `$${(+m[1]).toFixed(2).replace(/\.00$/, '')}${m[2] ? ' lb' : ''}` : undefined; };   // "SAVE UP TO 5.69" → "$5.69"
+  const noteOf = story => story && !/save up to/i.test(story) && !/\d/.test(story) ? String(story).toLowerCase().replace(/^\w/, c => c.toUpperCase()) : undefined;   // "SURPRISINGLY LOW PRICE" → "Surprisingly low price\"
   // deal wording, keyed by cleaned name, from two searches (each is capped at 150 items)
   const deals = {}; let flyerIds = {};
   for (const q of ['publix bogo', 'publix']) {
@@ -45,7 +47,7 @@ async function publix(getDoc, putDoc) {
     const pre = dt.pre_price_text || d.deal || '', bogo = /bogo/i.test(i.name) || /buy 1 get 1/i.test(pre);
     const price = (dt.current_price && +dt.current_price) || (i.price && +i.price) || (d.price && +d.price) || undefined;
     const multi = /^(\d+)\s*(?:for|\/)/i.exec(pre);
-    items.push({ name, bogo: bogo || undefined, price: multi ? undefined : price, deal: bogo ? undefined : wording(pre, price, dt.sale_story || d.deal), save: bogo ? ((dt.sale_story || d.save || '').replace(/^save up to\s*/i, '') || undefined) : undefined, desc: dt.description ? String(dt.description).slice(0, 90) : undefined, img: (i.cutout_image_url || d.img || '').replace(/^http:/, 'https:') || undefined });
+    items.push({ name, bogo: bogo || undefined, price: multi ? undefined : price, deal: bogo ? undefined : wording(pre, price, dt.sale_story || d.deal), save: bogo ? saveOf(dt.sale_story || (d.save ? 'save up to ' + d.save : '')) : undefined, note: noteOf(dt.sale_story || d.deal), desc: dt.description ? String(dt.description).slice(0, 90) : undefined, img: (i.cutout_image_url || d.img || '').replace(/^http:/, 'https:') || undefined });
     from ??= (i.valid_from || '').slice(0, 10); to ??= (i.valid_to || '').slice(0, 10);
   }
   if (!items.length || !from) return { items: 0 };

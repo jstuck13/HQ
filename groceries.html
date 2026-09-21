@@ -104,7 +104,7 @@
   @media (max-width:900px){
     .mast{gap:10px 18px} .mast .back{margin-left:0}
     main{grid-template-columns:1fr;gap:36px;padding:24px 20px 36px} .foot{padding:0 20px 28px}
-    .bogos{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))} .bogo .add{opacity:1}
+    .bogos{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))} .bogo .add{opacity:1} .find{flex-wrap:wrap} .book li{grid-template-columns:1fr auto} .book .p:last-child{grid-column:1/-1;text-align:left;font-size:14px} .book .p:last-child small{display:inline;margin-left:6px}
     .trip .row{grid-template-columns:1fr 64px 40px} .trip .row .bg{grid-column:1/-1} .spot{grid-template-columns:1fr 1fr} .spot .textbtn{grid-column:1/-1;justify-self:start}
   }
 </style>
@@ -209,7 +209,7 @@
     const items = (only==='bogo' ? bog : all).filter(i => !q || norm(i.name).includes(q));
     F('adn').textContent = `${bog.length} BOGOs of ${all.length} deals · ${dmy(w.from)} – ${dmy(w.to)}`;
     F('bogos').innerHTML = items.length ? items.map(i => { const on = G.list.some(l => !l.done && matches(l.text, i.name)), cy = i.bogo ? cycle(i.name) : null;
-      const line = i.bogo ? `<small>BOGO${i.save?` · save up to ${esc(i.save)}`:''}</small>` : i.deal ? `<span class="price">${esc(i.deal)}</span>` : i.price ? `<span class="price">${$(i.price)}</span>` : '<small>in the ad</small>';
+      const line = i.bogo ? `<small>BOGO${i.save?` · save up to ${esc(i.save)}`:''}${i.note?` · ${esc(i.note)}`:''}</small>` : i.deal ? `<span class="price">${esc(i.deal)}</span>` : i.price ? `<span class="price">${$(i.price)}</span>` : '<small>in the ad</small>';
       return `<div class="bogo ${i.spotted?'spotted':''}">${i.spotted?`<span class="tag">spotted in store${i.to?` · until ${dmy(i.to)}`:''}</span>`:`<img src="${esc(i.img||'')}" alt="" loading="lazy" onerror="this.style.display='none'">`}<b title="${esc(i.desc||'')}">${esc(i.name)}</b>${line}${i.spotted?`<button class="rm" type="button" data-unspot="${esc(i.name)}">remove</button>`:''}${cy && cy.times>1 && cy.every ? `<span class="cyc">about every ${cy.every} ${cy.every===1?'week':'weeks'}</span>` : ''}<button class="add ${on?'on':''}" type="button" data-add="${esc(i.name)}" aria-label="${on?'On the list':'Add to the list'}"><svg class="ic"><use href="icons.svg#${on?'check':'plus'}"/></svg></button></div>`; }).join('')
       : '<p class="empty" style="grid-column:1/-1">Nothing in this week’s ad matches.</p>';
   }
