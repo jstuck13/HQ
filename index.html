@@ -31,8 +31,9 @@
   body:not(.ready) .wrap{visibility:hidden}
   .splash{position:fixed;inset:0;background:var(--band);display:grid;place-items:center;z-index:9;transition:opacity .45s ease}
   .splash.gone{opacity:0;pointer-events:none}
-  .splash .m{font-family:var(--serif);font-size:44px;letter-spacing:.14em;font-weight:700;text-indent:.14em;animation:splash-in .7s ease-out both}
-  .splash .o{width:160px;height:12px;margin-top:18px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='12' viewBox='0 0 160 12'%3E%3Cpath d='M0 6.5h62M98 6.5h62' stroke='%23F2ECDF' stroke-opacity='.35'/%3E%3Cpath d='M80 1.5l5 5-5 5-5-5z' fill='%23B9C9BE'/%3E%3C/svg%3E") center/160px 12px no-repeat;animation:splash-rule .9s cubic-bezier(.2,.8,.2,1) .15s both}
+  .splash > div{text-align:center}
+  .splash .m{display:inline-block;font-family:var(--serif);font-size:44px;letter-spacing:.14em;margin-right:-.14em;font-weight:700;animation:splash-in .7s ease-out both}   /* the trailing letter-space is pulled back so the two letters sit dead centre */
+  .splash .o{width:160px;height:12px;margin:18px auto 0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='12' viewBox='0 0 160 12'%3E%3Cpath d='M0 6.5h62M98 6.5h62' stroke='%23F2ECDF' stroke-opacity='.35'/%3E%3Cpath d='M80 1.5l5 5-5 5-5-5z' fill='%23B9C9BE'/%3E%3C/svg%3E") center/160px 12px no-repeat;animation:splash-rule .9s cubic-bezier(.2,.8,.2,1) .15s both}
   @keyframes splash-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   @keyframes splash-rule{from{transform:scaleX(0);opacity:0}to{transform:none;opacity:1}}
   @media (prefers-reduced-motion:reduce){.splash .m,.splash .o{animation:none} .splash{transition:none}}
