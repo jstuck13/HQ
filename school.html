@@ -322,7 +322,7 @@
   F('clear-yes').addEventListener('click', ()=>{ S=seed(); F('clear-ask').hidden=false; F('clear-sure').hidden=true; render(); });
   F('i-date').placeholder = C.dayMonth(C.addDays(C.now, 2));
   render();
-  store.load('school').then(doc => { if (doc) { S = doc; render(); } else save(); renderSync(); });
+  store.load('school').then(doc => { if (doc) { S = doc; (S.courses||[]).forEach(c=>{ c.links ??= []; }); S.items ??= []; S.sessions ??= []; render(); } else save(); renderSync(); });
 </script>
 </body>
 </html>
