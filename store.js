@@ -30,8 +30,19 @@
     try {
       const r = await fetch(`/api/state?keys=${keys.map(encodeURIComponent).join(',')}`, { cache: 'no-store' });
       if (r.status === 401) { window.store.signedOut = true; return null; }
+      offline(false);
       return r.ok ? await r.json() : null;
-    } catch { return null; }                   // offline or no API (plain static server): cache it is
+    } catch { offline(true); return null; }    // offline or no API (plain static server): cache it is
+  }
+  // with no network the pages still open on their last copy; say so quietly rather than let it look live
+  let note;
+  function offline(on) {
+    if (on && !navigator.onLine && !note) {
+      note = document.createElement('div'); note.textContent = 'Offline — showing your last copy.';
+      note.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--band,#1F3A2E);color:var(--band-ink,#F2ECDF);font:13px/1.4 var(--sans,system-ui);padding:9px 16px;border-radius:999px;opacity:.92;z-index:50;pointer-events:none';
+      document.body.appendChild(note);
+      addEventListener('online', () => location.reload(), { once: true });
+    } else if (!on && note) { note.remove(); note = null; }
   }
 
   function save(key, doc) {

@@ -8,7 +8,7 @@ const $0 = n => (n<0?'−':'') + '$' + Math.round(Math.abs(n)).toLocaleString('e
 { const t0 = Date.now(); let gone = false;
   window.hqReveal = () => { if (gone) return; gone = true; setTimeout(() => document.body.classList.add('hq-in'), Math.max(0, 250 - (Date.now() - t0))); };   // held 250 ms so it reads as a mark, not a flicker
   setTimeout(window.hqReveal, 4000); }
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});   // for reminders; it caches nothing
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});   // reminders, and the offline shell
 addEventListener('DOMContentLoaded', () => {
   const b = document.getElementById('menubtn'), band = document.querySelector('.band');
   if (b && band) b.addEventListener('click', () => { band.classList.toggle('nav-open'); b.setAttribute('aria-expanded', band.classList.contains('nav-open')); });
