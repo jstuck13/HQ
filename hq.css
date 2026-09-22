@@ -51,6 +51,9 @@ button{cursor:pointer}
 h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0}
 [hidden]{display:none!important}
 .ic{width:16px;height:16px;flex:none}
+/* a list long enough to run down the page scrolls inside its own box instead; --h sets how tall that box is */
+.scrollbox{max-height:var(--h,420px);overflow:auto;overscroll-behavior:contain;padding-right:6px;scrollbar-width:thin;scrollbar-color:var(--rule) transparent}
+
 .band{background:var(--band);color:var(--band-ink)}
 .band .in{max-width:1180px;margin:0 auto;padding:16px 40px 22px}
 .row{display:flex;align-items:center;gap:26px}
