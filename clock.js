@@ -58,8 +58,10 @@
     .band .mast{animation:hq-arrive .4s ease-out both}
     main>*{animation:hq-arrive .45s ease-out both}
     main>*:nth-child(2){animation-delay:.06s} main>*:nth-child(3){animation-delay:.12s} main>*:nth-child(n+4){animation-delay:.18s}
-    @keyframes hq-breathe{0%,100%{opacity:1}50%{opacity:.65}}
+    @keyframes hq-breathe{0%,100%{border-top-color:var(--ox)}50%{border-top-color:#C29B99}}
+    @keyframes hq-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.5}}
     .now{animation:hq-breathe 4s ease-in-out infinite}
+    .now::before{animation:hq-pulse 4s ease-in-out infinite}
     @keyframes hq-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
     @keyframes hq-grow{from{transform:scaleY(0)}to{transform:none}}
     @keyframes hq-widen{from{transform:scaleX(0)}to{transform:none}}

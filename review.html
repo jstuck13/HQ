@@ -190,6 +190,7 @@
       if(all.length) rows.push(li('To do','today.html', `<b>${done}</b> of ${all.length} ticked${all.length-done?` · ${all.length-done} still open`:''}`, all.length?Math.round(done/all.length*100):0, '%', 'done', bars(todos.map((t,i)=>t&&t.items&&t.items.length?t.items.filter(x=>x.done).length:(days[i]<=TODAY?0:null)), v=>`${v} done`, '#B9C9BE')));
     }
     F('wk').innerHTML = rows.length ? rows.join('') : '<li class="empty">Nothing logged in this week yet. The other pages fill this one in.</li>';
+    C.countIn('.wk .v');
     portrait(days, H, cal, school);
 
     // streaks, as of today
