@@ -78,6 +78,8 @@
   .addc .textbtn{font-size:13.5px}
 
   /* right column */
+  /* the due list scrolls inside its box rather than running down the page (as the Publix ad does) */
+  .duewrap{max-height:460px;overflow:auto;overscroll-behavior:contain;padding-right:6px;scrollbar-width:thin;scrollbar-color:var(--rule) transparent}
   .ledger li{display:grid;grid-template-columns:auto 1fr auto 20px;gap:12px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
   .ledger input[type=checkbox]{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px;align-self:center}
   .ledger input:checked{background:var(--band);border-color:var(--band)}
@@ -167,7 +169,7 @@
       <input id="i-date" placeholder="" aria-label="Due day" required>
       <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add to due</button>
     </form>
-    <ul class="ledger" id="due"></ul>
+    <div class="duewrap" id="duewrap"><ul class="ledger" id="due"></ul></div>
 
     <div class="sessions">
       <h2>Sessions<small id="sessn"></small></h2>
