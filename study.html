@@ -62,6 +62,28 @@
   .lines li{padding:10px 0;border-bottom:1px solid var(--rule)}
   .lines .d{font-size:12.5px;color:var(--ink-3)} .lines .t{font-family:var(--serif);font-size:15.5px;line-height:1.5;margin-top:2px}
   .lines ul{border-left:1px solid color-mix(in srgb, var(--ox) 32%, transparent);padding-left:14px}
+  /* look back: the cards already read, each one openable again */
+  .lookback{margin-top:10px}
+  .lbtabs{display:flex;flex-wrap:wrap;gap:8px 18px;padding-bottom:10px}
+  .lbtabs button{background:none;border:0;padding:0;font:inherit;font-size:13.5px;color:var(--ink-3);cursor:pointer;border-bottom:1px solid transparent}
+  .lbtabs button.on{color:var(--ink);border-bottom-color:var(--ox)}
+  .lbcards{--h:520px;list-style:none;margin:0;padding:0}
+  .lbcards li{border-bottom:1px solid var(--rule)}
+  .lbcards summary{display:grid;grid-template-columns:34px 1fr auto;gap:14px;align-items:baseline;padding:11px 0;cursor:pointer;list-style:none}
+  .lbcards summary::-webkit-details-marker{display:none}
+  .lbcards summary:hover .t{color:var(--ox)}
+  .lbcards .n{font-family:var(--serif);font-size:13px;color:var(--ink-3)}
+  .lbcards .t{font-family:var(--serif);font-size:15.5px;line-height:1.35}
+  .lbcards .t small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3);margin-top:2px}
+  .lbcards .mk{font-size:11.5px;color:var(--ink-3);white-space:nowrap}
+  .lbcards .mk b{font-weight:500;color:var(--ox)}
+  .lbcards .body{padding:2px 0 18px 48px}
+  .lbcards .body .frame{font-size:13.5px;color:var(--ink-2);margin:0 0 12px}
+  .lbcards .body .text{font-family:var(--serif);font-size:16.5px;line-height:1.55;margin:0;white-space:pre-line}
+  .lbcards .body .src{font-size:12.5px;color:var(--ink-3);margin:10px 0 0}
+  .lbcards .body .ask{font-family:var(--serif);font-style:italic;color:var(--ox);margin:14px 0 0}
+  .lbcards .body .mine{margin:8px 0 0;padding-left:12px;border-left:2px solid var(--rule);font-family:var(--serif);font-size:15px;white-space:pre-line}
+  .lbcards .empty{padding:14px 0;color:var(--ink-3);font-family:var(--serif);font-style:italic}
   .paths li{padding:12px 0;border-bottom:1px solid var(--rule);display:grid;grid-template-columns:32px 1fr auto;gap:2px 14px;align-items:baseline}
   .paths .em{grid-row:1/3;align-self:start;width:28px;height:28px;color:var(--ink-3)} .paths .em svg{width:28px;height:28px} .paths .cur .em{color:var(--ox)}
   .paths .bar{grid-column:2/-1} .paths .go{grid-column:3}
@@ -108,6 +130,12 @@
   <section>
     <h2 id="pathh">Today’s cards<small id="cardn"></small></h2>
     <div class="stage" id="stage"></div>
+
+    <h3 id="lbh" hidden>Look back<small id="lbn"></small></h3>
+    <div class="lookback" id="lookback" hidden>
+      <div class="lbtabs" id="lbtabs"></div>
+      <ol class="lbcards scrollbox" id="lbcards"></ol>
+    </div>
   </section>
   <aside>
     <h2>Days<small id="daysn"></small></h2>
@@ -120,7 +148,7 @@
     <ul class="paths" id="paths"></ul>
   </aside>
 </main>
-<p class="foot">Three cards, then it stops. The passages are the texts themselves, in public-domain translations; the frames and questions are HQ’s. Every fourth day the first card asks you what an earlier one said.</p>
+<p class="foot">Three cards, then it stops. The passages are the texts themselves, in public-domain translations wherever one exists — the few that are not say so on the card. The frames and questions are HQ’s. Every fourth day the first card asks you what an earlier one said.</p>
 
 <script src="clock.js"></script>
 <script src="hq.js"></script>
@@ -200,6 +228,32 @@
     document.onkeydown = e => { if(/INPUT|TEXTAREA/.test(document.activeElement.tagName)) return; if(e.key === 'ArrowRight' && F('next')) go(1); if(e.key === 'ArrowLeft' && d.at > 0) go(-1); };
   }
 
+  // Look back: the cards you have already read, in any path you have walked, with what you wrote on them.
+  // Another path's cards are fetched only when you ask for them, and switching tabs never moves where you are.
+  let lbPath = null; const lbCache = {};
+  const walked = () => PATHS.filter(p => p.ready && (p.id === S.path ? S.pos : (S.progress || {})[p.id] || 0) > 0);
+  const readSoFar = id => id === S.path ? S.pos : (S.progress || {})[id] || 0;
+
+  async function cardsOf(id){ return lbCache[id] ??= (id === S.path && P) ? P : await (await fetch(`paths/${id}.json`)).json(); }
+
+  async function renderLookBack(){
+    const paths = walked();
+    F('lbh').hidden = F('lookback').hidden = !paths.length;
+    if(!paths.length) return;
+    if(!paths.some(p => p.id === lbPath)) lbPath = (paths.find(p => p.id === S.path) || paths[0]).id;
+    F('lbtabs').innerHTML = paths.length > 1
+      ? paths.map(p => `<button type="button" data-lb="${p.id}" class="${p.id === lbPath ? 'on' : ''}">${esc(p.title)}</button>`).join('') : '';
+    const doc = await cardsOf(lbPath), upto = Math.min(readSoFar(lbPath), doc.cards.length);
+    F('lbn').textContent = `${upto} read`;
+    const lines = {}; (S.notes || []).forEach(n => { lines[n.card] = n.text; });
+    F('lbcards').innerHTML = upto ? doc.cards.slice(0, upto).map((c, i) => {
+      const a = (S.answers || {})[c.id], line = lines[c.id];
+      return `<li><details><summary><span class="n">${i + 1}</span><span class="t">${esc(c.text.slice(0, 96).trim())}…<small>${esc(c.source)}</small></span><span class="mk">${a ? '<b>answered</b>' : ''}${a && line ? ' · ' : ''}${line ? 'a line kept' : ''}</span></summary>
+        <div class="body"><p class="frame">${esc(c.frame)}</p><p class="text">${esc(c.text)}</p><p class="ask">${esc(c.ask)}</p>${a && a.text ? `<p class="mine">${esc(a.text)}</p>` : ''}${line ? `<p class="mine">“${esc(line)}” <span class="src">— the line you kept that day</span></p>` : ''}</div></details></li>`;
+    }).join('') : '<li class="empty">Nothing read on this path yet.</li>';
+  }
+  F('lbtabs').addEventListener('click', e => { const b = e.target.closest('[data-lb]'); if(b){ lbPath = b.dataset.lb; renderLookBack(); } });
+
   function renderAside(){
     // the last 28 days, as squares
     const days = Array.from({length: 28}, (_, i) => C.iso(C.addDays(C.now, i - 27)));
@@ -216,6 +270,7 @@
     F('answersn').textContent = ans.length ? `${ans.length} written` : '';
     F('answers').innerHTML = ans.length ? ans.slice(0, 8).map(([id, a]) => { const c = P && card(id); return `<li>${c ? `<div class="q">${esc(c.ask)}</div>` : ''}<div class="a">${esc(a.text)}</div><div class="d">${dmy(a.date)}${c ? ` · ${esc(c.source.split(' · ')[0])}` : ''}</div></li>`; }).join('') : '<li class="empty">Answer a card’s question in the box beneath it and it is kept here, apart from your lines.</li>';
     justKept = false;
+    renderLookBack();
     // paths
     F('paths').innerHTML = PATHS.map(p => { const cur = p.id === S.path, prog = cur ? S.pos : (S.progress && S.progress[p.id]) || 0;
       return `<li class="${cur ? 'cur' : ''}"><span class="em">${emblem(p.id)}</span><span class="n">${esc(p.title)}<small>${esc(p.sub)}</small></span><span class="p">${p.ready ? (cur ? `${prog} of ${p.cards}` : prog ? `${prog} of ${p.cards} · paused` : `${p.cards} cards`) : 'soon'}</span>${p.ready ? `<span class="bar"><i style="width:${p.cards ? prog / p.cards * 100 : 0}%"></i></span>` : ''}${p.ready && !cur ? `<button class="textbtn go" type="button" data-path="${p.id}">Walk this one</button>` : ''}</li>`; }).join('');
