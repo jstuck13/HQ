@@ -55,6 +55,25 @@
   .chart .fig{font-family:var(--serif);font-size:22px;margin:6px 0 0} .chart .fig small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:8px}
 
   /* contributions */
+  /* pasting a positions export */
+  .paste{border-bottom:1px dotted var(--rule);padding-bottom:12px}
+  .paste summary{cursor:pointer;font-size:13.5px;color:var(--ink-3);padding:10px 0;list-style:none}
+  .paste summary::-webkit-details-marker{display:none}
+  .paste summary::before{content:"+ ";color:var(--ink-3)}
+  .paste[open] summary::before{content:"– "}
+  .paste summary:hover{color:var(--ox)}
+  .paste .how{font-size:12.5px;color:var(--ink-3);margin:0 0 10px;max-width:60ch;line-height:1.5}
+  .paste textarea{width:100%;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink);background:var(--paper-2);border:1px solid var(--rule);border-radius:6px;padding:10px;resize:vertical}
+  .pact{display:flex;align-items:baseline;gap:16px;padding-top:8px}
+  .pact .note{font-size:12.5px;color:var(--ink-3)}
+  .pv li{display:grid;grid-template-columns:1fr 110px 110px;gap:12px;padding:7px 0;border-bottom:1px dotted var(--rule);align-items:baseline;font-size:14px}
+  .pv .t{font-family:var(--serif);font-size:15px} .pv .t small{color:var(--ink-3);font-family:var(--sans);font-size:12px;margin-left:8px}
+  .pv .was,.pv .now{text-align:right;font-family:var(--serif)} .pv .was{color:var(--ink-3);text-decoration:line-through}
+  .pv .now.add{color:var(--ox)}
+  .pv{list-style:none;margin:12px 0 0;padding:0}
+  .pv .gone .t{color:var(--ink-3)}
+  .papply{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;padding-top:12px}
+  .papply label{font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:7px}
   .cats{display:flex;flex-wrap:wrap;gap:8px 16px;padding:12px 0 4px}   /* flex items, not inline boxes: a tick cannot nudge the baseline */
   .cats label{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer}
   .cats input{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px}
@@ -119,6 +138,14 @@
       <input id="h-acct" list="accts" placeholder="Roth IRA" aria-label="Account"><datalist id="accts"><option>Roth IRA</option><option>Brokerage</option><option>401(k)</option><option>HSA</option></datalist>
       <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button>
     </form>
+
+    <details class="paste" id="pastewrap">
+      <summary>Paste your positions instead</summary>
+      <p class="how">On Fidelity’s Positions page press Download, open the file, and paste the whole thing here. It is a snapshot, so every share count becomes right at once — including the trades you never got round to logging.</p>
+      <textarea id="pastebox" rows="4" placeholder="Account Number,Account Name,Symbol,Description,Quantity,…" spellcheck="false"></textarea>
+      <div class="pact"><button class="textbtn" type="button" id="readpaste">Read it</button><span class="note" id="pastenote"></span></div>
+      <div id="preview" hidden></div>
+    </details>
 
     <h3>Worth over time<small id="chartn"></small></h3>
     <div class="chart" id="chart"></div>
@@ -222,6 +249,90 @@
     const lb = latestBalances().sort((a,b)=>b.value-a.value);
     F('bal').innerHTML = lb.length ? lb.map(b=>`<li data-id="${b.id}"><span class="d">${dmy(b.date)}</span><span>${esc(b.account)}</span><span class="a">${$(b.value)}</span><button class="x" type="button" data-rm="${b.id}">remove</button></li>`).join('') : '<li class="empty">A 401(k) or anything without a ticker: log its balance now and then and it joins the total.</li>';
   }
+
+  // ---- pasting a positions export ----
+  // A broker's download is a snapshot of what you actually hold, so reading one fixes every share count at once.
+  // Nothing is written until the preview is applied; anything the file does not mention is left alone unless you say so.
+  const csvRows = text => {                       // comma or tab delimited, quoted fields kept whole
+    const rows = []; let row = [], cell = '', q = false, delim = text.includes('\t') && !text.includes('","') ? '\t' : ',';
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (q) { if (c === '"') { if (text[i+1] === '"') { cell += '"'; i++; } else q = false; } else cell += c; }
+      else if (c === '"') q = true;
+      else if (c === delim) { row.push(cell); cell = ''; }
+      else if (c === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+      else if (c !== '\r') cell += c;
+    }
+    if (cell || row.length) { row.push(cell); rows.push(row); }
+    return rows.filter(r => r.some(x => x.trim()));
+  };
+  const money = s => { const v = parseFloat(String(s).replace(/[()$,\s]/g, '')); return isNaN(v) ? null : (/\(/.test(s) ? -v : v); };
+
+  function readPositions(text){
+    const rows = csvRows(text);
+    const hi = rows.findIndex(r => r.some(c => /^symbol$/i.test(c.trim())) && r.some(c => /quantity|shares/i.test(c)));
+    if (hi < 0) return null;
+    const head = rows[hi].map(c => c.trim().toLowerCase());
+    const col = (...names) => {                   // an exact heading wins, so "Account Number" is not taken for "Account"
+      for (const n of names) { const i = head.indexOf(n); if (i >= 0) return i; }
+      for (const n of names) { const i = head.findIndex(h => h.startsWith(n) && !/number|id$/.test(h)); if (i >= 0) return i; }
+      return -1;
+    };
+    const iT = col('symbol'), iQ = col('quantity', 'shares'), iA = col('account name', 'account'), iC = col('cost basis total', 'cost basis');
+    const out = [];
+    for (const r of rows.slice(hi + 1)) {
+      const ticker = (r[iT] || '').trim().toUpperCase().replace(/[^A-Z0-9.]/g, '');
+      const shares = money(r[iQ] || '');
+      if (!ticker || shares == null || !shares) continue;
+      if (/PENDING|TOTAL|^CASH$/.test(ticker)) continue;
+      out.push({ ticker, shares, account: iA >= 0 ? (r[iA] || '').trim() : '', cost: iC >= 0 ? money(r[iC] || '') : null });
+    }
+    return out.length ? out : null;
+  }
+
+  let pending = null;
+  function preview(list){
+    const seen = new Set();
+    const rows = list.map(p => {
+      const h = I.holdings.find(x => x.ticker === p.ticker && (!p.account || !x.account || x.account.toLowerCase() === p.account.toLowerCase()))
+             || I.holdings.find(x => x.ticker === p.ticker);
+      if (h) seen.add(h.id);
+      return { ...p, h, was: h ? h.shares : null };
+    });
+    const gone = I.holdings.filter(h => !seen.has(h.id));
+    const changed = rows.filter(r => !r.h || r.h.shares !== r.shares);
+    const cost = list.reduce((n, p) => n + (p.cost || 0), 0);
+    pending = { rows, gone, cost };
+    const line = r => `<li class="${r.h ? '' : 'new'}"><span class="t">${esc(r.ticker)}${r.account ? `<small>${esc(r.account)}</small>` : ''}</span><span class="was">${r.was != null && r.was !== r.shares ? r.was.toLocaleString('en-US') : ''}</span><span class="now ${r.h ? '' : 'add'}">${r.shares.toLocaleString('en-US')}${r.h ? '' : ' · new'}</span></li>`;
+    F('preview').innerHTML = `<ul class="pv">${changed.map(line).join('') || '<li><span class="t">Every share count already matches.</span><span></span><span></span></li>'}
+      ${gone.map(h => `<li class="gone"><span class="t">${esc(h.ticker)}${h.account ? `<small>${esc(h.account)}</small>` : ''}</span><span class="was">${h.shares.toLocaleString('en-US')}</span><span class="now">not in the file</span></li>`).join('')}</ul>
+      <div class="papply">
+        <button class="textbtn" type="button" id="applypaste">Take these ${changed.length} ${changed.length === 1 ? 'count' : 'counts'}</button>
+        ${gone.length ? `<label><input type="checkbox" id="droplot"> also remove the ${gone.length} not in the file</label>` : ''}
+        ${cost ? `<label><input type="checkbox" id="usecost"> set Put in to the file’s cost basis, ${$(cost)}</label>` : ''}
+      </div>`;
+    F('preview').hidden = false;
+    F('pastenote').textContent = `${list.length} ${list.length === 1 ? 'position' : 'positions'} read`;
+  }
+
+  F('readpaste').addEventListener('click', () => {
+    const list = readPositions(F('pastebox').value);
+    if (!list) { F('preview').hidden = true; pending = null; F('pastenote').textContent = 'No positions found in that — paste the whole file, header row and all.'; return; }
+    preview(list);
+  });
+  F('preview').addEventListener('click', e => {
+    if (!e.target.closest('#applypaste') || !pending) return;
+    for (const r of pending.rows) {
+      if (r.h) { r.h.shares = r.shares; if (r.account && !r.h.account) r.h.account = r.account; }
+      else I.holdings.push({ id: Date.now() + I.holdings.length, ticker: r.ticker, shares: r.shares, account: r.account });
+    }
+    if (F('droplot') && F('droplot').checked) { const ids = new Set(pending.gone.map(h => h.id)); I.holdings = I.holdings.filter(h => !ids.has(h.id)); }
+    if (F('usecost') && F('usecost').checked) I.baseline = Math.round(pending.cost);
+    const fresh = pending.rows.filter(r => !r.h && !price(r.ticker)).length;
+    pending = null; F('pastebox').value = ''; F('preview').hidden = true; F('pastewrap').open = false;
+    F('pastenote').textContent = fresh ? `Taken. ${fresh === 1 ? 'The new ticker is' : 'The new tickers are'} worth nothing here until tonight's prices — or run Prices from the bell.` : 'Taken.';
+    save(); render();
+  });
 
   // ---- events ----
   F('addh').addEventListener('submit', e=>{ e.preventDefault(); const t=F('h-ticker').value.trim().toUpperCase(), sh=num(F('h-shares').value); if(!t||sh==null) return;
