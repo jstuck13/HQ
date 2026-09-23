@@ -5,7 +5,102 @@ import { syncRoute } from './_run.js';
 import QUOTES from './_quotes.js';
 // (maxDuration lives on the route file, api/sync/[name].js)
 
-const WORDS = ['equanimity', 'assiduous', 'halcyon', 'lacuna', 'sanguine', 'perspicacious', 'vestige', 'ephemeral', 'sonorous', 'tenacity', 'verdant', 'laconic', 'penumbra', 'quiescent', 'erudite', 'susurrus', 'liminal', 'winsome', 'apricity', 'petrichor', 'sagacious', 'mellifluous', 'nadir', 'zenith', 'candor', 'diligent', 'ebullient', 'fastidious', 'gregarious', 'idyllic', 'juxtapose', 'kinetic', 'luminous', 'magnanimous', 'nascent', 'obdurate', 'placid', 'quixotic', 'resolute', 'serendipity', 'taciturn', 'ubiquitous', 'vicarious', 'wistful', 'abstruse', 'benevolent', 'circumspect', 'demure', 'eloquent', 'felicity', 'gossamer', 'harbinger', 'incandescent', 'jubilant', 'languid', 'meticulous', 'nonchalant', 'opulent', 'pellucid', 'redolent', 'salient', 'temperate', 'unfettered', 'venerable', 'zephyr', 'alacrity', 'brevity', 'cogent', 'dulcet', 'effervescent', 'fortitude', 'guile', 'impetus', 'lucid', 'mirth', 'nuance', 'ostensible', 'prudent', 'quandary', 'reverie', 'stoic', 'tranquil', 'umbrage', 'vivacious', 'wry', 'ardent', 'buoyant', 'copious', 'deft', 'earnest', 'fervent', 'genial', 'hallowed', 'intrepid', 'keen', 'lithe', 'modest', 'nimble', 'oblique', 'patient', 'quaint', 'rustic', 'sincere', 'tender', 'upright', 'valiant', 'wholesome'];
+const WORDS = [
+  'equanimity', 'assiduous', 'halcyon', 'lacuna', 'sanguine', 'perspicacious', 'vestige', 'ephemeral', 'sonorous', 'tenacity',
+  'verdant', 'laconic', 'penumbra', 'quiescent', 'erudite', 'susurrus', 'liminal', 'winsome', 'apricity', 'petrichor',
+  'sagacious', 'mellifluous', 'nadir', 'zenith', 'candor', 'diligent', 'ebullient', 'fastidious', 'gregarious', 'idyllic',
+  'juxtapose', 'kinetic', 'luminous', 'magnanimous', 'nascent', 'obdurate', 'placid', 'quixotic', 'resolute', 'serendipity',
+  'taciturn', 'ubiquitous', 'vicarious', 'wistful', 'abstruse', 'benevolent', 'circumspect', 'demure', 'eloquent', 'felicity',
+  'gossamer', 'harbinger', 'incandescent', 'jubilant', 'languid', 'meticulous', 'nonchalant', 'opulent', 'pellucid', 'redolent',
+  'salient', 'temperate', 'unfettered', 'venerable', 'zephyr', 'alacrity', 'brevity', 'cogent', 'dulcet', 'effervescent',
+  'fortitude', 'guile', 'impetus', 'lucid', 'mirth', 'nuance', 'ostensible', 'prudent', 'quandary', 'reverie',
+  'stoic', 'tranquil', 'umbrage', 'vivacious', 'fervent', 'intrepid', 'oblique', 'abeyance', 'abjure', 'abnegation',
+  'aborning', 'abrogate', 'abstemious', 'accolade', 'acerbic', 'acuity', 'adamantine', 'adduce', 'adumbrate', 'aegis',
+  'aesthete', 'affable', 'aggrandise', 'alacritous', 'albeit', 'allegory', 'alloy', 'altruism', 'amanuensis', 'ambit',
+  'ameliorate', 'amenable', 'amorphous', 'anachronism', 'anodyne', 'anomalous', 'antediluvian', 'antipathy', 'aphorism', 'aplomb',
+  'apocryphal', 'apogee', 'apposite', 'approbation', 'arabesque', 'arcadian', 'archetype', 'arduous', 'arrant', 'artifice',
+  'ascetic', 'asperity', 'aspersion', 'assay', 'assuage', 'astringent', 'atavistic', 'attenuate', 'audacity', 'augury',
+  'auspicious', 'austere', 'autodidact', 'avarice', 'aver', 'avuncular', 'axiom', 'badinage', 'baleful', 'balk',
+  'banal', 'bastion', 'beatific', 'bedizen', 'beguile', 'belie', 'bellicose', 'benighted', 'bequest', 'bereft',
+  'besot', 'bestride', 'bibulous', 'bilious', 'blandishment', 'blithe', 'bombast', 'bowdlerise', 'braggadocio', 'bravura',
+  'brindled', 'bucolic', 'burgeon', 'burnish', 'cabal', 'cacophony', 'cadence', 'cajole', 'callow', 'canard',
+  'candour', 'canonical', 'capacious', 'capricious', 'captious', 'carapace', 'castigate', 'casuistry', 'cataclysm', 'catalyst',
+  'catharsis', 'caustic', 'cavil', 'celerity', 'censure', 'cerebral', 'chagrin', 'chaparral', 'charlatan', 'chary',
+  'chasten', 'chicanery', 'chimerical', 'churlish', 'ciphers', 'circumlocution', 'clandestine', 'clemency', 'coalesce', 'coda',
+  'cogitate', 'cognisant', 'collate', 'colloquy', 'comely', 'commensurate', 'compendium', 'complaisant', 'compunction', 'conciliate',
+  'concomitant', 'confluence', 'conflate', 'congenial', 'conjecture', 'connive', 'consonance', 'construe', 'contiguous', 'contrite',
+  'contumely', 'conundrum', 'convivial', 'copse', 'corollary', 'coruscate', 'cosset', 'countenance', 'covenant', 'covetous',
+  'cower', 'crepuscular', 'croon', 'crucible', 'cryptic', 'culminate', 'cupidity', 'cursory', 'cyclical', 'dalliance',
+  'dauntless', 'debacle', 'decorous', 'decry', 'deference', 'defray', 'deleterious', 'delineate', 'demagogue', 'demur',
+  'denizen', 'denouement', 'deprecate', 'derelict', 'desiccate', 'desuetude', 'desultory', 'detritus', 'diaphanous', 'diatribe',
+  'dichotomy', 'didactic', 'diffident', 'dilatory', 'dilettante', 'disabuse', 'discern', 'discomfit', 'disparate', 'dispassionate',
+  'disputatious', 'disquiet', 'dissemble', 'disseminate', 'dissonance', 'distend', 'diurnal', 'divulge', 'doggerel', 'dolorous',
+  'dour', 'draconian', 'dross', 'dulcimer', 'duplicity', 'ebullience', 'eclectic', 'edify', 'efface', 'effrontery',
+  'egalitarian', 'egress', 'elegy', 'elide', 'elucidate', 'elysian', 'emaciate', 'embellish', 'eminence', 'emollient',
+  'empirical', 'emulate', 'enclave', 'encomium', 'endemic', 'enervate', 'engender', 'enigma', 'enjoin', 'ennui',
+  'enmity', 'entreat', 'ephemera', 'epicure', 'epigram', 'epistolary', 'epitome', 'equipoise', 'equivocate', 'errant',
+  'ersatz', 'erstwhile', 'eschew', 'esoteric', 'espouse', 'estimable', 'estrange', 'ethereal', 'etymology', 'euphony',
+  'evanescent', 'evince', 'exacting', 'exalt', 'exculpate', 'execrable', 'exegesis', 'exemplar', 'exhort', 'exigent',
+  'exonerate', 'expatiate', 'expiate', 'explicate', 'expunge', 'extant', 'extemporise', 'extol', 'extraneous', 'extricate',
+  'exuberant', 'fallacy', 'fallow', 'fastness', 'fathom', 'fatuous', 'fealty', 'feckless', 'fecund', 'feint',
+  'felicitous', 'ferment', 'fervid', 'fetter', 'fickle', 'filial', 'finesse', 'flagrant', 'fledgling', 'florid',
+  'flotsam', 'foible', 'foment', 'forbear', 'forbearance', 'foreboding', 'forestall', 'formidable', 'forswear', 'fractious',
+  'frugal', 'fulminate', 'fulsome', 'furtive', 'fusillade', 'gainsay', 'gambit', 'garner', 'garrulous', 'gauche',
+  'germane', 'gesticulate', 'glean', 'gloaming', 'glower', 'gormandise', 'grandiloquent', 'gratuitous', 'gravitas', 'gregariousness',
+  'grisaille', 'guileless', 'gumption', 'hackneyed', 'haggard', 'halcyonic', 'hapless', 'harangue', 'harrow', 'haughty',
+  'hauteur', 'hegemony', 'heretic', 'hermetic', 'heterodox', 'hidebound', 'hinterland', 'histrionic', 'hoary', 'homily',
+  'hubris', 'husbandry', 'iconoclast', 'idiom', 'idyll', 'ignominy', 'illicit', 'imbroglio', 'immutable', 'impalpable',
+  'impartial', 'impasse', 'impecunious', 'imperious', 'impervious', 'implacable', 'importune', 'impugn', 'impunity', 'inanimate',
+  'incessant', 'inchoate', 'incisive', 'incongruous', 'incorrigible', 'inculcate', 'indefatigable', 'indelible', 'indigent', 'indolent',
+  'ineffable', 'inexorable', 'infelicity', 'ingenuous', 'inimical', 'iniquity', 'innate', 'innocuous', 'inscrutable', 'insidious',
+  'insipid', 'insouciance', 'insular', 'interlocutor', 'interregnum', 'intransigent', 'inure', 'invective', 'inveigh', 'inveterate',
+  'invidious', 'irascible', 'irenic', 'itinerant', 'jejune', 'jettison', 'jocose', 'jocund', 'judicious', 'juncture',
+  'junket', 'kismet', 'knell', 'laborious', 'lambent', 'lamentation', 'languor', 'largesse', 'lassitude', 'latent',
+  'latitude', 'laudable', 'legerdemain', 'lethargy', 'levity', 'libation', 'licentious', 'limpid', 'lissom', 'litany',
+  'loquacious', 'lucre', 'lugubrious', 'lummox', 'lupine', 'machination', 'maelstrom', 'magnanimity', 'maladroit', 'malaise',
+  'malapropism', 'malediction', 'malinger', 'malleable', 'manifest', 'marginalia', 'martinet', 'maunder', 'maverick', 'mawkish',
+  'maxim', 'meander', 'mendacious', 'mendicant', 'mercurial', 'meridian', 'mettle', 'miasma', 'mien', 'militate',
+  'minatory', 'misanthrope', 'miscreant', 'misnomer', 'mitigate', 'modicum', 'modulate', 'mollify', 'monolith', 'moribund',
+  'mordant', 'mores', 'morose', 'mote', 'munificent', 'muse', 'myriad', 'nebulous', 'nefarious', 'negligible',
+  'neophyte', 'nettle', 'nexus', 'nicety', 'niggardly', 'nihilism', 'noisome', 'nomenclature', 'nonplussed', 'nostrum',
+  'noxious', 'nugatory', 'obeisance', 'obfuscate', 'objurgate', 'oblation', 'obloquy', 'obsequious', 'obstinate', 'obtuse',
+  'obviate', 'occlude', 'odious', 'officious', 'olfactory', 'ominous', 'onerous', 'opprobrium', 'opulence', 'oracular',
+  'ordain', 'ornate', 'orotund', 'oscillate', 'ossify', 'ostentatious', 'otiose', 'overt', 'pablum', 'paean',
+  'palatable', 'palliate', 'palpable', 'panacea', 'panegyric', 'paragon', 'paramount', 'pariah', 'parlance', 'paroxysm',
+  'parsimony', 'pastiche', 'paucity', 'pecuniary', 'pedagogue', 'pedantic', 'pejorative', 'penchant', 'penitent', 'pensive',
+  'penurious', 'peregrination', 'peremptory', 'perennial', 'perfidy', 'perfunctory', 'perilous', 'peripatetic', 'permeate', 'pernicious',
+  'perquisite', 'personify', 'perspicuous', 'pertinacious', 'peruse', 'pervade', 'petulant', 'phalanx', 'philippic', 'phlegmatic',
+  'piquant', 'pithy', 'pittance', 'placate', 'plaintive', 'platitude', 'plaudit', 'plenary', 'plenitude', 'plethora',
+  'poignant', 'polemic', 'polity', 'ponderous', 'portend', 'portent', 'posit', 'potentate', 'pragmatic', 'prattle',
+  'precarious', 'precept', 'precipitate', 'preclude', 'precocious', 'predilection', 'preeminent', 'prescient', 'presage', 'prevaricate',
+  'primacy', 'probity', 'proclivity', 'prodigal', 'prodigious', 'profligate', 'profundity', 'progeny', 'prolific', 'promulgate',
+  'propensity', 'propitious', 'prosaic', 'proscribe', 'protean', 'provident', 'proviso', 'prowess', 'proximate', 'puerile',
+  'pugnacious', 'puissant', 'pulchritude', 'punctilious', 'pundit', 'purloin', 'purport', 'purvey', 'pusillanimous', 'putative',
+  'quagmire', 'quell', 'querulous', 'quiddity', 'quiescence', 'quintessence', 'quiver', 'quotidian', 'raconteur', 'ramify',
+  'rancour', 'rapacious', 'rapprochement', 'rarefied', 'recalcitrant', 'recant', 'recapitulate', 'reciprocal', 'recondite', 'recrimination',
+  'rectitude', 'recumbent', 'redoubtable', 'redress', 'refractory', 'refulgent', 'refute', 'regale', 'regimen', 'relegate',
+  'relinquish', 'remonstrate', 'renascent', 'renege', 'repartee', 'replete', 'reprisal', 'reproach', 'reprobate', 'repudiate',
+  'requisite', 'rescind', 'resplendent', 'restive', 'reticent', 'reverent', 'rhapsodic', 'ribald', 'rife', 'rivulet',
+  'rubicund', 'rudimentary', 'ruminate', 'sacrosanct', 'salubrious', 'salutary', 'sanction', 'sardonic', 'satiate', 'saturnine',
+  'savant', 'schism', 'scintilla', 'scion', 'scrupulous', 'scurrilous', 'sedulous', 'seminal', 'sententious', 'sequester',
+  'serried', 'servile', 'shibboleth', 'simulacrum', 'sinecure', 'singular', 'sinuous', 'slake', 'sobriquet', 'sodden',
+  'solace', 'solicitous', 'soliloquy', 'solipsism', 'somnolent', 'sophistry', 'soporific', 'sordid', 'spartan', 'specious',
+  'splenetic', 'sporadic', 'spurious', 'squalid', 'staid', 'stalwart', 'stasis', 'staunch', 'stentorian', 'stipulate',
+  'stolid', 'stratagem', 'stricture', 'strident', 'stringent', 'stultify', 'stygian', 'suave', 'subjugate', 'sublime',
+  'subsume', 'subterfuge', 'subvert', 'succinct', 'succour', 'sullen', 'sumptuous', 'sunder', 'supercilious', 'superfluous',
+  'supine', 'supplant', 'supplicate', 'surfeit', 'surmise', 'surreptitious', 'susceptible', 'sycophant', 'synthesis', 'tableau',
+  'tacit', 'tantamount', 'tautology', 'tawdry', 'temerity', 'temporal', 'tenable', 'tenet', 'tenuous', 'tepid',
+  'terse', 'thrall', 'timorous', 'torpid', 'torpor', 'torrid', 'tortuous', 'tractable', 'traduce', 'transient',
+  'transmute', 'travail', 'travesty', 'trenchant', 'trepidation', 'truculent', 'truncate', 'tumult', 'turbid', 'turgid',
+  'turpitude', 'tutelary', 'unassailable', 'uncanny', 'unction', 'undulate', 'unequivocal', 'unfeigned', 'ungainly', 'untenable',
+  'untoward', 'upbraid', 'urbane', 'usurp', 'vacillate', 'vacuous', 'vagary', 'vainglory', 'vanguard', 'vapid',
+  'variegated', 'vaunt', 'vehement', 'venal', 'veneer', 'venerate', 'veracity', 'verbatim', 'verbose', 'verdure',
+  'veridical', 'verisimilitude', 'vernacular', 'vertiginous', 'vex', 'vicissitude', 'vie', 'vigilant', 'vilify', 'vindicate',
+  'virtuosity', 'viscous', 'visage', 'vitiate', 'vitriol', 'vituperate', 'vociferous', 'volition', 'voluble', 'voracious',
+  'vortex', 'vouchsafe', 'wane', 'wanton', 'wary', 'waylay', 'welter', 'whet', 'whimsy', 'winnow',
+  'winsomeness', 'wizened', 'wont', 'wraith', 'wrest', 'xenial', 'yeoman', 'zeal', 'zealot', 'zenithal',
+  'zestful'
+];
 
 // The Publix weekly ad, by way of Flipp's aggregator, for the ZIP kept on the Groceries page. The flyer endpoint has
 // every item (name, price, picture); the search endpoint has the deal wording (Buy 1 Get 1, save up to…) for most of
@@ -79,22 +174,25 @@ async function prices(getDoc, putDoc) {
 
 export default syncRoute('daily', async ({ getDoc, putDoc }) => {
   const now = new Date(), date = now.toISOString().slice(0, 10);
-  const doy = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 864e5);
   const out = { date, word: null, quote: null }, errors = [];
 
-  const w = WORDS[doy % WORDS.length];
-  try {
-    const r = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${w}`);
-    if (r.ok) {
-      const [e] = await r.json();
-      const m = (e.meanings || []).find(m => m.definitions && m.definitions.length) || {};
-      const d = (m.definitions || []).find(d => d.example) || (m.definitions || [])[0] || {};
-      const pr = e.phonetic || (e.phonetics || []).map(p => p.text).find(Boolean) || '';
-      if (d.definition) out.word = { w, pr, pos: m.partOfSpeech || '', def: d.definition[0].toUpperCase() + d.definition.slice(1).replace(/\.?$/, '.'), ex: d.example ? d.example[0].toUpperCase() + d.example.slice(1).replace(/\.?$/, '.') : '' };
-    } else errors.push('dictionary ' + r.status);
-  } catch (e) { errors.push('dictionary ' + e.message); }
+  // counted from a fixed day rather than the day of the year, so a year does not bring the same words back on the same dates
+  const since = Math.floor(Date.parse(date + 'T12:00:00Z') / 864e5) - 20400;
+  for (let attempt = 0; attempt < 5 && !out.word; attempt++) {
+    const w = WORDS[(since + attempt * 137) % WORDS.length];
+    try {
+      const r = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${w}`);
+      if (r.ok) {
+        const [e] = await r.json();
+        const m = (e.meanings || []).find(m => m.definitions && m.definitions.length) || {};
+        const d = (m.definitions || []).find(d => d.example) || (m.definitions || [])[0] || {};
+        const pr = e.phonetic || (e.phonetics || []).map(p => p.text).find(Boolean) || '';
+        if (d.definition) out.word = { w, pr, pos: m.partOfSpeech || '', def: d.definition[0].toUpperCase() + d.definition.slice(1).replace(/\.?$/, '.'), ex: d.example ? d.example[0].toUpperCase() + d.example.slice(1).replace(/\.?$/, '.') : '' };
+      } else errors.push('dictionary ' + r.status);
+    } catch (e) { errors.push('dictionary ' + e.message); }
+  }
 
-  { const [q, a, w] = QUOTES[doy % QUOTES.length]; out.quote = { q, a, w }; }
+  { const [q, a, w] = QUOTES[since % QUOTES.length]; out.quote = { q, a, w }; }   // counted the same way as the words
 
   let ad = null; try { ad = await publix(getDoc, putDoc); } catch (e) { errors.push('publix ' + e.message); }
   let px = null; try { px = await prices(getDoc, putDoc); } catch (e) { errors.push('prices ' + e.message); }
