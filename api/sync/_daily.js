@@ -178,19 +178,40 @@ export default syncRoute('daily', async ({ getDoc, putDoc }) => {
 
   // counted from a fixed day rather than the day of the year, so a year does not bring the same words back on the same dates
   const since = Math.floor(Date.parse(date + 'T12:00:00Z') / 864e5) - 20400;
-  for (let attempt = 0; attempt < 5 && !out.word; attempt++) {
+  const cap = t => t ? t[0].toUpperCase() + t.slice(1).replace(/\.?$/, '.') : '';
+  const strip = t => String(t || '').replace(/<style[\s\S]*?<\/style>/gi, '').replace(/<[^>]*>/g, '')
+    .replace(/\.mw-parser-output[^}]*\}/g, '').replace(/\s+/g, ' ').replace(/\s+\.$/, '.').trim();   // Wiktionary ships a little CSS inside its definitions
+
+  // the free dictionary first; Wiktionary when it is down, which it often is (522)
+  const fromFreeDictionary = async w => {
+    const r = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${w}`);
+    if (!r.ok) throw new Error('dictionaryapi ' + r.status);
+    const [e] = await r.json();
+    const m = (e.meanings || []).find(m => m.definitions && m.definitions.length) || {};
+    const d = (m.definitions || []).find(d => d.example) || (m.definitions || [])[0] || {};
+    if (!d.definition) throw new Error('dictionaryapi no definition');
+    return { w, pr: e.phonetic || (e.phonetics || []).map(p => p.text).find(Boolean) || '', pos: m.partOfSpeech || '', def: cap(d.definition), ex: cap(d.example) };
+  };
+  const fromWiktionary = async w => {
+    const r = await fetch(`https://en.wiktionary.org/api/rest_v1/page/definition/${w}`, { headers: { 'user-agent': 'HQ personal dashboard' } });
+    if (!r.ok) throw new Error('wiktionary ' + r.status);
+    const en = (await r.json()).en || [];
+    for (const m of en) {
+      const d = (m.definitions || []).find(d => strip(d.definition).length > 12);
+      if (d) return { w, pr: '', pos: (m.partOfSpeech || '').toLowerCase(), def: cap(strip(d.definition)), ex: cap(strip((d.parsedExamples || d.examples || [])[0] && ((d.parsedExamples || [])[0] || {}).example || (d.examples || [])[0])) };
+    }
+    throw new Error('wiktionary no definition');
+  };
+
+  for (let attempt = 0; attempt < 6 && !out.word; attempt++) {
     const w = WORDS[(since + attempt * 137) % WORDS.length];
-    try {
-      const r = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${w}`);
-      if (r.ok) {
-        const [e] = await r.json();
-        const m = (e.meanings || []).find(m => m.definitions && m.definitions.length) || {};
-        const d = (m.definitions || []).find(d => d.example) || (m.definitions || [])[0] || {};
-        const pr = e.phonetic || (e.phonetics || []).map(p => p.text).find(Boolean) || '';
-        if (d.definition) out.word = { w, pr, pos: m.partOfSpeech || '', def: d.definition[0].toUpperCase() + d.definition.slice(1).replace(/\.?$/, '.'), ex: d.example ? d.example[0].toUpperCase() + d.example.slice(1).replace(/\.?$/, '.') : '' };
-      } else errors.push('dictionary ' + r.status);
-    } catch (e) { errors.push('dictionary ' + e.message); }
+    for (const look of [fromFreeDictionary, fromWiktionary]) {
+      try { out.word = await look(w); break; } catch (e) { errors.push(e.message); }
+    }
   }
+  // a day the dictionaries are all down keeps yesterday's word rather than dropping the page back to its built-in few
+  if (!out.word) { const prev = await getDoc('daily'); if (prev && prev.word) { out.word = prev.word; out.wordFrom = prev.date; } }
+
 
   { const [q, a, w] = QUOTES[since % QUOTES.length]; out.quote = { q, a, w }; }   // counted the same way as the words
 
