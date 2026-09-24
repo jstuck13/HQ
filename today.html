@@ -238,10 +238,11 @@
     // finances
     if(d.fin && !(d.fin.cats||[]).length && !(d.fin.tx||[]).length && !(d.fin.income||[]).length) d.fin = null;   // a month nobody has touched reads as not started
     if(d.fin){ const spent=d.fin.tx.reduce((n,t)=>n+t.amt,0), limits=d.fin.cats.reduce((n,c)=>n+c.limit,0), left=limits-spent;
+      const landed=(d.fin.income||[]).reduce((n,i)=>n+i.amt,0), cash=landed-spent;   // what is actually left, as the Finances page counts it
       const due=d.fin.cats.find(c=>c.due && (c.bill || !d.fin.tx.some(t=>t.cat===c.id)) && c.due>=C.now.getDate()), next=(d.fin.plan||[]).filter(p=>p.date>=TODAY).sort()[0];
-      const note = due ? `${esc(due.bill||due.name)} ${due.due===C.now.getDate()?'due today':'due on the '+due.due+ordinal(due.due)}` : next ? `Next paycheck ${C.short(C.fromISO(next.date))}, ${$0(next.amt)}` : `${$0(spent)} spent so far`;
-      rows.push(row('Finances','finances.html',note,$0(left),`of ${$0(limits)} remaining`, due && due.due===C.now.getDate()));
-    } else rows.push(row('Finances','finances.html','Open Finances to set this month’s budget','','not started'));
+      const note = due ? `${esc(due.bill||due.name)} ${due.due===C.now.getDate()?'due today':'due on the '+due.due+ordinal(due.due)}` : next ? `Next paycheck ${C.short(C.fromISO(next.date))}, ${$0(next.amt)}` : `${$0(left)} left of ${$0(limits)} in limits`;
+      rows.push(row('Finances','finances.html',note,$0(cash),`${$0(landed)} in, ${$0(spent)} out`, due && due.due===C.now.getDate()));
+    } else rows.push(row('Finances','finances.html','Open Finances to set this month’s budget','','not started'));   // nothing logged: no cash figure to give
     // investments: worth at the last price, the day's move, what the cash earns
     if(d.inv && ((d.inv.holdings||[]).length || (d.inv.balances||[]).length)){ const P=d.inv.prices||{}, px=t=>P[String(t).toUpperCase()];
       const latest={}; [...(d.inv.balances||[])].sort((a,b)=>a.date<b.date?-1:1).forEach(b=>{ latest[b.account]=b.value; });
