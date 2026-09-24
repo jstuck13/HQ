@@ -1,12 +1,12 @@
 // Step 2: Google sends the code back; trade it for a refresh token and keep that in the private `_google` document.
-import { isAuthed, ensureTable } from '../_lib.js';
+import { isAuthed, ensureTable, siteUrl } from '../_lib.js';
 import { putDoc } from '../sync/_run.js';
 
 export default async function handler(req, res) {
   if (!isAuthed(req)) return res.redirect(302, '/index.html');
   const code = req.query.code;
   if (!code) return res.redirect(302, '/calendar.html?google=denied');
-  const redirect = `https://${req.headers.host}/api/auth/google-callback`;
+  const redirect = `${siteUrl(req)}/api/auth/google-callback`;   // the very same string, or Google refuses the exchange
   const r = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ code, client_id: process.env.GOOGLE_CLIENT_ID, client_secret: process.env.GOOGLE_CLIENT_SECRET, redirect_uri: redirect, grant_type: 'authorization_code' }),

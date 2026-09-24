@@ -24,6 +24,9 @@ export const isAuthed = req => {
 };
 export const sessionCookie = () => `hq=${sign()}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=${60 * 60 * 24 * 90}`;
 export const clearCookie = () => 'hq=; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=0';
+// Google checks the redirect against a fixed list, so it must always be the app's own address — never the
+// one-off host of whichever deployment the browser happens to be on. Vercel hands us the production domain.
+export const siteUrl = req => 'https://' + (process.env.HQ_HOST || process.env.VERCEL_PROJECT_PRODUCTION_URL || (req && req.headers.host) || '');
 export const checkPasscode = p => {
   const want = process.env.PASSCODE || '';
   return !!want && p.length === want.length && timingSafeEqual(Buffer.from(p), Buffer.from(want));
