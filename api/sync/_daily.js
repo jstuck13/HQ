@@ -108,7 +108,8 @@ const WORDS = [
 async function publix(getDoc, putDoc) {
   const g = await getDoc('groceries'); const zip = g && g.zip; if (!zip) return null;
   const H = { headers: { 'user-agent': 'Mozilla/5.0' } }, base = 'https://backflipp.wishabi.com/flipp';
-  const clean = n => String(n || '').replace(/\s*BOGO\*?/i, '').replace(/[^\x20-\x7E’]/g, '').replace(/\*/g, '').replace(/\s+/g, ' ').trim().replace(/[,;:\-–]+$/, '').trim();
+  // accents are folded rather than dropped, so a jalapeño does not come through as a "jalapeo"
+  const clean = n => String(n || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s*BOGO\*?/i, '').replace(/[^\x20-\x7E’]/g, '').replace(/\*/g, '').replace(/\s+/g, ' ').trim().replace(/[,;:\-–]+$/, '').trim();
   const saveOf = story => { const m = /save up to\s*\$?\s*([\d.]+)(\s*lb)?/i.exec(story || ''); return m ? `$${(+m[1]).toFixed(2).replace(/\.00$/, '')}${m[2] ? ' lb' : ''}` : undefined; };   // "SAVE UP TO 5.69" → "$5.69"
   const noteOf = story => { const t = String(story || '').replace(/^save up to\s*/i, '').trim(); return t && !/\d/.test(t) ? t.toLowerCase().replace(/^\w/, c => c.toUpperCase()) : undefined; };   // "SURPRISINGLY LOW PRICE" → "Surprisingly low price\"
   // deal wording, keyed by cleaned name, from two searches (each is capped at 150 items)
