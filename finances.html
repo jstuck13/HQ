@@ -118,6 +118,8 @@
   .hbar{fill:var(--ink)} .hbar.over{fill:var(--ox)} .hbar-t{fill:var(--rule)}
   .legend{display:flex;gap:16px;font-size:12.5px;color:var(--ink-3);margin-top:8px}
   .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+  .bar-in,.bar-out{transition:opacity .12s} .dim{opacity:.35}
+  svg path[data-t]{cursor:default}
   .xh{stroke:var(--ink-3);stroke-width:1;opacity:0}
   .hv{fill:var(--ink);stroke:var(--card);stroke-width:2;opacity:0}
   .tip{position:absolute;pointer-events:none;background:var(--card);box-shadow:var(--shadow);border-radius:6px;padding:4px 8px;font-size:12.5px;white-space:nowrap;opacity:0;transition:opacity .12s;transform:translate(-50%,-100%)}
@@ -381,12 +383,14 @@
     const W2=Math.max(220, F('ive').clientWidth||300), H2=156, P2={t:10,r:4,b:26,l:4}, top=Math.max(...months.flatMap(m=>[m[1],m[2]]))*1.08;
     const bw=16, gw=(W2-P2.l-P2.r)/6;
     const yb=v=>P2.t+(H2-P2.t-P2.b)*(1-v/top);
-    const rr=(x,yv,w,h,cls)=>`<path class="${cls}" d="M${x},${yv+h} V${yv+4} a4,4 0 0 1 4,-4 h${w-8} a4,4 0 0 1 4,4 V${yv+h} Z"/>`;
+    const rr=(x,yv,w,h,cls,m,v)=>`<path class="${cls}" d="M${x},${yv+h} V${yv+4} a4,4 0 0 1 4,-4 h${w-8} a4,4 0 0 1 4,4 V${yv+h} Z" data-t="${esc(m)} · ${cls==='bar-in'?'income':'expenses'}"><title>${esc(m)} ${cls==='bar-in'?'income':'expenses'}: ${$0(v)}</title></path>`;
     F('ive').innerHTML = `<h3>Income vs expenses<small>six months · ${MONTH.slice(0,3)} to date</small></h3><p class="fig">${$0(landed-spent)}<small>ahead so far in ${MONTH}</small></p>
       <svg viewBox="0 0 ${W2} ${H2}" role="img" aria-label="Income and expenses by month, April to September">
         <line class="ax" x1="${P2.l}" x2="${W2-P2.r}" y1="${H2-P2.b}" y2="${H2-P2.b}"/>
-        ${months.map((m,i)=>{ const gx=P2.l+gw*i+(gw-bw*2-2)/2; return rr(gx,yb(m[1]),bw,H2-P2.b-yb(m[1]),'bar-in')+rr(gx+bw+2,yb(m[2]),bw,H2-P2.b-yb(m[2]),'bar-out')+`<text class="tk ${i===5?'i':''}" x="${P2.l+gw*i+gw/2}" y="${H2-6}" text-anchor="middle">${m[0]}</text>`; }).join('')}
-      </svg><div class="legend"><span><i style="background:var(--band)"></i>Income</span><span><i style="background:var(--chart-out)"></i>Expenses</span></div>`;
+        ${months.map((m,i)=>{ const gx=P2.l+gw*i+(gw-bw*2-2)/2; return rr(gx,yb(m[1]),bw,H2-P2.b-yb(m[1]),'bar-in',m[0],m[1])+rr(gx+bw+2,yb(m[2]),bw,H2-P2.b-yb(m[2]),'bar-out',m[0],m[2])+`<text class="tk ${i===5?'i':''}" x="${P2.l+gw*i+gw/2}" y="${H2-6}" text-anchor="middle">${m[0]}</text>`; }).join('')}
+      </svg><div class="tip"></div><div class="legend"><span><i style="background:var(--band)"></i>Income</span><span><i style="background:var(--chart-out)"></i>Expenses</span></div>`;
+
+    bars(F('ive'));
 
     // 3. spent vs limit by category: horizontal bars
     const rows=S.cats.filter(c=>c.limit>0), W3=Math.max(220, F('svl').clientWidth||300), rh=22, H3=rows.length*rh+4, lw=88;
@@ -395,6 +399,19 @@
         ${rows.map((c,i)=>{ const sp=spentIn(c.id), yv=i*rh+4, tw=(W3-lw), sw=Math.min(1,sp/c.limit)*(W3-lw); return `<text class="lbl" x="${lw-8}" y="${yv+12}" text-anchor="end">${esc(c.name)}</text><rect class="hbar-t" x="${lw}" y="${yv+3}" width="${tw.toFixed(1)}" height="10"/>${sp>0?`<path class="hbar ${sp>c.limit?'over':''}" d="M${lw},${yv+3} h${Math.max(0,sw-4).toFixed(1)} a4,4 0 0 1 4,4 v2 a4,4 0 0 1 -4,4 H${lw} Z"/>`:''}`; }).join('')}
       </svg><div class="legend"><span><i style="background:var(--ink)"></i>Spent</span><span><i style="background:var(--rule)"></i>Limit</span>${rows.some(c=>spentIn(c.id)>c.limit)?'<span><i style="background:var(--ox)"></i>Over</span>':''}</div>`;
   }
+  // point at a bar and it says what it is worth; the <title> on each bar covers a reader that does not hover
+  function bars(el){
+    const svg=el.querySelector('svg'), tip=el.querySelector('.tip');
+    const show = e => { const b=e.target.closest('path[data-t]'); if(!b){ hide(); return; }
+      const cr=el.getBoundingClientRect(), br=b.getBoundingClientRect(), amt=b.querySelector('title').textContent.split(': ').pop();
+      svg.querySelectorAll('path[data-t]').forEach(p=>p.classList.toggle('dim', p!==b));
+      tip.innerHTML=`<b>${amt}</b> · ${b.dataset.t}`;
+      tip.style.left=`${br.left-cr.left+br.width/2}px`; tip.style.top=`${br.top-cr.top-6}px`; tip.style.opacity=1; };   // measured off the bar itself, so it sits just above it
+    const hide = () => { tip.style.opacity=0; svg.querySelectorAll('path[data-t]').forEach(p=>p.classList.remove('dim')); };
+    svg.addEventListener('pointermove', show);
+    svg.addEventListener('pointerleave', hide);
+  }
+
   function hover(el, W, H, at, lo, hi, P){
     const svg=el.querySelector('svg'), xh=svg.querySelector('.xh'), hv=svg.querySelector('.hv'), tip=el.querySelector('.tip');
     svg.addEventListener('pointermove', e=>{
