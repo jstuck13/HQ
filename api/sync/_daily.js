@@ -192,23 +192,44 @@ export default syncRoute('daily', async ({ getDoc, putDoc }) => {
     if (!d.definition) throw new Error('dictionaryapi no definition');
     return { w, pr: e.phonetic || (e.phonetics || []).map(p => p.text).find(Boolean) || '', pos: m.partOfSpeech || '', def: cap(d.definition), ex: cap(d.example) };
   };
+  // Wiktionary's definitions endpoint has no pronunciation, so the page's own source is read for the IPA
+  const wiktionarySound = async w => {
+    try {
+      const r = await fetch(`https://en.wiktionary.org/w/index.php?title=${w}&action=raw`, { headers: { 'user-agent': 'HQ personal dashboard' } });
+      if (!r.ok) return '';
+      const src = await r.text(), eng = src.slice(Math.max(0, src.indexOf('==English==')));
+      const m = /\{\{IPA\|en\|([^}|]+)/.exec(eng);
+      return m ? m[1].trim() : '';
+    } catch { return ''; }
+  };
+  const exampleOf = d => {
+    const p = (d.parsedExamples || [])[0];
+    return strip((p && (p.example || p.text)) || (d.examples || [])[0] || '');
+  };
   const fromWiktionary = async w => {
     const r = await fetch(`https://en.wiktionary.org/api/rest_v1/page/definition/${w}`, { headers: { 'user-agent': 'HQ personal dashboard' } });
     if (!r.ok) throw new Error('wiktionary ' + r.status);
     const en = (await r.json()).en || [];
-    for (const m of en) {
-      const d = (m.definitions || []).find(d => strip(d.definition).length > 12);
-      if (d) return { w, pr: '', pos: (m.partOfSpeech || '').toLowerCase(), def: cap(strip(d.definition)), ex: cap(strip((d.parsedExamples || d.examples || [])[0] && ((d.parsedExamples || [])[0] || {}).example || (d.examples || [])[0])) };
-    }
-    throw new Error('wiktionary no definition');
+    const usable = [];
+    for (const m of en) for (const d of (m.definitions || [])) if (strip(d.definition).length > 12) usable.push({ m, d });
+    if (!usable.length) throw new Error('wiktionary no definition');
+    const best = usable.find(x => exampleOf(x.d)) || usable[0];   // a definition that brings a sentence with it wins
+    return { w, pr: await wiktionarySound(w), pos: (best.m.partOfSpeech || '').toLowerCase(), def: cap(strip(best.d.definition)), ex: cap(exampleOf(best.d)) };
   };
 
+  // a word that brings a sentence with it is worth more, so the first few tries hold out for one
+  let plain = null;
   for (let attempt = 0; attempt < 6 && !out.word; attempt++) {
     const w = WORDS[(since + attempt * 137) % WORDS.length];
     for (const look of [fromFreeDictionary, fromWiktionary]) {
-      try { out.word = await look(w); break; } catch (e) { errors.push(e.message); }
+      try {
+        const got = await look(w);
+        if (got.ex || attempt >= 3) { out.word = got; break; }
+        plain ||= got;
+      } catch (e) { errors.push(e.message); }
     }
   }
+  out.word ||= plain;
   // a day the dictionaries are all down keeps yesterday's word rather than dropping the page back to its built-in few
   if (!out.word) { const prev = await getDoc('daily'); if (prev && prev.word) { out.word = prev.word; out.wordFrom = prev.date; } }
 
