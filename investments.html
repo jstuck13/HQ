@@ -253,8 +253,10 @@
   // ---- pasting a positions export ----
   // A broker's download is a snapshot of what you actually hold, so reading one fixes every share count at once.
   // Nothing is written until the preview is applied; anything the file does not mention is left alone unless you say so.
-  const csvRows = text => {                       // comma or tab delimited, quoted fields kept whole
-    const rows = []; let row = [], cell = '', q = false, delim = text.includes('\t') && !text.includes('","') ? '\t' : ',';
+  const csvRows = text => {                       // tabs when copied off the screen, commas from the download, quoted fields kept whole
+    const rows = []; let row = [], cell = '', q = false;
+    const delim = text.includes('\t') ? '\t' : text.includes(',') ? ',' : null;   // and a run of spaces when it is neither
+    if (!delim) return text.split('\n').map(l => l.split(/ {2,}/).map(c => c.trim())).filter(r => r.some(c => c));
     for (let i = 0; i < text.length; i++) {
       const c = text[i];
       if (q) { if (c === '"') { if (text[i+1] === '"') { cell += '"'; i++; } else q = false; } else cell += c; }
@@ -279,13 +281,23 @@
       return -1;
     };
     const iT = col('symbol'), iQ = col('quantity', 'shares'), iA = col('account name', 'account'), iC = col('cost basis total', 'cost basis');
+    const iV = col('current value', 'value', 'market value'), iD = col('description');
     const out = [];
     for (const r of rows.slice(hi + 1)) {
       const ticker = (r[iT] || '').trim().toUpperCase().replace(/[^A-Z0-9.]/g, '');
-      const shares = money(r[iQ] || '');
-      if (!ticker || shares == null || !shares) continue;
-      if (/PENDING|TOTAL|^CASH$/.test(ticker)) continue;
-      out.push({ ticker, shares, account: iA >= 0 ? (r[iA] || '').trim() : '', cost: iC >= 0 ? money(r[iC] || '') : null });
+      if (!ticker || /PENDING|TOTAL|^CASH$/.test(ticker)) continue;
+      let shares = money(r[iQ] || ''), from = null;
+      // a core money market has no quantity on the page — it says "held in money market" — but it does have a value,
+      // and at a dollar a share the value is the count. Any other holding can be worked out from the price we hold.
+      if (!shares) {
+        const value = iV >= 0 ? money(r[iV] || '') : null;
+        const mm = /MONEY MARKET/i.test((iD >= 0 ? r[iD] : '') || '') || /^(SPAXX|FZFXX|FDRXX|FCASH|SPRXX|FZCXX)$/.test(ticker);
+        const p = mm ? 1 : (price(ticker) || {}).price;
+        if (value && p) { shares = Math.round(value / p * 1e6) / 1e6; from = mm ? 'from its value, at a dollar a share' : 'from its value at today\u2019s price'; }
+        else if (value) { out.push({ ticker, shares: null, value, account: iA >= 0 ? (r[iA] || '').trim() : '', cost: null, noprice: true }); continue; }
+      }
+      if (!shares) continue;
+      out.push({ ticker, shares, from, account: iA >= 0 ? (r[iA] || '').trim() : '', cost: iC >= 0 ? money(r[iC] || '') : null });
     }
     return out.length ? out : null;
   }
@@ -300,14 +312,16 @@
       return { ...p, h, was: h ? h.shares : null };
     });
     const gone = I.holdings.filter(h => !seen.has(h.id));
-    const changed = rows.filter(r => !r.h || r.h.shares !== r.shares);
+    const changed = rows.filter(r => r.noprice || !r.h || r.h.shares !== r.shares);
+    const stuck = rows.filter(r => r.noprice);
     const cost = list.reduce((n, p) => n + (p.cost || 0), 0);
     pending = { rows, gone, cost };
-    const line = r => `<li class="${r.h ? '' : 'new'}"><span class="t">${esc(r.ticker)}${r.account ? `<small>${esc(r.account)}</small>` : ''}</span><span class="was">${r.was != null && r.was !== r.shares ? r.was.toLocaleString('en-US') : ''}</span><span class="now ${r.h ? '' : 'add'}">${r.shares.toLocaleString('en-US')}${r.h ? '' : ' · new'}</span></li>`;
+    const line = r => `<li class="${r.h ? '' : 'new'}"><span class="t">${esc(r.ticker)}${r.account ? `<small>${esc(r.account)}</small>` : ''}${r.from ? `<small>${esc(r.from)}</small>` : ''}</span><span class="was">${r.was != null && r.was !== r.shares ? r.was.toLocaleString('en-US') : ''}</span><span class="now ${r.h ? '' : 'add'}">${r.noprice ? 'no price yet' : r.shares.toLocaleString('en-US')}${r.h || r.noprice ? '' : ' · new'}</span></li>`;
     F('preview').innerHTML = `<ul class="pv">${changed.map(line).join('') || '<li><span class="t">Every share count already matches.</span><span></span><span></span></li>'}
       ${gone.map(h => `<li class="gone"><span class="t">${esc(h.ticker)}${h.account ? `<small>${esc(h.account)}</small>` : ''}</span><span class="was">${h.shares.toLocaleString('en-US')}</span><span class="now">not in the file</span></li>`).join('')}</ul>
       <div class="papply">
-        <button class="textbtn" type="button" id="applypaste">Take these ${changed.length} ${changed.length === 1 ? 'count' : 'counts'}</button>
+        <button class="textbtn" type="button" id="applypaste">Take these ${changed.length - stuck.length} ${changed.length - stuck.length === 1 ? 'count' : 'counts'}</button>
+        ${stuck.length ? `<span class="note">${stuck.map(r => esc(r.ticker)).join(', ')} ${stuck.length === 1 ? 'has' : 'have'} a value but no price here yet — run Prices in the bell, then paste again.</span>` : ''}
         ${gone.length ? `<label><input type="checkbox" id="droplot"> also remove the ${gone.length} not in the file</label>` : ''}
         ${cost ? `<label><input type="checkbox" id="usecost"> set Put in to the file’s cost basis, ${$(cost)}</label>` : ''}
       </div>`;
@@ -317,12 +331,13 @@
 
   F('readpaste').addEventListener('click', () => {
     const list = readPositions(F('pastebox').value);
-    if (!list) { F('preview').hidden = true; pending = null; F('pastenote').textContent = 'No positions found in that — paste the whole file, header row and all.'; return; }
+    if (!list) { F('preview').hidden = true; pending = null; F('pastenote').textContent = 'No positions found in that \u2014 it needs the header row too (Symbol, Quantity, Current Value). The Download button on the Positions page gives a file that has it.'; return; }
     preview(list);
   });
   F('preview').addEventListener('click', e => {
     if (!e.target.closest('#applypaste') || !pending) return;
     for (const r of pending.rows) {
+      if (r.noprice) continue;                     // nothing to set until a price is known; the count stays as it was
       if (r.h) { r.h.shares = r.shares; if (r.account && !r.h.account) r.h.account = r.account; }
       else I.holdings.push({ id: Date.now() + I.holdings.length, ticker: r.ticker, shares: r.shares, account: r.account });
     }
