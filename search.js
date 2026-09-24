@@ -13,7 +13,7 @@
     ['finances.' + today().slice(0, 7), d => [...(d.tx || []).map(t => ({ area: 'Finances', title: t.what || '', sub: [day(t.date), t.amt != null ? '$' + t.amt : ''].filter(Boolean).join(' · '), href: 'finances.html' })),
                             ...(d.cats || []).map(c => ({ area: 'Finances', title: c.name, sub: c.limit ? 'limit $' + c.limit : 'category', href: 'finances.html' }))]],
     ['health', d => [...(d.next || []).map(n => ({ area: 'Health', title: n.name, sub: [day(n.date), n.note].filter(Boolean).join(' · '), href: 'health.html' })),
-                     ...(d.meds || []).map(m => ({ area: 'Health', title: m.name, sub: m.when || 'pill', href: 'health.html' }))]],
+                     ...(d.meds || []).map(m => ({ area: 'Health', title: m.name, sub: m.when || 'supplement', href: 'health.html' }))]],
     ['investments', d => (d.holdings || []).map(h => ({ area: 'Investments', title: h.ticker, sub: [(d.prices || {})[h.ticker] && d.prices[h.ticker].name, h.account, `${h.shares} shares`].filter(Boolean).join(' · '), href: 'investments.html' }))],
     ['study', d => (d.notes || []).map(n => ({ area: 'The Study', title: n.text, sub: day(n.date), href: 'study.html' }))],
     ['groceries', d => [...(d.list || []).map(l => ({ area: 'Groceries', title: l.text, sub: l.done ? 'got it' : 'on the list', href: 'groceries.html' })),

@@ -8,9 +8,9 @@
                     notify: { name: 'Reminders', page: 'today.html', count: l => l.said ? `last: ${esc(l.said).slice(0, 60)}${l.said.length > 60 ? '…' : ''}` : l.quiet ? 'nothing to say' : '' },
                     backup: { name: 'Nightly backup', page: 'today.html', count: l => l.documents != null ? `${l.documents} documents` : '', extra: l => l.day ? `<a class="go dl" href="/api/sync/backup?day=${l.day}" download>Download</a>` : '' } };
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  // three kinds of notice, nothing else: due today, a bill due today, pills not taken by nine in the evening
+  // three kinds of notice, nothing else: due today, a bill due today, supplements not taken by nine in the evening
   // two kinds of notice above the syncs: today's timed to-dos (all of them, late ones marked), and what is due — school
-  // items due today or overdue, a bill due today, pills not taken by nine in the evening
+  // items due today or overdue, a bill due today, supplements not taken by nine in the evening
   let todoDoc = null;   // today's to-do document, kept so a tick from the bell can be saved
   const notices = async () => {
     const today = clock.today, ym = today.slice(0, 7), hour = new Date().getHours(), todos = [], due = [];

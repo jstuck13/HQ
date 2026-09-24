@@ -253,7 +253,7 @@
     // health
     if(d.health){ const L=d.health, meds=L.meds||0, pills=(L.pills||[]).length, total=meds?4:3, n=['sleep','weight','hr'].filter(k=>L[k]!=null).length+(meds&&pills>=meds?1:0);
       const note = L.sleep ? `Slept ${L.sleep} h${L.hr?' · resting pulse '+L.hr:''}` : 'Nothing logged yet today';
-      rows.push(row('Health','health.html',note,`${n} of ${total}`,`logged today${meds&&pills<meds?' · '+(meds-pills)+(meds-pills===1?' pill':' pills')+' to take':''}`, false));
+      rows.push(row('Health','health.html',note,`${n} of ${total}`,`logged today${meds&&pills<meds?' · '+(meds-pills)+(meds-pills===1?' supplement':' supplements')+' to take':''}`, false));
     } else rows.push(row('Health','health.html','Nothing logged yet today','0 of 3','logged today'));
     // library
     if(d.lib){ const b=(d.lib.books||[]).find(x=>x.shelf==='reading'), toread=(d.lib.books||[]).filter(x=>x.shelf==='toread').length;
@@ -302,8 +302,8 @@
     // last night against the week
     if(d.H && d.H.days && d.H.days[TODAY] && d.H.days[TODAY].sleep!=null){ const s=+d.H.days[TODAY].sleep, prev=Object.keys(d.H.days).filter(k=>k<TODAY && +d.H.days[k].sleep>0).sort().slice(-7).map(k=>+d.H.days[k].sleep), avg=prev.length>=3?prev.reduce((a,b)=>a+b)/prev.length:null;
       if(avg && s<avg-0.5) parts.push(`you slept ${s} h, under your week’s ${avg.toFixed(1)}`); else if(s>=7.5) parts.push(`a good ${s} h of sleep`); }
-    // pills, once the evening is here
-    if(d.health && d.health.meds && C.now.getHours()>=18){ const left=d.health.meds-(d.health.pills||[]).length; if(left>0) parts.push(`${left} ${left===1?'pill':'pills'} still to take`); }
+    // supplements, once the evening is here
+    if(d.health && d.health.meds && C.now.getHours()>=18){ const left=d.health.meds-(d.health.pills||[]).length; if(left>0) parts.push(`${left} ${left===1?'supplement':'supplements'} still to take`); }
     const s = parts.length ? parts.slice(0,3).join('; ') : 'nothing pressing';
     F('greet').innerHTML = `${C.greeting(C.now)}, Jacob. <em>${s[0].toUpperCase()+s.slice(1)}.</em>`;
   }

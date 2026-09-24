@@ -150,7 +150,7 @@
       const meds=(H.meds||[]).length, pillDays = days.map(d=>{ const x=H.days[d]; if(!x) return null; return meds ? (H.meds.every(m=>(x.pills||[]).includes(m.id))?1:0) : null; });
       const hr = days.map(d=>+((H.days[d]||{}).hr)||null), phr = prev.map(d=>+((H.days[d]||{}).hr)||null);
       const w = days.map(d=>+((H.days[d]||{}).weight)||null).filter(Boolean), pw = prev.map(d=>+((H.days[d]||{}).weight)||null).filter(Boolean);
-      const bits=[]; if(meds) bits.push(`pills every day on <b>${pillDays.filter(v=>v===1).length}</b> of ${Math.min(7, days.filter(d=>d<=TODAY).length)} days`);
+      const bits=[]; if(meds) bits.push(`supplements every day on <b>${pillDays.filter(v=>v===1).length}</b> of ${Math.min(7, days.filter(d=>d<=TODAY).length)} days`);
       if(avg(hr.filter(Boolean))!=null) bits.push(`resting <b>${Math.round(avg(hr.filter(Boolean)))} bpm</b>${delta(avg(hr.filter(Boolean)), avg(phr.filter(Boolean)), v=>`${Math.round(v)} bpm`, false)}`);
       if(w.length) bits.push(`weight <b>${w[w.length-1].toFixed(1)} lb</b>${pw.length?` (${w[w.length-1]-pw[pw.length-1]>=0?'+':'−'}${Math.abs(w[w.length-1]-pw[pw.length-1]).toFixed(1)} on last week)`:''}`);
       if(bits.length) rows.push(li('Body','health.html', bits.join(' · '), avg(hr.filter(Boolean))!=null?Math.round(avg(hr.filter(Boolean))):'—', avg(hr.filter(Boolean))!=null?'bpm':'', 'resting', bars(hr, v=>`${v} bpm`, '#C9A9AE')));
@@ -197,7 +197,7 @@
     const sk=[]; if(H && H.days){
       const streak=(ok,open=()=>false)=>{ let n=0; for(let i=0;i<400;i++){ const d=H.days[C.iso(C.addDays(C.now,-i))]||{}; if(!ok(d)){ if(i===0&&open(d)) continue; break; } n++; } return n; };
       const ss=streak(d=>+d.sleep>=7, d=>d.sleep==null); if(ss>=2) sk.push([ss,'days','7 h or more of sleep','in a row']);
-      const meds=H.meds||[]; if(meds.length){ const ps=streak(d=>meds.every(m=>(d.pills||[]).includes(m.id)), ()=>true); if(ps>=2) sk.push([ps,'days','every pill taken','in a row']); }
+      const meds=H.meds||[]; if(meds.length){ const ps=streak(d=>meds.every(m=>(d.pills||[]).includes(m.id)), ()=>true); if(ps>=2) sk.push([ps,'days','every supplement taken','in a row']); }
       const ls=streak(d=>d.sleep!=null||d.hr!=null||d.weight!=null, ()=>true); if(ls>=3) sk.push([ls,'days','something logged on Health','in a row']);
     }
     if(school && (school.sessions||[]).length){ let n=0; for(let i=0;i<400;i++){ const d=C.iso(C.addDays(C.now,-i)); if(!school.sessions.some(s=>s.date===d)){ if(i===0) continue; break; } n++; } if(n>=2) sk.push([n,'days','a study session','in a row']); }

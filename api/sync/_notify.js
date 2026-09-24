@@ -26,7 +26,7 @@ export default syncRoute('notify', async ({ getDoc, putDoc }) => {
 
   if (slot === 'morning') {
     if (L.weight == null) { lines.push('Step on the scale — weight is not logged yet.'); url = 'health.html'; }
-    if (meds.length && !(L.pills || []).length) lines.push(`${meds.length} ${meds.length === 1 ? 'pill' : 'pills'} to take.`);
+    if (meds.length && !(L.pills || []).length) lines.push(`${meds.length} ${meds.length === 1 ? 'supplement' : 'supplements'} to take.`);
     const first = items.filter(i => !i.done && i.at != null).sort((a, b) => a.at - b.at)[0];
     if (first) lines.push(`First up: ${first.text} by ${h12(first.at)}.`);
   }
