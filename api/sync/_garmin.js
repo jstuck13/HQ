@@ -21,6 +21,8 @@ export default syncRoute('garmin', async ({ getDoc, putDoc }) => {
   const health = (await getDoc('health')) || { days: {}, meds: [], next: [] };
   health.days ??= {};
   let filled = 0, days = 0;
+  const trouble = [];   // why a metric came back empty, so "the watch has not uploaded" can be told from "Garmin refused"
+  const note = (key, what, e) => { const m = String(e && e.message || e).slice(0, 80); if (trouble.length < 8 && !trouble.some(t => t.endsWith(m))) trouble.push(`${key.slice(5)} ${what}: ${m}`); };
   for (let back = 6; back >= 0; back--) {
     const key = localDate(Date.now() - back * 86400000); const d = new Date(key + 'T12:00:00Z');   // the library keys by UTC date; noon UTC lands on `key`
     const day = health.days[key] || { pills: [] }; day.pills ??= []; day.garmin ??= {};
@@ -29,12 +31,12 @@ export default syncRoute('garmin', async ({ getDoc, putDoc }) => {
       // the rest of the night, for the morning report
       const g = day.garmin, bb = s.sleepBodyBattery || [];
       Object.assign(g, { score: dto.sleepScores?.overall?.value, deep: dto.deepSleepSeconds, light: dto.lightSleepSeconds, rem: dto.remSleepSeconds, awake: dto.awakeSleepSeconds, nap: dto.napTimeSeconds, resp: dto.averageRespirationValue, hrv: s.avgOvernightHrv, hrvStatus: s.hrvStatus, bbChange: s.bodyBatteryChange, bb: bb.length ? bb[bb.length - 1].value : undefined, feedback: dto.sleepScoreFeedback });
-      for (const k of Object.keys(g)) if (g[k] == null) delete g[k]; } } catch {}
-    try { const h = await client.getHeartRate(d); if (h && h.restingHeartRate) { set('hr', h.restingHeartRate, v => String(v)); if (h.lastSevenDaysAvgRestingHeartRate) day.garmin.hr7 = h.lastSevenDaysAvgRestingHeartRate; } } catch {}
-    try { const w = await client.getDailyWeightInPounds(d); if (w && w > 0) set('weight', w, v => (Math.round(v * 10) / 10).toString()); } catch {}
-    try { const st = await client.getSteps(d); if (st != null) { day.garmin.steps = st; if (day.steps == null || day.stepsFrom === 'garmin') { day.steps = String(st); day.stepsFrom = 'garmin'; } } } catch {}   // today's count grows through the day, so the watch may overwrite its own number
+      for (const k of Object.keys(g)) if (g[k] == null) delete g[k]; } } catch (e) { note(key, 'sleep', e); }
+    try { const h = await client.getHeartRate(d); if (h && h.restingHeartRate) { set('hr', h.restingHeartRate, v => String(v)); if (h.lastSevenDaysAvgRestingHeartRate) day.garmin.hr7 = h.lastSevenDaysAvgRestingHeartRate; } } catch (e) { note(key, 'resting heart rate', e); }
+    try { const w = await client.getDailyWeightInPounds(d); if (w && w > 0) set('weight', w, v => (Math.round(v * 10) / 10).toString()); } catch (e) { note(key, 'weight', e); }
+    try { const st = await client.getSteps(d); if (st != null) { day.garmin.steps = st; if (day.steps == null || day.stepsFrom === 'garmin') { day.steps = String(st); day.stepsFrom = 'garmin'; } } } catch (e) { note(key, 'steps', e); }   // today's count grows through the day, so the watch may overwrite its own number
     health.days[key] = day; days++;
   }
   await putDoc('health', health);
-  return { days, filled };
+  return { days, filled, ...(trouble.length ? { errors: trouble.join('; ') } : {}) };
 });
