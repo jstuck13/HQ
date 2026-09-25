@@ -306,7 +306,7 @@
   async function renderSync(){
     const led = await store.ledger(), g = led.garmin; const el=F('syncline'); if(!g && !navigator.onLine){ el.hidden=true; return; }
     el.hidden=false; const ago = g ? Math.round((Date.now()-new Date(g.last))/60000) : 0;
-    el.innerHTML = (g ? (g.ok ? `Garmin synced ${ago<1?'just now':ago<60?ago+' min ago':Math.round(ago/60)+' h ago'} · ${g.days} days` : `<span class="bad">Garmin sync failed: ${esc(g.error||'')}</span>`) : 'Garmin not synced yet') + ` <button class="textbtn" type="button" id="syncnow">Sync now</button>`;
+    el.innerHTML = (g ? (g.ok ? `Garmin synced ${ago<1?'just now':ago<60?ago+' min ago':Math.round(ago/60)+' h ago'} · ${g.days} days${(g.errors||'').includes(TODAY.slice(5))?' · <span class="bad">nothing for today yet — sync the watch to Garmin Connect</span>':''}` : `<span class="bad">Garmin sync failed: ${esc(g.error||'')}</span>`) : 'Garmin not synced yet') + ` <button class="textbtn" type="button" id="syncnow">Sync now</button>`;
     F('syncnow').addEventListener('click', async ()=>{ F('syncnow').textContent='Syncing…'; const r = await store.sync('garmin'); if(r && r.ok){ const doc = await store.load(KEY); if(doc && doc.days) adopt(doc); } renderSync(); });
   }
   store.load(KEY).then(doc => { if (doc && doc.days) adopt(doc); renderSync(); C.countIn('.chart .fig'); });
