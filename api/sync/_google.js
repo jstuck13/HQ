@@ -27,6 +27,7 @@ export default syncRoute('google', async ({ getDoc, putDoc }) => {
   cal.series ??= []; cal.ignored ??= []; cal.cats ??= [];
   if (!cal.cats.some(c => c.id === 'cal')) cal.cats.unshift({ id: 'cal', name: 'Appointments', tint: '#E9EEF3' });
   const seen = new Set(); let added = 0, updated = 0;
+  const ours = new Set(cal.series.filter(s => s.gid).map(s => s.gid));   // events HQ put there: they are already here
   // a category you gave one instance of a repeating event applies to its siblings, new ones included
   const groupCat = {}; for (const s of cal.series) if (s.group && s.cat && s.cat !== 'cal') groupCat[s.group] = s.cat;
 
@@ -36,6 +37,7 @@ export default syncRoute('google', async ({ getDoc, putDoc }) => {
     const r = await fetch(u, { headers }); if (!r.ok) continue;
     for (const e of (await r.json()).items || []) {
       if (e.status === 'cancelled' || !e.start) continue;
+      if (ours.has(e.id)) continue;                                      // HQ's own entry, coming home
       const id = `google:${e.id}`; seen.add(id);
       if (cal.ignored.includes(id)) continue;
       let date, start, end, sub = c.primary ? '' : c.summary || '';

@@ -75,6 +75,7 @@
   .pin + .pin{top:22px}
   .mday .duepin{background:var(--ox);color:var(--band-ink)}
   .filters .sw.due{background:var(--ox);border-color:var(--ox)}
+  .filters .sw.push{background:var(--band);border-color:var(--band)}
   .col:has(.pin) .gap{padding-top:26px} .col:has(.pin + .pin) .gap{padding-top:46px}   /* the free-time label steps below the pins */
   .now{position:absolute;left:50px;right:0;border-top:1.5px solid var(--ox);z-index:3;pointer-events:none}
   .now::before{content:"";position:absolute;left:-1px;top:-4px;width:7px;height:7px;border-radius:50%;background:var(--ox)}
@@ -253,6 +254,7 @@
 
   <aside class="right">
     <p class="syncline" id="syncline" hidden></p>
+    <p class="syncline" id="pushline" hidden></p>
     <h2 id="dayh">Monday 14<small>6 entries</small></h2>
     <ul class="ledger" id="ledger"></ul>
     <button class="textbtn" type="button" id="addopen"><svg class="ic"><use href="icons.svg#plus"/></svg>Add an entry</button>
@@ -323,7 +325,29 @@
     S.series.forEach(x=>{ if(!Array.isArray(x.rep)) x.rep = ({mwf:[0,2,4],tt:[1,3],daily:[0,1,2,3,4,5,6],weekdays:[0,1,2,3,4]})[x.rep] || []; if(!x.date){ x.date = onDay('2026-09-14', x.day||0); delete x.day; } });
     Object.keys(S.notes).forEach(k=>{ const m=/^(\d+)@(\d)$/.exec(k); if(m){ S.notes[`${m[1]}@${onDay('2026-09-14',+m[2])}`]=S.notes[k]; delete S.notes[k]; } });
   };
-  const save = () => store.save('calendar', S);
+  const save = () => { store.save('calendar', S); push(); };
+  // entries you made here are written to Google a moment after they are saved; it is quiet when there is nothing to send
+  let pushTimer = null, pushing = false;
+  function push(){
+    if(S.google === false) return;                       // switched off in Showing
+    clearTimeout(pushTimer);
+    pushTimer = setTimeout(async () => {
+      if(pushing) { push(); return; }
+      pushing = true;
+      try { const r = await store.sync('calpush');
+        if(r && r.ok && (r.added || r.changed || r.removed)){ const doc = await store.load('calendar'); if(doc){ S = doc; migrate(); renderAll(); } }
+        pushSays(r);
+      } finally { pushing = false; }
+    }, 1500);                                            // a breath after the last keystroke, so a flurry of edits is one push
+  }
+  function pushSays(r){ const el = F('pushline'); if(!el) return;
+    if(!r){ el.hidden = true; return; }
+    if(!r.ok){ el.innerHTML = `<span class="bad">Not written to Google: ${esc(String(r.error||'').slice(0,80))}</span>`; el.hidden = false; return; }
+    const bits = [r.added && `${r.added} added`, r.changed && `${r.changed} changed`, r.removed && `${r.removed} removed`].filter(Boolean);
+    if(!bits.length && !r.errors){ el.hidden = true; return; }
+    el.innerHTML = r.errors ? `<span class="bad">${esc(r.errors)}</span>` : `${bits.join(', ')} on Google Calendar`;
+    el.hidden = false; clearTimeout(pushSays.t); pushSays.t = setTimeout(()=>{ el.hidden = true; }, 6000);
+  }
 
   const cat = id => S.cats.find(c=>c.id===id) || S.cats[0];
   const parse = t => { const m=/(\d{1,2})[.:](\d{2})\s*(am|pm)?/i.exec(t); if(!m) return null; let h=+m[1]%12; if((m[3]||'').toLowerCase()==='pm') h+=12; return h+(+m[2])/60; };
@@ -345,12 +369,14 @@
   // ---- categories ----
   function renderCats(){
     F('cats').innerHTML = S.cats.map(c=>`<li><input type="checkbox" id="f-${c.id}" data-cat="${c.id}" ${S.hidden.includes(c.id)?'':'checked'}><label for="f-${c.id}"><span class="sw" style="--c:${c.tint}"></span>${esc(c.name)}<span class="n">${[0,1,2,3,4,5,6].reduce((n,i)=>n+S.series.filter(s=>s.cat===c.id && occurs(s,dateOf(i))).length,0)}</span></label></li>`).join('');
+    F('cats').insertAdjacentHTML('beforeend', `<li class="duerow"><input type="checkbox" id="f-push" ${S.google===false?'':'checked'}><label for="f-push"><span class="sw push"></span>Write to Google<span class="n">${S.series.filter(x=>x.gid).length}</span></label></li>`);
     F('cats').insertAdjacentHTML('beforeend', `<li class="duerow"><input type="checkbox" id="f-due" ${S.hideDue?'':'checked'}><label for="f-due"><span class="sw due"></span>Due from School<span class="n">${(SCHOOL && SCHOOL.items || []).filter(i=>!i.done).length}</span></label></li>`);
     const cur = F('a-area').value;
     F('a-area').innerHTML = S.cats.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
     if(cur) F('a-area').value = cur;
   }
   F('cats').addEventListener('change', e=>{
+    if(e.target.id==='f-push'){ S.google = e.target.checked ? undefined : false; store.save('calendar', S); renderAll(); return; }
     if(e.target.id==='f-due'){ S.hideDue = !e.target.checked; save(); renderAll(); return; }
     const id=e.target.dataset.cat; S.hidden = e.target.checked ? S.hidden.filter(x=>x!==id) : [...S.hidden,id]; save(); renderAll(); });
   let ncTint = TINTS[4];
@@ -572,6 +598,7 @@
   });
   F('remove').addEventListener('click', ()=>{
     const gone=S.series.find(x=>x.id===editing.id); if(gone && gone.source){ S.ignored=[...(S.ignored||[]), gone.id]; }
+    if(gone && gone.gid){ S.dropped=[...(S.dropped||[]), gone.gid]; }   // tell Google about it on the next push
     S.series = S.series.filter(x=>x.id!==editing.id);
     Object.keys(S.notes).forEach(k=>{ if(k.startsWith(editing.id+'@')) delete S.notes[k]; });
     open=null; save(); reset(); renderAll();

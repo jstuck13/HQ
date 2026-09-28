@@ -2,7 +2,7 @@
 // module here (_canvas.js, _garmin.js, …). The modules are unchanged; this file only dispatches.
 export const maxDuration = 60;   // the nightly job reads a few hundred ad pages in parallel
 
-const SOURCES = ['canvas', 'google', 'garmin', 'daily', 'backup', 'bills', 'notify'];
+const SOURCES = ['canvas', 'google', 'garmin', 'daily', 'backup', 'bills', 'notify', 'calpush'];
 
 export default async function handler(req, res) {
   const name = String(req.query.name || '');

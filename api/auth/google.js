@@ -9,7 +9,7 @@ export default function handler(req, res) {
   const u = new URL('https://accounts.google.com/o/oauth2/v2/auth');
   u.search = new URLSearchParams({
     client_id: id, redirect_uri: redirect, response_type: 'code',
-    scope: 'https://www.googleapis.com/auth/calendar.readonly',
+    scope: 'https://www.googleapis.com/auth/calendar.events',   // read, and write back the entries HQ made
     access_type: 'offline', prompt: 'consent', include_granted_scopes: 'true',
   }).toString();
   res.redirect(302, u.toString());
