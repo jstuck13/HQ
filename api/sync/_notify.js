@@ -20,9 +20,21 @@ export default syncRoute('notify', async ({ getDoc, putDoc }) => {
   push.sent ??= {}; if (push.sent[today] && push.sent[today][slot] ) return { slot, sent: 0, already: true };
   if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) throw new Error('VAPID keys are not set');
 
-  const [health, todo, school, lib, study] = await Promise.all([getDoc('health'), getDoc('today.' + today), getDoc('school'), getDoc('library'), getDoc('study')]);
+  const [health, todo, school, lib, study, ledger] = await Promise.all([getDoc('health'), getDoc('today.' + today), getDoc('school'), getDoc('library'), getDoc('study'), getDoc('sync')]);
   const L = health && health.days && health.days[today] || {}, meds = health && health.meds || [], items = todo && todo.items || [];
   const lines = []; let url = 'today.html';
+
+  // a source that has failed, or brought nothing in for two days, is worth knowing about before any nudge
+  const NAMED = { canvas: 'Canvas', google: 'Google Calendar', garmin: 'Garmin', daily: 'The daily word and the ad', bills: 'Scheduled expenses', backup: 'The nightly backup' };
+  if (slot === 'morning' && ledger) {
+    const stale = Object.entries(NAMED).map(([k, name]) => {
+      const e = ledger[k]; if (!e || !e.last) return null;
+      const age = Math.floor((Date.now() - new Date(e.last)) / 864e5);
+      if (!e.ok) return `${name} is failing: ${String(e.error || 'it would not run').slice(0, 60)}`;
+      return age >= 2 ? `${name} has not run in ${age} days.` : null;
+    }).filter(Boolean);
+    if (stale.length) { lines.push(...stale.slice(0, 2)); url = 'calendar.html'; }
+  }
 
   if (slot === 'morning') {
     if (L.weight == null) { lines.push('Step on the scale — weight is not logged yet.'); url = 'health.html'; }

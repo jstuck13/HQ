@@ -87,6 +87,7 @@
   .chart svg{display:block;width:100%;height:auto;overflow:visible;margin-top:8px}
   .chart .ax{stroke:var(--rule);stroke-width:1}
   .chart .avg{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:1 3;stroke-linecap:round}
+  .chart .roll{fill:none;stroke:var(--ox);stroke-width:1.6;stroke-opacity:.55;stroke-linejoin:round}
   .chart .ln{fill:none;stroke:var(--ink);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
   .chart .wash{fill:var(--ink);opacity:.06}
   .chart .dot{fill:var(--ox);stroke:var(--paper);stroke-width:2} .chart .dot.past{fill:var(--ink)}
@@ -250,12 +251,16 @@
       const y=v=>P.t+(H_-P.t-P.b)*(1-(v-lo+pad)/(hi-lo+2*pad));
       const avg=vals.reduce((a,b)=>a+b,0)/vals.length, last=pts[pts.length-1];
       const path=pts.map((p,k)=>`${k?'L':'M'}${x(p.i).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
+      // the seven-day mean at each reading: a day of water weight or a short night should not read as a direction
+      const roll = pts.map(p => { const win = pts.filter(q => p.i - q.i >= 0 && p.i - q.i < 7); return { i: p.i, v: win.reduce((n, q) => n + q.v, 0) / win.length }; }).filter((p, k) => k >= 2);
+      const rollPath = roll.length > 1 ? roll.map((p,k)=>`${k?'L':'M'}${x(p.i).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ') : '';
       return `<div class="chart" data-i="${si}">
         <h3>${s.name}</h3>
-        <p class="fig">${s.fmt(avg)}<small>average of ${pts.length} readings</small></p>
+        <p class="fig">${s.fmt(avg)}<small>average of ${pts.length} readings${roll.length>1?` · with its seven-day mean`:''}</small></p>
         <svg viewBox="0 0 ${W} ${H_}" role="img" aria-label="${s.name}, last ${N} days, ${s.fmt(lo)} to ${s.fmt(hi)}, average ${s.fmt(avg)}">
           <line class="ax" x1="${P.l}" x2="${W-P.r}" y1="${H_-P.b}" y2="${H_-P.b}"/>
           <line class="avg" x1="${P.l}" x2="${W-P.r}" y1="${y(avg).toFixed(1)}" y2="${y(avg).toFixed(1)}"/>
+          ${rollPath ? `<path class="roll" d="${rollPath}"/>` : ''}
           <path class="ln" pathLength="1" d="${path}"/>
           ${pts.map(p=>`<circle class="pt" r="3" cx="${x(p.i).toFixed(1)}" cy="${y(p.v).toFixed(1)}"/>`).join('')}
           <circle class="dot ${last.d===TODAY?'':'past'}" r="4.5" cx="${x(last.i).toFixed(1)}" cy="${y(last.v).toFixed(1)}"/>
