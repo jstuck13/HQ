@@ -103,6 +103,12 @@ export default syncRoute('calpush', async ({ getDoc, putDoc }) => {
   };
 
   const out = await pushCalendar(cal, api);
-  await putDoc('calendar', cal);
+  if (out.added || out.changed || out.removed || out.errors) {
+    const fresh = (await getDoc('calendar')) || cal;
+    const marks = new Map(cal.series.filter(s => s.gid || s.pushed).map(s => [s.id, { gid: s.gid, pushed: s.pushed }]));
+    for (const s of fresh.series || []) { const m = marks.get(s.id); if (m) Object.assign(s, m); else if (s.gid && !marks.has(s.id) && cal.series.some(o => o.id === s.id)) { delete s.gid; delete s.pushed; } }
+    fresh.dropped = (fresh.dropped || []).filter(g => cal.dropped.includes(g));   // anything Google confirmed is no longer owed
+    await putDoc('calendar', fresh);
+  }
   return out;
 });

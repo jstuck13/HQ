@@ -53,6 +53,17 @@ export default syncRoute('google', async ({ getDoc, putDoc }) => {
   // events that vanished from Google inside the window vanish here too (notes on them are kept)
   const before = cal.series.length;
   cal.series = cal.series.filter(s => s.source !== 'google' || seen.has(s.id) || s.date < iso(from) || s.date > iso(to));
-  await putDoc('calendar', cal);
-  return { calendars: chosen.length, added, updated, removed: before - cal.series.length };
+  const removed = before - cal.series.length;
+
+  // Write back onto whatever the document is NOW, not onto the copy this run started with. A run takes seconds;
+  // an entry added on the page in that time used to be carried away with the stale copy, and the page — seeing
+  // its save refused as out of date — would reload and lose it. Only Google's own entries are replaced here.
+  if (added || updated || removed) {
+    const fresh = (await getDoc('calendar')) || cal;
+    fresh.series = [...(fresh.series || []).filter(s => s.source !== 'google'), ...cal.series.filter(s => s.source === 'google')];
+    fresh.cats ??= cal.cats; fresh.notes ??= cal.notes; fresh.hidden ??= cal.hidden; fresh.ignored ??= cal.ignored;
+    if (!fresh.cats.some(c => c.id === 'cal')) fresh.cats.unshift({ id: 'cal', name: 'Appointments', tint: '#E9EEF3' });
+    await putDoc('calendar', fresh);
+  }
+  return { calendars: chosen.length, added, updated, removed };
 });
