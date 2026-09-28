@@ -613,7 +613,9 @@
     if(q==='connected' && !g){ el.innerHTML = `Google Calendar connected <button class="textbtn" type="button" id="syncnow">Sync now</button>`; }
     else if(q==='failed' || q==='denied'){ el.innerHTML = `<span class="bad">Google did not connect (${q}).</span> <a class="textbtn" href="/api/auth/google">Try again</a>`; }
     else if(!g){ el.innerHTML = `Google Calendar not connected <a class="textbtn" href="/api/auth/google">Connect</a>`; }
-    else { const ago=Math.round((Date.now()-new Date(g.last))/60000); el.innerHTML = (g.ok ? `Google synced ${ago<1?'just now':ago<60?ago+' min ago':Math.round(ago/60)+' h ago'} · ${g.calendars} ${g.calendars===1?'calendar':'calendars'}` : `<span class="bad">Google sync failed: ${esc(g.error||'')}</span>`) + ` <button class="textbtn" type="button" id="syncnow">Sync now</button>` + (g.ok ? '' : ` <a class="textbtn" href="/api/auth/google">Reconnect</a>`); }
+    else { const ago=Math.round((Date.now()-new Date(g.last))/60000); const again = ` <a class="textbtn" href="/api/auth/google">Reconnect</a>`;
+      const needsWrite = S.google !== false && !g.writes ? ` <span class="bad">Reconnect to let HQ write entries back.</span>` : '';
+      el.innerHTML = (g.ok ? `Google synced ${ago<1?'just now':ago<60?ago+' min ago':Math.round(ago/60)+' h ago'} · ${g.calendars} ${g.calendars===1?'calendar':'calendars'}` : `<span class="bad">Google sync failed: ${esc(g.error||'')}</span>`) + needsWrite + ` <button class="textbtn" type="button" id="syncnow">Sync now</button>` + again; }
     F('syncnow')?.addEventListener('click', async ()=>{ F('syncnow').textContent='Syncing…'; const r=await store.sync('google'); if(r && r.ok){ const doc=await store.load('calendar'); if(doc){ S=doc; migrate(); renderAll(); reset(); } } history.replaceState(null,'',location.pathname); renderSync(); });
   }
   function renderAll(){ renderCats(); renderMini(); renderGrid(); renderMonth(); renderLedger(); renderEntry(); }
