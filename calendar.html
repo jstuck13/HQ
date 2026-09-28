@@ -73,6 +73,8 @@
   .gap{position:absolute;left:3px;right:2px;border-radius:6px;background:repeating-linear-gradient(-45deg,transparent 0 6px,rgba(31,58,46,.05) 6px 7px);border:1px dashed rgba(31,58,46,.25);font-size:11px;color:var(--band);padding:4px 7px;pointer-events:none}
   .pin{position:absolute;left:3px;right:2px;top:2px;z-index:2;background:var(--ox);color:var(--band-ink);border-radius:4px;font-size:11px;line-height:1.2;padding:3px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--serif)}
   .pin + .pin{top:22px}
+  .mday .duepin{background:var(--ox);color:var(--band-ink)}
+  .filters .sw.due{background:var(--ox);border-color:var(--ox)}
   .col:has(.pin) .gap{padding-top:26px} .col:has(.pin + .pin) .gap{padding-top:46px}   /* the free-time label steps below the pins */
   .now{position:absolute;left:50px;right:0;border-top:1.5px solid var(--ox);z-index:3;pointer-events:none}
   .now::before{content:"";position:absolute;left:-1px;top:-4px;width:7px;height:7px;border-radius:50%;background:var(--ox)}
@@ -343,11 +345,14 @@
   // ---- categories ----
   function renderCats(){
     F('cats').innerHTML = S.cats.map(c=>`<li><input type="checkbox" id="f-${c.id}" data-cat="${c.id}" ${S.hidden.includes(c.id)?'':'checked'}><label for="f-${c.id}"><span class="sw" style="--c:${c.tint}"></span>${esc(c.name)}<span class="n">${[0,1,2,3,4,5,6].reduce((n,i)=>n+S.series.filter(s=>s.cat===c.id && occurs(s,dateOf(i))).length,0)}</span></label></li>`).join('');
+    F('cats').insertAdjacentHTML('beforeend', `<li class="duerow"><input type="checkbox" id="f-due" ${S.hideDue?'':'checked'}><label for="f-due"><span class="sw due"></span>Due from School<span class="n">${(SCHOOL && SCHOOL.items || []).filter(i=>!i.done).length}</span></label></li>`);
     const cur = F('a-area').value;
     F('a-area').innerHTML = S.cats.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
     if(cur) F('a-area').value = cur;
   }
-  F('cats').addEventListener('change', e=>{ const id=e.target.dataset.cat; S.hidden = e.target.checked ? S.hidden.filter(x=>x!==id) : [...S.hidden,id]; save(); renderAll(); });
+  F('cats').addEventListener('change', e=>{
+    if(e.target.id==='f-due'){ S.hideDue = !e.target.checked; save(); renderAll(); return; }
+    const id=e.target.dataset.cat; S.hidden = e.target.checked ? S.hidden.filter(x=>x!==id) : [...S.hidden,id]; save(); renderAll(); });
   let ncTint = TINTS[4];
   F('nc-sw').innerHTML = TINTS.map(t=>`<button type="button" style="--c:${t}" data-t="${t}" aria-label="Tint ${t}" aria-pressed="${t===ncTint}"></button>`).join('');
   F('nc-sw').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; ncTint=b.dataset.t; [...F('nc-sw').children].forEach(x=>x.setAttribute('aria-pressed', x===b)); });
@@ -412,14 +417,19 @@
         a.title=`${s.title}, ${h12(s.start)} – ${h12(s.end)}`; a.innerHTML=`<b>${esc(s.short||short(s.title))}</b>${s.end-s.start>=1.5?`<small>${h12(s.start)}</small>`:''}`; c.appendChild(a);
       });
     });
+    // School's due items sit at the top of their day, always — planning only adds the free stretches
+    if(!S.hideDue) document.querySelectorAll('.col').forEach(c=>{
+      (SCHOOL && SCHOOL.items || []).filter(i=>!i.done && i.due===c.dataset.d).slice(0,2).forEach(i=>{
+        const p=document.createElement('div'); p.className='pin'; p.textContent=i.title;
+        p.title=`${i.title} — due ${C.dayMonthLong ? C.dayMonthLong(C.fromISO(i.due)) : i.due}`; c.appendChild(p); });
+    });
     if(plan){
       document.querySelectorAll('.col').forEach(c=>{
         const d=c.dataset.d, list=occ(d).sort((a,b)=>a.start-b.start);
         // free stretches of an hour or more between 8 am and 8 pm
         let t=Math.max(H0,8); const end=Math.min(H1,20);
         [...list, {start:end, end:end}].forEach(s=>{ const gapEnd=Math.min(s.start, end); if(gapEnd - t >= 1){ const g=document.createElement('div'); g.className='gap'; g.style.top=`calc(var(--hour)*${t-H0} + 2px)`; g.style.height=`calc(var(--hour)*${gapEnd-t} - 4px)`; g.textContent=`free ${dur(t,gapEnd)}`; c.appendChild(g); } t=Math.max(t, s.end); });
-        // School's exams, quizzes and due items, pinned to their day
-        (SCHOOL && SCHOOL.items || []).filter(i=>!i.done && i.due===d).slice(0,2).forEach(i=>{ const p=document.createElement('div'); p.className='pin'; p.textContent=i.title; p.title=`${i.title} — due ${d}`; c.appendChild(p); });
+        // the pins are already there; planning adds only the free stretches beneath them
       });
     }
     // one line across the whole week, so the hour reads against every day
@@ -437,7 +447,8 @@
     F('weekh').textContent = C.month(C.fromISO(selDay));
     F('mgrid').innerHTML = SHORTD.map(d=>`<div class="dh">${d}</div>`).join('') + monthCells().map(({d,di,out}, i)=>{
       const list=occ(di), shown=list.slice(0,3);
-      return `<div style="--i:${i}" class="mday ${out?'out':''} ${di===TODAY?'today':''} ${di===selDay?'sel':''}" data-d="${di}"><span class="dn">${d.getDate()}</span>${shown.map(s=>`<i data-id="${s.id}" class="${open&&open.id===s.id&&open.d===di?'open':''}" style="--c:${cat(s.cat).tint}" title="${esc(s.title)}, ${h12(s.start)}">${esc(s.short||short(s.title))}</i>`).join('')}${list.length>3?`<div class="more">+${list.length-3} more</div>`:''}</div>`;
+      const due = S.hideDue ? [] : (SCHOOL && SCHOOL.items || []).filter(s=>!s.done && s.due===di);
+      return `<div style="--i:${i}" class="mday ${out?'out':''} ${di===TODAY?'today':''} ${di===selDay?'sel':''}" data-d="${di}"><span class="dn">${d.getDate()}</span>${shown.map(s=>`<i data-id="${s.id}" class="${open&&open.id===s.id&&open.d===di?'open':''}" style="--c:${cat(s.cat).tint}" title="${esc(s.title)}, ${h12(s.start)}">${esc(s.short||short(s.title))}</i>`).join('')}${due.slice(0,2).map(s=>`<i class="duepin" title="${esc(s.title)} — due">${esc(short(s.title))}</i>`).join('')}${list.length>3?`<div class="more">+${list.length-3} more</div>`:''}</div>`;
     }).join('');
     F('mgrid').classList.remove('arrive');   // the days arrive when the month opens; a click inside it just redraws
   }
@@ -580,6 +591,7 @@
   }
   function renderAll(){ renderCats(); renderMini(); renderGrid(); renderMonth(); renderLedger(); renderEntry(); }
   renderAll(); reset();
+  store.load('school').then(doc => { SCHOOL = doc; if(S.cats.length) renderAll(); });   // due dates sit under the week alongside the entries
   store.load('calendar').then(doc => { if (doc) { S = doc; migrate(); renderAll(); reset(); } else save(); if(!store.signedOut) renderSync();
     const q = new URLSearchParams(location.search); if(q.get('d')){ const e=q.get('e'); if(e && S.series.some(s=>String(s.id)===e)) openEntry(idOf(e), q.get('d')); else goto(q.get('d')); history.replaceState(null,'',location.pathname); } });
 </script>
