@@ -84,6 +84,13 @@
   .affairs .v small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3);margin-top:2px}
   .affairs .v.flag small{color:var(--ox)}
   .todo{margin-top:34px}
+  .saidt{margin:8px 0 0;font-size:13px;color:var(--ox);font-family:var(--serif);font-style:italic}
+  .reps{list-style:none;margin:10px 0 0;padding:0}
+  .reps li{display:flex;align-items:baseline;gap:12px;padding:6px 0;border-top:1px dotted var(--rule);font-size:13.5px;color:var(--ink-2)}
+  .reps li span{font-family:var(--serif);font-size:14.5px}
+  .reps li small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3)}
+  .reps li .textbtn{margin-left:auto;font-size:12.5px;color:var(--ink-3)}
+  .todo .rp{color:var(--ink-3);font-size:13px;margin-left:6px}
   .todo ul{border-left:1px solid color-mix(in srgb, var(--ox) 32%, transparent);padding-left:14px}
   .todo li{display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px solid var(--rule)}
   .todo input[type=checkbox]{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px}
@@ -145,7 +152,9 @@
     <div class="todo">
       <h2>To do<small id="todon"></small></h2>
       <ul id="todo"></ul>
-      <form class="addt" id="addt"><input id="t-text" placeholder="Add something for today" required><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
+      <form class="addt" id="addt"><input id="t-text" placeholder="Anything: a to-do, 12.40 lunch, or 173.2" required><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
+      <p class="saidt" id="saidt" hidden></p>
+      <ul class="reps" id="reps"></ul>
     </div>
   </section>
 </main>
@@ -318,9 +327,10 @@
   const YDAY = C.iso(C.addDays(C.fromISO(TODAY),-1));
   const saveT = () => store.save(TKEY, T);
   function renderTodo(){
+    F('reps').innerHTML = (RULES.rules||[]).map(r=>`<li><span>${esc(r.text)}<small>${repSays(r.rep)}${r.at!=null?` · by ${h12(r.at)}`:''}</small></span><button class="textbtn" type="button" data-stop="${r.id}">stop</button></li>`).join('');
     const done=T.items.filter(i=>i.done).length;
     F('todon').textContent = T.items.length ? `${done} of ${T.items.length}` : 'nothing yet';
-    F('todo').innerHTML = T.items.length ? T.items.map((i,k)=>`<li><input type="checkbox" id="t${k}" ${i.done?'checked':''} data-k="${k}"><label for="t${k}">${esc(i.text)}</label>${i.at!=null?`<span class="w ${!i.done&&i.at<NOW?'due':''}">by ${h12(i.at)}</span>`:''}${i.from?`<span class="w from">from ${i.from===YDAY?'yesterday':C.short(C.fromISO(i.from))}</span>`:''}<button class="w x" type="button" data-rm="${k}" aria-label="Remove">remove</button></li>`).join('') : '<li class="empty">Nothing on the list. Add the one thing today needs.</li>';
+    F('todo').innerHTML = T.items.length ? T.items.map((i,k)=>`<li><input type="checkbox" id="t${k}" ${i.done?'checked':''} data-k="${k}"><label for="t${k}">${esc(i.text)}</label>${i.rule?'<span class="rp" title="comes back on its own">\u21bb</span>':''}${i.at!=null?`<span class="w ${!i.done&&i.at<NOW?'due':''}">by ${h12(i.at)}</span>`:''}${i.from?`<span class="w from">from ${i.from===YDAY?'yesterday':C.short(C.fromISO(i.from))}</span>`:''}<button class="w x" type="button" data-rm="${k}" aria-label="Remove">remove</button></li>`).join('') : '<li class="empty">Nothing on the list. Add the one thing today needs.</li>';
   }
   F('todo').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ T.items[+e.target.dataset.k].done=e.target.checked; saveT(); renderTodo(); d.day=renderDay(CAL); } });
   F('todo').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ T.items.splice(+b.dataset.rm,1); saveT(); renderTodo(); } });
@@ -329,17 +339,88 @@
     if(ap.startsWith('p')) h+=12; else if(!ap && (h+mm<=NOW || +m[1]===12)) h+=12;   // no am/pm: the next time that clock reading comes round
     return {text:t.slice(0,m.index).trim(), at:h+mm}; };
   const migrateAt = () => { let n=0; T.items.forEach(i=>{ if(i.at==null){ const p=parseAt(i.text); if(p.at!=null){ Object.assign(i,p); n++; } } }); return n; };
-  F('addt').addEventListener('submit', e=>{ e.preventDefault(); const t=F('t-text').value.trim(); if(!t) return; T.items.push({...parseAt(t), done:false}); F('addt').reset(); saveT(); renderTodo(); d.day=renderDay(CAL); });
+  // ---- one box, three meanings ----
+  // "12.40 lunch" is money, "173.2" on its own is a weight, anything else is a to-do. A to-do may carry
+  // "by 3 pm" (it then sits on the timeline) and "every Monday" (it comes back on its own).
+  let RULES = { rules: [] };
+  const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);   // two made in the same millisecond must not share an id
+  const saveRules = () => store.save('todo.rules', RULES);
+  const DAYNAMES = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+  const parseRep = t => {
+    const m = /\s+every\s+(day|weekday|weekdays|other day|[a-z]+)\s*$/i.exec(t);
+    if(!m) return { text: t };
+    const w = m[1].toLowerCase();
+    let rep = null;
+    if(w === 'day') rep = 'daily';
+    else if(w === 'weekday' || w === 'weekdays') rep = 'weekdays';
+    else { const i = DAYNAMES.findIndex(n => n === w || n.slice(0,3) === w.slice(0,3)); if(i >= 0) rep = i; }
+    return rep === null ? { text: t } : { text: t.slice(0, m.index).trim(), rep };
+  };
+  const repSays = rep => rep === 'daily' ? 'every day' : rep === 'weekdays' ? 'every weekday' : `every ${DAYNAMES[rep][0].toUpperCase()}${DAYNAMES[rep].slice(1)}`;
+  const repToday = rep => { const wd = C.now.getDay(); return rep === 'daily' || (rep === 'weekdays' && wd >= 1 && wd <= 5) || rep === wd; };
+  // a standing item joins the day it belongs to, once
+  const postRules = () => { let n = 0;
+    for(const r of RULES.rules || []) if(repToday(r.rep) && !T.items.some(i => i.rule === r.id)) { T.items.push({ text: r.text, at: r.at, done: false, rule: r.id }); n++; }
+    return n; };
+
+  const money = s => { const m = /^\$?(\d{1,6}(?:,\d{3})*(?:\.\d{2}))\b/.exec(s.trim()) || /\$(\d{1,6}(?:,\d{3})*(?:\.\d{1,2})?)\b/.exec(s); return m ? +m[1].replace(/,/g,'') : null; };
+  const whatOf = s => s.replace(/^\$?\d[\d,]*(?:\.\d{2})?\s*/, '').replace(/\$\d[\d,]*(?:\.\d{1,2})?/, '').replace(/^(on|for|at)\s+/i,'').trim();
+  // a category is not guessed from thin air: it is the one this description went to last time
+  const catFor = (what, fin) => { const w = what.toLowerCase();
+    const prev = (fin.tx || []).filter(t => t.what && t.cat).reverse().find(t => t.what.toLowerCase() === w) ||
+                 (fin.tx || []).filter(t => t.what && t.cat).reverse().find(t => t.what.toLowerCase().includes(w) || w.includes(t.what.toLowerCase()));
+    if(prev) return prev.cat;
+    const named = (fin.cats || []).find(c => w.includes(c.name.toLowerCase()));
+    return named ? named.id : '';
+  };
+
+  function said(text){ const el = F('saidt'); el.textContent = text; el.hidden = false; clearTimeout(said.t); said.t = setTimeout(() => { el.hidden = true; }, 6000); }
+
+  async function capture(raw){
+    const t = raw.trim(); if(!t) return;
+    // money
+    const amt = money(t);
+    if(amt != null && amt > 0){
+      const what = whatOf(t) || 'Something';
+      const fin = d.fin || (d.fin = { expected: 0, income: [], plan: [], cats: [], tx: [], history: [] });
+      const cat = catFor(what, fin);
+      fin.tx = fin.tx || []; fin.tx.push({ id: uid('t'), date: TODAY, what: what[0].toUpperCase() + what.slice(1), cat, amt });
+      store.save('finances.' + YM, fin);
+      const cname = (fin.cats || []).find(c => c.id === cat);
+      said(`$${amt.toFixed(2)} logged${cname ? ` to ${cname.name}` : ', with no category yet'} · Finances`);
+      renderAffairs(d); return;
+    }
+    // a weight, on its own
+    const wt = /^\d{2,3}(?:\.\d)?$/.test(t) ? +t : null;
+    if(wt != null && wt >= 60 && wt <= 500){
+      const H = d.H || (d.H = { days: {}, meds: [], next: [] }); H.days ??= {};
+      (H.days[TODAY] ??= { pills: [] }).weight = String(wt);
+      store.save('health', H); said(`${wt} lb logged · Health`); renderAffairs(d); return;
+    }
+    // a to-do, which may repeat and may carry a time
+    const r = parseRep(t), p = parseAt(r.text);
+    if(r.rep != null){ const id = uid('r'); (RULES.rules ??= []).push({ id, text: p.text, at: p.at, rep: r.rep }); saveRules();
+      if(repToday(r.rep) && !T.items.some(i => i.rule === id)) T.items.push({ text: p.text, at: p.at, done: false, rule: id });
+      said(`“${p.text}” will come back ${repSays(r.rep)}`);
+    } else T.items.push({ ...p, done: false });
+    saveT(); renderTodo(); d.day = renderDay(CAL);
+  }
+  F('addt').addEventListener('submit', e=>{ e.preventDefault(); const t=F('t-text').value.trim(); if(!t) return; F('addt').reset(); capture(t); });
+  F('reps').addEventListener('click', e=>{ const b=e.target.closest('[data-stop]'); if(!b) return;
+    const id=b.dataset.stop; RULES.rules=(RULES.rules||[]).filter(r=>r.id!==id); saveRules();
+    T.items=T.items.filter(i=>i.rule!==id); saveT(); renderTodo(); d.day=renderDay(CAL); });
 
   window.onTodoChange = doc => { T = doc; renderTodo(); d.day = renderDay(CAL); };   // a tick in the bell shows here at once
   // ---- load everything the other pages keep, then draw ----
   (async () => {
     const [cal, fin, H, lib, school, today, inv, study] = await Promise.all([store.load('calendar'), store.load('finances.'+YM), store.load('health'), store.load('library'), store.load('school'), store.load(TKEY), store.load('investments'), store.load('study')]);
+    RULES = (await store.load('todo.rules')) || { rules: [] }; RULES.rules ??= [];
     if(today){ T = today; if(migrateAt()) saveT(); }
     else {   // first look at a new day: unfinished items from the last few days come along, marked
-      for(let i=1;i<=3 && !T.items.length;i++){ const k=C.iso(C.addDays(C.fromISO(TODAY),-i)), prev=await store.load('today.'+k); if(prev && prev.items){ T.items = prev.items.filter(x=>!x.done).map(x=>({text:x.text, done:false, from:x.from||k})); break; } }
+      for(let i=1;i<=3 && !T.items.length;i++){ const k=C.iso(C.addDays(C.fromISO(TODAY),-i)), prev=await store.load('today.'+k); if(prev && prev.items){ T.items = prev.items.filter(x=>!x.done && !x.rule).map(x=>({text:x.text, done:false, from:x.from||k})); break; } }
       if(T.items.length) saveT();
     }
+    if(postRules()) saveT();   // the standing items join the day, once
     const health = H && H.days ? Object.assign({meds:(H.meds||[]).length}, H.days[TODAY] || {pills:[]}) : null;
     Object.assign(d, { fin, health, lib, school, H, inv, study }); CAL = cal;
     renderReport(H);
