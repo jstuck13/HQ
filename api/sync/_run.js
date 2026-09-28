@@ -3,6 +3,8 @@
 import { sql, ensureTable, isAuthed } from '../_lib.js';
 
 export const getDoc = async key => { const r = await sql`SELECT data FROM documents WHERE key = ${key}`; return r[0] ? r[0].data : null; };
+export const getDocs = async keys => { if (!keys.length) return {}; const r = await sql`SELECT key, data FROM documents WHERE key = ANY(${keys})`;
+  return Object.fromEntries(r.map(x => [x.key, x.data])); };
 export const putDoc = async (key, data) => sql`INSERT INTO documents (key, data, updated_at) VALUES (${key}, ${JSON.stringify(data)}::jsonb, now())
   ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data, updated_at = now()`;
 

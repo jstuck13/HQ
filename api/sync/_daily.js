@@ -1,6 +1,8 @@
 // The day's word and quote, fetched once a night into the `daily` document for the welcome page.
 // Word: one from the list below (rotating by day of year), with pronunciation, definition and an example from the
 // Free Dictionary API. Quote: one of the philosophers' lines in quotes.js, rotating by day of year.
+import { patterns } from './_patterns.js';
+import { getDocs } from './_run.js';
 import { syncRoute } from './_run.js';
 import QUOTES from './_quotes.js';
 // (maxDuration lives on the route file, api/sync/[name].js)
@@ -240,6 +242,8 @@ export default syncRoute('daily', async ({ getDoc, putDoc }) => {
   let ad = null; try { ad = await publix(getDoc, putDoc); } catch (e) { errors.push('publix ' + e.message); }
   let px = null; try { px = await prices(getDoc, putDoc); } catch (e) { errors.push('prices ' + e.message); }
 
+  let pat = null; try { pat = await patterns(getDoc, putDoc, date, getDocs); } catch (e) { errors.push('patterns ' + e.message); }
+
   await putDoc('daily', out);
-  return { word: out.word ? out.word.w : null, quote: out.quote ? out.quote.a : null, bogos: ad ? ad.bogos : undefined, priced: px ? px.priced : undefined, worth: px ? px.worth : undefined, errors: errors.length ? errors.join('; ') : undefined };
+  return { patterns: pat ? `${pat.shown} of ${pat.tested}` : undefined, word: out.word ? out.word.w : null, quote: out.quote ? out.quote.a : null, bogos: ad ? ad.bogos : undefined, priced: px ? px.priced : undefined, worth: px ? px.worth : undefined, errors: errors.length ? errors.join('; ') : undefined };
 });

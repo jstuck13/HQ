@@ -280,6 +280,9 @@
       const note = nx ? `${esc(cn(nx.course)?.name||'')} — ${esc(nx.title)}, ${dd<0?'overdue':dd===0?'due today':dd===1?'due tomorrow':'due '+C.monthShort(C.fromISO(nx.due))+' '+C.fromISO(nx.due).getDate()}` : 'Nothing due';
       rows.push(row('School','school.html',note,`${items.length}`,`open ${items.length===1?'item':'items'}`, dd!==null && dd<=0));
     } else rows.push(row('School','school.html','Open School to add your courses','','no courses yet'));
+    // patterns, and only when a pair has actually held
+    { const n=(d.pat && d.pat.shown || []).length;
+      if(n) rows.push(row('Patterns','patterns.html','Things that moved together, worked out overnight', String(n), n===1?'worth a look':'worth a look', false)); }
     // the study: three cards a day
     { const st=d.study, day=st && st.days && st.days[TODAY], titles={stoics:'The Stoics', socrates:'Socrates', sermon:'The Sermon on the Mount'};
       if(st && (st.pos>0 || day)){ const done=day && day.done, n=day ? (day.recall?1:0)+day.cards.length : 3, at=day ? Math.min(day.at, n) : 0;
@@ -413,7 +416,7 @@
   window.onTodoChange = doc => { T = doc; renderTodo(); d.day = renderDay(CAL); };   // a tick in the bell shows here at once
   // ---- load everything the other pages keep, then draw ----
   (async () => {
-    const [cal, fin, H, lib, school, today, inv, study] = await Promise.all([store.load('calendar'), store.load('finances.'+YM), store.load('health'), store.load('library'), store.load('school'), store.load(TKEY), store.load('investments'), store.load('study')]);
+    const [cal, fin, H, lib, school, today, inv, study, pat] = await Promise.all([store.load('calendar'), store.load('finances.'+YM), store.load('health'), store.load('library'), store.load('school'), store.load(TKEY), store.load('investments'), store.load('study'), store.load('patterns')]);
     RULES = (await store.load('todo.rules')) || { rules: [] }; RULES.rules ??= [];
     if(today){ T = today; if(migrateAt()) saveT(); }
     else {   // first look at a new day: unfinished items from the last few days come along, marked
@@ -422,7 +425,7 @@
     }
     if(postRules()) saveT();   // the standing items join the day, once
     const health = H && H.days ? Object.assign({meds:(H.meds||[]).length}, H.days[TODAY] || {pills:[]}) : null;
-    Object.assign(d, { fin, health, lib, school, H, inv, study }); CAL = cal;
+    Object.assign(d, { fin, health, lib, school, H, inv, study, pat }); CAL = cal;
     renderReport(H);
     d.day = renderDay(cal);
     renderAffairs(d); renderGreeting(d); renderUpNext(d.day); renderTodo(); renderWeather();

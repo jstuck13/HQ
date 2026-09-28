@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1F3A2E">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>HQ — Patterns</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="hq.css">
+<style>
+  .mast{margin-top:20px;padding-top:18px;border-top:1px solid rgba(242,236,223,.28);display:flex;align-items:baseline;gap:28px;flex-wrap:wrap}
+  h1{font-size:32px;line-height:1.3}
+  .mast .sub{font-family:var(--serif);font-style:italic;color:var(--band-muted)}
+
+  main{max-width:1180px;margin:0 auto;padding:34px 40px 44px;display:grid;grid-template-columns:1.5fr 1fr;gap:64px}
+  h3{font-size:17px;margin:30px 0 4px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;align-items:baseline;gap:12px}
+  h3 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
+
+  .found{list-style:none;margin:0;padding:0}
+  .found li{padding:20px 0;border-bottom:1px solid var(--rule)}
+  .found .said{font-family:var(--serif);font-size:19px;line-height:1.45;margin:0;text-wrap:pretty}
+  .found .said b{font-weight:400;color:var(--ox)}
+  .found .facts{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:12.5px;color:var(--ink-3)}
+  .found .facts b{font-weight:500;color:var(--ink-2)}
+  .found .plot{margin-top:14px}
+  .plot svg{width:100%;height:auto;aspect-ratio:320/82;display:block;overflow:visible}
+  .plot .cap{margin:4px 0 0;font-size:11.5px;color:var(--ink-3)}
+  .plot .dot{fill:var(--band);opacity:.75}
+  .plot .ax{stroke:var(--rule);stroke-width:1}
+  .plot .lbl{font-family:var(--serif);font-size:11px;fill:var(--ink-3)}
+
+  .empty{font-family:var(--serif);font-style:italic;color:var(--ink-3);line-height:1.6;max-width:56ch;margin:18px 0}
+  .empty b{font-style:normal;font-weight:400;color:var(--ink-2)}
+  .bars{list-style:none;margin:0;padding:0}
+  .bars li{display:grid;grid-template-columns:1fr 46px;gap:10px;align-items:center;padding:5px 0;font-size:13px;color:var(--ink-2)}
+  .bars .track{grid-column:1/-1;height:4px;background:var(--paper-2);border-radius:2px;overflow:hidden}
+  .bars .track i{display:block;height:100%;background:var(--band)}
+  .bars .n{text-align:right;font-family:var(--serif);color:var(--ink-3)}
+  .bars .short .n{color:var(--ox)}
+  .note{font-size:13px;color:var(--ink-3);line-height:1.6;max-width:44ch}
+  .note + .note{margin-top:12px}
+
+  @media (max-width:900px){ main{grid-template-columns:1fr;gap:36px;padding:26px 20px 40px} .band .in{padding:14px 20px 18px} .band h1{font-size:26px} }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="in">
+    <div class="row">
+      <a class="mark" href="today.html">HQ</a>
+      <span class="date"></span>
+      <nav aria-label="Areas"><a href="today.html">Today</a><a href="calendar.html">Calendar</a><a href="finances.html">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="health.html">Health</a></nav>
+      <div class="right">
+        <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
+        <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
+        <button class="ib menu" type="button" aria-label="Menu" aria-expanded="false" id="menubtn"><svg class="ic"><use href="icons.svg#menu"/></svg></button>
+      </div>
+    </div>
+    <div class="mast">
+      <h1>Patterns</h1>
+      <span class="sub" id="sub">things that moved together</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section>
+    <h2>What held<small id="foundn"></small></h2>
+    <ul class="found" id="found"></ul>
+    <p class="empty" id="none" hidden></p>
+  </section>
+
+  <aside>
+    <h3>What was looked at<small id="seriesn"></small></h3>
+    <ul class="bars" id="series"></ul>
+    <h3>How strict this is<small>on purpose</small></h3>
+    <p class="note" id="rules"></p>
+    <p class="note">Nothing here is a cause. Two things moving together can share a third reason, or none — a run of late nights and a run of big shops may simply both be what a busy fortnight looks like.</p>
+  </aside>
+</main>
+
+<p class="foot">Worked out once a night from what the other pages already hold; nothing is sent anywhere.</p>
+
+<script src="clock.js"></script>
+<script src="hq.js"></script>
+<script src="store.js"></script>
+<script src="bell.js"></script>
+<script src="search.js"></script>
+<script>
+(() => {
+  const C = clock;
+  let P = null;
+
+  const pct = r => Math.round(Math.abs(r) * 100);
+  const strength = r => Math.abs(r) >= 0.7 ? 'closely' : Math.abs(r) >= 0.55 ? 'clearly' : 'somewhat';
+  // the wording never says one thing caused the other, and "more" is not right for a clock reading
+  const moreOf = k => (P.higher && P.higher[k]) ? `a later ${P.labels[k]}` : `more ${P.labels[k]}`;
+  const lessOf = k => (P.higher && P.higher[k]) ? `an earlier ${P.labels[k]}` : `less ${P.labels[k]}`;
+
+  function sentence(x){
+    const up = x.rho > 0;
+    const a = moreOf(x.a), b = up ? moreOf(x.b) : lessOf(x.b);
+    return x.lag
+      ? `On days after <b>${a}</b>, there tends to be <b>${b}</b>.`
+      : `Days with <b>${a}</b> tend to be days with <b>${b}</b>.`;
+  }
+
+  // the two series, ranked and drawn against each other: the reader can see the cloud for themselves
+  function plot(pts, x){
+    if(!pts || pts.length < 4) return '';
+    const W=320, H=82, P0={t:6,r:6,b:14,l:6};
+    const xs=pts.map(p=>p[0]), ys=pts.map(p=>p[1]);
+    const lo=a=>Math.min(...a), hi=a=>Math.max(...a);
+    const sx=v=>P0.l+(W-P0.l-P0.r)*((v-lo(xs))/((hi(xs)-lo(xs))||1));
+    const sy=v=>P0.t+(H-P0.t-P0.b)*(1-(v-lo(ys))/((hi(ys)-lo(ys))||1));
+    return `<div class="plot"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Each day as a point: one measure across, the other up">
+      <line class="ax" x1="${P0.l}" x2="${W-P0.r}" y1="${H-P0.b}" y2="${H-P0.b}"/>
+      ${pts.map(p=>`<circle class="dot" r="2.6" cx="${sx(p[0]).toFixed(1)}" cy="${sy(p[1]).toFixed(1)}"/>`).join('')}
+    </svg><p class="cap">across: ${esc(P.labels[x.a])} · up: ${esc(P.labels[x.b])}${x.lag ? ' the next day' : ''} · one point a day</p></div>`;
+  }
+
+  function render(){
+    const shown = (P && P.shown) || [];
+    F('foundn').textContent = P ? `${shown.length} of ${P.tested} pairs` : '';
+    F('sub').textContent = P ? `${P.window} days · worked out ${P.date === C.today ? 'last night' : 'on ' + C.dayMonth(C.fromISO(P.date))}` : 'nothing worked out yet';
+
+    F('found').innerHTML = shown.map(x => `<li>
+      <p class="said">${sentence(x)}</p>
+      <div class="facts">
+        <span><b>${pct(x.rho)}%</b> ${strength(x.rho)} together</span>
+        <span>on <b>${x.n}</b> days</span>
+        <span>held in both halves (${Math.abs(x.r1).toFixed(2)} and ${Math.abs(x.r2).toFixed(2)})</span>
+        <span>seen <b>${x.nights}</b> nights running</span>
+      </div>
+      ${plot(x.points, x)}
+    </li>`).join('');
+
+    const none = F('none');
+    if(shown.length){ none.hidden = true; }
+    else {
+      none.hidden = false;
+      const near = (P && P.all || []).length;
+      const counts = Object.values((P && P.series) || {}), longest = counts.length ? Math.max(...counts) : 0;
+      none.innerHTML = !P ? 'Nothing has been worked out yet. This fills itself in overnight.'
+        : !P.tested ? `Not enough logged yet. Nothing can be compared until two measures each have <b>${P.thresholds.MIN_DAYS} days</b> of readings inside the window; the longest run so far is <b>${longest}</b>. This fills in as the days accumulate.`
+        : near ? `Nothing to report yet. <b>${near}</b> ${near===1?'pair is':'pairs are'} close, but ${near===1?'it has':'they have'} not held for a second night.`
+        : `Nothing held. <b>${P.tested}</b> ${P.tested===1?'pair was':'pairs were'} examined and none was strong enough, steady enough across the window, and repeatable enough to be worth your attention. That is the usual answer, and it is the honest one.`;
+    }
+
+    const s = (P && P.series) || {};
+    const need = P ? P.thresholds.MIN_DAYS : 30;
+    const rows = Object.entries(P && P.labels || {}).map(([k, label]) => [label, s[k] || 0]).sort((a,b)=>b[1]-a[1]);
+    F('seriesn').textContent = rows.filter(r=>r[1]>=need).length ? `${rows.filter(r=>r[1]>=need).length} long enough` : '';
+    F('series').innerHTML = rows.map(([label, n]) => `<li class="${n<need?'short':''}"><span>${esc(label)}</span><span class="n">${n}</span><span class="track"><i style="width:${Math.min(100, n/Math.max(need,1)*100)}%"></i></span></li>`).join('');
+
+    if(P) F('rules').innerHTML = `A pair is only shown when it has at least <b>${P.thresholds.MIN_DAYS} days</b> of both measures, moves together by at least <b>${Math.round(P.thresholds.MIN_RHO*100)}%</b>, holds in <b>both halves</b> of the window, survives a correction across all ${P.tested} pairs tested, and does all of that on <b>${P.thresholds.NEEDED_NIGHTS} nights running</b>. Pairs that are the same fact twice — sleep against its own stages — are never tested.`;
+  }
+
+  store.load('patterns').then(doc => { P = doc; render(); });
+})();
+</script>
+</body>
+</html>
