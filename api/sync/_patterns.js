@@ -54,10 +54,10 @@ export async function buildSeries(getDoc, today, getMany) {
   }
 
   // money out, month by month
-  const months = [...new Set(days.map(d => d.slice(0, 7)))];
-  for (const ym of months) { const fin = await getDoc('finances.' + ym); if (!fin) continue;
+  const months = [...new Set(days.map(d => d.slice(0, 7)))], kept = new Set();
+  for (const ym of months) { const fin = await getDoc('finances.' + ym); if (!fin) continue; kept.add(ym);
     for (const t of fin.tx || []) if (t.date >= from && t.date <= today) S.spend[t.date] = (S.spend[t.date] || 0) + (+t.amt || 0); }
-  for (const d of days) if (S.spend[d] == null && months.includes(d.slice(0, 7))) S.spend[d] = 0;   // a day with no purchases is a zero, not a gap
+  for (const d of days) if (S.spend[d] == null && kept.has(d.slice(0, 7))) S.spend[d] = 0;   // a day inside a month you kept and bought nothing is a zero; a month with no document at all is a gap
 
   const school = (await getDoc('school')) || {};
   for (const s of school.sessions || []) if (s.date >= from && s.date <= today) S.study[s.date] = (S.study[s.date] || 0) + (+s.min || 0);
@@ -72,11 +72,12 @@ export async function buildSeries(getDoc, today, getMany) {
   // hours the calendar says were spoken for
   const cal = (await getDoc('calendar')) || {};
   const wd = d => (new Date(d + 'T12:00:00Z').getUTCDay() + 6) % 7;
-  for (const d of days) { let hours = 0;
+  const calFrom = (cal.series || []).reduce((m, s) => (s.date && s.date < m ? s.date : m), today);
+  for (const d of days) { if (d < calFrom) continue; let hours = 0;
     for (const s of cal.series || []) { const rep = s.rep || [];
       const on = rep.length ? (d >= s.date && [...new Set([wd(s.date), ...rep])].includes(wd(d))) : s.date === d;
       if (on) hours += Math.max(0, (+s.end || 0) - (+s.start || 0)); }
-    if (cal.series && cal.series.length) S.booked[d] = hours; }
+    if ((cal.series || []).length) S.booked[d] = hours; }
 
   // to-dos are a document a day; the whole window comes back in one query
   const todoDocs = getMany ? await getMany(days.map(d => 'today.' + d)) : {};
@@ -157,7 +158,8 @@ export async function patterns(getDoc, putDoc, today, getMany) {
 
   const doc = {
     date: today, window: WINDOW, tested: tests.length,
-    series: Object.fromEntries(keys.map(k => [k, Object.keys(S[k]).length])),
+    series: Object.fromEntries(Object.keys(LABEL).map(k => [k, Object.keys(S[k]).length])),
+    testable: keys,
     all, shown: all.filter(x => x.nights >= NEEDED_NIGHTS),
     thresholds: { MIN_DAYS, MIN_RHO, HALF_RHO, FDR_Q, NEEDED_NIGHTS },
     labels: LABEL, higher: HIGHER,
