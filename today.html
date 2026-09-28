@@ -152,7 +152,7 @@
     <div class="todo">
       <h2>To do<small id="todon"></small></h2>
       <ul id="todo"></ul>
-      <form class="addt" id="addt"><input id="t-text" placeholder="Anything: a to-do, 12.40 lunch, or 173.2" required><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
+      <form class="addt" id="addt"><input id="t-text" placeholder="Anything: a to-do, 12.40 lunch, 173.2, or Dentist Thursday 3–4 pm" required><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
       <p class="saidt" id="saidt" hidden></p>
       <ul class="reps" id="reps"></ul>
     </div>
@@ -366,6 +366,60 @@
     for(const r of RULES.rules || []) if(repToday(r.rep) && !T.items.some(i => i.rule === r.id)) { T.items.push({ text: r.text, at: r.at, done: false, rule: r.id }); n++; }
     return n; };
 
+  // ---- an appointment, told apart from a to-do by having a span or a day of its own ----
+  // "Dentist 3–4 pm" and "Coffee Thursday at 10" are appointments; "Call the dentist by 3 pm" stays a to-do,
+  // because "by" is a deadline and a to-do belongs to today. Nothing that used to be a to-do becomes an event.
+  const DAYWORDS = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+  const hourOf = (h, m, ap, ref) => { let n = +h % 12; if (ap && ap[0].toLowerCase() === 'p') n += 12;
+    else if (!ap && n + (+m || 0) / 60 < (ref != null ? ref : 7)) n += 12;   // no am/pm: the reading that is still to come
+    return n + (+m || 0) / 60; };
+
+  function parseWhen(raw){
+    let t = ' ' + raw.trim(), date = null, said = null;
+    // a day of its own: today, tomorrow, a weekday, or a date like "17 Oct" / "Oct 17"
+    const dm = /\s(today|tomorrow|tmrw|mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.exec(t)
+            || /\s(\d{1,2}\s+[A-Za-z]{3,9}|[A-Za-z]{3,9}\s+\d{1,2})(?:\b|$)/.exec(t);
+    if(dm){
+      const w = dm[1].toLowerCase();
+      if(w === 'today') date = TODAY;
+      else if(w === 'tomorrow' || w === 'tmrw') date = C.iso(C.addDays(C.now, 1));
+      else { const i = DAYWORDS.findIndex(n => n.startsWith(w.slice(0, 3)));
+        if(i >= 0){ let n = (i - C.now.getDay() + 7) % 7; if(!n) n = 7; date = C.iso(C.addDays(C.now, n)); }   // "Thursday" means the next one
+        else { const guess = C.parseDay(dm[1]); if(guess && guess !== TODAY) date = guess; } }
+      if(date){ said = dm[1]; t = t.slice(0, dm.index) + ' ' + t.slice(dm.index + dm[0].length); }
+    }
+    // a span: "3–4 pm", "3 to 4.30", "9.15-10"
+    let start = null, end = null;
+    const UNITS = /^\s*(km|mi|miles?|k|pages?|pp|reps?|sets?|kg|lbs?|pounds?|people|minutes?|mins?|days?|weeks?|months?|years?|%|dollars?)\b/i;
+    const span = /\s(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm)?\s*(?:-|–|—|to|until|till)\s*(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm)?\b/i.exec(t);
+    // a span is only a span of time: with no am or pm both ends must read as a clock, and a unit right after it
+    // means it was a count all along — "pages 10 to 20", "5 to 10 km"
+    const spanIsClock = span && (span[3] || span[6] || (+span[1] >= 1 && +span[1] <= 12 && +span[4] >= 1 && +span[4] <= 12))
+      && !UNITS.test(t.slice(span.index + span[0].length));
+    if(spanIsClock){
+      end = hourOf(span[4], span[5], span[6] || span[3]);
+      start = hourOf(span[1], span[2], span[3] || span[6], end);
+      if(end <= start) end = Math.min(24, start + 1);
+      t = t.slice(0, span.index) + ' ' + t.slice(span.index + span[0].length);
+    } else {
+      // a single time, with "at" or a named day, and perhaps a length: "at 3 pm for 45 min"
+      const one = /\s(?:at|@)\s*(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm)?\b/i.exec(t) || (date ? /\s(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm)\b/i.exec(t) : null);
+      if(one){
+        start = hourOf(one[1], one[2], one[3]);
+        t = t.slice(0, one.index) + ' ' + t.slice(one.index + one[0].length);
+        const len = /\sfor\s+(?:(half)\s+)?(?:(an?)\s+)?(\d+(?:\.\d+)?)?\s*(hours?|hrs?|h|minutes?|mins?|m)\b/i.exec(t);
+        if(len){ const n = len[1] ? 0.5 : len[2] ? 1 : +(len[3] || 1); end = start + (/^h/i.test(len[4]) ? n : n / 60);
+          t = t.slice(0, len.index) + ' ' + t.slice(len.index + len[0].length); }
+        else end = start + 1;
+      }
+    }
+    if(start == null) return null;                       // no time at all: not an appointment
+    if(!span && !date) return null;                      // a bare "at 3" today is a to-do, as it always was
+    const title = t.replace(/\s+/g, ' ').replace(/^[\s,–-]+|[\s,–-]+$/g, '').replace(/\s+(on|at|from)$/i, '').trim();
+    if(!title) return null;
+    return { title, date: date || TODAY, start, end: Math.min(24, end), said };
+  }
+
   const money = s => { const m = /^\$?(\d{1,6}(?:,\d{3})*(?:\.\d{2}))\b/.exec(s.trim()) || /\$(\d{1,6}(?:,\d{3})*(?:\.\d{1,2})?)\b/.exec(s); return m ? +m[1].replace(/,/g,'') : null; };
   const whatOf = s => s.replace(/^\$?\d[\d,]*(?:\.\d{2})?\s*/, '').replace(/\$\d[\d,]*(?:\.\d{1,2})?/, '').replace(/^(on|for|at)\s+/i,'').trim();
   // a category is not guessed from thin air: it is the one this description went to last time
@@ -399,6 +453,18 @@
       const H = d.H || (d.H = { days: {}, meds: [], next: [] }); H.days ??= {};
       (H.days[TODAY] ??= { pills: [] }).weight = String(wt);
       store.save('health', H); said(`${wt} lb logged · Health`); renderAffairs(d); return;
+    }
+    // an appointment
+    const when = parseWhen(t);
+    if(when){
+      const cal = CAL || (CAL = { cats: [{id:'cal', name:'Appointments', tint:'#E9EEF3'}], series: [], notes: {}, hidden: [] });
+      cal.series ??= []; cal.cats ??= [];
+      const named = (cal.cats || []).find(c => c.name && when.title.toLowerCase().includes(c.name.toLowerCase().replace(/s$/, '')));
+      cal.series.push({ id: uid('c'), title: when.title, date: when.date, start: when.start, end: when.end, cat: (named || {}).id || 'cal', rep: [], sub: '' });
+      store.save('calendar', cal);
+      store.sync('calpush');                             // and on to Google, if that is switched on
+      said(`“${when.title}” on ${when.date === TODAY ? 'today' : C.dayMonth(C.fromISO(when.date))} at ${h12(when.start)} · Calendar`);
+      d.day = renderDay(cal); return;
     }
     // a to-do, which may repeat and may carry a time
     const r = parseRep(t), p = parseAt(r.text);
