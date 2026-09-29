@@ -49,8 +49,11 @@
   .tile h3{grid-column:1;margin:0}
   .tile .x{grid-column:2;grid-row:1;justify-self:end;color:var(--ink-3);font-size:12.5px;opacity:0}
   .tile:hover .x,.tile:focus-within .x{opacity:1}
-  .tile .hrs{grid-column:1/-1;font-family:var(--serif);font-size:24px;line-height:1.1;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-top:2px}
+  .tile .hrs{grid-column:1;font-family:var(--serif);font-size:24px;line-height:1.1;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-top:2px}
   .tile .hrs small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
+  .tile .gr{grid-column:2;grid-row:2;justify-self:end;text-align:right;font-family:var(--serif);font-size:24px;line-height:1.1}
+  .tile .gr i{font-style:normal;font-size:15px;color:var(--ink-3);margin-left:4px}
+  .tile .gr small{display:block;font-family:var(--sans);font-size:11.5px;color:var(--ink-3);margin-top:2px}
   .tile .due{grid-column:1/-1;font-size:13.5px;color:var(--ink-2)}
   .tile .due.ox{color:var(--ox)}
   .tile .conf{grid-column:1/-1;display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-3);margin-top:4px}
@@ -87,6 +90,7 @@
   .ledger .w small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
   .ledger li.done .w{color:var(--ink-3);text-decoration:line-through}
   .ledger li.done .w small{text-decoration:none}
+  .ledger li.scored .d small{color:var(--ink-2)}
   .ledger .d{font-family:var(--serif);color:var(--ink-2);font-size:14px;white-space:nowrap;text-align:right}
   .ledger .d.ox{color:var(--ox)}
   .ledger .d small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3)}
@@ -262,6 +266,15 @@
       F('nextn').textContent=''; F('next').innerHTML=`<p class="empty" style="grid-column:1/-1">${S.courses.length?'Nothing open. Add an item on the right, or enjoy the evening.':'Add a course below to get started.'}</p>`;
     }
 
+    // The running mark: Canvas's own where it publishes one, otherwise what the scored work here adds up to.
+    const mark = c => {
+      const done = S.items.filter(i=>i.course===c.id && i.score!=null && i.pts>0);
+      const got = done.reduce((n,i)=>n+i.score,0), out = done.reduce((n,i)=>n+i.pts,0);
+      if(c.mark) return `<div class="gr" title="Canvas, as of ${esc(c.mark.at||'')}">${Math.round(c.mark.pct)}%${c.mark.letter?`<i>${esc(c.mark.letter)}</i>`:''}<small>${done.length?`${done.length} marked`:'from Canvas'}</small></div>`;
+      if(!out) return '';
+      return `<div class="gr" title="Worked out from marked work; Canvas publishes no mark for this course">${Math.round(got/out*100)}%<small>${done.length} marked here</small></div>`;
+    };
+
     // course tiles
     F('coursesn').textContent = S.courses.length ? `${hrs(doneMin)} studied this week` : '';
     F('tiles').innerHTML = S.courses.length ? S.courses.map(c=>{
@@ -269,7 +282,7 @@
       const nd=S.items.filter(i=>i.course===c.id && !i.done).sort((a,b)=>a.due<b.due?-1:1)[0];
       return `<div class="tile" data-id="${c.id}">
         <h3>${esc(c.name)}</h3><button class="x" type="button" aria-label="Remove ${esc(c.name)}">remove</button>
-        <div class="hrs">${m?hrs(m):'0 h'}<small>studied this week</small></div>
+        <div class="hrs">${m?hrs(m):'0 h'}<small>studied this week</small></div>${mark(c)}
         <div class="due ${nd && days(nd.due)<=0?'ox':''}">${nd?`Next: ${esc(nd.title)}, ${dueWord(nd.due)}`:'Nothing due'}</div>
         <div class="conf">Confidence<span class="dots">${[1,2,3,4,5].map(n=>`<button type="button" class="${n<=c.conf?'on':''}" data-conf="${n}" aria-label="${n} of 5"></button>`).join('')}</span></div>
         <ul class="lk">${c.links.map((l,i)=>`<li><a href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.t)}</a><span class="h">${esc(host(l.u))}</span><button class="rm" type="button" data-lk="${i}" aria-label="Remove link">remove</button></li>`).join('')}
@@ -280,7 +293,7 @@
     // due ledger
     const dueList = [...S.items].sort((a,b)=>a.done!==b.done ? (a.done?1:-1) : (a.due<b.due?-1:1));
     F('duen').textContent = `${open.length} open`;
-    F('due').innerHTML = dueList.length ? dueList.map(i=>`<li class="${i.done?'done':''}" data-id="${i.id}"><input type="checkbox" ${i.done?'checked':''} aria-label="Done: ${esc(i.title)}"><span class="w">${i.url?`<a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a>`:esc(i.title)}<small>${esc(course(i.course)?.name||'—')} · ${i.type}${i.source==='canvas'?' · Canvas':''}</small></span><span class="d ${!i.done&&days(i.due)<=0?'ox':''}">${dmy(i.due)}<small>${i.done?'done':dueWord(i.due)}</small></span><button class="x" type="button" aria-label="Remove"><span class="w-">remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button></li>`).join('') : '<li class="empty">Nothing due.</li>';
+    F('due').innerHTML = dueList.length ? dueList.map(i=>`<li class="${i.done?'done':''} ${i.score!=null?'scored':''}" data-id="${i.id}"><input type="checkbox" ${i.done?'checked':''} aria-label="Done: ${esc(i.title)}"><span class="w">${i.url?`<a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a>`:esc(i.title)}<small>${esc(course(i.course)?.name||'—')} · ${i.type}${i.source==='canvas'?' · Canvas':''}</small></span><span class="d ${!i.done&&days(i.due)<=0?'ox':''}">${dmy(i.due)}<small>${i.score!=null?esc(i.pts?`${i.score}/${i.pts}`:(i.grade||String(i.score))):i.done?'done':dueWord(i.due)}</small></span><button class="x" type="button" aria-label="Remove"><span class="w-">remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button></li>`).join('') : '<li class="empty">Nothing due.</li>';
     const sel = S.courses.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
     const ic=F('i-course').value, sc=F('s-course').value; F('i-course').innerHTML=sel; F('s-course').innerHTML=sel; if(ic) F('i-course').value=ic; if(sc) F('s-course').value=sc;
 

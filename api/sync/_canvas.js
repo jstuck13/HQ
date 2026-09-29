@@ -10,7 +10,7 @@ export default syncRoute('canvas', async ({ getDoc, putDoc }) => {
   if (!/^https?:\/\//.test(base)) throw new Error('CANVAS_URL should start with https://');
   const headers = { Authorization: `Bearer ${token}` };
 
-  const courses = await fetchAll(`${base}/api/v1/courses?enrollment_state=active&per_page=50`, headers);
+  const courses = await fetchAll(`${base}/api/v1/courses?enrollment_state=active&include[]=total_scores&per_page=50`, headers);
   const from = new Date(); from.setDate(from.getDate() - 14);
   const to = new Date(); to.setDate(to.getDate() + 90);
   const items = await fetchAll(`${base}/api/v1/planner/items?start_date=${iso(from)}&end_date=${iso(to)}&per_page=100`, headers);
@@ -27,8 +27,12 @@ export default syncRoute('canvas', async ({ getDoc, putDoc }) => {
     if (school.ignored.includes(id)) continue;
     const canvasLink = { t: 'Canvas', u: `${base}/courses/${c.id}`, source: 'canvas' };
     const tidy = n => String(n).replace(/\s*\((?:Fall|Spring|Summer|Winter|Autumn)\s*\d{4}\)\s*$/i, '').trim();   // "MATH-2650-100 (Fall 2026)" → "MATH-2650-100"
-    if (existing) { existing.name = tidy(c.course_code && c.name.length > 40 ? c.course_code : c.name); existing.links = [canvasLink, ...existing.links.filter(l => l.source !== 'canvas')]; }
-    else { school.courses.push({ id, name: tidy(c.course_code && c.name.length > 40 ? c.course_code : c.name), conf: 3, links: [canvasLink], source: 'canvas' }); nc++; }
+    // Canvas reports the running mark on the enrolment; it is absent when a course does not publish one
+    const en = (c.enrollments || []).find(e => e.type === 'student' || e.computed_current_score != null) || {};
+    const mark = en.computed_current_score != null ? { pct: +en.computed_current_score, letter: en.computed_current_grade || undefined, at: new Date().toISOString().slice(0, 10) } : undefined;
+    if (existing) { existing.name = tidy(c.course_code && c.name.length > 40 ? c.course_code : c.name); existing.links = [canvasLink, ...existing.links.filter(l => l.source !== 'canvas')];
+      if (mark) existing.mark = mark; else delete existing.mark; }
+    else { school.courses.push({ id, name: tidy(c.course_code && c.name.length > 40 ? c.course_code : c.name), conf: 3, links: [canvasLink], source: 'canvas', mark }); nc++; }
   }
 
   // items: due date and title follow Canvas; "done" is Canvas-submitted OR ticked by hand (never un-ticks a hand tick)
@@ -46,6 +50,25 @@ export default syncRoute('canvas', async ({ getDoc, putDoc }) => {
     if (existing) { Object.assign(existing, record, { done: existing.done || submitted }); nu++; }
     else { school.items.push({ ...record, done: submitted }); ni++; }
   }
+  // what each finished piece of work actually scored. The planner does not carry it, so the submissions are asked
+  // for course by course — only for courses that have items here, and only the graded ones are kept.
+  let scored = 0;
+  const mine = new Set(school.items.filter(i => i.source === 'canvas').map(i => i.course));
+  for (const c of courses) {
+    if (!mine.has(`canvas:${c.id}`)) continue;
+    let subs = [];
+    try { subs = await fetchAll(`${base}/api/v1/courses/${c.id}/students/submissions?student_ids[]=self&per_page=100`, headers); }
+    catch { continue; }
+    for (const s of subs) {
+      if (s.score == null || s.workflow_state !== 'graded') continue;
+      const it = school.items.find(i => i.id === `canvas:assignment:${s.assignment_id}` || i.id === `canvas:quiz:${s.assignment_id}` || i.id === `canvas:discussion_topic:${s.assignment_id}`);
+      if (!it) continue;
+      it.score = +s.score; if (s.grade && isNaN(+s.grade)) it.grade = s.grade;
+      it.done = true; scored++;
+    }
+  }
+
   await putDoc('school', school);
-  return { courses: courses.length, newCourses: nc, items: items.length, newItems: ni, updatedItems: nu };
+  return { courses: courses.length, newCourses: nc, items: items.length, newItems: ni, updatedItems: nu, scored,
+           marks: school.courses.filter(c => c.mark).map(c => `${c.name} ${Math.round(c.mark.pct)}%`).join(', ') || undefined };
 });
