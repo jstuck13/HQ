@@ -54,6 +54,15 @@ h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0}
 /* a list long enough to run down the page scrolls inside its own box instead; --h sets how tall that box is */
 .scrollbox{max-height:var(--h,420px);overflow:auto;overscroll-behavior:contain;padding-right:6px;scrollbar-width:thin;scrollbar-color:var(--rule) transparent}
 
+/* a newer version is ready: said quietly at the foot of the page, never taken without asking */
+.hq-newer{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:16px;
+  background:var(--band);color:var(--band-ink);border-radius:999px;padding:9px 12px 9px 20px;box-shadow:0 8px 22px -10px rgba(0,0,0,.45);
+  font-size:13.5px;max-width:calc(100vw - 32px)}
+.hq-newer button{background:none;border:0;font:inherit;color:var(--band-ink);cursor:pointer;padding:4px 10px;border-radius:999px;border:1px solid rgba(242,236,223,.4)}
+.hq-newer button:hover{background:rgba(242,236,223,.14)}
+.hq-newer .later{border:0;padding:4px 8px;font-size:16px;line-height:1;opacity:.7}
+@media (prefers-reduced-motion:no-preference){ .hq-newer{animation:hq-newer-in .3s ease-out both} @keyframes hq-newer-in{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translateX(-50%)}} }
+
 .band{background:var(--band);color:var(--band-ink)}
 .band .in{max-width:1180px;margin:0 auto;padding:16px 40px 22px}
 .row{display:flex;align-items:center;gap:26px}

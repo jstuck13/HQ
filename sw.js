@@ -17,7 +17,7 @@ self.addEventListener('activate', e => e.waitUntil(caches.keys().then(ks => Prom
 // deploy on the next visit. Anything else — /api above all — is left alone.
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
-  if (e.request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/') || url.pathname === '/sw.js') return;
+  if (e.request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/') || url.pathname === '/sw.js' || url.pathname === '/version.json') return;
   e.respondWith(caches.open(V).then(async cache => {
     const hit = await cache.match(e.request, { ignoreSearch: true });
     const fresh = fetch(e.request).then(r => { if (r.ok && r.type === 'basic') cache.put(e.request, r.clone()); return r; }).catch(() => hit);

@@ -64,6 +64,9 @@
   .word .ex b{font-weight:400;font-style:italic;color:var(--band-ink)}
 
   .foot{display:flex;align-items:center;gap:24px;padding-top:22px;border-top:1px solid var(--band-rule)}
+  .ver{margin-left:auto;font-family:var(--serif);font-size:12.5px;color:var(--band-muted);letter-spacing:.02em;white-space:nowrap}
+  .ver .newer{background:none;border:0;padding:0;font:inherit;color:var(--band-ink);cursor:pointer;border-bottom:1px solid rgba(242,236,223,.4)}
+  .ver .newer:hover{border-bottom-color:var(--band-ink)}
   .open{display:inline-flex;align-items:center;gap:12px;font-family:var(--serif);font-size:22px;border-bottom:1px solid transparent;transition:border-color .15s}
   .open:hover{border-color:currentColor}
   .open svg{width:18px;height:18px;transition:transform .15s}
@@ -122,6 +125,7 @@
       <button class="open" type="submit"><span id="openlbl">Open today</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
       <span class="hint" id="hint">or press <kbd>Enter</kbd></span>
     </form>
+    <span class="ver" id="ver"></span>
   </footer>
 </div>
 
@@ -175,6 +179,19 @@
   const h = now.getHours();
   document.getElementById('greet').textContent = (h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + ', Jacob.';
   // The front door. With the API present, the passcode sets the session cookie; on a plain static server it just opens.
+  // The number THIS copy was built with. version.json carries the same number and is never cached, so when the
+  // two disagree the page you are looking at came from the kept copy and a newer one is on the server.
+  const PAGE_VERSION = '4.2.0';
+  const ver = document.getElementById('ver');
+  ver.textContent = 'Version ' + PAGE_VERSION;
+  fetch('/version.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(v => {
+    if (!v || !v.v || v.v === PAGE_VERSION) return;
+    ver.innerHTML = `Version ${PAGE_VERSION} \u00b7 <button type="button" class="newer">${v.v} is ready</button>`;
+    ver.querySelector('button').addEventListener('click', async () => {
+      try { await caches.delete('hq-shell-1'); } catch {}
+      location.reload();
+    });
+  }).catch(() => {});
   const gate = document.getElementById('gate'), pass = document.getElementById('pass'), hint = document.getElementById('hint');
   const passl = document.getElementById('passl');
   let shown = false;
