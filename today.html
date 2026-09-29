@@ -32,8 +32,8 @@
   .ev.cal{--c:var(--a-cal)} .ev.fit{--c:var(--a-fit)} .ev.health{--c:var(--a-health)} .ev.study{--c:var(--a-study)}
   .ev b{display:block;font-family:var(--serif);font-weight:400}
   .ev small{color:var(--ink-3);font-size:12.5px}
-  .now{position:absolute;left:46px;right:0;height:0;border-top:1.5px solid var(--ox);z-index:2;pointer-events:none}
-  .now::before{content:"";position:absolute;left:-1px;top:-2.75px;width:7px;height:7px;border-radius:50%;background:var(--ox)}
+  .now{position:absolute;left:46px;right:0;height:1.5px;background:var(--ox);z-index:2;pointer-events:none}
+  .now::before{content:"";position:absolute;left:-1px;top:50%;margin-top:-3.5px;width:7px;height:7px;border-radius:50%;background:var(--ox)}
   .now::after{content:attr(data-t);position:absolute;right:0;top:-21px;font-family:var(--serif);font-size:12px;color:var(--band-ink);background:var(--ox);padding:2px 8px;border-radius:6px}
   .ev.live b{color:var(--ox)}
   .td{position:absolute;left:64px;right:0;display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2);border-top:1px dashed var(--ink-3);padding-top:3px;transform:translateY(-1px);pointer-events:none}

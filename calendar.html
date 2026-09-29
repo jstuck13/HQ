@@ -77,8 +77,8 @@
   .filters .sw.due{background:var(--ox);border-color:var(--ox)}
   .filters .sw.push{background:var(--band);border-color:var(--band)}
   .col:has(.pin) .gap{padding-top:26px} .col:has(.pin + .pin) .gap{padding-top:46px}   /* the free-time label steps below the pins */
-  .now{position:absolute;left:50px;right:0;border-top:1.5px solid var(--ox);z-index:3;pointer-events:none}
-  .now::before{content:"";position:absolute;left:-1px;top:-2.75px;width:7px;height:7px;border-radius:50%;background:var(--ox)}
+  .now{position:absolute;left:50px;right:0;height:1.5px;background:var(--ox);z-index:3;pointer-events:none}
+  .now::before{content:"";position:absolute;left:-1px;top:50%;margin-top:-3.5px;width:7px;height:7px;border-radius:50%;background:var(--ox)}
   .now::after{content:attr(data-t);position:absolute;right:calc(100% + 8px);top:-9px;font-family:var(--serif);font-size:11.5px;color:var(--ox);white-space:nowrap;background:var(--card);padding:0 2px}
   h1 button{font:inherit;color:inherit;display:inline-flex;align-items:center;gap:8px;border-bottom:1px solid transparent}
   h1 button:hover{border-color:var(--band-muted)}
