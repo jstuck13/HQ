@@ -374,20 +374,30 @@
     else if (!ap && n + (+m || 0) / 60 < (ref != null ? ref : 7)) n += 12;   // no am/pm: the reading that is still to come
     return n + (+m || 0) / 60; };
 
-  function parseWhen(raw){
-    let t = ' ' + raw.trim(), date = null, said = null;
-    // a day of its own: today, tomorrow, a weekday, or a date like "17 Oct" / "Oct 17"
-    const dm = /\s(today|tomorrow|tmrw|mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.exec(t)
+  // a day named in the text — today, tomorrow, a weekday, or "17 Oct" — taken out of it
+  const tidy = x => x.replace(/\s+/g, ' ').replace(/^[\s,:;–—-]+|[\s,:;–—-]+$/g, '').trim();
+  function parseDayWord(raw){
+    const t = ' ' + String(raw).trim();
+    const dm = /\s(today|tonight|tomorrow|tmrw|mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.exec(t)
             || /\s(\d{1,2}\s+[A-Za-z]{3,9}|[A-Za-z]{3,9}\s+\d{1,2})(?:\b|$)/.exec(t);
-    if(dm){
-      const w = dm[1].toLowerCase();
-      if(w === 'today') date = TODAY;
-      else if(w === 'tomorrow' || w === 'tmrw') date = C.iso(C.addDays(C.now, 1));
-      else { const i = DAYWORDS.findIndex(n => n.startsWith(w.slice(0, 3)));
-        if(i >= 0){ let n = (i - C.now.getDay() + 7) % 7; if(!n) n = 7; date = C.iso(C.addDays(C.now, n)); }   // "Thursday" means the next one
-        else { const guess = C.parseDay(dm[1]); if(guess && guess !== TODAY) date = guess; } }
-      if(date){ said = dm[1]; t = t.slice(0, dm.index) + ' ' + t.slice(dm.index + dm[0].length); }
-    }
+    if(!dm) return null;
+    const w = dm[1].toLowerCase();
+    let date = null;
+    if(w === 'today' || w === 'tonight') date = TODAY;
+    else if(w === 'tomorrow' || w === 'tmrw') date = C.iso(C.addDays(C.now, 1));
+    else { const i = DAYWORDS.findIndex(n => n.startsWith(w.slice(0, 3)));
+      if(i >= 0){ let n = (i - C.now.getDay() + 7) % 7; if(!n) n = 7; date = C.iso(C.addDays(C.now, n)); }   // "Thursday" means the next one
+      else { const guess = C.parseDay(dm[1]); if(guess && guess !== TODAY) date = guess; } }
+    if(!date) return null;
+    return { date, said: dm[1], text: tidy(t.slice(0, dm.index) + ' ' + t.slice(dm.index + dm[0].length)) };
+  }
+
+  function parseWhen(raw){
+    // "by" names a deadline, which is a to-do however much else is in the line
+    if(/\bby\s+\d/i.test(raw)) return null;
+    let t = ' ' + raw.trim(), date = null, said = null;
+    const dw = parseDayWord(raw);
+    if(dw && dw.date){ date = dw.date; said = dw.said; t = ' ' + dw.text; }
     // a span: "3–4 pm", "3 to 4.30", "9.15-10"
     let start = null, end = null;
     const UNITS = /^\s*(km|mi|miles?|k|pages?|pp|reps?|sets?|kg|lbs?|pounds?|people|minutes?|mins?|days?|weeks?|months?|years?|%|dollars?)\b/i;
@@ -415,7 +425,7 @@
     }
     if(start == null) return null;                       // no time at all: not an appointment
     if(!span && !date) return null;                      // a bare "at 3" today is a to-do, as it always was
-    const title = t.replace(/\s+/g, ' ').replace(/^[\s,–-]+|[\s,–-]+$/g, '').replace(/\s+(on|at|from)$/i, '').trim();
+    const title = tidy(t.replace(/\s+(on|at|from)$/i, ''));
     if(!title) return null;
     return { title, date: date || TODAY, start, end: Math.min(24, end), said };
   }
@@ -466,12 +476,25 @@
       said(`“${when.title}” on ${when.date === TODAY ? 'today' : C.dayMonth(C.fromISO(when.date))} at ${h12(when.start)} · Calendar`);
       d.day = renderDay(cal); return;
     }
-    // a to-do, which may repeat and may carry a time
-    const r = parseRep(t), p = parseAt(r.text);
-    if(r.rep != null){ const id = uid('r'); (RULES.rules ??= []).push({ id, text: p.text, at: p.at, rep: r.rep }); saveRules();
+    // a to-do, which may repeat, may carry a time, and may belong to another day
+    const r = parseRep(t);
+    if(r.rep != null){ const p = parseAt(r.text); const id = uid('r'); (RULES.rules ??= []).push({ id, text: p.text, at: p.at, rep: r.rep }); saveRules();
       if(repToday(r.rep) && !T.items.some(i => i.rule === id)) T.items.push({ text: p.text, at: p.at, done: false, rule: id });
       said(`“${p.text}” will come back ${repSays(r.rep)}`);
-    } else T.items.push({ ...p, done: false });
+      saveT(); renderTodo(); d.day = renderDay(CAL); return;
+    }
+    const dw = parseDayWord(r.text);
+    const p = parseAt(dw ? dw.text : r.text);
+    p.text = tidy(p.text);
+    if(dw && dw.date !== TODAY){                      // a day of its own: it waits in that day's list
+      const key = 'today.' + dw.date;
+      const doc = (await store.load(key)) || { items: [] };
+      doc.items ??= []; doc.items.push({ ...p, done: false });
+      store.save(key, doc);
+      said(`“${p.text}” on ${C.dayMonth(C.fromISO(dw.date))}${p.at != null ? ` by ${h12(p.at)}` : ''} — it will be waiting`);
+      return;
+    }
+    T.items.push({ ...p, done: false });
     saveT(); renderTodo(); d.day = renderDay(CAL);
   }
   F('addt').addEventListener('submit', e=>{ e.preventDefault(); const t=F('t-text').value.trim(); if(!t) return; F('addt').reset(); capture(t); });
