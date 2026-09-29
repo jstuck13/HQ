@@ -26,7 +26,7 @@
   --sans:"Figtree",system-ui,sans-serif;
   --shadow:0 1px 2px rgba(30,27,22,.05), 0 6px 18px -6px rgba(30,27,22,.12);
   --hour:44px;
-  --ornament:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='12' viewBox='0 0 160 12'%3E%3Cpath d='M0 6.5h62M98 6.5h62' stroke='%23D3C9B6'/%3E%3Cpath d='M80 1.5l5 5-5 5-5-5z' fill='%236A6256'/%3E%3C/svg%3E") center/160px 12px no-repeat;   /* a lozenge between two rules: the mark of an empty page */
+  --ornament:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='12' viewBox='0 0 160 12'%3E%3Cpath d='M0 6.5h62M98 6.5h62' stroke='%23D3C9B6'/%3E%3Cpath d='M80 1.5l5 5-5 5-5-5z' fill='%236A6256'/%3E%3C/svg%3E") center/min(160px, 100%) 12px no-repeat;   /* a lozenge between two rules: the mark of an empty page; it shrinks rather than spill a narrow column */
 }
 /* lamplight: after eight in the evening the paper warms a shade and the ink softens (clock.js sets it) */
 :root[data-light=evening]{--paper:#EBE1CD; --paper-2:#E1D5BE; --tint:#DDD1B9; --card:#F8F0E0; --ink:#2B2419; --ink-2:#5A4D3F; --ink-3:#7A6D5D; --rule:#CDBFA5; --today:#EBE1CD}
