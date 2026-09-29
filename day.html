@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1F3A2E">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>HQ — A day</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="hq.css">
+<style>
+  .mast{margin-top:20px;padding-top:18px;border-top:1px solid rgba(242,236,223,.28);display:flex;align-items:baseline;gap:26px;flex-wrap:wrap}
+  h1{font-size:32px;line-height:1.3}
+  h1 em{font-style:italic}
+  .nav{display:flex;gap:18px;font-size:13.5px;color:var(--band-muted)}
+  .nav button{background:none;border:0;font:inherit;color:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;padding:0}
+  .nav button:hover{color:var(--band-ink)}
+  .nav .ic{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+  .mast .sub{font-family:var(--serif);font-style:italic;color:var(--band-muted);margin-left:auto}
+
+  main{max-width:1180px;margin:0 auto;padding:34px 40px 44px;display:grid;grid-template-columns:1.25fr 1fr;gap:56px}
+  h3{font-size:17px;margin:30px 0 4px;padding-bottom:8px;border-bottom:1px solid var(--rule);display:flex;align-items:baseline;gap:12px}
+  h3 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
+
+  .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:16px 18px 18px;margin-top:14px}
+  .tl{position:relative;--hour:44px}
+  .hr{position:absolute;left:0;right:0;border-top:1px solid var(--rule);color:var(--ink-3);font-family:var(--serif);font-size:12px}
+  .hr span{position:absolute;left:0;top:-8px;width:42px;text-align:right}
+  .ev{position:absolute;left:56px;right:4px;border-radius:6px;padding:4px 10px;background:var(--c,var(--paper-2));overflow:hidden}
+  .ev b{font-family:var(--serif);font-weight:400;font-size:14.5px;display:block;line-height:1.25}
+  .ev small{font-size:11.5px;color:var(--ink-2)}
+  .td{position:absolute;left:56px;right:4px;border-top:1px dashed var(--ox);color:var(--ox);font-size:11.5px}
+  .td span{position:absolute;right:0;top:-15px;background:var(--paper);padding-left:6px}
+  .now{position:absolute;left:48px;right:4px;height:1.5px;background:var(--ox);z-index:3;pointer-events:none}
+  .now::before{content:"";position:absolute;left:-1px;top:50%;margin-top:-3.5px;width:7px;height:7px;border-radius:50%;background:var(--ox)}
+  .now::after{content:attr(data-t);position:absolute;right:0;top:-21px;font-family:var(--serif);font-size:12px;color:var(--band-ink);background:var(--ox);padding:2px 8px;border-radius:6px}
+
+  .todo{margin-top:34px}
+  .todo ul{list-style:none;margin:0;padding:0;border-left:1px solid color-mix(in srgb, var(--ox) 32%, transparent);padding-left:14px}
+  .todo li{display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px solid var(--rule)}
+  .todo input{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px;flex:none}
+  .todo input:checked{background:var(--band);border-color:var(--band)}
+  .todo input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+  .todo label{font-family:var(--serif);font-size:15.5px;cursor:pointer;flex:1;min-width:0}
+  .todo input:checked+label{color:var(--ink-3);text-decoration:line-through}
+  .todo .w{font-size:12px;color:var(--ink-3);white-space:nowrap}
+  .todo .w.due{color:var(--ox)}
+
+  .held{list-style:none;margin:0;padding:0}
+  .held li{display:grid;grid-template-columns:1fr auto;gap:4px 16px;padding:11px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+  .held .k{font-family:var(--serif);font-size:15.5px}
+  .held .k small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-top:2px}
+  .held .v{font-family:var(--serif);font-size:20px;text-align:right;white-space:nowrap}
+  .held .v i{font-style:normal;font-size:12.5px;color:var(--ink-3);margin-left:3px}
+  .held .v small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3)}
+
+  .spent{list-style:none;margin:0;padding:0}
+  .spent li{display:grid;grid-template-columns:1fr auto;gap:12px;padding:7px 0;border-bottom:1px dotted var(--rule);font-size:14px;align-items:baseline}
+  .spent .w{font-family:var(--serif);font-size:15px}
+  .spent .w small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3)}
+  .spent .a{font-family:var(--serif);text-align:right;white-space:nowrap}
+  .spent .tot{border-bottom:0;padding-top:10px} .spent .tot .w{color:var(--ink-3)}
+
+  .empty{font-family:var(--serif);font-style:italic;color:var(--ink-3);text-align:center;padding:22px 0}
+  .empty::before{content:"";display:block;width:min(160px,100%);height:12px;margin:0 auto 10px;background:var(--ornament)}
+  .ahead{font-family:var(--serif);font-style:italic;color:var(--ink-3);margin:14px 0 0;line-height:1.6}
+
+  @media (max-width:900px){ main{grid-template-columns:1fr;gap:34px;padding:26px 20px 40px} .band .in{padding:14px 20px 18px} .band h1{font-size:26px} .mast .sub{margin-left:0} }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="in">
+    <div class="row">
+      <a class="mark" href="today.html">HQ</a>
+      <span class="date"></span>
+      <nav aria-label="Areas"><a href="today.html">Today</a><a href="calendar.html">Calendar</a><a href="finances.html">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="health.html">Health</a></nav>
+      <div class="right">
+        <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
+        <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
+        <button class="ib menu" type="button" aria-label="Menu" aria-expanded="false" id="menubtn"><svg class="ic"><use href="icons.svg#menu"/></svg></button>
+      </div>
+    </div>
+    <div class="mast">
+      <h1 id="title">A day</h1>
+      <div class="nav" aria-label="Change day">
+        <button type="button" id="prev"><svg class="ic"><use href="icons.svg#chevron-left"/></svg>Previous</button>
+        <button type="button" id="today">Today</button>
+        <button type="button" id="next">Next<svg class="ic"><use href="icons.svg#chevron-right"/></svg></button>
+      </div>
+      <span class="sub" id="sub"></span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section>
+    <h2>The day<small id="dayn"></small></h2>
+    <div class="card"><div class="tl" id="tl"></div></div>
+
+    <div class="todo">
+      <h2>To do<small id="todon"></small></h2>
+      <ul id="todo"></ul>
+      <p class="ahead" id="ahead" hidden></p>
+    </div>
+  </section>
+
+  <aside>
+    <h2>What the day held<small id="heldn"></small></h2>
+    <ul class="held" id="held"></ul>
+    <h3>Money out<small id="spentn"></small></h3>
+    <ul class="spent" id="spent"></ul>
+  </aside>
+</main>
+
+<p class="foot">Read from the same documents the other pages keep; only the ticks are written back.</p>
+
+<script src="clock.js"></script>
+<script src="hq.js"></script>
+<script src="store.js"></script>
+<script src="bell.js"></script>
+<script src="search.js"></script>
+<script>
+(() => {
+  const C = clock, TODAY = C.today;
+  const wd = d => (C.fromISO(d).getDay() + 6) % 7;
+  const num = v => { const n = parseFloat(String(v ?? '').replace(/[^0-9.-]/g, '')); return isFinite(n) ? n : null; };
+  const qs = new URLSearchParams(location.search);
+  let day = /^\d{4}-\d{2}-\d{2}$/.test(qs.get('d') || '') ? qs.get('d') : TODAY;
+  let CAL = null, H = null, T = { items: [] }, FIN = null, SCHOOL = null, LIB = null, STUDY = null;
+
+  const step = n => { day = C.iso(C.addDays(C.fromISO(day), n)); history.replaceState(null, '', day === TODAY ? location.pathname : `?d=${day}`); load(); };
+  F('prev').addEventListener('click', () => step(-1));
+  F('next').addEventListener('click', () => step(1));
+  F('today').addEventListener('click', () => { day = TODAY; history.replaceState(null, '', location.pathname); load(); });
+
+  // ---- the timeline, as Today draws it but for whichever day this is ----
+  function renderDay(){
+    const tl = F('tl'); let html = '', list = [];
+    if(CAL && CAL.series){
+      const isWeekly = s => (s.rep || []).length > 0, repDays = s => [...new Set([wd(s.date), ...(s.rep || [])])];
+      const occurs = s => isWeekly(s) ? (day >= s.date && repDays(s).includes(wd(day))) : s.date === day;
+      list = CAL.series.filter(s => s.date && occurs(s) && !(CAL.hidden || []).includes(s.cat)).sort((a, b) => a.start - b.start);
+    }
+    const ats = T.items.filter(i => i.at != null && !i.done).map(i => i.at);
+    const H0 = Math.min(8, ...list.map(s => Math.floor(s.start)), ...ats.map(Math.floor));
+    const H1 = Math.max(20, ...list.map(s => Math.ceil(s.end)), ...ats.map(a => Math.ceil(a + 0.5)));
+    tl.style.height = `calc(var(--hour) * ${H1 - H0})`;
+    for(let h = H0; h < H1; h++) html += `<div class="hr" style="top:calc(var(--hour)*${h - H0})"><span>${C.hourLabel(h)}</span></div>`;
+    const cat = id => (CAL && CAL.cats || []).find(c => c.id === id) || {};
+    for(const s of list){
+      const top = `calc(var(--hour)*${s.start - H0} + 1px)`, h = `calc(var(--hour)*${Math.max(0.5, s.end - s.start)} - 2px)`;
+      html += `<div class="ev" style="top:${top};height:${h};--c:${cat(s.cat).tint || 'var(--paper-2)'}"><b>${esc(s.title)}</b>${s.sub ? `<small>${esc(s.sub)}</small>` : ''}</div>`;
+    }
+    for(const i of T.items) if(i.at != null && !i.done)
+      html += `<div class="td" style="top:calc(var(--hour)*${i.at - H0})"><span>${esc(i.text)} · by ${h12(i.at)}</span></div>`;
+    if(day === TODAY){ const now = C.now.getHours() + C.now.getMinutes() / 60;
+      if(now >= H0 && now <= H1) html += `<div class="now" style="top:calc(var(--hour)*${now - H0} + 9px)" data-t="${C.time(C.now)}"></div>`; }
+    tl.innerHTML = html;
+    F('dayn').textContent = list.length ? `${list.length} ${list.length === 1 ? 'entry' : 'entries'} · ${C.hourLabel(H0)} to ${C.hourLabel(H1)}` : 'nothing on';
+  }
+
+  // ---- what was logged ----
+  function renderHeld(){
+    const r = (H && H.days && H.days[day]) || {}, g = r.garmin || {};
+    const meds = (H && H.meds || []).length, took = (r.pills || []).length;
+    const mins = (SCHOOL && SCHOOL.sessions || []).filter(s => s.date === day).reduce((n, s) => n + (+s.min || 0), 0);
+    let pages = 0;
+    for(const b of (LIB && LIB.books || [])){ const log = Object.entries(b.log || {}).sort(); let prev = null;
+      for(const [d, p] of log){ if(prev != null && d === day) pages += Math.max(0, +p - prev); prev = +p; } }
+    const st = (STUDY && STUDY.days && STUDY.days[day]) || null;
+
+    const rows = [];
+    const add = (k, sub, v, unit, note) => { if(v != null && v !== '') rows.push(`<li><span class="k">${k}${sub ? `<small>${sub}</small>` : ''}</span><span class="v">${v}${unit ? `<i>${unit}</i>` : ''}${note ? `<small>${note}</small>` : ''}</span></li>`); };
+    if(r.sleep != null) add('Slept', [r.bed && `bed ${esc(r.bed)}`, r.woke && `woke ${esc(r.woke)}`].filter(Boolean).join(' · '), num(r.sleep), 'h', g.score ? `score ${g.score}` : '');
+    if(r.weight != null) add('Weight', '', num(r.weight), 'lb');
+    if(r.hr != null) add('Resting pulse', g.hrv ? `HRV ${g.hrv}` : '', num(r.hr), 'bpm');
+    if(r.steps != null) add('Steps', r.stepsFrom === 'garmin' ? 'from the watch' : 'by hand', Math.round(num(r.steps)).toLocaleString('en-US'));
+    if(meds) add('Supplements', (H.meds || []).map(m => m.name).join(', '), `${took} of ${meds}`);
+    if(mins) add('Studied', `${(SCHOOL.sessions || []).filter(s => s.date === day).length} ${(SCHOOL.sessions || []).filter(s => s.date === day).length === 1 ? 'session' : 'sessions'}`, hrs(mins).split(' ')[0], hrs(mins).includes('h') ? 'h' : 'min');
+    if(pages) add('Read', LIB.books.find(b => b.shelf === 'reading') ? esc(LIB.books.find(b => b.shelf === 'reading').title) : '', pages, 'pages');
+    if(st && st.done) add('The Study', 'three cards', st.cards.length, 'read');
+
+    F('held').innerHTML = rows.join('') || `<li class="empty" style="grid-column:1/-1">${day > TODAY ? 'Nothing logged yet — this day has not happened.' : 'Nothing was logged that day.'}</li>`;
+    F('heldn').textContent = rows.length ? `${rows.length} ${rows.length === 1 ? 'thing' : 'things'}` : '';
+  }
+
+  function renderSpent(){
+    const tx = ((FIN && FIN.tx) || []).filter(t => t.date === day);
+    const cat = id => ((FIN && FIN.cats) || []).find(c => c.id === id);
+    const total = tx.reduce((n, t) => n + (+t.amt || 0), 0);
+    F('spentn').textContent = tx.length ? `${tx.length} ${tx.length === 1 ? 'purchase' : 'purchases'}` : '';
+    F('spent').innerHTML = tx.length
+      ? tx.map(t => `<li><span class="w">${esc(t.what || 'Something')}${cat(t.cat) ? `<small>${esc(cat(t.cat).name)}</small>` : ''}</span><span class="a">${$0(t.amt)}</span></li>`).join('')
+        + `<li class="tot"><span class="w">All told</span><span class="a">${$0(total)}</span></li>`
+      : `<li class="empty" style="grid-column:1/-1">${day > TODAY ? 'Nothing spent yet.' : 'Nothing spent that day.'}</li>`;
+  }
+
+  function renderTodo(){
+    const items = T.items || [];
+    const done = items.filter(i => i.done).length;
+    F('todon').textContent = items.length ? `${done} of ${items.length}` : 'nothing';
+    F('todo').innerHTML = items.length
+      ? items.map((i, k) => `<li><input type="checkbox" id="t${k}" data-k="${k}" ${i.done ? 'checked' : ''}><label for="t${k}">${esc(i.text)}</label>${i.at != null ? `<span class="w ${!i.done && day === TODAY && i.at < (C.now.getHours() + C.now.getMinutes() / 60) ? 'due' : ''}">by ${h12(i.at)}</span>` : ''}</li>`).join('')
+      : `<li class="empty">${day > TODAY ? 'Nothing put down for that day yet.' : 'Nothing was on the list.'}</li>`;
+    const due = (SCHOOL && SCHOOL.items || []).filter(i => !i.done && i.due === day);
+    F('ahead').hidden = !due.length;
+    if(due.length) F('ahead').innerHTML = `School has ${due.length === 1 ? 'one thing' : due.length + ' things'} due that day: ${due.slice(0, 3).map(i => esc(i.title)).join(', ')}${due.length > 3 ? '…' : ''}`;
+  }
+
+  F('todo').addEventListener('change', e => {
+    if(e.target.type !== 'checkbox') return;
+    T.items[+e.target.dataset.k].done = e.target.checked;
+    store.save('today.' + day, T);
+    renderTodo(); renderDay();
+  });
+
+  function heading(){
+    const d = C.fromISO(day), away = C.daysBetween(TODAY, day);
+    F('title').innerHTML = day === TODAY ? 'Today' : `${C.dayName(d)}, <em>${C.dayMonth(d)}</em>`;
+    F('sub').textContent = day === TODAY ? 'as it stands' : away === 1 ? 'tomorrow' : away === -1 ? 'yesterday'
+      : away > 0 ? `in ${away} days` : `${-away} days ago`;
+    F('next').disabled = false;
+  }
+
+  async function load(){
+    heading();
+    const ym = day.slice(0, 7);
+    const [cal, h, t, fin, school, lib, study] = await Promise.all([
+      store.load('calendar'), store.load('health'), store.load('today.' + day),
+      store.load('finances.' + ym), store.load('school'), store.load('library'), store.load('study')]);
+    CAL = cal; H = h; T = t && t.items ? t : { items: [] }; FIN = fin; SCHOOL = school; LIB = lib; STUDY = study;
+    renderDay(); renderTodo(); renderHeld(); renderSpent();
+  }
+  load();
+})();
+</script>
+</body>
+</html>

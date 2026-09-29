@@ -83,6 +83,8 @@
   .affairs .v{grid-column:2;grid-row:1/3;font-family:var(--serif);font-size:24px;text-align:right;line-height:1.1}
   .affairs .v small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3);margin-top:2px}
   .affairs .v.flag small{color:var(--ox)}
+  h2 .otherday{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto;border-bottom:1px solid var(--rule)}
+  h2 .otherday:hover{color:var(--ox);border-bottom-color:var(--ox)}
   .todo{margin-top:34px}
   .saidt{margin:8px 0 0;font-size:13px;color:var(--ox);font-family:var(--serif);font-style:italic}
   .reps{list-style:none;margin:10px 0 0;padding:0}
@@ -137,7 +139,7 @@
 
 <main>
   <section>
-    <h2>The day<small id="dayn"></small></h2>
+    <h2>The day<small id="dayn"></small><a class="otherday" href="day.html?d=">Another day</a></h2>
     <div class="card"><div class="tl" id="tl"></div></div>
     <div class="report">
       <h2>Morning report<small id="repn"></small></h2>
