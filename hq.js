@@ -6,7 +6,7 @@ const hrs = m => m>=60 ? (m%60 ? `${Math.floor(m/60)} h ${m%60}` : `${m/60} h`) 
 const $0 = n => (n<0?'−':'') + '$' + Math.round(Math.abs(n)).toLocaleString('en-US');                                                    // 2194.4 → $2,194
 // The version this copy of the app was built with. version.json holds the same number and is never cached,
 // so a page that has been open — or served from the offline shell — can tell when a newer one has been deployed.
-const HQ_VERSION = '4.2.0';
+const HQ_VERSION = '4.2.1';
 
 // a newer version is not forced on you mid-sentence: it says so, and waits to be asked
 async function watchVersion(){
@@ -21,6 +21,7 @@ async function watchVersion(){
   await look();
   addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') look(); });
 }
+const freshStart = async () => { try { const ks = await caches.keys(); await Promise.all(ks.filter(k => k.startsWith('hq-shell')).map(k => caches.delete(k))); } catch {} };
 let offered = false;
 function offerUpdate(v){
   if (offered) return; offered = true;
@@ -28,7 +29,7 @@ function offerUpdate(v){
   bar.className = 'hq-newer';
   bar.innerHTML = `<span>Version ${v} is ready.</span><button type="button">Reload</button><button type="button" class="later" aria-label="Not now">\u00d7</button>`;
   bar.querySelector('button').addEventListener('click', async () => {
-    try { await caches.delete('hq-shell-1'); } catch {}      // so the reload fetches the new files rather than the kept ones
+    await freshStart();                                       // so the reload fetches the new files rather than the kept ones
     location.reload();
   });
   bar.querySelector('.later').addEventListener('click', () => bar.remove());

@@ -1,7 +1,7 @@
 // HQ's service worker: it receives pushes, and it keeps the shell — the pages themselves — so the app opens
 // at once and still opens with no signal. Data is never cached here: /api goes to the network, and store.js
 // already keeps a localStorage copy of every document for when the network is not there.
-const V = 'hq-shell-1';
+const V = 'hq-shell-2';   // a new name empties the old one on activate: raise it whenever what is kept must go
 const SHELL = [
   '/', '/index.html', '/today.html', '/calendar.html', '/finances.html', '/groceries.html', '/investments.html',
   '/library.html', '/school.html', '/health.html', '/review.html', '/study.html', '/patterns.html',
