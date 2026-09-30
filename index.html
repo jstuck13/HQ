@@ -181,17 +181,22 @@
   // The front door. With the API present, the passcode sets the session cookie; on a plain static server it just opens.
   // The number THIS copy was built with. version.json carries the same number and is never cached, so when the
   // two disagree the page you are looking at came from the kept copy and a newer one is on the server.
-  const PAGE_VERSION = '4.8.2';
+  const PAGE_VERSION = '4.8.3';
   const ver = document.getElementById('ver');
   ver.textContent = 'Version ' + PAGE_VERSION;
-  fetch('/version.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(v => {
-    if (!v || !v.v || v.v === PAGE_VERSION) return;
+  // asked at load, on returning to the tab, and every ten minutes while it is open, so a door left ajar
+  // across a deploy still notices. It only speaks when this copy is genuinely behind the server's.
+  const lookVersion = () => fetch('/version.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(v => {
+    if (!v || !v.v || v.v === PAGE_VERSION || ver.querySelector('button')) return;
     ver.innerHTML = `Version ${PAGE_VERSION} \u00b7 <button type="button" class="newer">${v.v} is ready</button>`;
     ver.querySelector('button').addEventListener('click', async () => {
       try { const ks = await caches.keys(); await Promise.all(ks.filter(k => k.startsWith('hq-shell')).map(k => caches.delete(k))); } catch {}
       location.reload();
     });
   }).catch(() => {});
+  lookVersion();
+  addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') lookVersion(); });
+  setInterval(() => { if (document.visibilityState === 'visible') lookVersion(); }, 600000);
   const gate = document.getElementById('gate'), pass = document.getElementById('pass'), hint = document.getElementById('hint');
   const passl = document.getElementById('passl');
   let shown = false;

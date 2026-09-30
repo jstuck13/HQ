@@ -10,7 +10,7 @@ const $0 = n => (n<0?'−':'') + '$' + Math.round(Math.abs(n)).toLocaleString('e
 const toDo = i => !i.done && !i.noturn;
 // The version this copy of the app was built with. version.json holds the same number and is never cached,
 // so a page that has been open — or served from the offline shell — can tell when a newer one has been deployed.
-const HQ_VERSION = '4.8.2';
+const HQ_VERSION = '4.8.3';
 
 // a newer version is not forced on you mid-sentence: it says so, and waits to be asked
 async function watchVersion(){
@@ -23,7 +23,10 @@ async function watchVersion(){
     } catch {}
   };
   await look();
+  // A tab left open all day would otherwise never ask again: it looks on returning to the tab, and every ten
+  // minutes while it is being looked at. The notice only ever appears when this copy is genuinely behind.
   addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') look(); });
+  setInterval(() => { if (document.visibilityState === 'visible') look(); }, 600000);
 }
 const freshStart = async () => { try { const ks = await caches.keys(); await Promise.all(ks.filter(k => k.startsWith('hq-shell')).map(k => caches.delete(k))); } catch {} };
 let offered = false;
