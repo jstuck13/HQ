@@ -53,8 +53,6 @@
   .chart .ln{fill:none;stroke:var(--ink);stroke-width:1.5} .chart .ax{stroke:var(--rule)} .chart .tk{font-family:var(--serif);font-size:11px;fill:var(--ink-3)} .chart .dot{fill:var(--ox)}
   .chart .pt{fill:var(--ink);stroke:var(--paper);stroke-width:1.5}
   .chart .tk.val{font-family:var(--serif);font-size:13px;fill:var(--ink-2);stroke:var(--paper);stroke-width:3.5;paint-order:stroke fill}   /* expanded, every reading says what it is */
-  .chart .pt{fill:var(--ink);stroke:var(--paper);stroke-width:1.5}
-  .chart .tk.val{font-family:var(--serif);font-size:13px;fill:var(--ink-2);stroke:var(--paper);stroke-width:3.5;paint-order:stroke fill}   /* expanded, every reading says what it is */
   .chart .fill{fill:var(--band);opacity:.08}
   .chart .fig{font-family:var(--serif);font-size:22px;margin:6px 0 0} .chart .fig small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:8px}
 
@@ -241,7 +239,16 @@
       const path=series.map((s,i)=>`${x(i).toFixed(1)},${y(s[1]).toFixed(1)}`);
       const from=series[0][1], chg=T-from;
       el.innerHTML = `<p class="fig">${$(T)}<small class="${chg>=0?'up':'down'}">${chg>=0?'+':'−'}${$(Math.abs(chg))} since ${dmy(series[0][0])}</small></p>
-        <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Portfolio worth from ${dmy(series[0][0])} to today"><path class="fill" d="M${path[0]} L${path.join(' L')} L${x(series.length-1)},${H-P.b} L${x(0)},${H-P.b} Z"/><line class="ax" x1="${P.l}" x2="${W-P.r}" y1="${H-P.b}" y2="${H-P.b}"/><path class="ln" pathLength="1" d="M${path.join(' L')}"/><circle class="dot" r="4" cx="${x(series.length-1)}" cy="${y(T)}"/><text class="tk" x="${P.l}" y="${H-6}">${dmy(series[0][0])}</text><text class="tk" x="${W-P.r}" y="${H-6}" text-anchor="end">today</text>${tall?series.map((sv,i)=>(i%Math.max(1,Math.ceil(series.length/8)))?'':`<circle class="pt" r="3" cx="${x(i).toFixed(1)}" cy="${y(sv[1]).toFixed(1)}"/><text class="tk val" x="${x(i).toFixed(1)}" y="${(y(sv[1])-11).toFixed(1)}" text-anchor="middle">${$(sv[1])}</text>`).join(''):''}</svg>`;
+        <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Portfolio worth from ${dmy(series[0][0])} to today"><path class="fill" d="M${path[0]} L${path.join(' L')} L${x(series.length-1)},${H-P.b} L${x(0)},${H-P.b} Z"/><line class="ax" x1="${P.l}" x2="${W-P.r}" y1="${H-P.b}" y2="${H-P.b}"/><path class="ln" pathLength="1" d="M${path.join(' L')}"/><circle class="dot" r="4" cx="${x(series.length-1)}" cy="${y(T)}"/><text class="tk" x="${P.l}" y="${H-6}">${dmy(series[0][0])}</text><text class="tk" x="${W-P.r}" y="${H-6}" text-anchor="end">today</text>${tall?(()=>{ const every=Math.max(1,Math.ceil(series.length/8)); let last=null; return series.map((sv,i)=>{
+          if(i%every) return '';
+          const px=x(i), prev=series[i-1], next=series[i+1];
+          const around=[prev,next].filter(Boolean).map(n=>y(n[1]));
+          const below = around.length && around.every(v => v < y(sv[1]) - 1);
+          const py = below ? y(sv[1])+16 : y(sv[1])-12;
+          if(last && Math.abs(px-last.x)<46 && Math.abs(py-last.y)<15) return `<circle class="pt" r="3" cx="${px.toFixed(1)}" cy="${y(sv[1]).toFixed(1)}"/>`;
+          last={x:px,y:py};
+          return `<circle class="pt" r="3" cx="${px.toFixed(1)}" cy="${y(sv[1]).toFixed(1)}"/><text class="tk val" x="${px.toFixed(1)}" y="${py.toFixed(1)}" text-anchor="middle">${$(sv[1])}</text>`;
+        }).join(''); })():''}</svg>`;
       };
       drawWorth(F('chart'));
       zoomable(F('chart'), 'worth', 'Worth over time', box => drawWorth(box, box.clientHeight-12)); }

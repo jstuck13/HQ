@@ -123,6 +123,7 @@
   .xh{stroke:var(--ink-3);stroke-width:1;opacity:0}
   .hv{fill:var(--ink);stroke:var(--card);stroke-width:2;opacity:0}
   .fig svg,.chart svg,#cash svg,#ive svg{touch-action:pan-y}
+  .tk.on{fill:var(--paper)}   /* written inside a bar that has run nearly the whole way */
   .tip{position:absolute;pointer-events:none;background:var(--card);box-shadow:var(--shadow);border-radius:6px;padding:4px 8px;font-size:12.5px;white-space:nowrap;opacity:0;transition:opacity .12s;transform:translate(-50%,-100%)}
   .tip b{font-family:var(--serif);font-weight:400;font-size:14px}
   .foot .textbtn{font-style:normal;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:8px} .foot .textbtn.ox{color:var(--ox)} .foot .textbtn:hover{color:var(--ink)}
@@ -415,7 +416,9 @@
     el.innerHTML = `${el===F('svl')?'<h3>Spent vs limit<small>each bar is one limit</small></h3>':''}<p class="fig">${limits?Math.round(spent/limits*100)+'%':'—'}<small>${limits?'of limits used, ':''}${Math.round(DAY/DIM*100)}% of the month gone</small></p>
       <svg viewBox="0 0 ${W3} ${H3}" role="img" aria-label="Spent against limit for each category">
         ${rows.map((c,i)=>{ const sp=spentIn(c.id), bh=Math.min(18, rh-12), yv=i*rh+4+(rh-12-bh)/2, tw=(W3-lw), sw=Math.min(1,sp/c.limit)*(W3-lw), r=bh/2;
-          return `<text class="lbl" x="${lw-8}" y="${(yv+bh/2+4).toFixed(1)}" text-anchor="end">${esc(c.name)}</text><rect class="hbar-t" x="${lw}" y="${yv.toFixed(1)}" width="${tw.toFixed(1)}" height="${bh}"/>${sp>0?`<path class="hbar ${sp>c.limit?'over':''}" d="M${lw},${yv.toFixed(1)} h${Math.max(0,sw-r).toFixed(1)} a${r},${r} 0 0 1 ${r},${r} v${(bh-2*r).toFixed(1)} a${r},${r} 0 0 1 -${r},${r} H${lw} Z"/>`:''}${tall?`<text class="tk" x="${(lw+8)}" y="${(yv+bh/2+4).toFixed(1)}">${$0(sp)} of ${$0(c.limit)}</text>`:''}`; }).join('')}
+          return `<text class="lbl" x="${lw-8}" y="${(yv+bh/2+4).toFixed(1)}" text-anchor="end">${esc(c.name)}</text><rect class="hbar-t" x="${lw}" y="${yv.toFixed(1)}" width="${tw.toFixed(1)}" height="${bh}"/>${sp>0?`<path class="hbar ${sp>c.limit?'over':''}" d="M${lw},${yv.toFixed(1)} h${Math.max(0,sw-r).toFixed(1)} a${r},${r} 0 0 1 ${r},${r} v${(bh-2*r).toFixed(1)} a${r},${r} 0 0 1 -${r},${r} H${lw} Z"/>`:''}${tall?(()=>{ const past = lw + Math.max(8, sw + 10), room = W3 - past > 110;
+            return room ? `<text class="tk" x="${past.toFixed(1)}" y="${(yv+bh/2+4).toFixed(1)}">${$0(sp)} of ${$0(c.limit)}</text>`
+                        : `<text class="tk on" x="${(lw+sw-8).toFixed(1)}" y="${(yv+bh/2+4).toFixed(1)}" text-anchor="end">${$0(sp)} of ${$0(c.limit)}</text>`; })():''}`; }).join('')}
       </svg><div class="legend"><span><i style="background:var(--ink)"></i>Spent</span><span><i style="background:var(--rule)"></i>Limit</span>${rows.some(c=>spentIn(c.id)>c.limit)?'<span><i style="background:var(--ox)"></i>Over</span>':''}</div>`;
     };
     drawSvl(F('svl'));

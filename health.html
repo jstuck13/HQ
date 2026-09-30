@@ -274,7 +274,7 @@
         <path class="ln" pathLength="1" d="${path}"/>
         ${pts.map(q=>`<circle class="pt" r="3" cx="${X(q.i).toFixed(1)}" cy="${Y(q.v).toFixed(1)}"/>`).join('')}
         <circle class="dot ${last.d===TODAY?'':'past'}" r="4.5" cx="${X(last.i).toFixed(1)}" cy="${Y(last.v).toFixed(1)}"/>
-        ${big ? pts.map((q,k)=>{ const near = k && X(q.i)-X(pts[k-1].i) < 40; return near ? '' : `<text class="tk val" x="${X(q.i).toFixed(1)}" y="${(Y(q.v)-13).toFixed(1)}" text-anchor="middle">${s.fmt(q.v)}</text>`; }).join('') : ''}
+        ${big ? valueLabels(pts, X, Y, v=>s.fmt(v)) : ''}
         <text class="tk" x="${p.l}" y="${h-6}">${fmtDay(days[0])}</text><text class="tk" x="${w-p.r}" y="${h-6}" text-anchor="end">today</text>
         <line class="xh" y1="${p.t}" y2="${h-p.b}"/><circle class="hv" r="4.5"/>
         <rect x="0" y="0" width="${w}" height="${h}" fill="transparent" class="hit"/>
@@ -285,6 +285,23 @@
   }
 
   // reading a point: the nearest logged day to the pointer, by press or by drag
+  // Names for the readings on an expanded chart. A label sits on the side of its point the line is not on —
+  // below a dip, above a peak — so the line never has to run through the words; and it steps aside entirely
+  // rather than land on a label already written.
+  function valueLabels(pts, X, Y, fmt){
+    const out = []; let last = null;
+    pts.forEach((q,k)=>{
+      const prev = pts[k-1], next = pts[k+1];
+      const around = [prev, next].filter(Boolean).map(n=>Y(n.v));
+      const below = around.length && around.every(v => v < Y(q.v) - 1);   // both neighbours higher up: this is a dip
+      const y = below ? Y(q.v) + 17 : Y(q.v) - 13, x = X(q.i);
+      if(last && Math.abs(x - last.x) < 42 && Math.abs(y - last.y) < 15) return;
+      last = { x, y };
+      out.push(`<text class="tk val" x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle">${fmt(q.v)}</text>`);
+    });
+    return out.join('');
+  }
+
   function wire(ch, s, w, h){
     const svg=ch.querySelector('svg'); if(!svg) return;
     const p={t:10,r:8,b:22,l:8}, X = i => p.l+(w-p.l-p.r)*i/(N-1);
