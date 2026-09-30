@@ -10,7 +10,7 @@ const $0 = n => (n<0?'−':'') + '$' + Math.round(Math.abs(n)).toLocaleString('e
 const toDo = i => !i.done && !i.noturn;
 // The version this copy of the app was built with. version.json holds the same number and is never cached,
 // so a page that has been open — or served from the offline shell — can tell when a newer one has been deployed.
-const HQ_VERSION = '4.8.3';
+const HQ_VERSION = '4.9.0';
 
 // a newer version is not forced on you mid-sentence: it says so, and waits to be asked
 async function watchVersion(){
@@ -117,6 +117,14 @@ addEventListener('DOMContentLoaded', () => { if (location.protocol.startsWith('h
   };
   addEventListener('popstate', () => { const n = history.state && history.state.hqZoom; if (n) show(n); else { open = null; if (dlg && dlg.open) dlg.close(); } });
 }
+
+// what this copy is, in the corner, on every page
+addEventListener('DOMContentLoaded', () => {
+  if (document.querySelector('.hq-ver')) return;
+  const v = document.createElement('span');
+  v.className = 'hq-ver'; v.textContent = 'v' + HQ_VERSION; v.title = 'The version of HQ this page was built from';
+  document.body.appendChild(v);
+});
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});   // reminders, and the offline shell
 addEventListener('DOMContentLoaded', () => {

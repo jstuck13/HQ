@@ -387,7 +387,7 @@
     hover(el, W, H, d=>({x:x(d), y:y(all[d-1]), text:`<b>${$0(all[d-1])}</b> · ${d} Sep${d>DAY?' (projected)':''}`}), 1, DIM, P);
     };
     drawCash(F('cash'));
-    zoomable(F('cash'), 'cash', `Cash left through ${MONTH}`, box => drawCash(box, box.clientHeight-12));
+    zoomable(F('cash'), 'cash', `Cash left through ${MONTH}`, box => drawCash(box, box.clientHeight-108));   // the figure above and the note below want their share
 
     // 2. income vs expenses, six months: paired bars, legend
     const months=[...S.history, [MONTH.slice(0,3), landed, spent]];
@@ -406,7 +406,7 @@
     bars(el);
     };
     drawIve(F('ive'));
-    zoomable(F('ive'), 'months', 'Income vs expenses', box => drawIve(box, box.clientHeight-12));
+    zoomable(F('ive'), 'months', 'Income vs expenses', box => drawIve(box, box.clientHeight-96));
 
     // 3. spent vs limit by category: horizontal bars
     const drawSvl = (el, tall) => {
@@ -422,7 +422,7 @@
       </svg><div class="legend"><span><i style="background:var(--ink)"></i>Spent</span><span><i style="background:var(--rule)"></i>Limit</span>${rows.some(c=>spentIn(c.id)>c.limit)?'<span><i style="background:var(--ox)"></i>Over</span>':''}</div>`;
     };
     drawSvl(F('svl'));
-    zoomable(F('svl'), 'limits', 'Spent vs limit', box => drawSvl(box, box.clientHeight-12));
+    zoomable(F('svl'), 'limits', 'Spent vs limit', box => drawSvl(box, box.clientHeight-96));
   }
   // point at a bar and it says what it is worth; the <title> on each bar covers a reader that does not hover
   function bars(el){

@@ -67,7 +67,7 @@ h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0}
 .hq-zoom h2{font-family:var(--serif);font-weight:400;font-size:24px;line-height:1.2;margin:0;padding:0;border:0}   /* not a section heading: the header carries the only rule */
 .hq-zoom .x{margin-left:auto;font-family:var(--sans);font-size:13px;color:var(--ink-2);letter-spacing:.04em;border-bottom:1px solid transparent}
 .hq-zoom .x:hover{color:var(--ink);border-bottom-color:var(--ink-3)}
-.hq-zoom .box{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;padding-top:14px}
+.hq-zoom .box{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;justify-content:center;justify-content:safe center;padding-top:14px}   /* safe: centred when it fits, from the top when it does not, never spilling upward under the header */
 .hq-zoom .box > *{width:100%;max-width:100%;align-self:stretch}   /* a chart that shrinks to its content in the page fills the screen here */
 .hq-zoom .box svg{width:100%;height:auto}
 .hq-zoom .box .pgs h4,.hq-zoom .box .chart h3{display:none}   /* the dialog's own heading already names it */
@@ -77,6 +77,8 @@ h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0}
 .scrollbox.more{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 26px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 26px),transparent)}
 
 /* a newer version is ready: said quietly at the foot of the page, never taken without asking */
+.hq-ver{position:fixed;right:12px;bottom:8px;z-index:5;font-family:var(--sans);font-size:10.5px;letter-spacing:.04em;color:var(--ink-3);opacity:.5;pointer-events:none;user-select:none}
+@media (max-width:760px){.hq-ver{right:8px;bottom:5px;font-size:10px;opacity:.42}}
 .hq-newer{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:16px;
   background:var(--band);color:var(--band-ink);border-radius:999px;padding:9px 12px 9px 20px;box-shadow:0 8px 22px -10px rgba(0,0,0,.45);
   font-size:13.5px;max-width:calc(100vw - 32px)}

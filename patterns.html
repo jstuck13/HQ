@@ -145,7 +145,7 @@
     // each cloud on its own: the same drawing, given the screen
     shown.forEach((x,i)=>{ const el=document.querySelectorAll('#found .plot')[i]; if(!el) return;
       zoomable(el, `pair-${i}`, `${P.labels[x.a]} against ${P.labels[x.b]}${x.lag?' the next day':''}`,
-        box => { const w=Math.max(280, box.clientWidth), h=zoomHeight(w, box.clientHeight-12); box.innerHTML = plot(x.points, x, w, h); });
+        box => { const w=Math.max(280, box.clientWidth), h=zoomHeight(w, box.clientHeight-60); box.innerHTML = plot(x.points, x, w, h); });
     });
 
     const none = F('none');

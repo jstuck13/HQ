@@ -227,7 +227,7 @@
   setRange(N);
   const fmtDay = d => C.dayMonth(d);
   const series = [
-    {name:'Sleep', key:'sleep', fmt:v=>`${Math.floor(v)} h ${String(Math.round((v%1)*60)).padStart(2,'0')}`, level:.1, delta:v=>`${Math.round(v*60)} min`},
+    {name:'Sleep', key:'sleep', fmt:v=>{ const m=Math.round(v*60); return `${Math.floor(m/60)} h ${String(m%60).padStart(2,'0')}`; }, level:.1, delta:v=>`${Math.round(v*60)} min`},
     {name:'Weight', key:'weight', fmt:v=>`${v.toFixed(1)} lb`, level:.5, delta:v=>`${v.toFixed(1)} lb`},
     {name:'Resting HR', key:'hr', fmt:v=>`${Math.round(v)} bpm`, level:.5, delta:v=>`${Math.round(v)}`},
     {name:'Steps', key:'steps', fmt:v=>Math.round(v).toLocaleString('en-US'), level:300, delta:v=>Math.round(v).toLocaleString('en-US'), partial:true},
@@ -274,7 +274,7 @@
         <path class="ln" pathLength="1" d="${path}"/>
         ${pts.map(q=>`<circle class="pt" r="3" cx="${X(q.i).toFixed(1)}" cy="${Y(q.v).toFixed(1)}"/>`).join('')}
         <circle class="dot ${last.d===TODAY?'':'past'}" r="4.5" cx="${X(last.i).toFixed(1)}" cy="${Y(last.v).toFixed(1)}"/>
-        ${big ? valueLabels(pts, X, Y, v=>s.fmt(v)) : ''}
+        ${big ? valueLabels(pts, X, Y, v=>s.fmt(v), w) : ''}
         <text class="tk" x="${p.l}" y="${h-6}">${fmtDay(days[0])}</text><text class="tk" x="${w-p.r}" y="${h-6}" text-anchor="end">today</text>
         <line class="xh" y1="${p.t}" y2="${h-p.b}"/><circle class="hv" r="4.5"/>
         <rect x="0" y="0" width="${w}" height="${h}" fill="transparent" class="hit"/>
@@ -288,16 +288,29 @@
   // Names for the readings on an expanded chart. A label sits on the side of its point the line is not on —
   // below a dip, above a peak — so the line never has to run through the words; and it steps aside entirely
   // rather than land on a label already written.
-  function valueLabels(pts, X, Y, fmt){
+  function valueLabels(pts, X, Y, fmt, w){
+    // A few readings can all be named. Many cannot: at a reading every fifty pixels the words collide with each
+    // other, with the average and with the seven-day mean. Then only the three worth naming are — the highest,
+    // the lowest and the latest — and the rest are read by pressing the chart.
+    let show = pts;
+    if(pts.length > 6){
+      const hi = pts.reduce((a,b)=>b.v>a.v?b:a), lo = pts.reduce((a,b)=>b.v<a.v?b:a), newest = pts[pts.length-1];
+      const keep = new Set([hi.i, lo.i, newest.i]);
+      show = pts.filter(q=>keep.has(q.i));
+    }
     const out = []; let last = null;
-    pts.forEach((q,k)=>{
+    show.forEach(q=>{
+      const k = pts.indexOf(q);
       const prev = pts[k-1], next = pts[k+1];
       const around = [prev, next].filter(Boolean).map(n=>Y(n.v));
       const below = around.length && around.every(v => v < Y(q.v) - 1);   // both neighbours higher up: this is a dip
       const y = below ? Y(q.v) + 17 : Y(q.v) - 13, x = X(q.i);
-      if(last && Math.abs(x - last.x) < 42 && Math.abs(y - last.y) < 15) return;
+      if(last && Math.abs(x - last.x) < 52 && Math.abs(y - last.y) < 16) return;
       last = { x, y };
-      out.push(`<text class="tk val" x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle">${fmt(q.v)}</text>`);
+      // a label on either edge turns to face inward rather than hang half outside the drawing
+      const anchor = w && x > w - 44 ? 'end' : w && x < 44 ? 'start' : 'middle';
+      const tx = anchor === 'end' ? Math.min(x + 6, w - 1) : anchor === 'start' ? Math.max(x - 6, 1) : x;
+      out.push(`<text class="tk val" x="${tx.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${anchor}">${fmt(q.v)}</text>`);
     });
     return out.join('');
   }
@@ -326,7 +339,7 @@
     document.querySelectorAll('#strip .chart').forEach(ch=>{ const s=series[+ch.dataset.i]; wire(ch, s, W, H_);
       if(!ch.querySelector('svg')) return;                                   // nothing drawn yet: nothing to expand
       zoomable(ch, `trend-${s.key}`, `${s.name} — last ${N} days`, box=>{
-        const w=Math.max(280, box.clientWidth), h=zoomHeight(w, box.clientHeight-10);
+        const w=Math.max(280, box.clientWidth), h=zoomHeight(w, box.clientHeight-96);   // the figure above and the range below want their share
         box.innerHTML = trendHTML(s, +ch.dataset.i, w, h);
         wire(box.querySelector('.chart'), s, w, h);
       });

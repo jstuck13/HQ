@@ -247,11 +247,13 @@
           const py = below ? y(sv[1])+16 : y(sv[1])-12;
           if(last && Math.abs(px-last.x)<46 && Math.abs(py-last.y)<15) return `<circle class="pt" r="3" cx="${px.toFixed(1)}" cy="${y(sv[1]).toFixed(1)}"/>`;
           last={x:px,y:py};
-          return `<circle class="pt" r="3" cx="${px.toFixed(1)}" cy="${y(sv[1]).toFixed(1)}"/><text class="tk val" x="${px.toFixed(1)}" y="${py.toFixed(1)}" text-anchor="middle">${$(sv[1])}</text>`;
+          const anchor = px > W-46 ? 'end' : px < 46 ? 'start' : 'middle';   // facing inward on either edge
+          const tx = anchor==='end' ? Math.min(px+6, W-1) : anchor==='start' ? Math.max(px-6, 1) : px;
+          return `<circle class="pt" r="3" cx="${px.toFixed(1)}" cy="${y(sv[1]).toFixed(1)}"/><text class="tk val" x="${tx.toFixed(1)}" y="${py.toFixed(1)}" text-anchor="${anchor}">${$(sv[1])}</text>`;
         }).join(''); })():''}</svg>`;
       };
       drawWorth(F('chart'));
-      zoomable(F('chart'), 'worth', 'Worth over time', box => drawWorth(box, box.clientHeight-12)); }
+      zoomable(F('chart'), 'worth', 'Worth over time', box => drawWorth(box, box.clientHeight-80)); }
 
     // contributions
     const names = {}; Object.values(MONTHS).forEach(doc => (doc.cats||[]).forEach(c => { names[c.name.toLowerCase()] = c.name; }));

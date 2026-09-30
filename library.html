@@ -228,7 +228,7 @@
       </div>`;
       const pg = F('open').querySelector('.pgs');
       if(pg) zoomable(pg, 'pages', `${o.title} — pages so far`, box => {
-        const w=Math.max(280, box.clientWidth), h=zoomHeight(w, box.clientHeight-12);
+        const w=Math.max(280, box.clientWidth), h=zoomHeight(w, box.clientHeight-40);
         box.innerHTML = pagesChart(o, w, h);
       });
     } else {
