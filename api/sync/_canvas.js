@@ -52,7 +52,7 @@ export default syncRoute('canvas', async ({ getDoc, putDoc }) => {
   }
   // what each finished piece of work actually scored. The planner does not carry it, so the submissions are asked
   // for course by course — only for courses that have items here, and only the graded ones are kept.
-  let scored = 0, noGrades;
+  let scored = 0, noturn = 0, noGrades;
   const mine = new Set(school.items.filter(i => i.source === 'canvas').map(i => i.course));
   for (const c of courses) {
     if (!mine.has(`canvas:${c.id}`)) continue;
@@ -62,18 +62,25 @@ export default syncRoute('canvas', async ({ getDoc, putDoc }) => {
     try { subs = await fetchAll(`${base}/api/v1/courses/${c.id}/students/submissions?student_ids[]=self&include[]=assignment&per_page=100`, headers); }
     catch (e) { noGrades = `${noGrades ? noGrades + '; ' : ''}${c.name}: ${String(e.message || e).slice(0, 60)}`; continue; }
     for (const s of subs) {
-      if (s.score == null || s.workflow_state !== 'graded') continue;
-      const name = s.assignment && s.assignment.name;
+      const a = s.assignment, name = a && a.name;
       const it = school.items.find(i => i.id === `canvas:assignment:${s.assignment_id}`)
               || (name && school.items.find(i => i.course === `canvas:${c.id}` && i.source === 'canvas' && i.title === name));
       if (!it) continue;
+      // Canvas says how a piece of work is handed in. "none" and "on_paper" mean nothing goes through Canvas —
+      // a quiz sat in the lab, attendance, a paper given to the teacher — so the due date is when a mark is
+      // entered, not when anything is owed. A choice made by hand on the School page is never overwritten.
+      if (a && Array.isArray(a.submission_types) && !it.byHand) {
+        if (a.submission_types.every(t => t === 'none' || t === 'on_paper')) { if (!it.noturn) { it.noturn = true; noturn++; } }
+        else delete it.noturn;
+      }
+      if (s.score == null || s.workflow_state !== 'graded') continue;
       it.score = +s.score; if (s.grade && isNaN(+s.grade)) it.grade = s.grade;
-      if (it.pts == null && s.assignment && s.assignment.points_possible != null) it.pts = +s.assignment.points_possible;
+      if (it.pts == null && a && a.points_possible != null) it.pts = +a.points_possible;
       it.done = true; scored++;
     }
   }
 
   await putDoc('school', school);
-  return { courses: courses.length, newCourses: nc, items: items.length, newItems: ni, updatedItems: nu, scored, noGrades,
+  return { courses: courses.length, newCourses: nc, items: items.length, newItems: ni, updatedItems: nu, scored, noturn: noturn || undefined, noGrades,
            marks: school.courses.filter(c => c.mark).map(c => `${c.name} ${Math.round(c.mark.pct)}%`).join(', ') || undefined };
 });

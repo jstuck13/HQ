@@ -18,7 +18,7 @@
     const nowH = new Date().getHours() + new Date().getMinutes() / 60, h12 = h => { const hr = Math.floor(h), m = Math.round((h % 1) * 60); return `${hr % 12 || 12}.${String(m).padStart(2, '0')} ${hr < 12 ? 'am' : 'pm'}`; };
     (todo && todo.items || []).forEach((i, k) => { if (!i.done && i.at != null) todos.push({ k, at: i.at, text: esc(i.text), when: i.at < nowH ? `was due by ${h12(i.at)}` : `by ${h12(i.at)}`, late: i.at < nowH, href: 'today.html' }); });
     todos.sort((a, b) => a.at - b.at); todoDoc = todo;
-    for (const i of (school && school.items || []).filter(i => !i.done && i.due && i.due <= today)) due.push({ text: esc(i.title), when: i.due < today ? 'overdue' : 'due today', late: i.due < today, href: 'school.html' });
+    for (const i of (school && school.items || []).filter(i => toDo(i) && i.due && i.due <= today)) due.push({ text: esc(i.title), when: i.due < today ? 'overdue' : 'due today', late: i.due < today, href: 'school.html' });
     if (fin) for (const c of (fin.cats || []).filter(c => c.due === new Date().getDate() && (c.bill || !(fin.tx || []).some(t => t.cat === c.id)))) due.push({ text: esc(c.bill || c.name), when: 'due today', href: 'finances.html' });
     if (health && hour >= 21) { const meds = health.meds || [], taken = (health.days && health.days[today] || {}).pills || [], left = meds.filter(m => !taken.includes(m.id)); if (left.length) due.push({ text: left.map(m => esc(m.name)).join(', '), when: 'not taken yet', late: true, href: 'health.html' }); }
     return { todos, due };

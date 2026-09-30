@@ -91,6 +91,9 @@
   .ledger li.done .w{color:var(--ink-3);text-decoration:line-through}
   .ledger li.done .w small{text-decoration:none}
   .ledger li.scored .d small{color:var(--ink-2)}
+  .ledger .turn{font:inherit;color:inherit;border-bottom:1px dotted transparent}
+  .ledger li:hover .turn,.ledger .turn:focus-visible{border-bottom-color:var(--ink-3)}
+  .ledger li.noturn .d small{color:var(--ink-3);font-style:italic}
   .ledger .d{font-family:var(--serif);color:var(--ink-2);font-size:14px;white-space:nowrap;text-align:right}
   .ledger .d.ox{color:var(--ox)}
   .ledger .d small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3)}
@@ -243,8 +246,8 @@
   }
 
   function render(){
-    const open = S.items.filter(i=>!i.done).sort((a,b)=>score(b)-score(a));
-    const tests = S.items.filter(i=>!i.done && kindOf(i).w>=4 && days(i.due)>=0).sort((a,b)=>a.due<b.due?-1:1)[0];   // the nearest exam or test, whatever Canvas called it
+    const open = S.items.filter(toDo).sort((a,b)=>score(b)-score(a));
+    const tests = S.items.filter(i=>toDo(i) && kindOf(i).w>=4 && days(i.due)>=0).sort((a,b)=>a.due<b.due?-1:1)[0];   // the nearest exam or test, whatever Canvas called it
     const doneMin = S.courses.reduce((n,c)=>n+weekMin(c.id),0);
     F('sub').innerHTML = `${C.now.getMonth()>=7||C.now.getMonth()<=0?'Autumn':'Spring'} term · ${S.courses.length} courses${tests?` · <b>${esc(course(tests.course)?.name||'')} ${kindOf(tests).name} ${days(tests.due)<=0?'today':days(tests.due)===1?'tomorrow':'in '+days(tests.due)+' days'}</b>`:''} · ${hrs(doneMin)} studied this week`;
 
@@ -292,8 +295,8 @@
 
     // due ledger
     const dueList = [...S.items].sort((a,b)=>a.done!==b.done ? (a.done?1:-1) : (a.due<b.due?-1:1));
-    F('duen').textContent = `${open.length} open`;
-    F('due').innerHTML = dueList.length ? dueList.map(i=>`<li class="${i.done?'done':''} ${i.score!=null?'scored':''}" data-id="${i.id}"><input type="checkbox" ${i.done?'checked':''} aria-label="Done: ${esc(i.title)}"><span class="w">${i.url?`<a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a>`:esc(i.title)}<small>${esc(course(i.course)?.name||'—')} · ${i.type}${i.source==='canvas'?' · Canvas':''}</small></span><span class="d ${!i.done&&days(i.due)<=0?'ox':''}">${dmy(i.due)}<small>${i.score!=null?esc(i.pts?`${i.score}/${i.pts}`:(i.grade||String(i.score))):i.done?'done':dueWord(i.due)}</small></span><button class="x" type="button" aria-label="Remove"><span class="w-">remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button></li>`).join('') : '<li class="empty">Nothing due.</li>';
+    F('duen').textContent = `${open.length} open`;   // items with nothing to hand in are not open; they wait on a mark
+    F('due').innerHTML = dueList.length ? dueList.map(i=>`<li class="${i.done?'done':''} ${i.score!=null?'scored':''} ${i.noturn?'noturn':''}" data-id="${i.id}"><input type="checkbox" ${i.done?'checked':''} aria-label="Done: ${esc(i.title)}"><span class="w">${i.url?`<a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title)}</a>`:esc(i.title)}<small>${esc(course(i.course)?.name||'—')} · ${i.type}${i.source==='canvas'?' · Canvas':''}</small></span><span class="d ${toDo(i)&&days(i.due)<=0?'ox':''}">${dmy(i.due)}<small>${i.score!=null?esc(i.pts?`${i.score}/${i.pts}`:(i.grade||String(i.score))):i.done?'done':`<button class="turn" type="button" data-turn="${i.id}" title="${i.noturn?'Nothing is handed in for this; the date is when a mark is entered. Click to make it due again.':'Nothing to hand in? Click and it stops counting as due and waits for a mark.'}">${i.noturn?'no hand-in':dueWord(i.due)}</button>`}</small></span><button class="x" type="button" aria-label="Remove"><span class="w-">remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button></li>`).join('') : '<li class="empty">Nothing due.</li>';
     const sel = S.courses.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
     const ic=F('i-course').value, sc=F('s-course').value; F('i-course').innerHTML=sel; F('s-course').innerHTML=sel; if(ic) F('i-course').value=ic; if(sc) F('s-course').value=sc;
 
@@ -321,7 +324,11 @@
   F('addc').addEventListener('submit', e=>{ e.preventDefault(); S.courses.push({id:'c'+Date.now(), name:F('c-name').value.trim(), conf:3, links:[]}); F('addc').reset(); render(); });
   F('adddue').addEventListener('submit', e=>{ e.preventDefault(); S.items.push({id:Date.now(), course:F('i-course').value, title:F('i-title').value.trim(), type:F('i-type').value, due:dayOf(F('i-date').value), done:false}); const k=F('i-course').value; F('adddue').reset(); F('i-course').value=k; render(); });
   F('due').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ const raw=e.target.closest('li').dataset.id, it=S.items.find(i=>String(i.id)===raw); if(it){ it.done=e.target.checked; render(); } } });
-  F('due').addEventListener('click', e=>{ if(e.target.closest('.x')){ const raw=e.target.closest('li').dataset.id, id=isNaN(+raw)?raw:+raw; const it=S.items.find(i=>i.id===id); if(it&&it.source){ S.ignored=[...(S.ignored||[]), it.id]; } S.items=S.items.filter(i=>i.id!==id); render(); } });
+  F('due').addEventListener('click', e=>{
+    const t=e.target.closest('[data-turn]');
+    // either way it is your call, and the sync leaves it alone from then on
+    if(t){ const it=S.items.find(i=>String(i.id)===t.dataset.turn); if(it){ it.noturn = !it.noturn; it.byHand = true; render(); } return; }
+    if(e.target.closest('.x')){ const raw=e.target.closest('li').dataset.id, id=isNaN(+raw)?raw:+raw; const it=S.items.find(i=>i.id===id); if(it&&it.source){ S.ignored=[...(S.ignored||[]), it.id]; } S.items=S.items.filter(i=>i.id!==id); render(); } });
   F('addsess').addEventListener('submit', e=>{ e.preventDefault(); const min=parseInt(F('s-min').value); if(!min) return F('s-min').focus(); S.sessions.push({id:Date.now(), date:dayOf(F('s-date').value), course:F('s-course').value, min}); const k=F('s-course').value; F('addsess').reset(); F('s-course').value=k; F('s-date').value=C.dayMonth(C.now); render(); });
   async function renderSync(){
     const led = await store.ledger(), c = led.canvas; const el=F('syncline'); if(!c && !navigator.onLine){ el.hidden=true; return; }

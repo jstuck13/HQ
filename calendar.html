@@ -373,7 +373,7 @@
   function renderCats(){
     F('cats').innerHTML = S.cats.map(c=>`<li><input type="checkbox" id="f-${c.id}" data-cat="${c.id}" ${S.hidden.includes(c.id)?'':'checked'}><label for="f-${c.id}"><span class="sw" style="--c:${c.tint}"></span>${esc(c.name)}<span class="n">${[0,1,2,3,4,5,6].reduce((n,i)=>n+S.series.filter(s=>s.cat===c.id && occurs(s,dateOf(i))).length,0)}</span></label></li>`).join('');
     F('cats').insertAdjacentHTML('beforeend', `<li class="duerow"><input type="checkbox" id="f-push" ${S.google===false?'':'checked'}><label for="f-push"><span class="sw push"></span>Write to Google<span class="n">${S.series.filter(x=>x.gid).length}</span></label></li>`);
-    F('cats').insertAdjacentHTML('beforeend', `<li class="duerow"><input type="checkbox" id="f-due" ${S.hideDue?'':'checked'}><label for="f-due"><span class="sw due"></span>Due from School<span class="n">${(SCHOOL && SCHOOL.items || []).filter(i=>!i.done).length}</span></label></li>`);
+    F('cats').insertAdjacentHTML('beforeend', `<li class="duerow"><input type="checkbox" id="f-due" ${S.hideDue?'':'checked'}><label for="f-due"><span class="sw due"></span>Due from School<span class="n">${(SCHOOL && SCHOOL.items || []).filter(toDo).length}</span></label></li>`);
     const cur = F('a-area').value;
     F('a-area').innerHTML = S.cats.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
     if(cur) F('a-area').value = cur;
@@ -448,7 +448,7 @@
     });
     // School's due items sit at the top of their day, always — planning only adds the free stretches
     if(!S.hideDue) document.querySelectorAll('.col').forEach(c=>{
-      (SCHOOL && SCHOOL.items || []).filter(i=>!i.done && i.due===c.dataset.d).slice(0,2).forEach(i=>{
+      (SCHOOL && SCHOOL.items || []).filter(i=>toDo(i) && i.due===c.dataset.d).slice(0,2).forEach(i=>{
         const p=document.createElement('div'); p.className='pin'; p.textContent=i.title;
         p.title=`${i.title} — due ${C.dayMonthLong ? C.dayMonthLong(C.fromISO(i.due)) : i.due}`; c.appendChild(p); });
     });
@@ -476,7 +476,7 @@
     F('weekh').textContent = C.month(C.fromISO(selDay));
     F('mgrid').innerHTML = SHORTD.map(d=>`<div class="dh">${d}</div>`).join('') + monthCells().map(({d,di,out}, i)=>{
       const list=occ(di), shown=list.slice(0,3);
-      const due = S.hideDue ? [] : (SCHOOL && SCHOOL.items || []).filter(s=>!s.done && s.due===di);
+      const due = S.hideDue ? [] : (SCHOOL && SCHOOL.items || []).filter(s=>toDo(s) && s.due===di);
       return `<div style="--i:${i}" class="mday ${out?'out':''} ${di===TODAY?'today':''} ${di===selDay?'sel':''}" data-d="${di}"><span class="dn">${d.getDate()}</span>${shown.map(s=>`<i data-id="${s.id}" class="${open&&open.id===s.id&&open.d===di?'open':''}" style="--c:${cat(s.cat).tint}" title="${esc(s.title)}, ${h12(s.start)}">${esc(s.short||short(s.title))}</i>`).join('')}${due.slice(0,2).map(s=>`<i class="duepin" title="${esc(s.title)} — due">${esc(short(s.title))}</i>`).join('')}${list.length>3?`<div class="more">+${list.length-3} more</div>`:''}</div>`;
     }).join('');
     F('mgrid').classList.remove('arrive');   // the days arrive when the month opens; a click inside it just redraws

@@ -4,9 +4,13 @@ const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':
 const h12 = h => { const hr=Math.floor(h), m=Math.round((h%1)*60); return `${hr%12||12}.${String(m).padStart(2,'0')} ${hr<12?'am':'pm'}`; };   // 8.5 → 8.30 am
 const hrs = m => m>=60 ? (m%60 ? `${Math.floor(m/60)} h ${m%60}` : `${m/60} h`) : `${m} min`;                                            // 95 → 1 h 35
 const $0 = n => (n<0?'−':'') + '$' + Math.round(Math.abs(n)).toLocaleString('en-US');                                                    // 2194.4 → $2,194
+// Some Canvas assignments are only a column for a mark: a quiz sat in the lab, attendance, a paper handed over
+// in person. Its due date is when the teacher enters the score, not when anything is owed — so it is never
+// something to do, wherever School's items are read.
+const toDo = i => !i.done && !i.noturn;
 // The version this copy of the app was built with. version.json holds the same number and is never cached,
 // so a page that has been open — or served from the offline shell — can tell when a newer one has been deployed.
-const HQ_VERSION = '4.5.1';
+const HQ_VERSION = '4.6.0';
 
 // a newer version is not forced on you mid-sentence: it says so, and waits to be asked
 async function watchVersion(){
