@@ -52,23 +52,28 @@ export default syncRoute('canvas', async ({ getDoc, putDoc }) => {
   }
   // what each finished piece of work actually scored. The planner does not carry it, so the submissions are asked
   // for course by course — only for courses that have items here, and only the graded ones are kept.
-  let scored = 0;
+  let scored = 0, noGrades;
   const mine = new Set(school.items.filter(i => i.source === 'canvas').map(i => i.course));
   for (const c of courses) {
     if (!mine.has(`canvas:${c.id}`)) continue;
     let subs = [];
-    try { subs = await fetchAll(`${base}/api/v1/courses/${c.id}/students/submissions?student_ids[]=self&per_page=100`, headers); }
-    catch { continue; }
+    // include the assignment so a quiz or discussion can be matched by name: the planner numbers those by quiz or
+    // topic id, which is not the assignment id a submission carries, so the id alone only ever matches an assignment.
+    try { subs = await fetchAll(`${base}/api/v1/courses/${c.id}/students/submissions?student_ids[]=self&include[]=assignment&per_page=100`, headers); }
+    catch (e) { noGrades = `${noGrades ? noGrades + '; ' : ''}${c.name}: ${String(e.message || e).slice(0, 60)}`; continue; }
     for (const s of subs) {
       if (s.score == null || s.workflow_state !== 'graded') continue;
-      const it = school.items.find(i => i.id === `canvas:assignment:${s.assignment_id}` || i.id === `canvas:quiz:${s.assignment_id}` || i.id === `canvas:discussion_topic:${s.assignment_id}`);
+      const name = s.assignment && s.assignment.name;
+      const it = school.items.find(i => i.id === `canvas:assignment:${s.assignment_id}`)
+              || (name && school.items.find(i => i.course === `canvas:${c.id}` && i.source === 'canvas' && i.title === name));
       if (!it) continue;
       it.score = +s.score; if (s.grade && isNaN(+s.grade)) it.grade = s.grade;
+      if (it.pts == null && s.assignment && s.assignment.points_possible != null) it.pts = +s.assignment.points_possible;
       it.done = true; scored++;
     }
   }
 
   await putDoc('school', school);
-  return { courses: courses.length, newCourses: nc, items: items.length, newItems: ni, updatedItems: nu, scored,
+  return { courses: courses.length, newCourses: nc, items: items.length, newItems: ni, updatedItems: nu, scored, noGrades,
            marks: school.courses.filter(c => c.mark).map(c => `${c.name} ${Math.round(c.mark.pct)}%`).join(', ') || undefined };
 });
