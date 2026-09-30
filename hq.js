@@ -10,7 +10,7 @@ const $0 = n => (n<0?'−':'') + '$' + Math.round(Math.abs(n)).toLocaleString('e
 const toDo = i => !i.done && !i.noturn;
 // The version this copy of the app was built with. version.json holds the same number and is never cached,
 // so a page that has been open — or served from the offline shell — can tell when a newer one has been deployed.
-const HQ_VERSION = '4.8.1';
+const HQ_VERSION = '4.8.2';
 
 // a newer version is not forced on you mid-sentence: it says so, and waits to be asked
 async function watchVersion(){
@@ -77,7 +77,7 @@ addEventListener('DOMContentLoaded', () => { if (location.protocol.startsWith('h
   function build(){
     dlg = document.createElement('dialog');
     dlg.className = 'hq-zoom';
-    dlg.innerHTML = '<div class="in"><header><h2></h2><button type="button" class="x" aria-label="Close">Close</button></header><div class="box chart"></div></div>';
+    dlg.innerHTML = '<div class="in" tabindex="-1" autofocus><header><h2></h2><button type="button" class="x" aria-label="Close">Close</button></header><div class="box chart"></div></div>';
     dlg.querySelector('.x').addEventListener('click', leave);
     dlg.addEventListener('cancel', e => { e.preventDefault(); leave(); });          // Escape leaves the same way the button does
     document.body.appendChild(dlg);
