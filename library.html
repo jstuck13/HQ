@@ -212,11 +212,11 @@
     F('openh').innerHTML = o ? (o.shelf==='reading' ? 'Reading now' : o.shelf==='toread' ? 'On the shelf' : 'Read') + `<small>${o.shelf==='reading'&&o.started?'since '+dmy(o.started):o.shelf==='read'&&o.finished?'finished '+dmy(o.finished):o.shelf==='toread'?'not started':''}${cur&&cur.id!==o.id?` · <button class="textbtn back" type="button" data-id="${cur.id}">Back to ${esc(cur.title)}</button>`:''}</small>` : 'Library';
     if(o){
       S.open=o.id;
-      const acts = o.shelf==='reading' ? `<button class="textbtn" data-act="finish">Finished it</button><button class="textbtn" data-act="shelve">Back to To read</button>` : o.shelf==='toread' ? `<button class="textbtn" data-act="start">Start reading</button>` : `<button class="textbtn" data-act="start">Read it again</button>`;
+      const acts = o.shelf==='reading' ? `<button class="textbtn" data-act="finish">Finished it</button><button class="textbtn" data-act="shelve">Back to To read</button>` : o.shelf==='toread' ? `<button class="textbtn" data-act="start">${o.page>0?'Pick it up again':'Start reading'}</button>` : `<button class="textbtn" data-act="start">Read it again</button>`;
       F('open').classList.toggle('charted', !!pagesChart(o));
       F('open').innerHTML = `${cover(o)}<div>
         <div class="t">${esc(o.title)}</div><div class="a">${esc(o.author)}</div>
-        <div class="meta"><span>${o.year||''}</span><span>${o.pages?o.pages+' pages':''}</span><span>${esc(o.genre||'')}</span>${o.started?`<span>started ${dmy(o.started)}</span>`:''}${o.finished?`<span>finished ${dmy(o.finished)}</span>`:''}</div>
+        <div class="meta"><span>${o.year||''}</span><span>${o.pages?o.pages+' pages':''}</span><span>${esc(o.genre||'')}</span>${o.started?`<span>started ${dmy(o.started)}</span>`:''}${o.finished?`<span>finished ${dmy(o.finished)}</span>`:''}${o.shelf==='toread'&&o.page>0?`<span>put down at page ${o.page}</span>`:''}</div>
         ${o.shelf==='reading'?`<div class="prog">Page <input value="${o.page||0}" inputmode="numeric" aria-label="Current page"> of ${o.pages||'?'}<span class="bar"><i style="width:${o.pages?Math.min(100,(o.page||0)/o.pages*100):0}%"></i></span><span>${o.pages?Math.round((o.page||0)/o.pages*100)+'%':''}</span>${pace(o)?`<small class="pace">${pace(o)}</small>`:''}</div>`:''}
         <div class="rate">Rating ${dots(o.rating, true)}</div>
         <p class="desc">${esc(o.desc||'')}</p>
@@ -240,7 +240,7 @@
     F('readingn').textContent = reading.length===1 ? (o&&o.id===reading[0].id ? 'open above' : 'click to go back to it') : `${reading.length} books`;
     F('reading').innerHTML = reading.map(b=>`<button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i>${b.pages?`<i>page ${b.page||0} of ${b.pages}</i>`:''}</span></button>`).join('');
     F('toreadn').textContent = `${toread.length} waiting`;
-    F('toread').innerHTML = toread.map(b=>`<span class="slot"><button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i></span></button><button class="rmb" type="button" data-rmb="${b.id}" aria-label="Remove ${esc(b.title)}"><svg class="ic"><use href="icons.svg?v=3#minus"/></svg></button></span>`).join('')
+    F('toread').innerHTML = toread.map(b=>`<span class="slot"><button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i>${b.page>0&&b.pages?`<i>put down at page ${b.page} of ${b.pages}</i>`:''}</span></button><button class="rmb" type="button" data-rmb="${b.id}" aria-label="Remove ${esc(b.title)}"><svg class="ic"><use href="icons.svg?v=3#minus"/></svg></button></span>`).join('')
       + `<button class="add" id="addcover"><span class="cover"><span><svg class="ic"><use href="icons.svg#plus"/></svg>Add a book</span></span></button>`;
     F('readn').textContent = `${read.length} books · ${thisYear} this year`;
     F('read').innerHTML = read.length ? read.map(b=>`<span class="slot"><button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i>${dots(b.rating)}</span></button><button class="rmb" type="button" data-rmb="${b.id}" aria-label="Remove ${esc(b.title)}"><svg class="ic"><use href="icons.svg?v=3#minus"/></svg></button></span>`).join('') : '<p class="empty" style="grid-column:1/-1">Nothing finished yet. When you finish the book you are reading, it lands here.</p>';
@@ -257,9 +257,17 @@
     const r=e.target.closest('[data-rate]'); if(r){ o.rating=+r.dataset.rate; render(); return; }
     const a=e.target.closest('[data-act]'); if(a){
       const act=a.dataset.act;
-      if(act==='start'){ S.books.forEach(b=>{ if(b.shelf==='reading'){ b.shelf='toread'; } }); o.shelf='reading'; o.started=TODAY; o.finished=null; o.page=0; o.log={[TODAY]:0}; }   // day one, page nought: the pace counts from here
+      // Putting a book down never loses your place. Only a book you had already finished starts over, because
+      // "Read it again" means from the beginning; picking one up off the shelf resumes where you left off.
+      if(act==='start'){
+        const again = o.shelf==='read';
+        S.books.forEach(b=>{ if(b.shelf==='reading' && b.id!==o.id) b.shelf='toread'; });   // the one you were on keeps its page and its log
+        o.shelf='reading'; o.finished=null;
+        if(again){ o.page=0; o.log={[TODAY]:0}; o.started=TODAY; }                          // day one, page nought: the pace counts from here
+        else { o.page=o.page||0; o.started=o.started||TODAY; if(!o.log || !Object.keys(o.log).length) o.log={[TODAY]:o.page||0}; }
+      }
       if(act==='finish'){ o.shelf='read'; o.finished=TODAY; }
-      if(act==='shelve'){ o.shelf='toread'; o.started=null; o.page=0; }
+      if(act==='shelve'){ o.shelf='toread'; }   // shelved, not forgotten: the page, the start date and the log stay
       if(act==='remove'){ S.books=S.books.filter(b=>b.id!==o.id); S.open=null; }
       render(); return;
     }
