@@ -93,6 +93,7 @@
   .empty::before{content:"";display:block;width:min(160px,100%);height:12px;margin:0 auto 10px;background:var(--ornament)}
   .foot{max-width:1180px;margin:0 auto;padding:0 40px 32px;font-size:12.5px;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
 
+  @media (max-width:760px){ .chart .tk{font-size:13px} }   /* the ticks a size up under a finger */
   @media (max-width:900px){
     .mast{gap:10px 18px} .mast .back{margin-left:0}
     main{grid-template-columns:1fr;gap:36px;padding:24px 20px 36px} .foot{padding:0 20px 28px}
@@ -230,7 +231,7 @@
     const seen={}; pts.forEach(([d,v])=>{ seen[d]=v; }); const series=Object.entries(seen).sort();
     F('chartn').textContent = series.length>1 ? `${dmy(series[0][0])} – today` : '';
     if(series.length<2){ F('chart').innerHTML = `<p class="empty">${T ? 'The line starts after a second night of prices.' : 'Nothing to draw yet.'}</p>`; }
-    else { const W=560, H=170, P={t:14,r:10,b:22,l:8}, vals=series.map(s=>s[1]), lo=Math.min(...vals), hi=Math.max(...vals), pad=(hi-lo)*.12||1;
+    else { const W=Math.max(220, F('chart').clientWidth||560), H=170, P={t:14,r:10,b:22,l:8}, vals=series.map(s=>s[1]), lo=Math.min(...vals), hi=Math.max(...vals), pad=(hi-lo)*.12||1;
       const x=i=>P.l+(W-P.l-P.r)*i/(series.length-1), y=v=>P.t+(H-P.t-P.b)*(1-(v-lo+pad)/(hi-lo+2*pad));
       const path=series.map((s,i)=>`${x(i).toFixed(1)},${y(s[1]).toFixed(1)}`);
       const from=series[0][1], chg=T-from;

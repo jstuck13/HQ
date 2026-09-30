@@ -181,7 +181,7 @@
   // The front door. With the API present, the passcode sets the session cookie; on a plain static server it just opens.
   // The number THIS copy was built with. version.json carries the same number and is never cached, so when the
   // two disagree the page you are looking at came from the kept copy and a newer one is on the server.
-  const PAGE_VERSION = '4.6.0';
+  const PAGE_VERSION = '4.7.0';
   const ver = document.getElementById('ver');
   ver.textContent = 'Version ' + PAGE_VERSION;
   fetch('/version.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(v => {

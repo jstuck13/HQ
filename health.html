@@ -98,8 +98,14 @@
   .chart .tip{position:absolute;pointer-events:none;background:var(--card);box-shadow:var(--shadow);border-radius:6px;padding:4px 8px;font-size:12.5px;white-space:nowrap;opacity:0;transition:opacity .12s;transform:translate(-50%,-100%)}
   .chart .tip b{font-family:var(--serif);font-weight:400;font-size:14px}
   .chart{position:relative}
+  .chart svg{touch-action:pan-y}   /* a drag across reads the trend; up and down still scrolls the page */
   .chart .rng{font-size:12.5px;color:var(--ink-3);margin:6px 0 0}
 
+  /* under a finger: the marks and the ticks a size up */
+  @media (max-width:760px){
+    .chart .pt{r:3.5px} .chart .dot{r:5.5px} .chart .hv{r:6px} .chart .tk{font-size:13px}
+    .chart .tip{font-size:13.5px;padding:5px 9px}
+  }
   @media (prefers-reduced-motion:reduce){.textbtn,.chart .tip{transition:none}}
   @media (max-width:1000px){.log{grid-template-columns:1fr;gap:34px}.strip{grid-template-columns:repeat(2,1fr)}}
   @media (max-width:760px){
@@ -278,13 +284,17 @@
       const pts=pointsFor(s), vals=pts.map(p=>p.v), lo=Math.min(...vals), hi=Math.max(...vals), pad=(hi-lo)*.15||1;
       const y=v=>P.t+(H_-P.t-P.b)*(1-(v-lo+pad)/(hi-lo+2*pad));
       const xh=svg.querySelector('.xh'), hv=svg.querySelector('.hv'), tip=ch.querySelector('.tip');
-      svg.addEventListener('pointermove', e=>{
+      const show = e => {
         const r=svg.getBoundingClientRect(), i=((e.clientX-r.left)/r.width*W-P.l)/(W-P.l-P.r)*(N-1);
         const p=pts.reduce((a,b)=>Math.abs(b.i-i)<Math.abs(a.i-i)?b:a);
         xh.setAttribute('x1',x(p.i)); xh.setAttribute('x2',x(p.i)); xh.style.opacity=1; hv.setAttribute('cx',x(p.i)); hv.setAttribute('cy',y(p.v)); hv.style.opacity=1;
-        tip.innerHTML=`<b>${s.fmt(p.v)}</b> · ${fmtDay(C.fromISO(p.d))}`; tip.style.left=`${x(p.i)/W*r.width}px`; tip.style.top=`${y(p.v)/H_*r.height-8+svg.offsetTop}px`; tip.style.opacity=1;
-      });
-      svg.addEventListener('pointerleave', ()=>{ xh.style.opacity=0; hv.style.opacity=0; tip.style.opacity=0; });
+        tip.innerHTML=`<b>${s.fmt(p.v)}</b> · ${fmtDay(C.fromISO(p.d))}`; tip.style.top=`${y(p.v)/H_*r.height-8+svg.offsetTop}px`; tip.style.opacity=1;
+        const half=tip.offsetWidth/2, w=ch.clientWidth;   // never off the edge of the chart, which on a phone is the screen
+        tip.style.left=`${Math.round(Math.min(Math.max(x(p.i)/W*r.width, half), Math.max(half, w-half)))}px`;
+      };
+      const hide = () => { xh.style.opacity=0; hv.style.opacity=0; tip.style.opacity=0; };
+      svg.addEventListener('pointerdown', show); svg.addEventListener('pointermove', show);   // a finger has nothing to hover with
+      svg.addEventListener('pointerleave', hide); svg.addEventListener('pointerup', hide); svg.addEventListener('pointercancel', hide);
     });
   }
 

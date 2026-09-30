@@ -122,11 +122,17 @@
   svg path[data-t]{cursor:default}
   .xh{stroke:var(--ink-3);stroke-width:1;opacity:0}
   .hv{fill:var(--ink);stroke:var(--card);stroke-width:2;opacity:0}
+  .fig svg,.chart svg,#cash svg,#ive svg{touch-action:pan-y}
   .tip{position:absolute;pointer-events:none;background:var(--card);box-shadow:var(--shadow);border-radius:6px;padding:4px 8px;font-size:12.5px;white-space:nowrap;opacity:0;transition:opacity .12s;transform:translate(-50%,-100%)}
   .tip b{font-family:var(--serif);font-weight:400;font-size:14px}
   .foot .textbtn{font-style:normal;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:8px} .foot .textbtn.ox{color:var(--ox)} .foot .textbtn:hover{color:var(--ink)}
 
   @media (prefers-reduced-motion:reduce){.textbtn,.ledger .x,.tip{transition:none}}
+  /* under a finger: the marks and the ticks a size up */
+  @media (max-width:760px){
+    .dot{r:5.5px} .hv{r:6px} .tk{font-size:13px} .lbl{font-size:13px}
+    .tip{font-size:13.5px;padding:5px 9px}
+  }
   @media (max-width:1000px){
     .book{grid-template-columns:1fr;gap:34px} .gutter{display:none}
     .charts{grid-template-columns:1fr 1fr}
@@ -409,18 +415,27 @@
       tip.innerHTML=`<b>${amt}</b> · ${b.dataset.t}`;
       tip.style.left=`${br.left-cr.left+br.width/2}px`; tip.style.top=`${br.top-cr.top-6}px`; tip.style.opacity=1; };   // measured off the bar itself, so it sits just above it
     const hide = () => { tip.style.opacity=0; svg.querySelectorAll('path[data-t]').forEach(p=>p.classList.remove('dim')); };
+    svg.addEventListener('pointerdown', show);   // a finger has nothing to hover with: the press is the ask
     svg.addEventListener('pointermove', show);
     svg.addEventListener('pointerleave', hide);
+    svg.addEventListener('pointerup', hide);
+    svg.addEventListener('pointercancel', hide);
   }
+
+  // the note is centred on the point, but never hangs off the chart — on a phone that would be off the screen
+  function place(tip, el, x){ const half=tip.offsetWidth/2, w=el.clientWidth; tip.style.left=`${Math.round(Math.min(Math.max(x, half), Math.max(half, w-half)))}px`; }
 
   function hover(el, W, H, at, lo, hi, P){
     const svg=el.querySelector('svg'), xh=svg.querySelector('.xh'), hv=svg.querySelector('.hv'), tip=el.querySelector('.tip');
-    svg.addEventListener('pointermove', e=>{
+    const show = e => {
       const r=svg.getBoundingClientRect(), d=Math.round(Math.min(hi,Math.max(lo, lo+((e.clientX-r.left)/r.width*W-P.l)/(W-P.l-P.r)*(hi-lo))));
       const p=at(d); xh.setAttribute('x1',p.x); xh.setAttribute('x2',p.x); xh.style.opacity=1; hv.setAttribute('cx',p.x); hv.setAttribute('cy',p.y); hv.style.opacity=1;
-      tip.innerHTML=p.text; tip.style.left=`${p.x/W*r.width}px`; tip.style.top=`${p.y/H*r.height-8+svg.offsetTop}px`; tip.style.opacity=1;
-    });
-    svg.addEventListener('pointerleave', ()=>{ xh.style.opacity=0; hv.style.opacity=0; tip.style.opacity=0; });
+      tip.innerHTML=p.text; tip.style.top=`${p.y/H*r.height-8+svg.offsetTop}px`; tip.style.opacity=1;
+      place(tip, el, p.x/W*r.width);
+    };
+    const hide = () => { xh.style.opacity=0; hv.style.opacity=0; tip.style.opacity=0; };
+    svg.addEventListener('pointerdown', show); svg.addEventListener('pointermove', show);
+    svg.addEventListener('pointerleave', hide); svg.addEventListener('pointerup', hide); svg.addEventListener('pointercancel', hide);
   }
   F('in-date').value = F('x-date').value = C.dayMonth(NOWD);
   // an empty month: one blank plan, no categories, no history
