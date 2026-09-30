@@ -10,7 +10,7 @@ const $0 = n => (n<0?'−':'') + '$' + Math.round(Math.abs(n)).toLocaleString('e
 const toDo = i => !i.done && !i.noturn;
 // The version this copy of the app was built with. version.json holds the same number and is never cached,
 // so a page that has been open — or served from the offline shell — can tell when a newer one has been deployed.
-const HQ_VERSION = '4.7.0';
+const HQ_VERSION = '4.8.0';
 
 // a newer version is not forced on you mid-sentence: it says so, and waits to be asked
 async function watchVersion(){
@@ -58,6 +58,62 @@ addEventListener('DOMContentLoaded', () => { if (location.protocol.startsWith('h
   });
   addEventListener('DOMContentLoaded', () => { scan(); new MutationObserver(scan).observe(document.body, { childList: true, subtree: true }); });
   addEventListener('resize', scan); }
+
+// A chart on its own: the whole screen, drawn again at that size by the page that owns it, so there is no
+// second copy of the drawing to keep in step. The address carries a #name, which makes it survive a reload
+// and lets the phone's back gesture close it like leaving a page.
+{
+  const charts = new Map();
+  let dlg = null, open = null, restored = false;
+
+  const box = () => dlg.querySelector('.box');
+  // how tall a chart should be drawn in a box this size: it takes the room, but stays wider than it is tall
+  // on a phone, where the box is a tall rectangle and a chart the same shape would be unreadable.
+  window.zoomHeight = (w, tall) => Math.round(Math.min(tall, Math.max(w*0.55, tall*0.6)));
+  const draw = () => { const c = charts.get(open); if (!c) return; box().innerHTML = ''; c.draw(box()); };
+  const leave = () => { if (history.state && history.state.hqZoom) history.back(); else shut(); };
+  const shut = () => { open = null; if (dlg && dlg.open) dlg.close(); if (location.hash) history.replaceState(null, '', location.pathname + location.search); };
+
+  function build(){
+    dlg = document.createElement('dialog');
+    dlg.className = 'hq-zoom';
+    dlg.innerHTML = '<div class="in"><header><h2></h2><button type="button" class="x" aria-label="Close">Close</button></header><div class="box chart"></div></div>';
+    dlg.querySelector('.x').addEventListener('click', leave);
+    dlg.addEventListener('cancel', e => { e.preventDefault(); leave(); });          // Escape leaves the same way the button does
+    document.body.appendChild(dlg);
+    let w = innerWidth, h = innerHeight;
+    addEventListener('resize', () => { if (!open) return; if (Math.abs(innerWidth-w) < 2 && Math.abs(innerHeight-h) < 60) return; w = innerWidth; h = innerHeight; draw(); });   // a phone keyboard or a toolbar is not a resize
+  }
+
+  function show(name){
+    const c = charts.get(name); if (!c) return;
+    if (!dlg) build();
+    open = name;
+    dlg.querySelector('h2').textContent = c.title;
+    if (!dlg.open) dlg.showModal();
+    draw();
+  }
+
+  // el is the chart in the page; drawFn(target) draws the same chart into whatever box it is handed
+  window.zoomable = (el, name, title, drawFn) => {
+    charts.set(name, { title, draw: drawFn });
+    if (open === name) draw();                                                      // the page re-rendered under an open chart
+    if (el) {
+      el.classList.add('hq-expandable');
+      if (!el.querySelector(':scope > .hq-expand')) {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'hq-expand'; b.textContent = 'Expand';
+        b.setAttribute('aria-label', `See ${title} full screen`);
+        b.addEventListener('click', () => { history.pushState({ hqZoom: name }, '', '#' + name); show(name); });
+        el.appendChild(b);
+      }
+    }
+    if (!restored && location.hash.slice(1) === name) {                             // a reload on #name comes back to it
+      restored = true; history.replaceState({ hqZoom: name }, '', '#' + name); show(name);
+    }
+  };
+  addEventListener('popstate', () => { const n = history.state && history.state.hqZoom; if (n) show(n); else { open = null; if (dlg && dlg.open) dlg.close(); } });
+}
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});   // reminders, and the offline shell
 addEventListener('DOMContentLoaded', () => {

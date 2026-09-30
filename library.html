@@ -226,6 +226,11 @@
         <ul class="scrollbox">${o.notes.length?[...o.notes].reverse().map((n,i)=>`<li data-i="${o.notes.length-1-i}"><span class="d">${dmy(n.d)}</span><span class="n">${esc(n.t)}</span><button class="x" type="button">remove</button></li>`).join(''):'<li class="empty">Nothing written yet.</li>'}</ul>
         <form class="write" id="write"><span class="d">${dmy(TODAY)}</span><textarea id="note" placeholder="Write a note — as long as you like." required></textarea><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Keep this note</button></form>
       </div>`;
+      const pg = F('open').querySelector('.pgs');
+      if(pg) zoomable(pg, 'pages', `${o.title} — pages so far`, box => {
+        const w=Math.max(280, box.clientWidth), h=zoomHeight(w, box.clientHeight-12);
+        box.innerHTML = pagesChart(o, w, h);
+      });
     } else {
       F('open').innerHTML = '<p class="empty" style="grid-column:1/-1">Nothing open. Add a book below, or click one on a shelf.</p>';
     }
@@ -266,7 +271,7 @@
   document.addEventListener('change', e=>{ if(e.target.matches('.prog input')){ const o=book(S.open), v=parseInt(e.target.value); if(o && !isNaN(v)){ o.page=Math.max(0,Math.min(o.pages||v,v)); o.log ??= {}; o.log[TODAY]=o.page; render(); } } });
   // The pages behind you, drawn from the same log the pace is worked out from. Two readings is the least
   // that makes a line; the days between readings are real distance, so the axis is time, not entry number.
-  function pagesChart(o){
+  function pagesChart(o, w0, h0){
     if(!o || o.shelf!=='reading' || !o.pages) return '';
     const log = Object.entries(o.log||{}).map(([d,p])=>({d, p:+p})).filter(e=>e.p>=0).sort((a,b)=>a.d<b.d?-1:1);
     if(log.length<2) return '';
@@ -274,7 +279,7 @@
     const span = Math.max(1, C.daysBetween(day0, last.d));
     // no left gutter, so the plot, the heading and the tick labels all start on one edge; the right gutter is
     // only what the end dot needs. Page numbers sit on the right, dates on the axis: each number beside its own line.
-    const W=250, H=118, P={t:20,r:5,b:20,l:0};
+    const W=w0||250, H=h0||118, P={t:20,r:5,b:20,l:0};
     const x = d => P.l + (W-P.l-P.r-4) * C.daysBetween(day0, d) / span;   // the last point lands on the dot
     const y = p => P.t + (H-P.t-P.b) * (1 - p/o.pages);
     const pts = log.map(e=>`${x(e.d).toFixed(1)},${y(e.p).toFixed(1)}`);

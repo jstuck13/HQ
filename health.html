@@ -93,6 +93,7 @@
   .chart .dot{fill:var(--ox);stroke:var(--paper);stroke-width:2} .chart .dot.past{fill:var(--ink)}
   .chart .pt{fill:var(--ink);stroke:var(--paper);stroke-width:1.5}
   .chart .tk{font:12px var(--sans);fill:var(--ink-3)}
+  .chart .tk.val{font-family:var(--serif);font-size:13px;fill:var(--ink-2);stroke:var(--paper);stroke-width:3.5;paint-order:stroke fill}   /* on the expanded chart every reading says what it is, and stays legible where the line runs behind it */
   .chart .xh{stroke:var(--ink-3);stroke-width:1;opacity:0}
   .chart .hv{fill:var(--ink);stroke:var(--paper);stroke-width:2;opacity:0}
   .chart .tip{position:absolute;pointer-events:none;background:var(--card);box-shadow:var(--shadow);border-radius:6px;padding:4px 8px;font-size:12.5px;white-space:nowrap;opacity:0;transition:opacity .12s;transform:translate(-50%,-100%)}
@@ -249,52 +250,69 @@
     });
   }
 
+  // One trend, drawn to whatever box it is given: the strip's cell, or the whole screen. Everything that
+  // depends on the size is worked out here, so the small chart and the expanded one are the same drawing.
+  function trendHTML(s, si, w, h){
+    const p={t:10,r:8,b:22,l:8}, X = i => p.l+(w-p.l-p.r)*i/(N-1);
+    const pts=pointsFor(s);
+    if(pts.length<2) return `<div class="chart" data-i="${si}"><h3>${s.name}</h3><p class="fig"><small>${pts.length===1?'one reading; the line starts at two':'nothing logged yet'}</small></p><p class="rng">Log ${s.name.toLowerCase()} on a few days and the last 30 days draw themselves.</p></div>`;
+    const vals=pts.map(q=>q.v), lo=Math.min(...vals), hi=Math.max(...vals), pad=(hi-lo)*.15||1;
+    const Y=v=>p.t+(h-p.t-p.b)*(1-(v-lo+pad)/(hi-lo+2*pad));
+    const avg=vals.reduce((a,b)=>a+b,0)/vals.length, last=pts[pts.length-1];
+    const path=pts.map((q,k)=>`${k?'L':'M'}${X(q.i).toFixed(1)},${Y(q.v).toFixed(1)}`).join(' ');
+    // the seven-day mean at each reading: a day of water weight or a short night should not read as a direction
+    const roll = pts.map(q => { const win = pts.filter(r => q.i - r.i >= 0 && q.i - r.i < 7); return { i: q.i, v: win.reduce((n, r) => n + r.v, 0) / win.length }; }).filter((q, k) => k >= 2);
+    const rollPath = roll.length > 1 ? roll.map((q,k)=>`${k?'L':'M'}${X(q.i).toFixed(1)},${Y(q.v).toFixed(1)}`).join(' ') : '';
+    const big = h > 200;   // room enough to name every reading rather than wait to be asked
+    return `<div class="chart" data-i="${si}">
+      ${big ? '' : `<h3>${s.name}</h3>`}
+      <p class="fig">${s.fmt(avg)}<small>average of ${pts.length} readings${roll.length>1?` · with its seven-day mean`:''}</small></p>
+      <svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${s.name}, last ${N} days, ${s.fmt(lo)} to ${s.fmt(hi)}, average ${s.fmt(avg)}">
+        <line class="ax" x1="${p.l}" x2="${w-p.r}" y1="${h-p.b}" y2="${h-p.b}"/>
+        <line class="avg" x1="${X(pts[0].i).toFixed(1)}" x2="${X(last.i).toFixed(1)}" y1="${Y(avg).toFixed(1)}" y2="${Y(avg).toFixed(1)}"/>
+        ${rollPath ? `<path class="roll" d="${rollPath}"/>` : ''}
+        <path class="ln" pathLength="1" d="${path}"/>
+        ${pts.map(q=>`<circle class="pt" r="3" cx="${X(q.i).toFixed(1)}" cy="${Y(q.v).toFixed(1)}"/>`).join('')}
+        <circle class="dot ${last.d===TODAY?'':'past'}" r="4.5" cx="${X(last.i).toFixed(1)}" cy="${Y(last.v).toFixed(1)}"/>
+        ${big ? pts.map((q,k)=>{ const near = k && X(q.i)-X(pts[k-1].i) < 40; return near ? '' : `<text class="tk val" x="${X(q.i).toFixed(1)}" y="${(Y(q.v)-13).toFixed(1)}" text-anchor="middle">${s.fmt(q.v)}</text>`; }).join('') : ''}
+        <text class="tk" x="${p.l}" y="${h-6}">${fmtDay(days[0])}</text><text class="tk" x="${w-p.r}" y="${h-6}" text-anchor="end">today</text>
+        <line class="xh" y1="${p.t}" y2="${h-p.b}"/><circle class="hv" r="4.5"/>
+        <rect x="0" y="0" width="${w}" height="${h}" fill="transparent" class="hit"/>
+      </svg>
+      <div class="tip"></div>
+      <p class="rng">Low ${s.fmt(lo)} · high ${s.fmt(hi)} · latest ${s.fmt(last.v)}</p>
+    </div>`;
+  }
+
+  // reading a point: the nearest logged day to the pointer, by press or by drag
+  function wire(ch, s, w, h){
+    const svg=ch.querySelector('svg'); if(!svg) return;
+    const p={t:10,r:8,b:22,l:8}, X = i => p.l+(w-p.l-p.r)*i/(N-1);
+    const pts=pointsFor(s), vals=pts.map(q=>q.v), lo=Math.min(...vals), hi=Math.max(...vals), pad=(hi-lo)*.15||1;
+    const Y=v=>p.t+(h-p.t-p.b)*(1-(v-lo+pad)/(hi-lo+2*pad));
+    const xh=svg.querySelector('.xh'), hv=svg.querySelector('.hv'), tip=ch.querySelector('.tip');
+    const show = e => {
+      const r=svg.getBoundingClientRect(), i=((e.clientX-r.left)/r.width*w-p.l)/(w-p.l-p.r)*(N-1);
+      const q=pts.reduce((a,b)=>Math.abs(b.i-i)<Math.abs(a.i-i)?b:a);
+      xh.setAttribute('x1',X(q.i)); xh.setAttribute('x2',X(q.i)); xh.style.opacity=1; hv.setAttribute('cx',X(q.i)); hv.setAttribute('cy',Y(q.v)); hv.style.opacity=1;
+      tip.innerHTML=`<b>${s.fmt(q.v)}</b> · ${fmtDay(C.fromISO(q.d))}`; tip.style.top=`${Y(q.v)/h*r.height-8+svg.offsetTop}px`; tip.style.opacity=1;
+      const half=tip.offsetWidth/2, cw=ch.clientWidth;   // never off the edge of the chart, which on a phone is the screen
+      tip.style.left=`${Math.round(Math.min(Math.max(X(q.i)/w*r.width, half), Math.max(half, cw-half)))}px`;
+    };
+    const hide = () => { xh.style.opacity=0; hv.style.opacity=0; tip.style.opacity=0; };
+    svg.addEventListener('pointerdown', show); svg.addEventListener('pointermove', show);   // a finger has nothing to hover with
+    svg.addEventListener('pointerleave', hide); svg.addEventListener('pointerup', hide); svg.addEventListener('pointercancel', hide);
+  }
+
   function renderCharts(){
-    F('strip').innerHTML = series.map((s,si)=>{
-      const pts=pointsFor(s);
-      if(pts.length<2) return `<div class="chart" data-i="${si}"><h3>${s.name}</h3><p class="fig"><small>${pts.length===1?'one reading; the line starts at two':'nothing logged yet'}</small></p><p class="rng">Log ${s.name.toLowerCase()} on a few days and the last 30 days draw themselves.</p></div>`;
-      const vals=pts.map(p=>p.v), lo=Math.min(...vals), hi=Math.max(...vals), pad=(hi-lo)*.15||1;
-      const y=v=>P.t+(H_-P.t-P.b)*(1-(v-lo+pad)/(hi-lo+2*pad));
-      const avg=vals.reduce((a,b)=>a+b,0)/vals.length, last=pts[pts.length-1];
-      const path=pts.map((p,k)=>`${k?'L':'M'}${x(p.i).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
-      // the seven-day mean at each reading: a day of water weight or a short night should not read as a direction
-      const roll = pts.map(p => { const win = pts.filter(q => p.i - q.i >= 0 && p.i - q.i < 7); return { i: p.i, v: win.reduce((n, q) => n + q.v, 0) / win.length }; }).filter((p, k) => k >= 2);
-      const rollPath = roll.length > 1 ? roll.map((p,k)=>`${k?'L':'M'}${x(p.i).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ') : '';
-      return `<div class="chart" data-i="${si}">
-        <h3>${s.name}</h3>
-        <p class="fig">${s.fmt(avg)}<small>average of ${pts.length} readings${roll.length>1?` · with its seven-day mean`:''}</small></p>
-        <svg viewBox="0 0 ${W} ${H_}" role="img" aria-label="${s.name}, last ${N} days, ${s.fmt(lo)} to ${s.fmt(hi)}, average ${s.fmt(avg)}">
-          <line class="ax" x1="${P.l}" x2="${W-P.r}" y1="${H_-P.b}" y2="${H_-P.b}"/>
-          <line class="avg" x1="${x(pts[0].i).toFixed(1)}" x2="${x(last.i).toFixed(1)}" y1="${y(avg).toFixed(1)}" y2="${y(avg).toFixed(1)}"/>
-          ${rollPath ? `<path class="roll" d="${rollPath}"/>` : ''}
-          <path class="ln" pathLength="1" d="${path}"/>
-          ${pts.map(p=>`<circle class="pt" r="3" cx="${x(p.i).toFixed(1)}" cy="${y(p.v).toFixed(1)}"/>`).join('')}
-          <circle class="dot ${last.d===TODAY?'':'past'}" r="4.5" cx="${x(last.i).toFixed(1)}" cy="${y(last.v).toFixed(1)}"/>
-          <text class="tk" x="${P.l}" y="${H_-6}">${fmtDay(days[0])}</text><text class="tk" x="${W-P.r}" y="${H_-6}" text-anchor="end">today</text>
-          <line class="xh" y1="${P.t}" y2="${H_-P.b}"/><circle class="hv" r="4.5"/>
-          <rect x="0" y="0" width="${W}" height="${H_}" fill="transparent" class="hit"/>
-        </svg>
-        <div class="tip"></div>
-        <p class="rng">Low ${s.fmt(lo)} · high ${s.fmt(hi)} · latest ${s.fmt(last.v)}</p>
-      </div>`;
-    }).join('');
-    // hover: nearest logged day
-    document.querySelectorAll('.chart').forEach(ch=>{
-      const s=series[+ch.dataset.i], svg=ch.querySelector('svg'); if(!svg) return;
-      const pts=pointsFor(s), vals=pts.map(p=>p.v), lo=Math.min(...vals), hi=Math.max(...vals), pad=(hi-lo)*.15||1;
-      const y=v=>P.t+(H_-P.t-P.b)*(1-(v-lo+pad)/(hi-lo+2*pad));
-      const xh=svg.querySelector('.xh'), hv=svg.querySelector('.hv'), tip=ch.querySelector('.tip');
-      const show = e => {
-        const r=svg.getBoundingClientRect(), i=((e.clientX-r.left)/r.width*W-P.l)/(W-P.l-P.r)*(N-1);
-        const p=pts.reduce((a,b)=>Math.abs(b.i-i)<Math.abs(a.i-i)?b:a);
-        xh.setAttribute('x1',x(p.i)); xh.setAttribute('x2',x(p.i)); xh.style.opacity=1; hv.setAttribute('cx',x(p.i)); hv.setAttribute('cy',y(p.v)); hv.style.opacity=1;
-        tip.innerHTML=`<b>${s.fmt(p.v)}</b> · ${fmtDay(C.fromISO(p.d))}`; tip.style.top=`${y(p.v)/H_*r.height-8+svg.offsetTop}px`; tip.style.opacity=1;
-        const half=tip.offsetWidth/2, w=ch.clientWidth;   // never off the edge of the chart, which on a phone is the screen
-        tip.style.left=`${Math.round(Math.min(Math.max(x(p.i)/W*r.width, half), Math.max(half, w-half)))}px`;
-      };
-      const hide = () => { xh.style.opacity=0; hv.style.opacity=0; tip.style.opacity=0; };
-      svg.addEventListener('pointerdown', show); svg.addEventListener('pointermove', show);   // a finger has nothing to hover with
-      svg.addEventListener('pointerleave', hide); svg.addEventListener('pointerup', hide); svg.addEventListener('pointercancel', hide);
+    F('strip').innerHTML = series.map((s,si)=>trendHTML(s, si, W, H_)).join('');
+    document.querySelectorAll('#strip .chart').forEach(ch=>{ const s=series[+ch.dataset.i]; wire(ch, s, W, H_);
+      if(!ch.querySelector('svg')) return;                                   // nothing drawn yet: nothing to expand
+      zoomable(ch, `trend-${s.key}`, `${s.name} — last ${N} days`, box=>{
+        const w=Math.max(280, box.clientWidth), h=zoomHeight(w, box.clientHeight-10);
+        box.innerHTML = trendHTML(s, +ch.dataset.i, w, h);
+        wire(box.querySelector('.chart'), s, w, h);
+      });
     });
   }
 

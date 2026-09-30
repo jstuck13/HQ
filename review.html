@@ -54,6 +54,12 @@
   .prow.future .ph i{background:transparent;border-bottom:1px dotted var(--rule);border-radius:0}
   .prow .ps{font-size:12px;color:var(--ink-3);white-space:nowrap} .prow .ps b{font-weight:500;color:var(--ink-2)}
   .pscale{display:grid;grid-template-columns:34px 1fr 96px;gap:0 12px;margin-bottom:4px} .pscale span:nth-child(2){display:flex;justify-content:space-between} .pscale em{font-family:var(--serif);font-style:normal;font-size:11px;color:var(--ink-3)}
+  /* expanded, the same grid with room to breathe */
+  .hq-zoom .prow{padding:7px 0;grid-template-columns:46px 1fr 120px}
+  .hq-zoom .prow .ph{height:30px;gap:2px}
+  .hq-zoom .prow .pd{font-size:15px} .hq-zoom .prow .ps{font-size:13.5px}
+  .hq-zoom .pscale{grid-template-columns:46px 1fr 120px} .hq-zoom .pscale em{font-size:13px}
+  .hq-zoom .pkey{font-size:13px}
   .pkey{margin:10px 0 0;font-size:12px;color:var(--ink-3)} .pkey i{display:inline-block;width:10px;height:10px;border-radius:1px;vertical-align:-1px;margin:0 4px 0 10px;background:var(--paper-2)} .pkey i.sleep{background:#7F9C8C} .pkey i.busy{background:#A9BBC9} .pkey i.study{background:#C9B8DB}
   .prow .ph i.est,.pkey i.est{background:repeating-linear-gradient(135deg,#7F9C8C 0 2px,#C9D6CE 2px 4px)}
   .streaks li{display:grid;grid-template-columns:auto 1fr;gap:16px;padding:12px 0;border-bottom:1px dotted var(--rule);align-items:baseline}
@@ -216,6 +222,13 @@
   const clockOf = t => { const m=/(\d{1,2})[.:](\d{2})\s*(am|pm)/i.exec(t||''); if(!m) return null; let h=+m[1]%12; if(m[3].toLowerCase()==='pm') h+=12; return h+(+m[2])/60; };
   function portrait(days, H, cal, school){
     const el=F('portrait'); if(!el) return;
+    const html = portraitHTML(days, H, cal, school);
+    el.innerHTML = html;
+    zoomable(el, 'portrait', 'Portrait of the week', box => { box.innerHTML = html; });
+  }
+
+  // the week hour by hour; it is a grid of cells, so the same markup in a bigger box simply draws bigger
+  function portraitHTML(days, H, cal, school){
     // a night logged by hand has hours but no times: guess a window ending at the usual waking hour (the watch's median, else 7 am)
     const wokes=Object.values(H&&H.days||{}).map(x=>clockOf(x.woke)).filter(x=>x!=null).sort((a,b)=>a-b), usualWoke=wokes.length?wokes[Math.floor(wokes.length/2)]:7;
     const cats=cal&&cal.cats||[], isWeekly=s=>(s.rep||[]).length>0, repDays=s=>[...new Set([wd(s.date),...(s.rep||[])])], occurs=(s,d)=>isWeekly(s)?(d>=s.date&&repDays(s).includes(wd(d))):s.date===d;
@@ -235,7 +248,7 @@
       const future = d>TODAY;
       return `<div class="prow ${future?'future':''}"><span class="pd">${C.dayShort(C.fromISO(d))}</span><span class="ph">${cells.map((k,h)=>`<i class="${future?'':k}" title="${C.dayShort(C.fromISO(d))} ${h%12||12} ${h<12?'am':'pm'} · ${k==='sleep est'?'asleep (hours logged, times guessed)':k}"></i>`).join('')}</span><span class="ps">${studied?`<b>${hrs(studied)}</b> studied`:''}</span></div>`;
     }).join('');
-    el.innerHTML = any ? `<div class="pscale"><span></span><span>${['12 am','6 am','12 pm','6 pm','12 am'].map(t=>`<em>${t}</em>`).join('')}</span><span></span></div>${rowsHtml}<p class="pkey"><i class="sleep"></i> asleep <i class="sleep est"></i> asleep, times guessed <i class="busy"></i> on the calendar <i class="study"></i> studying <i class="free"></i> free</p>` : '<p class="empty">The portrait draws itself from the watch’s nights and the calendar’s days.</p>';
+    return any ? `<div class="pscale"><span></span><span>${['12 am','6 am','12 pm','6 pm','12 am'].map(t=>`<em>${t}</em>`).join('')}</span><span></span></div>${rowsHtml}<p class="pkey"><i class="sleep"></i> asleep <i class="sleep est"></i> asleep, times guessed <i class="busy"></i> on the calendar <i class="study"></i> studying <i class="free"></i> free</p>` : '<p class="empty">The portrait draws itself from the watch’s nights and the calendar’s days.</p>';
   }
   const go = start => { ws=start; history.replaceState(null,'',ws===thisMon?location.pathname:`?w=${ws}`); build(); };
   F('prev').addEventListener('click', ()=>go(C.iso(C.addDays(C.fromISO(ws),-7))));

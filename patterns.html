@@ -113,16 +113,16 @@
   }
 
   // the two series, ranked and drawn against each other: the reader can see the cloud for themselves
-  function plot(pts, x){
+  function plot(pts, x, w0, h0){
     if(!pts || pts.length < 4) return '';
-    const W=320, H=82, P0={t:6,r:6,b:14,l:6};
+    const W=w0||320, H=h0||82, P0={t:6,r:6,b:14,l:6};
     const xs=pts.map(p=>p[0]), ys=pts.map(p=>p[1]);
     const lo=a=>Math.min(...a), hi=a=>Math.max(...a);
     const sx=v=>P0.l+(W-P0.l-P0.r)*((v-lo(xs))/((hi(xs)-lo(xs))||1));
     const sy=v=>P0.t+(H-P0.t-P0.b)*(1-(v-lo(ys))/((hi(ys)-lo(ys))||1));
     return `<div class="plot"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Each day as a point: one measure across, the other up">
       <line class="ax" x1="${P0.l}" x2="${W-P0.r}" y1="${H-P0.b}" y2="${H-P0.b}"/>
-      ${pts.map(p=>`<circle class="dot" r="2.6" cx="${sx(p[0]).toFixed(1)}" cy="${sy(p[1]).toFixed(1)}"/>`).join('')}
+      ${pts.map(p=>`<circle class="dot" r="${w0?4.2:2.6}" cx="${sx(p[0]).toFixed(1)}" cy="${sy(p[1]).toFixed(1)}"/>`).join('')}
     </svg><p class="cap">across: ${esc(P.labels[x.a])} · up: ${esc(P.labels[x.b])}${x.lag ? ' the next day' : ''} · one point a day</p></div>`;
   }
 
@@ -141,6 +141,12 @@
       </div>
       ${plot(x.points, x)}
     </li>`).join('');
+
+    // each cloud on its own: the same drawing, given the screen
+    shown.forEach((x,i)=>{ const el=document.querySelectorAll('#found .plot')[i]; if(!el) return;
+      zoomable(el, `pair-${i}`, `${P.labels[x.a]} against ${P.labels[x.b]}${x.lag?' the next day':''}`,
+        box => { const w=Math.max(280, box.clientWidth), h=zoomHeight(w, box.clientHeight-12); box.innerHTML = plot(x.points, x, w, h); });
+    });
 
     const none = F('none');
     if(shown.length){ none.hidden = true; }

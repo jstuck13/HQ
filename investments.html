@@ -51,6 +51,10 @@
   /* the line */
   .chart{margin-top:12px} .chart svg{width:100%;height:auto;display:block;overflow:visible}
   .chart .ln{fill:none;stroke:var(--ink);stroke-width:1.5} .chart .ax{stroke:var(--rule)} .chart .tk{font-family:var(--serif);font-size:11px;fill:var(--ink-3)} .chart .dot{fill:var(--ox)}
+  .chart .pt{fill:var(--ink);stroke:var(--paper);stroke-width:1.5}
+  .chart .tk.val{font-family:var(--serif);font-size:13px;fill:var(--ink-2);stroke:var(--paper);stroke-width:3.5;paint-order:stroke fill}   /* expanded, every reading says what it is */
+  .chart .pt{fill:var(--ink);stroke:var(--paper);stroke-width:1.5}
+  .chart .tk.val{font-family:var(--serif);font-size:13px;fill:var(--ink-2);stroke:var(--paper);stroke-width:3.5;paint-order:stroke fill}   /* expanded, every reading says what it is */
   .chart .fill{fill:var(--band);opacity:.08}
   .chart .fig{font-family:var(--serif);font-size:22px;margin:6px 0 0} .chart .fig small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:8px}
 
@@ -231,12 +235,16 @@
     const seen={}; pts.forEach(([d,v])=>{ seen[d]=v; }); const series=Object.entries(seen).sort();
     F('chartn').textContent = series.length>1 ? `${dmy(series[0][0])} – today` : '';
     if(series.length<2){ F('chart').innerHTML = `<p class="empty">${T ? 'The line starts after a second night of prices.' : 'Nothing to draw yet.'}</p>`; }
-    else { const W=Math.max(220, F('chart').clientWidth||560), H=170, P={t:14,r:10,b:22,l:8}, vals=series.map(s=>s[1]), lo=Math.min(...vals), hi=Math.max(...vals), pad=(hi-lo)*.12||1;
+    else { const drawWorth = (el, tall) => {
+      const W=Math.max(220, el.clientWidth||560), H=tall ? zoomHeight(W, tall) : 170, P={t:14,r:10,b:22,l:8}, vals=series.map(s=>s[1]), lo=Math.min(...vals), hi=Math.max(...vals), pad=(hi-lo)*.12||1;
       const x=i=>P.l+(W-P.l-P.r)*i/(series.length-1), y=v=>P.t+(H-P.t-P.b)*(1-(v-lo+pad)/(hi-lo+2*pad));
       const path=series.map((s,i)=>`${x(i).toFixed(1)},${y(s[1]).toFixed(1)}`);
       const from=series[0][1], chg=T-from;
-      F('chart').innerHTML = `<p class="fig">${$(T)}<small class="${chg>=0?'up':'down'}">${chg>=0?'+':'−'}${$(Math.abs(chg))} since ${dmy(series[0][0])}</small></p>
-        <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Portfolio worth from ${dmy(series[0][0])} to today"><path class="fill" d="M${path[0]} L${path.join(' L')} L${x(series.length-1)},${H-P.b} L${x(0)},${H-P.b} Z"/><line class="ax" x1="${P.l}" x2="${W-P.r}" y1="${H-P.b}" y2="${H-P.b}"/><path class="ln" pathLength="1" d="M${path.join(' L')}"/><circle class="dot" r="4" cx="${x(series.length-1)}" cy="${y(T)}"/><text class="tk" x="${P.l}" y="${H-6}">${dmy(series[0][0])}</text><text class="tk" x="${W-P.r}" y="${H-6}" text-anchor="end">today</text></svg>`; }
+      el.innerHTML = `<p class="fig">${$(T)}<small class="${chg>=0?'up':'down'}">${chg>=0?'+':'−'}${$(Math.abs(chg))} since ${dmy(series[0][0])}</small></p>
+        <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Portfolio worth from ${dmy(series[0][0])} to today"><path class="fill" d="M${path[0]} L${path.join(' L')} L${x(series.length-1)},${H-P.b} L${x(0)},${H-P.b} Z"/><line class="ax" x1="${P.l}" x2="${W-P.r}" y1="${H-P.b}" y2="${H-P.b}"/><path class="ln" pathLength="1" d="M${path.join(' L')}"/><circle class="dot" r="4" cx="${x(series.length-1)}" cy="${y(T)}"/><text class="tk" x="${P.l}" y="${H-6}">${dmy(series[0][0])}</text><text class="tk" x="${W-P.r}" y="${H-6}" text-anchor="end">today</text>${tall?series.map((sv,i)=>(i%Math.max(1,Math.ceil(series.length/8)))?'':`<circle class="pt" r="3" cx="${x(i).toFixed(1)}" cy="${y(sv[1]).toFixed(1)}"/><text class="tk val" x="${x(i).toFixed(1)}" y="${(y(sv[1])-11).toFixed(1)}" text-anchor="middle">${$(sv[1])}</text>`).join(''):''}</svg>`;
+      };
+      drawWorth(F('chart'));
+      zoomable(F('chart'), 'worth', 'Worth over time', box => drawWorth(box, box.clientHeight-12)); }
 
     // contributions
     const names = {}; Object.values(MONTHS).forEach(doc => (doc.cats||[]).forEach(c => { names[c.name.toLowerCase()] = c.name; }));
