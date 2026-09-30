@@ -380,14 +380,15 @@
 
     // 2. income vs expenses, six months: paired bars, legend
     const months=[...S.history, [MONTH.slice(0,3), landed, spent]];
-    const W2=Math.max(220, F('ive').clientWidth||300), H2=156, P2={t:10,r:4,b:26,l:4}, top=Math.max(...months.flatMap(m=>[m[1],m[2]]))*1.08;
-    const bw=16, gw=(W2-P2.l-P2.r)/6;
+    const W2=Math.max(220, F('ive').clientWidth||300), H2=156, P2={t:10,r:4,b:26,l:4}, top=Math.max(...months.flatMap(m=>[m[1],m[2]]))*1.08 || 1;
+    // the slots follow how many months there are, and a thin month gets wider bars rather than a wide empty plot
+    const gw=(W2-P2.l-P2.r)/months.length, bw=Math.min(16, Math.max(8, (gw-14)/2));
     const yb=v=>P2.t+(H2-P2.t-P2.b)*(1-v/top);
     const rr=(x,yv,w,h,cls,m,v)=>`<path class="${cls}" d="M${x},${yv+h} V${yv+4} a4,4 0 0 1 4,-4 h${w-8} a4,4 0 0 1 4,4 V${yv+h} Z" data-t="${esc(m)} · ${cls==='bar-in'?'income':'expenses'}"><title>${esc(m)} ${cls==='bar-in'?'income':'expenses'}: ${$0(v)}</title></path>`;
     F('ive').innerHTML = `<h3>Income vs expenses<small>six months · ${MONTH.slice(0,3)} to date</small></h3><p class="fig">${$0(landed-spent)}<small>ahead so far in ${MONTH}</small></p>
       <svg viewBox="0 0 ${W2} ${H2}" role="img" aria-label="Income and expenses by month, April to September">
         <line class="ax" x1="${P2.l}" x2="${W2-P2.r}" y1="${H2-P2.b}" y2="${H2-P2.b}"/>
-        ${months.map((m,i)=>{ const gx=P2.l+gw*i+(gw-bw*2-2)/2; return rr(gx,yb(m[1]),bw,H2-P2.b-yb(m[1]),'bar-in',m[0],m[1])+rr(gx+bw+2,yb(m[2]),bw,H2-P2.b-yb(m[2]),'bar-out',m[0],m[2])+`<text class="tk ${i===5?'i':''}" x="${P2.l+gw*i+gw/2}" y="${H2-6}" text-anchor="middle">${m[0]}</text>`; }).join('')}
+        ${months.map((m,i)=>{ const gx=P2.l+gw*i+(gw-bw*2-2)/2; return rr(gx,yb(m[1]),bw,H2-P2.b-yb(m[1]),'bar-in',m[0],m[1])+rr(gx+bw+2,yb(m[2]),bw,H2-P2.b-yb(m[2]),'bar-out',m[0],m[2])+`<text class="tk ${i===months.length-1?'i':''}" x="${P2.l+gw*i+gw/2}" y="${H2-6}" text-anchor="middle">${m[0]}</text>`; }).join('')}
       </svg><div class="tip"></div><div class="legend"><span><i style="background:var(--band)"></i>Income</span><span><i style="background:var(--chart-out)"></i>Expenses</span></div>`;
 
     bars(F('ive'));

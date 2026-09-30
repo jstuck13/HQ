@@ -259,7 +259,7 @@
         <p class="fig">${s.fmt(avg)}<small>average of ${pts.length} readings${roll.length>1?` · with its seven-day mean`:''}</small></p>
         <svg viewBox="0 0 ${W} ${H_}" role="img" aria-label="${s.name}, last ${N} days, ${s.fmt(lo)} to ${s.fmt(hi)}, average ${s.fmt(avg)}">
           <line class="ax" x1="${P.l}" x2="${W-P.r}" y1="${H_-P.b}" y2="${H_-P.b}"/>
-          <line class="avg" x1="${P.l}" x2="${W-P.r}" y1="${y(avg).toFixed(1)}" y2="${y(avg).toFixed(1)}"/>
+          <line class="avg" x1="${x(pts[0].i).toFixed(1)}" x2="${x(last.i).toFixed(1)}" y1="${y(avg).toFixed(1)}" y2="${y(avg).toFixed(1)}"/>
           ${rollPath ? `<path class="roll" d="${rollPath}"/>` : ''}
           <path class="ln" pathLength="1" d="${path}"/>
           ${pts.map(p=>`<circle class="pt" r="3" cx="${x(p.i).toFixed(1)}" cy="${y(p.v).toFixed(1)}"/>`).join('')}
