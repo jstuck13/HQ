@@ -53,6 +53,8 @@ h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0}
 .ic{width:16px;height:16px;flex:none}
 /* a list long enough to run down the page scrolls inside its own box instead; --h sets how tall that box is */
 .scrollbox{max-height:var(--h,420px);overflow:auto;overscroll-behavior:contain;padding-right:6px;scrollbar-width:thin;scrollbar-color:var(--rule) transparent}
+/* a contained scroll that has more below it fades out rather than cutting a line of text in half (hq.js sets the class) */
+.scrollbox.more{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 26px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 26px),transparent)}
 
 /* a newer version is ready: said quietly at the foot of the page, never taken without asking */
 .hq-newer{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:16px;

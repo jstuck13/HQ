@@ -6,7 +6,7 @@ const hrs = m => m>=60 ? (m%60 ? `${Math.floor(m/60)} h ${m%60}` : `${m/60} h`) 
 const $0 = n => (n<0?'−':'') + '$' + Math.round(Math.abs(n)).toLocaleString('en-US');                                                    // 2194.4 → $2,194
 // The version this copy of the app was built with. version.json holds the same number and is never cached,
 // so a page that has been open — or served from the offline shell — can tell when a newer one has been deployed.
-const HQ_VERSION = '4.4.2';
+const HQ_VERSION = '4.5.0';
 
 // a newer version is not forced on you mid-sentence: it says so, and waits to be asked
 async function watchVersion(){
@@ -41,6 +41,20 @@ addEventListener('DOMContentLoaded', () => { if (location.protocol.startsWith('h
 { const t0 = Date.now(); let gone = false;
   window.hqReveal = () => { if (gone) return; gone = true; setTimeout(() => document.body.classList.add('hq-in'), Math.max(0, 250 - (Date.now() - t0))); };   // held 250 ms so it reads as a mark, not a flicker
   setTimeout(window.hqReveal, 4000); }
+// A contained scroll should say there is more below it. Pages rebuild their lists, so the boxes are found
+// again whenever the document changes rather than once at load.
+{ const seen = new WeakSet();
+  const mark = el => el.classList.toggle('more', el.scrollHeight - el.scrollTop - el.clientHeight > 4);
+  const ro = window.ResizeObserver ? new ResizeObserver(es => es.forEach(e => mark(e.target))) : null;
+  const scan = () => document.querySelectorAll('.scrollbox').forEach(el => {
+    mark(el);
+    if (seen.has(el)) return; seen.add(el);
+    el.addEventListener('scroll', () => mark(el), { passive: true });
+    ro && ro.observe(el);
+  });
+  addEventListener('DOMContentLoaded', () => { scan(); new MutationObserver(scan).observe(document.body, { childList: true, subtree: true }); });
+  addEventListener('resize', scan); }
+
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});   // reminders, and the offline shell
 addEventListener('DOMContentLoaded', () => {
   const b = document.getElementById('menubtn'), band = document.querySelector('.band');

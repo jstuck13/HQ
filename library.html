@@ -35,6 +35,17 @@
 
   /* the open book */
   .open{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:24px 28px 26px;margin-top:14px;display:grid;grid-template-columns:200px 1fr;gap:0 32px}
+  .open.charted{grid-template-columns:200px minmax(0,1fr) 250px}   /* the reading so far takes the space the description leaves */
+  .pgs{align-self:start;padding-top:4px}
+  .pgs h4{font-family:var(--sans);font-weight:400;font-size:12.5px;color:var(--ink-3);margin:0}
+  .pgs svg{display:block;width:100%;height:auto;overflow:visible;margin-top:6px}
+  .pgs .ax{stroke:var(--rule);stroke-width:1}
+  .pgs .wash{fill:var(--ink);opacity:.06}
+  .pgs .ln{fill:none;stroke:var(--ink);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+  .pgs .pt{fill:var(--ink);stroke:var(--card);stroke-width:1.5}
+  .pgs .dot{fill:var(--ox);stroke:var(--card);stroke-width:2}
+  .pgs .end{stroke:var(--rule);stroke-width:1;stroke-dasharray:2 3}
+  .pgs .tk{font:12px var(--sans);fill:var(--ink-3)}
   .open .cover{box-shadow:var(--shadow);align-self:start}
   .open .t{font-family:var(--serif);font-size:24px;line-height:1.2}
   .open .a{font-family:var(--serif);font-style:italic;font-size:17px;color:var(--ink-2);margin:2px 0 10px}
@@ -114,10 +125,10 @@
   .foot .textbtn{font-style:normal;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:8px} .foot .textbtn.ox{color:var(--ox)} .foot .textbtn:hover{color:var(--ink)}
 
   @media (prefers-reduced-motion:reduce){.textbtn,.book .cover{transition:none}}
-  @media (max-width:1000px){.wall{grid-template-columns:repeat(4,1fr)}}
+  @media (max-width:1000px){.wall{grid-template-columns:repeat(4,1fr)} .open.charted{grid-template-columns:200px 1fr} .pgs{grid-column:2;max-width:250px;padding-top:14px}}
   @media (max-width:760px){
     main{padding:24px 20px 36px} .foot{padding:0 20px 28px}
-    .open{grid-template-columns:1fr;padding:18px 18px 20px} .open .cover{width:140px}
+    .open,.open.charted{grid-template-columns:1fr;padding:18px 18px 20px} .open .cover{width:140px} .pgs{grid-column:auto;max-width:250px;padding-top:14px}
     .wall{grid-template-columns:repeat(3,1fr);gap:20px 14px} .slot .rmb{opacity:1}
     .notes li{grid-template-columns:1fr auto} .notes .d{grid-column:1/-1} .notes .x{opacity:1}
     .write{grid-template-columns:1fr} .write .textbtn{grid-column:1}
@@ -201,6 +212,7 @@
     if(o){
       S.open=o.id;
       const acts = o.shelf==='reading' ? `<button class="textbtn" data-act="finish">Finished it</button><button class="textbtn" data-act="shelve">Back to To read</button>` : o.shelf==='toread' ? `<button class="textbtn" data-act="start">Start reading</button>` : `<button class="textbtn" data-act="start">Read it again</button>`;
+      F('open').classList.toggle('charted', !!pagesChart(o));
       F('open').innerHTML = `${cover(o)}<div>
         <div class="t">${esc(o.title)}</div><div class="a">${esc(o.author)}</div>
         <div class="meta"><span>${o.year||''}</span><span>${o.pages?o.pages+' pages':''}</span><span>${esc(o.genre||'')}</span>${o.started?`<span>started ${dmy(o.started)}</span>`:''}${o.finished?`<span>finished ${dmy(o.finished)}</span>`:''}</div>
@@ -208,7 +220,7 @@
         <div class="rate">Rating ${dots(o.rating, true)}</div>
         <p class="desc">${esc(o.desc||'')}</p>
         <div class="acts">${acts}<button class="textbtn rm" data-act="remove">Remove from library</button></div>
-      </div>
+      </div>${pagesChart(o)}
       <div class="notes"><h3>Notes<small>${o.notes.length} ${o.notes.length===1?'note':'notes'}</small></h3>
         <ul class="scrollbox">${o.notes.length?[...o.notes].reverse().map((n,i)=>`<li data-i="${o.notes.length-1-i}"><span class="d">${dmy(n.d)}</span><span class="n">${esc(n.t)}</span><button class="x" type="button">remove</button></li>`).join(''):'<li class="empty">Nothing written yet.</li>'}</ul>
         <form class="write" id="write"><span class="d">${dmy(TODAY)}</span><textarea id="note" placeholder="Write a note — as long as you like." required></textarea><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Keep this note</button></form>
@@ -251,6 +263,32 @@
     if(e.target.id==='findf'){ e.preventDefault(); find(F('q').value.trim()); }
   });
   document.addEventListener('change', e=>{ if(e.target.matches('.prog input')){ const o=book(S.open), v=parseInt(e.target.value); if(o && !isNaN(v)){ o.page=Math.max(0,Math.min(o.pages||v,v)); o.log ??= {}; o.log[TODAY]=o.page; render(); } } });
+  // The pages behind you, drawn from the same log the pace is worked out from. Two readings is the least
+  // that makes a line; the days between readings are real distance, so the axis is time, not entry number.
+  function pagesChart(o){
+    if(!o || o.shelf!=='reading' || !o.pages) return '';
+    const log = Object.entries(o.log||{}).map(([d,p])=>({d, p:+p})).filter(e=>e.p>=0).sort((a,b)=>a.d<b.d?-1:1);
+    if(log.length<2) return '';
+    const day0 = log[0].d, span = Math.max(1, C.daysBetween(day0, log[log.length-1].d));
+    const W=250, H=104, P={t:8,r:6,b:20,l:6};
+    const x = d => P.l + (W-P.l-P.r) * C.daysBetween(day0, d) / span;
+    const y = p => P.t + (H-P.t-P.b) * (1 - p/o.pages);
+    const pts = log.map(e=>`${x(e.d).toFixed(1)},${y(e.p).toFixed(1)}`);
+    const last = log[log.length-1];
+    return `<div class="pgs"><h4>Pages so far</h4>
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Page reached from ${dmy(day0)} to ${dmy(last.d)}, ${last.p} of ${o.pages}">
+        <path class="wash" d="M${pts[0].split(',')[0]},${H-P.b} L${pts.join(' L')} L${x(last.d).toFixed(1)},${H-P.b} Z"/>
+        <line class="ax" x1="${P.l}" x2="${W-P.r}" y1="${H-P.b}" y2="${H-P.b}"/>
+        <line class="end" x1="${P.l}" x2="${W-P.r}" y1="${y(o.pages).toFixed(1)}" y2="${y(o.pages).toFixed(1)}"/>
+        <text class="tk" x="${P.l}" y="${y(o.pages)-4}">${o.pages}</text>
+        <path class="ln" d="M${pts.join(' L')}"/>
+        ${log.slice(0,-1).map(e=>`<circle class="pt" r="2.5" cx="${x(e.d).toFixed(1)}" cy="${y(e.p).toFixed(1)}"/>`).join('')}
+        <circle class="dot" r="4" cx="${x(last.d).toFixed(1)}" cy="${y(last.p).toFixed(1)}"/>
+        <text class="tk" x="${P.l}" y="${H-5}">${C.dayMonth(C.fromISO(day0))}</text>
+        <text class="tk" x="${W-P.r}" y="${H-5}" text-anchor="end">p. ${last.p}</text>
+      </svg></div>`;
+  }
+
   // pace: pages a day from the page log (last fortnight), else from the start date; then the day it finishes
   function pace(o){
     if(!o.pages || !o.page) return '';
