@@ -68,8 +68,13 @@ h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0}
 .hq-zoom .x{margin-left:auto;font-family:var(--sans);font-size:13px;color:var(--ink-2);letter-spacing:.04em;border-bottom:1px solid transparent}
 .hq-zoom .x:hover{color:var(--ink);border-bottom-color:var(--ink-3)}
 .hq-zoom .box{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;justify-content:center;justify-content:safe center;padding-top:14px}   /* safe: centred when it fits, from the top when it does not, never spilling upward under the header */
-.hq-zoom .box > *{width:100%;max-width:100%;align-self:stretch}   /* a chart that shrinks to its content in the page fills the screen here */
-.hq-zoom .box svg{width:100%;height:auto}
+.hq-zoom .box > *{width:100%;max-width:none;align-self:stretch}   /* a chart that shrinks to its content in the page fills the screen here */
+.hq-zoom .box{--zw:100%}
+.hq-zoom .box svg{width:var(--zw);max-width:none;height:auto}
+.hq-zoom .box.wide svg{touch-action:auto}   /* wider than the screen: a sideways drag scrolls it; a tap still reads a point */
+.hq-zoom .box.wide > *{width:var(--zw)}   /* so a pinned line has the whole scroll to stay still against */
+.hq-zoom .box.wide .fig,.hq-zoom .box.wide .rng,.hq-zoom .box.wide .cap,.hq-zoom .box.wide .legend,.hq-zoom .box.wide h3{position:sticky;left:0;width:fit-content;max-width:100%}   /* the figure and the note stay put while the drawing runs past them */
+.hq-zoom .box.wide::after{content:"drag sideways for the rest";position:sticky;left:0;display:block;width:fit-content;font-family:var(--sans);font-size:11.5px;color:var(--ink-3);padding-top:6px}
 .hq-zoom .box .pgs h4,.hq-zoom .box .chart h3{display:none}   /* the dialog's own heading already names it */
 @media (max-width:760px){.hq-zoom .in{padding:14px 16px 18px} .hq-zoom h2{font-size:20px}}
 

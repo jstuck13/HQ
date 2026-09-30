@@ -339,7 +339,7 @@
     document.querySelectorAll('#strip .chart').forEach(ch=>{ const s=series[+ch.dataset.i]; wire(ch, s, W, H_);
       if(!ch.querySelector('svg')) return;                                   // nothing drawn yet: nothing to expand
       zoomable(ch, `trend-${s.key}`, `${s.name} — last ${N} days`, box=>{
-        const w=Math.max(280, box.clientWidth), h=zoomHeight(w, box.clientHeight-96);   // the figure above and the range below want their share
+        const w=zoomWidth(box, N), h=zoomHeight(w, box.clientHeight-96);   // a slot a day across; the figure above and the range below want their share
         box.innerHTML = trendHTML(s, +ch.dataset.i, w, h);
         wire(box.querySelector('.chart'), s, w, h);
       });

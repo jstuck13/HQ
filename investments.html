@@ -233,8 +233,8 @@
     const seen={}; pts.forEach(([d,v])=>{ seen[d]=v; }); const series=Object.entries(seen).sort();
     F('chartn').textContent = series.length>1 ? `${dmy(series[0][0])} – today` : '';
     if(series.length<2){ F('chart').innerHTML = `<p class="empty">${T ? 'The line starts after a second night of prices.' : 'Nothing to draw yet.'}</p>`; }
-    else { const drawWorth = (el, tall) => {
-      const W=Math.max(220, el.clientWidth||560), H=tall ? zoomHeight(W, tall) : 170, P={t:14,r:10,b:22,l:8}, vals=series.map(s=>s[1]), lo=Math.min(...vals), hi=Math.max(...vals), pad=(hi-lo)*.12||1;
+    else { const drawWorth = (el, tall, wide) => {
+      const W=Math.max(220, wide || el.clientWidth || 560), H=tall ? zoomHeight(W, tall) : 170, P={t:14,r:10,b:22,l:8}, vals=series.map(s=>s[1]), lo=Math.min(...vals), hi=Math.max(...vals), pad=(hi-lo)*.12||1;
       const x=i=>P.l+(W-P.l-P.r)*i/(series.length-1), y=v=>P.t+(H-P.t-P.b)*(1-(v-lo+pad)/(hi-lo+2*pad));
       const path=series.map((s,i)=>`${x(i).toFixed(1)},${y(s[1]).toFixed(1)}`);
       const from=series[0][1], chg=T-from;
@@ -253,7 +253,7 @@
         }).join(''); })():''}</svg>`;
       };
       drawWorth(F('chart'));
-      zoomable(F('chart'), 'worth', 'Worth over time', box => drawWorth(box, box.clientHeight-80)); }
+      zoomable(F('chart'), 'worth', 'Worth over time', box => drawWorth(box, box.clientHeight-80, zoomWidth(box, series.length, 28))); }
 
     // contributions
     const names = {}; Object.values(MONTHS).forEach(doc => (doc.cats||[]).forEach(c => { names[c.name.toLowerCase()] = c.name; }));

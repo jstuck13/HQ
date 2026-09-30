@@ -359,8 +359,8 @@
   // ---- charts ----
   function charts(landed, spent, limits){
     // 1. cash left through the month: actual to today (landed − spent by day), projected to the 30th (plan − remaining limits spread evenly), rent and next paycheck marked
-    const drawCash = (el, tall) => {
-    const W=Math.max(300, el.clientWidth||560), H=tall ? zoomHeight(W, tall) : Math.round(W*0.28), P={t:14,r:12,b:24,l:44};
+    const drawCash = (el, tall, wide) => {
+    const W=Math.max(300, wide || el.clientWidth || 560), H=tall ? zoomHeight(W, tall) : Math.round(W*0.28), P={t:14,r:12,b:24,l:44};
     const byDay = Array(DIM+1).fill(0); S.income.forEach(i=>byDay[+i.date.slice(-2)]+=i.amt); S.tx.forEach(t=>byDay[+t.date.slice(-2)]-=t.amt);
     const act=[]; let run=0; for(let d=1;d<=DAY;d++){ run+=byDay[d]; act.push(run); }
     const remainingLimit = S.cats.reduce((n,c)=>n+Math.max(0,c.limit-spentIn(c.id)),0), rent = S.cats.find(c=>c.id==='rent');
@@ -387,12 +387,12 @@
     hover(el, W, H, d=>({x:x(d), y:y(all[d-1]), text:`<b>${$0(all[d-1])}</b> · ${d} Sep${d>DAY?' (projected)':''}`}), 1, DIM, P);
     };
     drawCash(F('cash'));
-    zoomable(F('cash'), 'cash', `Cash left through ${MONTH}`, box => drawCash(box, box.clientHeight-108));   // the figure above and the note below want their share
+    zoomable(F('cash'), 'cash', `Cash left through ${MONTH}`, box => drawCash(box, box.clientHeight-108, zoomWidth(box, DIM)));   // a slot a day; the figure above and the note below want their share
 
     // 2. income vs expenses, six months: paired bars, legend
     const months=[...S.history, [MONTH.slice(0,3), landed, spent]];
-    const drawIve = (el, tall) => {
-    const W2=Math.max(220, el.clientWidth||300), H2=tall ? zoomHeight(W2, tall) : 156, P2={t:10,r:4,b:26,l:4}, top=Math.max(...months.flatMap(m=>[m[1],m[2]]))*1.08 || 1;
+    const drawIve = (el, tall, wide) => {
+    const W2=Math.max(220, wide || el.clientWidth || 300), H2=tall ? zoomHeight(W2, tall) : 156, P2={t:10,r:4,b:26,l:4}, top=Math.max(...months.flatMap(m=>[m[1],m[2]]))*1.08 || 1;
     // the slots follow how many months there are, and a thin month gets wider bars rather than a wide empty plot
     const gw=(W2-P2.l-P2.r)/months.length, bw=Math.min(tall?46:16, Math.max(8, (gw-14)/2));
     const yb=v=>P2.t+(H2-P2.t-P2.b)*(1-v/top);
@@ -406,7 +406,7 @@
     bars(el);
     };
     drawIve(F('ive'));
-    zoomable(F('ive'), 'months', 'Income vs expenses', box => drawIve(box, box.clientHeight-96));
+    zoomable(F('ive'), 'months', 'Income vs expenses', box => drawIve(box, box.clientHeight-96, zoomWidth(box, months.length, 72)));
 
     // 3. spent vs limit by category: horizontal bars
     const drawSvl = (el, tall) => {

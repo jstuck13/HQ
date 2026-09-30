@@ -228,7 +228,8 @@
       </div>`;
       const pg = F('open').querySelector('.pgs');
       if(pg) zoomable(pg, 'pages', `${o.title} — pages so far`, box => {
-        const w=Math.max(280, box.clientWidth), h=zoomHeight(w, box.clientHeight-40);
+        const first = Object.keys(o.log||{}).sort()[0] || TODAY;
+        const w=zoomWidth(box, Math.max(2, C.daysBetween(first, TODAY) + 1), 26), h=zoomHeight(w, box.clientHeight-40);
         box.innerHTML = pagesChart(o, w, h);
       });
     } else {

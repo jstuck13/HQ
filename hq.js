@@ -10,7 +10,7 @@ const $0 = n => (n<0?'−':'') + '$' + Math.round(Math.abs(n)).toLocaleString('e
 const toDo = i => !i.done && !i.noturn;
 // The version this copy of the app was built with. version.json holds the same number and is never cached,
 // so a page that has been open — or served from the offline shell — can tell when a newer one has been deployed.
-const HQ_VERSION = '4.9.0';
+const HQ_VERSION = '4.10.0';
 
 // a newer version is not forced on you mid-sentence: it says so, and waits to be asked
 async function watchVersion(){
@@ -72,8 +72,28 @@ addEventListener('DOMContentLoaded', () => { if (location.protocol.startsWith('h
   const box = () => dlg.querySelector('.box');
   // how tall a chart should be drawn in a box this size: it takes the room, but stays wider than it is tall
   // on a phone, where the box is a tall rectangle and a chart the same shape would be unreadable.
-  window.zoomHeight = (w, tall) => Math.round(Math.min(tall, Math.max(w*0.55, tall*0.6)));
-  const draw = () => { const c = charts.get(open); if (!c) return; box().innerHTML = ''; c.draw(box()); };
+  // A chart that fits takes the room but stays wider than tall, since a chart the shape of a phone reads badly.
+  // One that is already scrolling sideways has no such worry, and takes the whole height.
+  let widened = false, shrink = 0;
+  window.zoomHeight = (w, tall) => Math.round(Math.max(160, (widened ? tall : Math.min(tall, Math.max(w*0.55, tall*0.6))) - shrink));
+  // On a narrow screen a month of readings squeezed into 390px is a scribble. The drawing takes the width its
+  // data needs and the box scrolls sideways to it; on a screen already wider than that, nothing changes.
+  // While it scrolls, a sideways drag belongs to the scroll rather than to reading a point, which a tap still does.
+  window.zoomWidth = (box, slots, gap = 24) => {
+    const w = Math.max(box.clientWidth, Math.min(Math.round(slots * gap), 3200));
+    box.style.setProperty('--zw', w + 'px');
+    widened = w > box.clientWidth + 1;                  // read by zoomHeight, which is always called right after
+    box.classList.toggle('wide', widened);
+    return w;
+  };
+  const draw = () => { const c = charts.get(open); if (!c) return; const b = box();
+    const paint = () => { b.innerHTML = ''; b.style.setProperty('--zw', '100%'); b.classList.remove('wide'); widened = false; c.draw(b); };
+    shrink = 0; paint();
+    // a figure, a caption and a legend take a line on a wide screen and three on a phone: rather than guess,
+    // draw it, measure what spilled, and give the drawing that much less. One correction is always enough.
+    if (b.scrollHeight > b.clientHeight + 4) { shrink = b.scrollHeight - b.clientHeight + 4; paint(); shrink = 0; }
+    if (b.classList.contains('wide')) b.scrollLeft = b.scrollWidth;   // a chart wider than the screen opens at its latest, not a month ago
+  };
   const leave = () => { if (history.state && history.state.hqZoom) history.back(); else shut(); };
   const shut = () => { open = null; if (dlg && dlg.open) dlg.close(); if (location.hash) history.replaceState(null, '', location.pathname + location.search); };
 
