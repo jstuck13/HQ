@@ -433,11 +433,7 @@
       tip.innerHTML=`<b>${amt}</b> · ${b.dataset.t}`;
       tip.style.left=`${br.left-cr.left+br.width/2}px`; tip.style.top=`${br.top-cr.top-6}px`; tip.style.opacity=1; };   // measured off the bar itself, so it sits just above it
     const hide = () => { tip.style.opacity=0; svg.querySelectorAll('path[data-t]').forEach(p=>p.classList.remove('dim')); };
-    svg.addEventListener('pointerdown', show);   // a finger has nothing to hover with: the press is the ask
-    svg.addEventListener('pointermove', show);
-    svg.addEventListener('pointerleave', hide);
-    svg.addEventListener('pointerup', hide);
-    svg.addEventListener('pointercancel', hide);
+    chartReading(svg, show, hide);
   }
 
   // the note is centred on the point, but never hangs off the chart — on a phone that would be off the screen
@@ -452,8 +448,7 @@
       place(tip, el, p.x/W*r.width);
     };
     const hide = () => { xh.style.opacity=0; hv.style.opacity=0; tip.style.opacity=0; };
-    svg.addEventListener('pointerdown', show); svg.addEventListener('pointermove', show);
-    svg.addEventListener('pointerleave', hide); svg.addEventListener('pointerup', hide); svg.addEventListener('pointercancel', hide);
+    chartReading(svg, show, hide);
   }
   F('in-date').value = F('x-date').value = C.dayMonth(NOWD);
   // an empty month: one blank plan, no categories, no history

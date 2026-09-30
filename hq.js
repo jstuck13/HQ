@@ -10,7 +10,7 @@ const $0 = n => (n<0?'−':'') + '$' + Math.round(Math.abs(n)).toLocaleString('e
 const toDo = i => !i.done && !i.noturn;
 // The version this copy of the app was built with. version.json holds the same number and is never cached,
 // so a page that has been open — or served from the offline shell — can tell when a newer one has been deployed.
-const HQ_VERSION = '4.10.0';
+const HQ_VERSION = '4.11.0';
 
 // a newer version is not forced on you mid-sentence: it says so, and waits to be asked
 async function watchVersion(){
@@ -137,6 +137,24 @@ addEventListener('DOMContentLoaded', () => { if (location.protocol.startsWith('h
   };
   addEventListener('popstate', () => { const n = history.state && history.state.hqZoom; if (n) show(n); else { open = null; if (dlg && dlg.open) dlg.close(); } });
 }
+
+// How a chart is asked what a point is worth. A mouse hovers and the reading follows it. A finger has no
+// hover: a tap pins the reading and it stays — tap the same place again, or anywhere off the chart, to put it
+// away, and tap a different point to move it there. show(e) draws the reading, hide() clears it.
+window.chartReading = (svg, show, hide) => {
+  let pinned = false, at = 0;
+  const near = e => Math.abs(e.clientX - at) < 26;
+  svg.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse') { show(e); return; }
+    if (pinned && near(e)) { pinned = false; hide(); return; }
+    pinned = true; at = e.clientX; show(e);
+  });
+  svg.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' || pinned) { if (pinned) at = e.clientX; show(e); } });
+  svg.addEventListener('pointerup', () => { if (!pinned) hide(); });
+  svg.addEventListener('pointercancel', () => { if (!pinned) hide(); });
+  svg.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') hide(); });
+  addEventListener('pointerdown', e => { if (pinned && !svg.contains(e.target)) { pinned = false; hide(); } }, true);
+};
 
 // what this copy is, in the corner, on every page
 addEventListener('DOMContentLoaded', () => {

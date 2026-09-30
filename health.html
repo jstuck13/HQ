@@ -330,8 +330,7 @@
       tip.style.left=`${Math.round(Math.min(Math.max(X(q.i)/w*r.width, half), Math.max(half, cw-half)))}px`;
     };
     const hide = () => { xh.style.opacity=0; hv.style.opacity=0; tip.style.opacity=0; };
-    svg.addEventListener('pointerdown', show); svg.addEventListener('pointermove', show);   // a finger has nothing to hover with
-    svg.addEventListener('pointerleave', hide); svg.addEventListener('pointerup', hide); svg.addEventListener('pointercancel', hide);
+    chartReading(svg, show, hide);
   }
 
   function renderCharts(){
