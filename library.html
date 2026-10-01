@@ -216,7 +216,7 @@
       F('open').classList.toggle('charted', !!pagesChart(o));
       F('open').innerHTML = `${cover(o)}<div>
         <div class="t">${esc(o.title)}</div><div class="a">${esc(o.author)}</div>
-        <div class="meta"><span>${o.year||''}</span><span>${o.pages?o.pages+' pages':''}</span><span>${esc(o.genre||'')}</span>${o.started?`<span>started ${dmy(o.started)}</span>`:''}${o.finished?`<span>finished ${dmy(o.finished)}</span>`:''}${o.shelf==='toread'&&o.page>0?`<span>put down at page ${o.page}</span>`:''}</div>
+        <div class="meta"><span>${o.year||''}</span><span>${o.pages?o.pages+' pages':''}</span><span>${esc(o.genre||'')}</span>${o.started?`<span>started ${dmy(o.started)}</span>`:''}${o.finished?`<span>finished ${dmy(o.finished)}</span>`:''}${o.shelf==='toread'&&o.page>0?`<span>page ${o.page}${o.pages?` of ${o.pages}`:''}</span>`:''}</div>
         ${o.shelf==='reading'?`<div class="prog">Page <input value="${o.page||0}" inputmode="numeric" aria-label="Current page"> of ${o.pages||'?'}<span class="bar"><i style="width:${o.pages?Math.min(100,(o.page||0)/o.pages*100):0}%"></i></span><span>${o.pages?Math.round((o.page||0)/o.pages*100)+'%':''}</span>${pace(o)?`<small class="pace">${pace(o)}</small>`:''}</div>`:''}
         <div class="rate">Rating ${dots(o.rating, true)}</div>
         <p class="desc">${esc(o.desc||'')}</p>
@@ -240,7 +240,7 @@
     F('readingn').textContent = reading.length===1 ? (o&&o.id===reading[0].id ? 'open above' : 'click to go back to it') : `${reading.length} books`;
     F('reading').innerHTML = reading.map(b=>`<button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i>${b.pages?`<i>page ${b.page||0} of ${b.pages}</i>`:''}</span></button>`).join('');
     F('toreadn').textContent = `${toread.length} waiting`;
-    F('toread').innerHTML = toread.map(b=>`<span class="slot"><button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i>${b.page>0&&b.pages?`<i>put down at page ${b.page} of ${b.pages}</i>`:''}</span></button><button class="rmb" type="button" data-rmb="${b.id}" aria-label="Remove ${esc(b.title)}"><svg class="ic"><use href="icons.svg?v=3#minus"/></svg></button></span>`).join('')
+    F('toread').innerHTML = toread.map(b=>`<span class="slot"><button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i>${b.page>0&&b.pages?`<i>page ${b.page} of ${b.pages}</i>`:''}</span></button><button class="rmb" type="button" data-rmb="${b.id}" aria-label="Remove ${esc(b.title)}"><svg class="ic"><use href="icons.svg?v=3#minus"/></svg></button></span>`).join('')
       + `<button class="add" id="addcover"><span class="cover"><span><svg class="ic"><use href="icons.svg#plus"/></svg>Add a book</span></span></button>`;
     F('readn').textContent = `${read.length} books · ${thisYear} this year`;
     F('read').innerHTML = read.length ? read.map(b=>`<span class="slot"><button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i>${dots(b.rating)}</span></button><button class="rmb" type="button" data-rmb="${b.id}" aria-label="Remove ${esc(b.title)}"><svg class="ic"><use href="icons.svg?v=3#minus"/></svg></button></span>`).join('') : '<p class="empty" style="grid-column:1/-1">Nothing finished yet. When you finish the book you are reading, it lands here.</p>';
