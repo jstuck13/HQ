@@ -347,12 +347,20 @@
     else if(every==='week'){ day=WD.findIndex(w=>raw.toLowerCase().startsWith(w.toLowerCase())); if(day<0) return F('r-day').focus(); }
     else { day=C.parseDay(raw).slice(5); if(!raw) return F('r-day').focus(); }
     R.rules.push({id:'r'+Date.now(), what:F('r-what').value.trim(), amt, cat:F('r-cat').value, every, n, day, start:C.today}); saveR(); F('addrule').reset(); F('r-n').value='1'; postRules(); render(); });
-  F('rull').addEventListener('click', e=>{ const b=e.target.closest('.x'); if(b){ const id=b.closest('li').dataset.id; R.rules=R.rules.filter(r=>r.id!==id); saveR(); render(); } });
-  F('inl').addEventListener('click', e=>{ const b=e.target.closest('.x'); if(b){ const id=+b.closest('li').dataset.id; S.income=S.income.filter(i=>i.id!==id); render(); } });
-  F('outl').addEventListener('click', e=>{ const b=e.target.closest('.x'); if(b){ const id=+b.closest('li').dataset.id; S.tx=S.tx.filter(t=>t.id!==id); render(); } });
+  F('rull').addEventListener('click', e=>{ const b=e.target.closest('.x'); if(b){ const id=b.closest('li').dataset.id, was=hqCopy(R.rules), gone=R.rules.find(r=>r.id===id);
+    R.rules=R.rules.filter(r=>r.id!==id); saveR(); render();
+    hqUndo(gone?gone.what:'the scheduled expense', ()=>{ R.rules=was; saveR(); render(); }); } });
+  F('inl').addEventListener('click', e=>{ const b=e.target.closest('.x'); if(b){ const id=+b.closest('li').dataset.id, was=hqCopy(S.income), gone=S.income.find(i=>i.id===id);
+    S.income=S.income.filter(i=>i.id!==id); render();
+    hqUndo(gone?gone.src:'the payment', ()=>{ S.income=was; render(); }); } });
+  F('outl').addEventListener('click', e=>{ const b=e.target.closest('.x'); if(b){ const id=+b.closest('li').dataset.id, was=hqCopy(S.tx), gone=S.tx.find(t=>t.id===id);
+    S.tx=S.tx.filter(t=>t.id!==id); render();
+    hqUndo(gone?gone.what:'the purchase', ()=>{ S.tx=was; render(); }); } });
   F('cats').addEventListener('click', e=>{
     const m=e.target.closest('.mv'); if(m && !m.disabled){ const id=m.closest('li').dataset.id, i=S.cats.findIndex(c=>c.id===id), j=i+(+m.dataset.mv); [S.cats[i],S.cats[j]]=[S.cats[j],S.cats[i]]; render(); F('cats').querySelector(`li[data-id="${id}"] .mv[data-mv="${m.dataset.mv}"]`)?.focus(); return; }
-    const b=e.target.closest('.x'); if(b){ const id=b.closest('li').dataset.id; if(S.tx.some(t=>t.cat===id)) { alert('Move or remove its entries first.'); return; } S.cats=S.cats.filter(c=>c.id!==id); render(); } });
+    const b=e.target.closest('.x'); if(b){ const id=b.closest('li').dataset.id; if(S.tx.some(t=>t.cat===id)) { alert('Move or remove its entries first.'); return; } const was=hqCopy(S.cats), gone=S.cats.find(c=>c.id===id);
+    S.cats=S.cats.filter(c=>c.id!==id); render();
+    hqUndo(gone?gone.name:'the category', ()=>{ S.cats=was; render(); }); } });
   F('cats').addEventListener('change', e=>{ if(e.target.tagName==='INPUT'){ const c=cat(e.target.closest('li').dataset.id), v=num(e.target.value); if(c && v!=null){ c.limit=v; render(); } } });
   F('outl').addEventListener('click', e=>{ if(e.target.closest('#more')){ showAll=!showAll; render(); } });
 

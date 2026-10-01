@@ -31,6 +31,7 @@ const LABEL = {
   bed: 'bedtime', woke: 'waking time', battery: 'body battery', hrv: 'HRV', hr: 'resting heart rate', resp: 'breaths a minute',
   steps: 'steps', weight: 'weight', supplements: 'supplements taken', spend: 'money spent', study: 'minutes studied',
   pages: 'pages read', cards: 'cards read', booked: 'hours on the calendar', todos: 'to-dos ticked',
+  grade: 'the running grade',
 };
 const HIGHER = { bed: 'later', woke: 'later' };   // for wording: a bigger number is not always "more"
 
@@ -61,6 +62,21 @@ export async function buildSeries(getDoc, today, getMany) {
 
   const school = (await getDoc('school')) || {};
   for (const s of school.sessions || []) if (s.date >= from && s.date <= today) S.study[s.date] = (S.study[s.date] || 0) + (+s.min || 0);
+  // the running grade across courses, carried forward: Canvas reports it when it changes, but it is a standing
+  // figure on every day in between, so a day with no new reading still has the mark it stood at.
+  { const all = {};
+    for (const c of school.courses || []) for (const m of c.marks || []) {
+      if (m.pct == null) continue;
+      (all[m.d] ??= {})[c.id] = +m.pct;
+    }
+    const dates = Object.keys(all).sort(); let standing = null;
+    for (const d of days) {
+      for (const k of dates) { if (k <= d) standing = { ...standing, ...all[k] }; }
+      if (!standing || d < dates[0]) continue;
+      const vals = Object.values(standing);
+      if (vals.length) S.grade[d] = vals.reduce((n, v) => n + v, 0) / vals.length;
+    }
+  }
 
   const lib = (await getDoc('library')) || {};
   for (const b of lib.books || []) { const log = Object.entries(b.log || {}).sort(); let prev = null;

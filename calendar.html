@@ -602,7 +602,9 @@
   F('remove').addEventListener('click', ()=>{
     const gone=S.series.find(x=>x.id===editing.id); if(gone && gone.source){ S.ignored=[...(S.ignored||[]), gone.id]; }
     if(gone && gone.gid){ S.dropped=[...(S.dropped||[]), gone.gid]; }   // tell Google about it on the next push
+    const wasSeries=hqCopy(S.series), goneEntry=S.series.find(x=>x.id===editing.id);
     S.series = S.series.filter(x=>x.id!==editing.id);
+    hqUndo(goneEntry?goneEntry.title:'the entry', ()=>{ S.series=wasSeries; save(); renderAll(); });
     Object.keys(S.notes).forEach(k=>{ if(k.startsWith(editing.id+'@')) delete S.notes[k]; });
     open=null; save(); reset(); renderAll();
   });

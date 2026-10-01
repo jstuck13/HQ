@@ -54,6 +54,10 @@
   .tile .gr{grid-column:2;grid-row:2;justify-self:end;text-align:right;font-family:var(--serif);font-size:24px;line-height:1.1}
   .tile .gr i{font-style:normal;font-size:15px;color:var(--ink-3);margin-left:4px}
   .tile .gr small{display:block;font-family:var(--sans);font-size:11.5px;color:var(--ink-3);margin-top:2px}
+  .tile .gr .mkln{display:block;width:74px;height:18px;margin:3px 0 0 auto;overflow:visible}
+  .tile .gr .mkln path{fill:none;stroke:var(--ink-2);stroke-width:1.4;stroke-linejoin:round;stroke-linecap:round}
+  .tile .gr .mkln circle{fill:var(--ox)}
+  .tile .gr .mkln.down path{stroke:var(--ox);stroke-opacity:.7}
   .tile .due{grid-column:1/-1;font-size:13.5px;color:var(--ink-2)}
   .tile .due.ox{color:var(--ox)}
   .tile .conf{grid-column:1/-1;display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-3);margin-top:4px}
@@ -245,6 +249,19 @@
     return `${when}, ${conf}, and ${time}.`;
   }
 
+  // The term's marks as one small line. It is drawn against the range it actually covers, not 0-100, because
+  // the question is which way the mark is going, not how far it is from nothing.
+  function spark(h){
+    if(!h || h.length < 2) return '';
+    const W=74, H=18, lo=Math.min(...h.map(m=>m.pct)), hi=Math.max(...h.map(m=>m.pct)), pad=(hi-lo)*.2||1;
+    const d0=C.fromISO(h[0].d).getTime(), span=Math.max(1, C.fromISO(h[h.length-1].d).getTime()-d0);
+    const x=m=>((C.fromISO(m.d).getTime()-d0)/span)*(W-3)+1.5, y=m=>H-2-((m.pct-lo+pad)/(hi-lo+2*pad))*(H-4);
+    const pts=h.map(m=>`${x(m).toFixed(1)},${y(m).toFixed(1)}`);
+    const end=h[h.length-1], up=end.pct>=h[0].pct;
+    return `<svg class="mkln ${up?'up':'down'}" viewBox="0 0 ${W} ${H}" role="img" aria-label="The mark from ${dmy(h[0].d)} to ${dmy(end.d)}, ${h.map(m=>Math.round(m.pct)+'%').join(', ')}">
+      <path d="M${pts.join(' L')}"/><circle r="2" cx="${x(end).toFixed(1)}" cy="${y(end).toFixed(1)}"/></svg>`;
+  }
+
   function render(){
     const open = S.items.filter(toDo).sort((a,b)=>score(b)-score(a));
     const tests = S.items.filter(i=>toDo(i) && kindOf(i).w>=4 && days(i.due)>=0).sort((a,b)=>a.due<b.due?-1:1)[0];   // the nearest exam or test, whatever Canvas called it
@@ -273,7 +290,9 @@
     const mark = c => {
       const done = S.items.filter(i=>i.course===c.id && i.score!=null && i.pts>0);
       const got = done.reduce((n,i)=>n+i.score,0), out = done.reduce((n,i)=>n+i.pts,0);
-      if(c.mark) return `<div class="gr" title="Canvas, as of ${esc(c.mark.at||'')}">${Math.round(c.mark.pct)}%${c.mark.letter?`<i>${esc(c.mark.letter)}</i>`:''}<small>${done.length?`${done.length} marked`:'from Canvas'}</small></div>`;
+      if(c.mark){ const h=(c.marks||[]).filter(m=>m.pct!=null), first=h[0], moved=h.length>1 ? c.mark.pct-first.pct : null;
+        const since = moved!=null && Math.abs(moved)>=0.5 ? `${moved>0?'up':'down'} ${Math.abs(moved).toFixed(1)} since ${dmy(first.d)}` : h.length>1 ? `level since ${dmy(first.d)}` : done.length?`${done.length} marked`:'from Canvas';
+        return `<div class="gr" title="Canvas, as of ${esc(c.mark.at||'')}">${Math.round(c.mark.pct)}%${c.mark.letter?`<i>${esc(c.mark.letter)}</i>`:''}${spark(h)}<small>${esc(since)}</small></div>`; }
       if(!out) return '';
       return `<div class="gr" title="Worked out from marked work; Canvas publishes no mark for this course">${Math.round(got/out*100)}%<small>${done.length} marked here</small></div>`;
     };
@@ -282,7 +301,7 @@
     F('coursesn').textContent = S.courses.length ? `${hrs(doneMin)} studied this week` : '';
     F('tiles').innerHTML = S.courses.length ? S.courses.map(c=>{
       const m=weekMin(c.id);
-      const nd=S.items.filter(i=>i.course===c.id && !i.done).sort((a,b)=>a.due<b.due?-1:1)[0];
+      const nd=S.items.filter(i=>i.course===c.id && toDo(i)).sort((a,b)=>a.due<b.due?-1:1)[0];   // a mark-only item is not something next
       return `<div class="tile" data-id="${c.id}">
         <h3>${esc(c.name)}</h3><button class="x" type="button" aria-label="Remove ${esc(c.name)}">remove</button>
         <div class="hrs">${m?hrs(m):'0 h'}<small>studied this week</small></div>${mark(c)}
@@ -318,8 +337,13 @@
     const tile=e.target.closest('.tile'); if(!tile) return; const c=course(tile.dataset.id);
     const d=e.target.closest('[data-conf]'); if(d){ c.conf=+d.dataset.conf; render(); return; }
     if(e.target.closest('[data-addlk]')){ const [t,u]=tile.querySelectorAll('.addlk input'); if(!t.value.trim()||!u.value.trim()) return t.value.trim()?u.focus():t.focus(); c.links.push({t:t.value.trim(), u:u.value.trim()}); render(); return; }
-    const rm=e.target.closest('[data-lk]'); if(rm){ c.links.splice(+rm.dataset.lk,1); render(); return; }
-    if(e.target.closest('.x')){ if(S.items.some(i=>i.course===c.id)) return alert('Remove or move its due items first.'); if(c.source){ S.ignored=[...(S.ignored||[]), c.id]; } S.courses=S.courses.filter(x=>x.id!==c.id); render(); }
+    const rm=e.target.closest('[data-lk]'); if(rm){ const was=hqCopy(c.links), gone=c.links[+rm.dataset.lk];
+      c.links.splice(+rm.dataset.lk,1); render();
+      hqUndo(gone?gone.t:'the link', ()=>{ const cc=course(c.id); if(cc){ cc.links=was; render(); } }); return; }
+    if(e.target.closest('.x')){ if(S.items.some(i=>i.course===c.id)) return alert('Remove or move its due items first.');
+      const was=hqCopy(S.courses), wasIg=hqCopy(S.ignored||[]);
+      if(c.source){ S.ignored=[...(S.ignored||[]), c.id]; } S.courses=S.courses.filter(x=>x.id!==c.id); render();
+      hqUndo(c.name, ()=>{ S.courses=was; S.ignored=wasIg; render(); }); }
   });
   F('addc').addEventListener('submit', e=>{ e.preventDefault(); S.courses.push({id:'c'+Date.now(), name:F('c-name').value.trim(), conf:3, links:[]}); F('addc').reset(); render(); });
   F('adddue').addEventListener('submit', e=>{ e.preventDefault(); S.items.push({id:Date.now(), course:F('i-course').value, title:F('i-title').value.trim(), type:F('i-type').value, due:dayOf(F('i-date').value), done:false}); const k=F('i-course').value; F('adddue').reset(); F('i-course').value=k; render(); });
@@ -328,7 +352,10 @@
     const t=e.target.closest('[data-turn]');
     // either way it is your call, and the sync leaves it alone from then on
     if(t){ const it=S.items.find(i=>String(i.id)===t.dataset.turn); if(it){ it.noturn = !it.noturn; it.byHand = true; render(); } return; }
-    if(e.target.closest('.x')){ const raw=e.target.closest('li').dataset.id, id=isNaN(+raw)?raw:+raw; const it=S.items.find(i=>i.id===id); if(it&&it.source){ S.ignored=[...(S.ignored||[]), it.id]; } S.items=S.items.filter(i=>i.id!==id); render(); } });
+    if(e.target.closest('.x')){ const raw=e.target.closest('li').dataset.id, id=isNaN(+raw)?raw:+raw; const it=S.items.find(i=>i.id===id);
+      const was=hqCopy(S.items), wasIg=hqCopy(S.ignored||[]);
+      if(it&&it.source){ S.ignored=[...(S.ignored||[]), it.id]; } S.items=S.items.filter(i=>i.id!==id); render();
+      hqUndo(it?it.title:'the item', ()=>{ S.items=was; S.ignored=wasIg; render(); }); } });
   F('addsess').addEventListener('submit', e=>{ e.preventDefault(); const min=parseInt(F('s-min').value); if(!min) return F('s-min').focus(); S.sessions.push({id:Date.now(), date:dayOf(F('s-date').value), course:F('s-course').value, min}); const k=F('s-course').value; F('addsess').reset(); F('s-course').value=k; F('s-date').value=C.dayMonth(C.now); render(); });
   async function renderSync(){
     const led = await store.ledger(), c = led.canvas; const el=F('syncline'); if(!c && !navigator.onLine){ el.hidden=true; return; }

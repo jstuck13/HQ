@@ -19,6 +19,17 @@ export default syncRoute('canvas', async ({ getDoc, putDoc }) => {
   school.courses ??= []; school.items ??= []; school.sessions ??= []; school.ignored ??= [];
   const byId = (arr, id) => arr.find(x => x.id === id);
 
+  // The running mark is a snapshot that the next sync would overwrite, so a term's worth of them is kept
+  // beside it: one entry a day, the last of the day winning, and the whole term is well under a kilobyte.
+  const remember = (course, m) => {
+    course.marks ??= [];
+    const last = course.marks[course.marks.length - 1];
+    if (last && last.d === m.at) { last.pct = m.pct; last.letter = m.letter; return; }
+    if (last && last.pct === m.pct && last.letter === m.letter) return;   // an unchanged mark is not a new reading
+    course.marks.push({ d: m.at, pct: m.pct, letter: m.letter });
+    if (course.marks.length > 200) course.marks = course.marks.slice(-200);
+  };
+
   // courses: keep confidence and hand-added links; refresh the name and the Canvas link
   let nc = 0;
   for (const c of courses) {
@@ -31,8 +42,10 @@ export default syncRoute('canvas', async ({ getDoc, putDoc }) => {
     const en = (c.enrollments || []).find(e => e.type === 'student' || e.computed_current_score != null) || {};
     const mark = en.computed_current_score != null ? { pct: +en.computed_current_score, letter: en.computed_current_grade || undefined, at: new Date().toISOString().slice(0, 10) } : undefined;
     if (existing) { existing.name = tidy(c.course_code && c.name.length > 40 ? c.course_code : c.name); existing.links = [canvasLink, ...existing.links.filter(l => l.source !== 'canvas')];
-      if (mark) existing.mark = mark; else delete existing.mark; }
-    else { school.courses.push({ id, name: tidy(c.course_code && c.name.length > 40 ? c.course_code : c.name), conf: 3, links: [canvasLink], source: 'canvas', mark }); nc++; }
+      if (mark) { existing.mark = mark; remember(existing, mark); } else delete existing.mark; }
+    else { const fresh = { id, name: tidy(c.course_code && c.name.length > 40 ? c.course_code : c.name), conf: 3, links: [canvasLink], source: 'canvas', mark };
+      if (mark) remember(fresh, mark);
+      school.courses.push(fresh); nc++; }
   }
 
   // items: due date and title follow Canvas; "done" is Canvas-submitted OR ticked by hand (never un-ticks a hand tick)

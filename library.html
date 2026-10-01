@@ -249,7 +249,9 @@
 
   // ---- events ----
   document.addEventListener('click', e=>{
-    const rb=e.target.closest('[data-rmb]'); if(rb){ const id=+rb.dataset.rmb; S.books=S.books.filter(b=>b.id!==id); if(S.open===id) S.open=null; render(); return; }
+    const rb=e.target.closest('[data-rmb]'); if(rb){ const id=+rb.dataset.rmb, was=hqCopy(S.books), wasOpen=S.open, gone=book(id);
+      S.books=S.books.filter(b=>b.id!==id); if(S.open===id) S.open=null; render();
+      hqUndo(gone?gone.title:'the book', ()=>{ S.books=was; S.open=wasOpen; render(); }); return; }
     const bk=e.target.closest('.book, .back'); if(bk){ S.open=+bk.dataset.id; render(); F('open').scrollIntoView({behavior:'smooth',block:'start'}); return; }
     if(e.target.closest('#addcover')){ F('find').hidden=false; F('q').focus(); F('find').scrollIntoView({block:'nearest'}); return; }
     if(e.target.closest('#findx')){ F('find').hidden=true; F('res').innerHTML=''; return; }
@@ -268,10 +270,13 @@
       }
       if(act==='finish'){ o.shelf='read'; o.finished=TODAY; }
       if(act==='shelve'){ o.shelf='toread'; }   // shelved, not forgotten: the page, the start date and the log stay
-      if(act==='remove'){ S.books=S.books.filter(b=>b.id!==o.id); S.open=null; }
+      if(act==='remove'){ const was=hqCopy(S.books), wasOpen=S.open;
+        S.books=S.books.filter(b=>b.id!==o.id); S.open=null;
+        hqUndo(o.title, ()=>{ S.books=was; S.open=wasOpen; render(); }); }
       render(); return;
     }
-    const x=e.target.closest('.notes .x'); if(x){ o.notes.splice(+x.closest('li').dataset.i,1); render(); }
+    const x=e.target.closest('.notes .x'); if(x){ const was=hqCopy(o.notes); o.notes.splice(+x.closest('li').dataset.i,1); render();
+      hqUndo('the note', ()=>{ const b=book(o.id); if(b){ b.notes=was; render(); } }); }
   });
   document.addEventListener('submit', e=>{
     if(e.target.id==='write'){ e.preventDefault(); const t=F('note').value.trim(); if(!t) return; book(S.open).notes.push({d:TODAY,t}); render(); return; }

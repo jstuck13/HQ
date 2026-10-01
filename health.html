@@ -214,9 +214,13 @@
       : '<li class="empty">Nothing booked. Add an appointment or a refill to keep it in view.</li>';
   }
   F('pills').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ const id=e.target.dataset.p; L.pills = e.target.checked ? [...new Set([...L.pills,id])] : L.pills.filter(p=>p!==id); save(); renderAll(); } });
-  F('pills').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ H.meds=H.meds.filter(m=>m.id!==b.dataset.rm); save(); renderAll(); } });
+  F('pills').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ const was=hqCopy(H.meds), gone=H.meds.find(m=>m.id===b.dataset.rm);
+    H.meds=H.meds.filter(m=>m.id!==b.dataset.rm); save(); renderAll();
+    hqUndo(gone?gone.name:'the supplement', ()=>{ H.meds=was; save(); renderAll(); }); } });
   F('addpill').addEventListener('submit', e=>{ e.preventDefault(); H.meds=H.meds||[]; H.meds.push({id:'m'+Date.now(), name:F('pl-name').value.trim(), when:F('pl-when').value.trim()}); F('addpill').reset(); save(); renderAll(); });
-  F('next').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ H.next=H.next.filter(n=>n.id!==b.dataset.rm); save(); renderAll(); } });
+  F('next').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ const was=hqCopy(H.next), gone=H.next.find(n=>n.id===b.dataset.rm);
+    H.next=H.next.filter(n=>n.id!==b.dataset.rm); save(); renderAll();
+    hqUndo(gone?gone.what:'the appointment', ()=>{ H.next=was; save(); renderAll(); }); } });
   F('addnext').addEventListener('submit', e=>{ e.preventDefault(); H.next=H.next||[]; const d=F('nx-date').value.trim(); H.next.push({id:'n'+Date.now(), name:F('nx-name').value.trim(), date:d?C.parseDay(d):null, note:F('nx-note').value.trim()}); F('addnext').reset(); save(); renderAll(); });
 
   // ---- history: the last 30 days from the document ----

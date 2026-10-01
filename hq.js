@@ -10,7 +10,7 @@ const $0 = n => (n<0?'−':'') + '$' + Math.round(Math.abs(n)).toLocaleString('e
 const toDo = i => !i.done && !i.noturn;
 // The version this copy of the app was built with. version.json holds the same number and is never cached,
 // so a page that has been open — or served from the offline shell — can tell when a newer one has been deployed.
-const HQ_VERSION = '4.12.1';
+const HQ_VERSION = '4.13.0';
 
 // a newer version is not forced on you mid-sentence: it says so, and waits to be asked
 async function watchVersion(){
@@ -137,6 +137,25 @@ addEventListener('DOMContentLoaded', () => { if (location.protocol.startsWith('h
   };
   addEventListener('popstate', () => { const n = history.state && history.state.hqZoom; if (n) show(n); else { open = null; if (dlg && dlg.open) dlg.close(); } });
 }
+
+// Removing something is one click and no warning, which is right — a confirmation on every small deletion is
+// its own kind of tax. What makes that safe is being able to take it back: the caller hands over a function
+// that puts things as they were, and this offers it for ten seconds.
+let undoAt = null;
+window.hqUndo = (what, undo) => {
+  clearTimeout(undoAt);
+  const old = document.querySelector('.hq-undo'); if (old) old.remove();
+  const bar = document.createElement('div');
+  bar.className = 'hq-undo';
+  bar.innerHTML = '<span></span><button type="button">Undo</button>';
+  bar.querySelector('span').textContent = `Removed ${what}.`;
+  const go = () => { clearTimeout(undoAt); bar.remove(); };
+  bar.querySelector('button').addEventListener('click', () => { undo(); go(); });
+  document.body.appendChild(bar);
+  undoAt = setTimeout(go, 10000);
+};
+// a copy deep enough to put back whatever was taken out of it
+window.hqCopy = x => JSON.parse(JSON.stringify(x));
 
 // How a chart is asked what a point is worth. A mouse hovers and the reading follows it. A finger has no
 // hover: a tap pins the reading and it stays — tap the same place again, or anywhere off the chart, to put it

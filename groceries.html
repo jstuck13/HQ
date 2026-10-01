@@ -249,7 +249,9 @@
   }
   F('addl').addEventListener('submit', e=>{ e.preventDefault(); const t=F('l-text').value.trim(); if(!t) return; G.list.push({text:t, done:false}); F('addl').reset(); save(); renderList(); renderAd(); });
   F('list').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ G.list[+e.target.dataset.k].done=e.target.checked; save(); renderList(); } });
-  F('list').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ G.list.splice(+b.dataset.rm,1); save(); renderList(); renderAd(); } });
+  F('list').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ const was=hqCopy(G.list), gone=G.list[+b.dataset.rm];
+    G.list.splice(+b.dataset.rm,1); save(); renderList(); renderAd();
+    hqUndo(gone&&gone.text?gone.text:'the item', ()=>{ G.list=was; save(); renderList(); renderAd(); }); } });
 
   // ---- the trip being logged ----
   const tripTotal = () => pending.items.reduce((n,i)=>n + i.price * (i.bogo ? Math.ceil(i.qty/2) : i.qty), 0);
@@ -265,7 +267,9 @@
     pending.items.push({ name:F('i-name').value.trim(), price, qty:Math.max(1, parseInt(F('i-qty').value)||1), bogo:F('i-bogo').checked });
     F('additem').reset(); F('i-qty').value='1'; F('i-name').focus(); renderTrip(); });
   F('i-name').addEventListener('change', ()=>{ const e=book().find(x=>norm(x.name)===norm(F('i-name').value)); if(e && !F('i-price').value) F('i-price').placeholder = `${$(e.last.price)} last time`; });
-  F('titems').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ pending.items.splice(+b.dataset.rm,1); renderTrip(); } });
+  F('titems').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ const was=hqCopy(pending.items), gone=pending.items[+b.dataset.rm];
+    pending.items.splice(+b.dataset.rm,1); renderTrip();
+    hqUndo(gone&&gone.name?gone.name:'the line', ()=>{ pending.items=was; renderTrip(); }); } });
   F('titems').addEventListener('change', e=>{ const li=e.target.closest('li[data-k]'); if(!li) return; const i=pending.items[+li.dataset.k]; if(!i) return;
     if(e.target.classList.contains('nm')) i.name=e.target.value.trim(); if(e.target.classList.contains('pr')) i.price=num(e.target.value)||0; if(e.target.classList.contains('qt')) i.qty=Math.max(1,parseInt(e.target.value)||1); if(e.target.classList.contains('bo')) i.bogo=e.target.checked;
     if(!e.target.classList.contains('nm')) renderTrip(); else { const n=pending.items.length; F('tcount').textContent = `${n} ${n===1?'item':'items'}`; } });

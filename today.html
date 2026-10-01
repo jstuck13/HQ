@@ -338,7 +338,9 @@
     F('todo').innerHTML = T.items.length ? T.items.map((i,k)=>`<li><input type="checkbox" id="t${k}" ${i.done?'checked':''} data-k="${k}"><label for="t${k}">${esc(i.text)}</label>${i.rule?'<span class="rp" title="comes back on its own">\u21bb</span>':''}${i.at!=null?`<span class="w ${!i.done&&i.at<NOW?'due':''}">by ${h12(i.at)}</span>`:''}${i.from?`<span class="w from">from ${i.from===YDAY?'yesterday':C.short(C.fromISO(i.from))}</span>`:''}<button class="w x" type="button" data-rm="${k}" aria-label="Remove">remove</button></li>`).join('') : '<li class="empty">Nothing on the list. Add the one thing today needs.</li>';
   }
   F('todo').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ T.items[+e.target.dataset.k].done=e.target.checked; saveT(); renderTodo(); d.day=renderDay(CAL); } });
-  F('todo').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ T.items.splice(+b.dataset.rm,1); saveT(); renderTodo(); } });
+  F('todo').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ const was=hqCopy(T.items), gone=T.items[+b.dataset.rm];
+    T.items.splice(+b.dataset.rm,1); saveT(); renderTodo();
+    hqUndo(gone?gone.text:'the to-do', ()=>{ T.items=was; saveT(); renderTodo(); }); } });
   // "… by 3 pm" / "… at 3.30pm" at the end of a to-do becomes its time; it then sits on the timeline and the bell watches it
   const parseAt = t => { const m=/\s(?:by|at)\s+(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?\.?$/i.exec(t); if(!m || +m[1]>12) return {text:t}; let h=+m[1]%12; const mm=+(m[2]||0)/60, ap=(m[3]||'').toLowerCase();
     if(ap.startsWith('p')) h+=12; else if(!ap && (h+mm<=NOW || +m[1]===12)) h+=12;   // no am/pm: the next time that clock reading comes round
@@ -501,7 +503,9 @@
   }
   F('addt').addEventListener('submit', e=>{ e.preventDefault(); const t=F('t-text').value.trim(); if(!t) return; F('addt').reset(); capture(t); });
   F('reps').addEventListener('click', e=>{ const b=e.target.closest('[data-stop]'); if(!b) return;
-    const id=b.dataset.stop; RULES.rules=(RULES.rules||[]).filter(r=>r.id!==id); saveRules();
+    const id=b.dataset.stop, wasR=hqCopy(RULES.rules||[]), goneR=(RULES.rules||[]).find(r=>r.id===id);
+    RULES.rules=(RULES.rules||[]).filter(r=>r.id!==id); saveRules();
+    hqUndo(goneR?goneR.text:'the standing to-do', ()=>{ RULES.rules=wasR; saveRules(); renderTodo(); });
     T.items=T.items.filter(i=>i.rule!==id); saveT(); renderTodo(); d.day=renderDay(CAL); });
 
   window.onTodoChange = doc => { T = doc; renderTodo(); d.day = renderDay(CAL); };   // a tick in the bell shows here at once

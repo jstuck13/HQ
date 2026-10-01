@@ -373,12 +373,16 @@
     F('h-ticker').value=''; F('h-shares').value=''; save(); render(); });
   F('hold').addEventListener('change', e=>{ if(e.target.classList.contains('yl')){ const h=I.holdings.find(x=>x.id===+e.target.closest('li').dataset.id), v=num(e.target.value); if(h){ h.yield = v!=null ? v : undefined; save(); render(); } return; }
     if(e.target.classList.contains('sh')){ const h=I.holdings.find(x=>x.id===+e.target.closest('li').dataset.id), v=num(e.target.value); if(h && v!=null){ h.shares=v; save(); render(); } } });
-  F('hold').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ I.holdings=I.holdings.filter(h=>h.id!==+b.dataset.rm); save(); render(); } });
+  F('hold').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ const was=hqCopy(I.holdings), gone=I.holdings.find(h=>h.id===+b.dataset.rm);
+    I.holdings=I.holdings.filter(h=>h.id!==+b.dataset.rm); save(); render();
+    hqUndo(gone?gone.ticker.toUpperCase():'the holding', ()=>{ I.holdings=was; save(); render(); }); } });
   F('months').addEventListener('click', e=>{ const b=e.target.closest('[data-apply]'); if(b){ const t=contribTx().find(x=>x.key===b.dataset.apply); if(t && applyTx(t)){ save(); render(); } } });
   F('baseline').addEventListener('change', e=>{ const v=num(e.target.value); I.baseline = v||undefined; save(); render(); });
   F('cats').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ I.contribCats = e.target.checked ? [...new Set([...I.contribCats, e.target.value])] : I.contribCats.filter(c=>c!==e.target.value); save(); render(); } });
   F('addb').addEventListener('submit', e=>{ e.preventDefault(); const v=num(F('b-value').value); if(v==null) return F('b-value').focus(); I.balances.push({id:Date.now(), account:F('b-acct').value.trim(), value:v, date:C.parseDay(F('b-date').value)}); F('b-value').value=''; save(); render(); });
-  F('bal').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ I.balances=I.balances.filter(x=>x.id!==+b.dataset.rm); save(); render(); } });
+  F('bal').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ const was=hqCopy(I.balances), gone=I.balances.find(x=>x.id===+b.dataset.rm);
+    I.balances=I.balances.filter(x=>x.id!==+b.dataset.rm); save(); render();
+    hqUndo(gone?gone.account:'the balance', ()=>{ I.balances=was; save(); render(); }); } });
 
   F('b-date').value = C.dayMonth(C.now);
   // the last twelve months of Finances, for contributions
