@@ -33,6 +33,7 @@
   .ledger .v input:focus{border-bottom-color:var(--ink);outline:none}
   .ledger .v input::placeholder{color:var(--ink-3)}
   .ledger .v .u{font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
+  .ledger .v .fig{min-width:2ch;text-align:right}   /* counted by the phone, not typed here */
   .ledger .v .aux{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);width:100%}
   .ledger .v .aux input{font-size:13px;width:8ch;text-align:left;font-family:var(--serif)}
   .ledger .l,.ledger .a{font-size:13.5px;color:var(--ink-2);text-align:right}
@@ -79,7 +80,7 @@
 
   /* four trends on paper */
   .trends{margin-top:44px}
-  .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:36px;margin-top:14px}
+  .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:32px 30px;margin-top:14px}   /* the trends fit themselves to however many there are */
   .chart h3{font-family:var(--serif);font-weight:400;font-size:17px;margin:0 0 2px;display:flex;align-items:baseline;gap:8px}
   .chart h3 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
   .chart .fig{font-family:var(--serif);font-size:24px;line-height:1.1;margin:0}
@@ -160,6 +161,9 @@
         <li data-k="steps"><span class="n">Steps<small>So far today, from the watch</small></span>
           <span class="v"><input id="steps" inputmode="numeric" placeholder="—"></span>
           <span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>
+        <li data-k="opens"><span class="n">Screen<small id="opensh">Times you reached for the phone</small></span>
+          <span class="v"><span class="fig" id="opensv">—</span><span class="u">opens</span><span class="aux"><input id="screen" inputmode="numeric" placeholder="—"> min of screen time</span></span>
+          <span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>
       </ul>
     </section>
 
@@ -198,8 +202,8 @@
   const num = v => { const n = parseFloat(String(v ?? '').replace(/[^0-9.]/g, '')); return isNaN(n) ? null : n; };
 
   // readings
-  const applyLog = () => { ['sleep','bed','woke','weight','hr','steps'].forEach(k=>{ F(k).value = L[k]!=null ? L[k] : ''; }); renderAll(); };
-  ['sleep','bed','woke','weight','hr','steps'].forEach(k=>{
+  const applyLog = () => { ['sleep','bed','woke','weight','hr','steps','screen'].forEach(k=>{ F(k).value = L[k]!=null ? L[k] : ''; }); renderAll(); };
+  ['sleep','bed','woke','weight','hr','steps','screen'].forEach(k=>{
     F(k).addEventListener('change', ()=>{ const v=F(k).value.trim(); if(v) L[k]=v; else delete L[k]; if(k==='steps') L.stepsFrom = v ? 'hand' : undefined; save(); renderAll(); });
   });
   function renderPills(){
@@ -235,6 +239,7 @@
     {name:'Weight', key:'weight', fmt:v=>`${v.toFixed(1)} lb`, level:.5, delta:v=>`${v.toFixed(1)} lb`},
     {name:'Resting HR', key:'hr', fmt:v=>`${Math.round(v)} bpm`, level:.5, delta:v=>`${Math.round(v)}`},
     {name:'Steps', key:'steps', fmt:v=>Math.round(v).toLocaleString('en-US'), level:300, delta:v=>Math.round(v).toLocaleString('en-US'), partial:true},
+    {name:'Screen', key:'opens', fmt:v=>`${Math.round(v)} opens`, level:2, delta:v=>`${Math.round(v)}`, partial:true},
   ];
   const pointsFor = s => isoDays.map((d,i)=>({i, d, v: (s.partial && d===TODAY) ? null : num((d===TODAY ? L : H.days[d]||{})[s.key])})).filter(p=>p.v!=null);   // a day still being counted is not a point
   const trendOf = (s, pts) => {
@@ -355,6 +360,10 @@
   const sleepStreak = () => streak(H.days, d=>+d.sleep>=7, d=>d.sleep==null);
   function renderLogged(){
     const ss=sleepStreak(); document.querySelector('#ledger li[data-k="sleep"] .n small').textContent = ss>=2 ? `Hours, and when · ${ss} days of 7 h+` : 'Hours, and when';
+    // what the phone has counted today, and which apps it was
+    F('opensv').textContent = L.opens != null ? L.opens : '—';
+    const apps = Object.entries(L.apps || {}).sort((a,b)=>b[1]-a[1]);
+    F('opensh').textContent = apps.length ? apps.map(([n,c])=>`${n} ${c}`).join(' · ') : 'Times you reached for the phone';
     document.querySelectorAll('#ledger li[data-k]').forEach(li=>{ const k=li.dataset.k; li.classList.toggle('logged', L[k]!=null && k!=='steps'); });
     const meds=(H.meds||[]).length, taken=L.pills.filter(p=>(H.meds||[]).some(m=>m.id===p)).length;
     const n = ['sleep','weight','hr'].filter(k=>L[k]!=null).length + (meds && taken===meds ? 1 : 0);
