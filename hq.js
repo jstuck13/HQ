@@ -10,7 +10,7 @@ const $0 = n => (n<0?'−':'') + '$' + Math.round(Math.abs(n)).toLocaleString('e
 const toDo = i => !i.done && !i.noturn;
 // The version this copy of the app was built with. version.json holds the same number and is never cached,
 // so a page that has been open — or served from the offline shell — can tell when a newer one has been deployed.
-const HQ_VERSION = '4.18.0';
+const HQ_VERSION = '4.19.0';
 
 // a newer version is not forced on you mid-sentence: it says so, and waits to be asked
 async function watchVersion(){
@@ -136,6 +136,84 @@ addEventListener('DOMContentLoaded', () => { if (location.protocol.startsWith('h
     }
   };
   addEventListener('popstate', () => { const n = history.state && history.state.hqZoom; if (n) show(n); else { open = null; if (dlg && dlg.open) dlg.close(); } });
+}
+
+// Every page HQ has, in one place. The band shows the ones you want in it and "More" holds the rest, so a page
+// is never unreachable — which is how Patterns ended up with no way in at all. Which six are in the band, and in
+// what order, is kept with the other documents; a page added later is out of the band but always in More.
+const HQ_PAGES = [
+  { id: 'today', name: 'Today', file: 'today.html' },
+  { id: 'calendar', name: 'Calendar', file: 'calendar.html' },
+  { id: 'finances', name: 'Finances', file: 'finances.html' },
+  { id: 'investments', name: 'Investments', file: 'investments.html' },
+  { id: 'groceries', name: 'Groceries', file: 'groceries.html' },
+  { id: 'library', name: 'Library', file: 'library.html' },
+  { id: 'school', name: 'School', file: 'school.html' },
+  { id: 'health', name: 'Health', file: 'health.html' },
+  { id: 'study', name: 'The Study', file: 'study.html' },
+  { id: 'review', name: 'The week', file: 'review.html' },
+  { id: 'span', name: 'A month, a year', file: 'span.html' },
+  { id: 'patterns', name: 'Patterns', file: 'patterns.html' },
+  { id: 'day', name: 'Another day', file: 'day.html' },
+  { id: 'restore', name: 'Restore', file: 'restore.html' },
+];
+const HQ_BAND = ['today', 'calendar', 'finances', 'library', 'school', 'health'];   // what the band holds until you say otherwise
+
+{
+  const page = location.pathname.split('/').pop() || 'index.html';
+  const prefs = () => { try { return JSON.parse(localStorage.getItem('hq.prefs')) || {}; } catch { return {}; } };
+  const bandIds = () => { const n = prefs().nav; return Array.isArray(n) && n.length ? n : HQ_BAND; };
+  const find = id => HQ_PAGES.find(p => p.id === id);
+
+  function paintNav(){
+    const nav = document.querySelector('.band nav[aria-label="Areas"]'); if (!nav) return;
+    const band = bandIds().map(find).filter(Boolean);
+    const rest = HQ_PAGES.filter(p => !band.includes(p));
+    nav.innerHTML = band.map(p => `<a href="${p.file}"${p.file === page ? ' aria-current="page"' : ''}>${p.name}</a>`).join('')
+      + (rest.length ? `<button type="button" class="more" id="hqmore" aria-expanded="false">More</button>` : '');
+    const btn = nav.querySelector('#hqmore'); if (!btn) return;
+    btn.addEventListener('click', e => { e.stopPropagation(); openMore(nav, band, rest); });
+  }
+
+  function openMore(nav, band, rest){
+    let pop = nav.querySelector('.morepop');
+    if (pop) { pop.remove(); nav.querySelector('#hqmore').setAttribute('aria-expanded', 'false'); return; }
+    pop = document.createElement('div');
+    pop.className = 'morepop';
+    const inBand = new Set(band.map(p => p.id));
+    pop.innerHTML = `<ul>${HQ_PAGES.map(p => `<li${p.file === page ? ' class="here"' : ''}>
+        <a href="${p.file}">${p.name}</a>
+        <button type="button" class="pin ${inBand.has(p.id) ? 'on' : ''}" data-pin="${p.id}"
+          aria-pressed="${inBand.has(p.id)}" aria-label="${inBand.has(p.id) ? 'Take ' + p.name + ' out of the band' : 'Put ' + p.name + ' in the band'}">${inBand.has(p.id) ? 'in the band' : 'add'}</button>
+      </li>`).join('')}</ul>`;
+    nav.appendChild(pop);
+    nav.querySelector('#hqmore').setAttribute('aria-expanded', 'true');
+    pop.addEventListener('click', e => {
+      e.stopPropagation();
+      const b = e.target.closest('[data-pin]'); if (!b) return;
+      const id = b.dataset.pin, now = bandIds();
+      const next = now.includes(id) ? now.filter(x => x !== id) : [...now, id];
+      if (!next.length) return;                                   // the band is never left empty
+      const doc = prefs(); doc.nav = next;
+      try { localStorage.setItem('hq.prefs', JSON.stringify(doc)); } catch {}
+      if (window.store) store.save('prefs', doc);                 // and kept, so the phone agrees
+      paintNav();
+      // the band under you has changed, but you may well want to move another: the list stays open
+      const nav2 = document.querySelector('.band nav[aria-label="Areas"]');
+      const band2 = bandIds().map(find).filter(Boolean);
+      openMore(nav2, band2, HQ_PAGES.filter(x => !band2.includes(x)));
+    });
+    const shut = e => { if (!nav.contains(e.target)) { pop.remove(); const m = nav.querySelector('#hqmore'); if (m) m.setAttribute('aria-expanded', 'false'); document.removeEventListener('click', shut); } };
+    document.addEventListener('click', shut);
+  }
+
+  addEventListener('DOMContentLoaded', paintNav);
+  // the saved arrangement arrives after the cached one; redraw only if it differs from what is on screen
+  addEventListener('DOMContentLoaded', () => setTimeout(async () => {
+    if (!window.store) return;
+    const doc = await store.load('prefs', true).catch(() => null);
+    if (doc && Array.isArray(doc.nav) && doc.nav.join() !== bandIds().join()) { try { localStorage.setItem('hq.prefs', JSON.stringify(doc)); } catch {} paintNav(); }
+  }, 600));
 }
 
 // Removing something is one click and no warning, which is right — a confirmation on every small deletion is

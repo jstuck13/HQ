@@ -34,6 +34,17 @@
   .ledger .v input::placeholder{color:var(--ink-3)}
   .ledger .v .u{font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
   .ledger .v .fig{min-width:2ch;text-align:right}   /* counted by the phone, not typed here */
+  .ledger.own{margin-top:0}
+  .ledger.own .n{position:relative;padding-right:52px}
+  .ledger.own .n .x{position:absolute;right:0;top:2px;font-size:12px;color:var(--ink-3);opacity:0;transition:opacity .15s}
+  .ledger.own li:hover .x,.ledger.own li:focus-within .x{opacity:1} .ledger.own .x:hover{color:var(--ox)}
+  .ledger .tickbox{font-family:var(--serif);font-size:18px;color:var(--ink-3);border-bottom:1px dotted var(--ink-2);background:none;border-top:0;border-left:0;border-right:0;padding:0 2px;cursor:pointer}
+  .ledger .tickbox.on{color:var(--ink)}
+  .addr{display:grid;grid-template-columns:1.4fr 1fr 1fr auto;gap:12px;padding:14px 0 2px;align-items:baseline;border-top:1px dotted var(--rule)}
+  .addr input,.addr select{font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0;background:none;width:100%}
+  .addr input:focus,.addr select:focus{outline:none;border-bottom-color:var(--ink)}
+  .addr input::placeholder{color:var(--ink-3);font-style:italic}
+  .addr .textbtn{font-size:13.5px;white-space:nowrap}
   .ledger .feel{display:flex;align-items:center;gap:8px;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);width:100%}
   .ledger .feel .dots{display:inline-flex;gap:6px;margin-left:auto}
   .ledger .feel button{width:15px;height:15px;border-radius:50%;border:1px solid var(--ink-2);background:var(--paper);padding:0;cursor:pointer}
@@ -122,6 +133,7 @@
     .ledger .l,.ledger .a{grid-column:auto;display:block;font-size:12.5px} .ledger .l small,.ledger .a small{display:inline;margin-left:4px}
     .ledger .l::before{content:"last "} .ledger .a::before{content:"avg "} .ledger .a{margin-left:0} .ledger .l,.ledger .a{white-space:nowrap}
     .addl{grid-template-columns:1fr 1fr} .addl .textbtn{grid-column:1/-1;justify-self:start}
+    .addr{grid-template-columns:1fr 1fr} .addr .textbtn{grid-column:1/-1;justify-self:start}
     .ledger li{grid-template-columns:1fr auto} .ledger .n{grid-column:1} .ledger .v{grid-column:2;grid-row:1} .ledger .l{grid-column:1;grid-row:2} .ledger .a{grid-column:2;grid-row:2;text-align:right}
     .next li{grid-template-columns:1fr auto} .next .t{grid-column:2;grid-row:1}
     .strip{grid-template-columns:1fr}
@@ -174,6 +186,18 @@
           <span class="v"><span class="fig" id="opensv">—</span><span class="u">opens</span><span class="aux"><input id="screen" inputmode="numeric" placeholder="—"> min of screen time</span></span>
           <span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>
       </ul>
+      <ul class="ledger own" id="own"></ul>
+      <form class="addr" id="addreading">
+        <input id="r-name" placeholder="Caffeine, water, time outdoors…" aria-label="What to call it" required>
+        <input id="r-unit" placeholder="mg, cups, min" aria-label="Its unit">
+        <select id="r-kind" aria-label="What kind of reading">
+          <option value="number">a number</option>
+          <option value="count">a count</option>
+          <option value="scale">1 to 5</option>
+          <option value="tick">yes or no</option>
+        </select>
+        <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add a reading</button>
+      </form>
     </section>
 
     <aside>
@@ -237,6 +261,51 @@
     save(); renderAll();
   });
 
+  // the rows for your own readings, and the little form that adds one
+  function renderOwn(){
+    const rows = mine().map(r => {
+      const k = r.kind || 'number', v = L[r.id];
+      const cell = k === 'scale' ? `<span class="feel"><span class="dots" data-feel="${esc(r.id)}"></span></span>`
+        : k === 'tick' ? `<button class="tickbox ${+v ? 'on' : ''}" type="button" data-tick="${esc(r.id)}" aria-pressed="${!!+v}">${+v ? 'yes' : 'not yet'}</button>`
+        : `<input id="own-${esc(r.id)}" data-own="${esc(r.id)}" inputmode="${KINDS[k].input}" placeholder="—" value="${v != null ? esc(v) : ''}"><span class="u">${esc(r.unit || '')}</span>`;
+      return `<li data-k="${esc(r.id)}"><span class="n">${esc(r.name)}<small>${esc(r.note || 'yours')}</small><button class="x" type="button" data-rmr="${esc(r.id)}" aria-label="Remove ${esc(r.name)}">remove</button></span>
+        <span class="v">${cell}</span><span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>`;
+    }).join('');
+    F('own').innerHTML = rows;
+    mine().forEach(r => { if ((r.kind || 'number') === 'scale') paintDots(F('own').querySelector(`.dots[data-feel="${CSS.escape(r.id)}"]`), r.id); });
+  }
+  function paintDots(d, key){
+    if(!d) return; const v = +L[key] || 0;
+    d.innerHTML = [1,2,3,4,5].map(n=>`<button type="button" class="${n<=v?'on':''}" data-n="${n}" aria-label="${n} of 5" aria-pressed="${n===v}"></button>`).join('');
+  }
+  F('own').addEventListener('click', e => {
+    const rm = e.target.closest('[data-rmr]');
+    if(rm){ const id = rm.dataset.rmr, was = hqCopy(H.readings || []), gone = (H.readings||[]).find(r=>r.id===id);
+      H.readings = (H.readings || []).filter(r => r.id !== id); save(); renderAll();
+      hqUndo(gone ? gone.name : 'the reading', () => { H.readings = was; save(); renderAll(); }); return; }
+    const t = e.target.closest('[data-tick]');
+    if(t){ const id = t.dataset.tick; if(+L[id]) delete L[id]; else L[id] = 1; save(); renderAll(); return; }
+    const b = e.target.closest('.dots button');
+    if(b){ const id = b.closest('.dots').dataset.feel, n = +b.dataset.n;
+      if(+L[id] === n) delete L[id]; else L[id] = n; save(); renderAll(); }
+  });
+  F('own').addEventListener('change', e => {
+    const i = e.target.closest('[data-own]'); if(!i) return;
+    const id = i.dataset.own, v = i.value.trim();
+    if(v) L[id] = v; else delete L[id];
+    save(); renderAll();
+  });
+  F('addreading').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = F('r-name').value.trim(); if(!name) return F('r-name').focus();
+    // a key of its own, derived from the name but never colliding with a reading HQ already keeps
+    const taken = new Set([...series.map(s=>s.key), ...mine().map(r=>r.id), 'pills','bed','woke','apps','wx','garmin','stepsFrom']);
+    let id = 'r-' + name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,24) || 'r-reading';
+    while(taken.has(id)) id += '1';
+    H.readings = [...(H.readings || []), { id, name, unit: F('r-unit').value.trim() || undefined, kind: F('r-kind').value, note: 'yours' }];
+    F('addreading').reset(); save(); renderAll();
+  });
+
   function renderPills(){
     const meds=H.meds||[];
     const ps=pillStreak(); F('pillsn').textContent = meds.length ? `${L.pills.filter(p=>meds.some(m=>m.id===p)).length} of ${meds.length}${ps>=2?` · ${ps}-day streak`:''}` : 'none yet';
@@ -265,6 +334,19 @@
     document.querySelectorAll('#range button').forEach(b=>b.setAttribute('aria-pressed', +b.dataset.n===N)); };
   setRange(N);
   const fmtDay = d => C.dayMonth(d);
+  // A reading you add is stored on the day like any other, under its own key, so everything downstream — the
+  // ledger, the trends, the week, the nightly search — finds it without being told it is yours rather than ours.
+  const KINDS = {
+    number: { fmt: (v, u) => `${+v.toFixed(2)}${u ? ' ' + u : ''}`, level: 0.5, input: 'decimal' },
+    count:  { fmt: (v, u) => `${Math.round(v).toLocaleString('en-US')}${u ? ' ' + u : ''}`, level: 1, input: 'numeric' },
+    scale:  { fmt: v => `${v.toFixed(1)} of 5`, level: 0.3, input: null },
+    tick:   { fmt: v => v >= 1 ? 'yes' : 'no', level: 0.3, input: null },
+  };
+  const mine = () => (H.readings || []).filter(r => r && r.id && r.name);
+  const asSeries = r => { const k = KINDS[r.kind] || KINDS.number;
+    return { name: r.name, key: r.id, own: r, kind: r.kind || 'number',
+             fmt: v => k.fmt(v, r.unit), level: k.level, delta: v => k.fmt(v, r.unit) }; };
+
   const series = [
     {name:'Sleep', key:'sleep', fmt:v=>{ const m=Math.round(v*60); return `${Math.floor(m/60)} h ${String(m%60).padStart(2,'0')}`; }, level:.1, delta:v=>`${Math.round(v*60)} min`},
     {name:'Weight', key:'weight', fmt:v=>`${v.toFixed(1)} lb`, level:.5, delta:v=>`${v.toFixed(1)} lb`},
@@ -274,6 +356,7 @@
     {name:'Energy', key:'energy', fmt:v=>`${v.toFixed(1)} of 5`, level:.3, delta:v=>v.toFixed(1)},
     {name:'Mood', key:'mood', fmt:v=>`${v.toFixed(1)} of 5`, level:.3, delta:v=>v.toFixed(1)},
   ];
+  const allSeries = () => [...series, ...mine().map(asSeries)];
   const pointsFor = s => isoDays.map((d,i)=>({i, d, v: (s.partial && d===TODAY) ? null : num((d===TODAY ? L : H.days[d]||{})[s.key])})).filter(p=>p.v!=null);   // a day still being counted is not a point
   const trendOf = (s, pts) => {
     if(pts.length<4) return null;
@@ -284,8 +367,8 @@
   const x = i => P.l+(W-P.l-P.r)*i/(N-1);
 
   function renderCells(){
-    series.forEach(s=>{
-      const li=document.querySelector(`#ledger li[data-k="${s.key}"]`); if(!li) return;
+    allSeries().forEach(s=>{
+      const li=document.querySelector(`#ledger li[data-k="${s.key}"], #own li[data-k="${s.key}"]`); if(!li) return;
       const pts=pointsFor(s).filter(p=>p.d!==TODAY);
       const last=pts[pts.length-1], avg=pts.length?pts.reduce((x,p)=>x+p.v,0)/pts.length:null, t=trendOf(s, pointsFor(s));
       li.querySelector('.l').innerHTML = last ? `${s.fmt(last.v)}<small>${last.d===isoDays[N-2]?'yesterday':fmtDay(C.fromISO(last.d))}</small>` : `<small>no earlier reading</small>`;
@@ -377,8 +460,9 @@
   }
 
   function renderCharts(){
-    F('strip').innerHTML = series.map((s,si)=>trendHTML(s, si, W, H_)).join('');
-    document.querySelectorAll('#strip .chart').forEach(ch=>{ const s=series[+ch.dataset.i]; wire(ch, s, W, H_);
+    const all = allSeries();
+    F('strip').innerHTML = all.map((s,si)=>trendHTML(s, si, W, H_)).join('');
+    document.querySelectorAll('#strip .chart').forEach(ch=>{ const s=all[+ch.dataset.i]; wire(ch, s, W, H_);
       if(!ch.querySelector('svg')) return;                                   // nothing drawn yet: nothing to expand
       zoomable(ch, `trend-${s.key}`, `${s.name} — last ${N} days`, box=>{
         const w=zoomWidth(box, N), h=zoomHeight(w, box.clientHeight-96);   // a slot a day across; the figure above and the range below want their share
@@ -393,7 +477,7 @@
   const pillStreak = () => { const meds=H.meds||[]; return meds.length ? streak(H.days, d=>meds.every(m=>(d.pills||[]).includes(m.id)), ()=>true) : 0; };
   const sleepStreak = () => streak(H.days, d=>+d.sleep>=7, d=>d.sleep==null);
   function renderLogged(){
-    renderFeel();
+    renderFeel(); renderOwn();
     const ss=sleepStreak(); document.querySelector('#ledger li[data-k="sleep"] .n small').textContent = ss>=2 ? `Hours, and when · ${ss} days of 7 h+` : 'Hours, and when';
     // what the phone has counted today, and which apps it was
     F('opensv').textContent = L.opens != null ? L.opens : '—';

@@ -53,6 +53,22 @@ h1,h2,h3{font-family:var(--serif);font-weight:400;margin:0}
 .ic{width:16px;height:16px;flex:none}
 /* a list long enough to run down the page scrolls inside its own box instead; --h sets how tall that box is */
 .scrollbox{max-height:var(--h,420px);overflow:auto;overscroll-behavior:contain;padding-right:6px;scrollbar-width:thin;scrollbar-color:var(--rule) transparent}
+/* the band's navigation: the ones you keep in it, and a way to everything else */
+nav .more{font:inherit;color:var(--band-muted);letter-spacing:.04em;background:none;border:0;padding:0;cursor:pointer}
+nav .more:hover,nav .more[aria-expanded=true]{color:var(--band-ink)}
+.band nav{position:relative}
+.morepop{position:absolute;left:0;top:calc(100% + 12px);z-index:30;min-width:230px;background:var(--card);color:var(--ink);border-radius:14px;box-shadow:var(--shadow);padding:8px 0;text-align:left}
+.morepop ul{list-style:none;margin:0;padding:0}
+.morepop li{display:flex;align-items:center;gap:14px;padding:0 14px}
+.morepop li.here a{color:var(--ox)}
+.morepop a{display:block;flex:1;font-family:var(--serif);font-size:15.5px;padding:7px 0;color:var(--ink);letter-spacing:0}
+.morepop a:hover{color:var(--ox)}
+.morepop .pin{font-family:var(--sans);font-size:11px;letter-spacing:.03em;color:var(--ink-3);background:none;border:0;padding:4px 0;cursor:pointer;white-space:nowrap;opacity:0;transition:opacity .15s}
+.morepop li:hover .pin,.morepop .pin:focus-visible,.morepop .pin.on{opacity:1}
+.morepop .pin.on{color:var(--band)}
+.morepop .pin:hover{color:var(--ox)}
+@media (hover:none){.morepop .pin{opacity:1}}
+
 /* a chart on its own: the whole screen, and nothing else on it */
 .hq-expandable{position:relative}
 .hq-expand{position:absolute;top:-2px;right:0;z-index:2;font-family:var(--sans);font-size:12px;color:var(--ink-3);padding:2px 0 2px 10px;letter-spacing:.03em;border-bottom:1px solid transparent;opacity:0;transition:opacity .15s}

@@ -43,9 +43,12 @@ const HIGHER = { bed: 'later', woke: 'later' };   // for wording: a bigger numbe
 export async function buildSeries(getDoc, today, getMany) {
   const from = addDays(today, -(WINDOW - 1));
   const days = []; for (let d = from; d <= today; d = addDays(d, 1)) days.push(d);
-  const S = {}; for (const k of Object.keys(LABEL)) S[k] = {};
 
   const health = (await getDoc('health')) || {};
+  // readings you added on Health are series like any other; their names come with them
+  const own = (health.readings || []).filter(r => r && r.id && r.name && !LABEL[r.id]);
+  const labels = { ...LABEL, ...Object.fromEntries(own.map(r => [r.id, r.name.toLowerCase()])) };
+  const S = {}; for (const k of Object.keys(labels)) S[k] = {};
   const meds = (health.meds || []).length;
   for (const [d, r] of Object.entries(health.days || {})) {
     if (d < from || d > today) continue;
@@ -54,6 +57,7 @@ export async function buildSeries(getDoc, today, getMany) {
     put('sleep', num(r.sleep)); put('hr', num(r.hr)); put('weight', num(r.weight)); put('steps', num(r.steps));
     put('opens', num(r.opens)); put('screen', num(r.screen));
     put('energy', num(r.energy)); put('mood', num(r.mood));
+    for (const o of own) put(o.id, num(r[o.id]));
     const w = r.wx || {}; put('temp', num(w.hi)); put('rain', num(w.rain)); put('sun', num(w.sun)); put('daylight', num(w.daylight));
     put('score', num(g.score)); put('hrv', num(g.hrv)); put('battery', num(g.bb)); put('resp', num(g.resp));
     put('deep', g.deep != null ? g.deep / 60 : null); put('light', g.light != null ? g.light / 60 : null);
@@ -108,7 +112,7 @@ export async function buildSeries(getDoc, today, getMany) {
   for (const d of days) { const items = (todoDocs['today.' + d] || {}).items || [];
     if (items.length) S.todos[d] = items.filter(i => i.done).length / items.length; }
 
-  return { S, days, from };
+  return { S, days, from, labels };
 }
 
 // ---- the arithmetic ----
@@ -142,8 +146,8 @@ const pairUp = (S, ka, kb, days, lag) => {
 };
 
 export async function patterns(getDoc, putDoc, today, getMany) {
-  const { S, days } = await buildSeries(getDoc, today, getMany);
-  const keys = Object.keys(LABEL).filter(k => Object.keys(S[k]).length >= MIN_DAYS);
+  const { S, days, labels } = await buildSeries(getDoc, today, getMany);
+  const keys = Object.keys(labels).filter(k => Object.keys(S[k]).length >= MIN_DAYS);
   const tests = [];
   for (let i = 0; i < keys.length; i++) for (let j = 0; j < keys.length; j++) {
     const ka = keys[i], kb = keys[j];
@@ -182,11 +186,11 @@ export async function patterns(getDoc, putDoc, today, getMany) {
 
   const doc = {
     date: today, window: WINDOW, tested: tests.length,
-    series: Object.fromEntries(Object.keys(LABEL).map(k => [k, Object.keys(S[k]).length])),
+    series: Object.fromEntries(Object.keys(labels).map(k => [k, Object.keys(S[k]).length])),
     testable: keys,
     all, shown: all.filter(x => x.nights >= NEEDED_NIGHTS),
     thresholds: { MIN_DAYS, MIN_RHO, HALF_RHO, FDR_Q, NEEDED_NIGHTS },
-    labels: LABEL, higher: HIGHER,
+    labels, higher: HIGHER,
   };
   await putDoc('patterns', doc);
   return { tested: tests.length, kept: all.length, shown: doc.shown.length, series: keys.length };
