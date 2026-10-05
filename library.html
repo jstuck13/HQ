@@ -29,6 +29,8 @@
   .cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
   .cover img[data-missing]{display:none}
   .cover .fb{position:absolute;inset:0;padding:12% 10%;display:flex;flex-direction:column;justify-content:space-between;text-align:center}
+  .cover .fb:has(.orn){justify-content:center}
+  .cover .orn{display:block;width:min(70%,110px);height:12px;background:var(--ornament);opacity:.8}   /* a shelf cover is named by its caption; the jacket carries the house mark */
   .cover .fb b{font-family:var(--serif);font-weight:400;font-size:clamp(13px,1.4vw,17px);line-height:1.2;color:var(--ink)}
   .cover .fb i{font-family:var(--serif);font-size:12.5px;color:var(--ink-2)}
   .cover:has(img.ok) .fb{display:none}   /* the printed cover appears over the typed one once it has loaded */
@@ -98,7 +100,7 @@
   .book:hover .cover{transform:translateY(-3px);box-shadow:var(--shadow)}
   .book.cur .cover{outline:2px solid var(--ox);outline-offset:3px}
   .book .cap{display:block;margin-top:14px}   /* clear of the selected outline (2px + 3px offset) and the hover lift */
-  .book .cap b{display:block;font-family:var(--serif);font-weight:400;font-size:14px;line-height:1.25}
+  .book .cap b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.5em;font-family:var(--serif);font-weight:400;font-size:14px;line-height:1.25}   /* two lines, always: a long title no longer drops its author below the row */
   .book .cap i{display:block;font-family:var(--serif);font-size:13px;color:var(--ink-2);margin-top:2px}
   .book .cap .dots{margin-top:6px}
   .book .cap .dots i{width:8px;height:8px;border-width:1px}
@@ -199,7 +201,7 @@
   const book = id => S.books.find(b=>b.id===id);
   const dmy = iso => iso ? C.full(C.fromISO(iso)) : '';
   const coverURL = b => b.coverId ? `https://covers.openlibrary.org/b/id/${b.coverId}-L.jpg?default=false` : b.isbn ? `https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg?default=false` : '';
-  const cover = b => `<span class="cover">${coverURL(b)?`<img src="${coverURL(b)}" alt="" loading="lazy" onload="this.classList.add('ok')" onerror="this.dataset.missing=1">`:'<img data-missing=1 alt="">'}<span class="fb"><b>${esc(b.title)}</b><i>${esc(b.author)}</i></span></span>`;
+  const cover = (b, plain) => `<span class="cover">${coverURL(b)?`<img src="${coverURL(b)}" alt="" loading="lazy" onload="this.classList.add('ok')" onerror="this.dataset.missing=1">`:'<img data-missing=1 alt="">'}<span class="fb">${plain?'<span class="orn"></span>':`<b>${esc(b.title)}</b><i>${esc(b.author)}</i>`}</span></span>`;
   const dots = (n, live) => `<span class="dots">${[1,2,3,4,5].map(i=>live?`<button type="button" data-rate="${i}" class="${i<=n?'on':''}" aria-label="${i} of 5"></button>`:`<i class="${i<=n?'on':''}"></i>`).join('')}</span>`;
 
   function render(){
@@ -238,12 +240,12 @@
     // walls
     F('readingshelf').hidden = !reading.length || (o && o.id===reading[0].id);
     F('readingn').textContent = reading.length===1 ? (o&&o.id===reading[0].id ? 'open above' : 'click to go back to it') : `${reading.length} books`;
-    F('reading').innerHTML = reading.map(b=>`<button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i>${b.pages?`<i>page ${b.page||0} of ${b.pages}</i>`:''}</span></button>`).join('');
+    F('reading').innerHTML = reading.map(b=>`<button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b, true)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i>${b.pages?`<i>page ${b.page||0} of ${b.pages}</i>`:''}</span></button>`).join('');
     F('toreadn').textContent = `${toread.length} waiting`;
-    F('toread').innerHTML = toread.map(b=>`<span class="slot"><button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i>${b.page>0&&b.pages?`<i>page ${b.page} of ${b.pages}</i>`:''}</span></button><button class="rmb" type="button" data-rmb="${b.id}" aria-label="Remove ${esc(b.title)}"><svg class="ic"><use href="icons.svg?v=3#minus"/></svg></button></span>`).join('')
+    F('toread').innerHTML = toread.map(b=>`<span class="slot"><button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b, true)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i>${b.page>0&&b.pages?`<i>page ${b.page} of ${b.pages}</i>`:''}</span></button><button class="rmb" type="button" data-rmb="${b.id}" aria-label="Remove ${esc(b.title)}"><svg class="ic"><use href="icons.svg?v=3#minus"/></svg></button></span>`).join('')
       + `<button class="add" id="addcover"><span class="cover"><span><svg class="ic"><use href="icons.svg#plus"/></svg>Add a book</span></span></button>`;
     F('readn').textContent = `${read.length} books · ${thisYear} this year`;
-    F('read').innerHTML = read.length ? read.map(b=>`<span class="slot"><button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i>${dots(b.rating)}</span></button><button class="rmb" type="button" data-rmb="${b.id}" aria-label="Remove ${esc(b.title)}"><svg class="ic"><use href="icons.svg?v=3#minus"/></svg></button></span>`).join('') : '<p class="empty" style="grid-column:1/-1">Nothing finished yet. When you finish the book you are reading, it lands here.</p>';
+    F('read').innerHTML = read.length ? read.map(b=>`<span class="slot"><button class="book ${b.id===S.open?'cur':''}" data-id="${b.id}">${cover(b, true)}<span class="cap"><b>${esc(b.title)}</b><i>${esc(b.author)}</i>${dots(b.rating)}</span></button><button class="rmb" type="button" data-rmb="${b.id}" aria-label="Remove ${esc(b.title)}"><svg class="ic"><use href="icons.svg?v=3#minus"/></svg></button></span>`).join('') : '<p class="empty" style="grid-column:1/-1">Nothing finished yet. When you finish the book you are reading, it lands here.</p>';
     save();
   }
 
