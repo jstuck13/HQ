@@ -75,6 +75,20 @@
   .rep.empty small{color:var(--ink-3);font-size:13px}
   .rep.empty a{border-bottom:1px solid var(--rule)} .rep.empty a:hover{border-color:var(--ink)}
 
+  .affedit{margin:10px 0 4px;padding:14px 16px;background:var(--card);border-radius:12px;box-shadow:var(--shadow)}
+  .arrange{list-style:none;margin:0;padding:0}
+  .arrange li{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dotted var(--rule)}
+  .arrange li:last-child{border-bottom:0}
+  .arrange input{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px}
+  .arrange input:checked{background:var(--band);border-color:var(--band)}
+  .arrange input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+  .arrange label{font-family:var(--serif);font-size:15.5px;cursor:pointer;margin-right:auto}
+  .arrange .mv{font-size:13px;color:var(--ink-3);padding:2px 6px;border-radius:4px;background:none;border:0;cursor:pointer}
+  .arrange .mv:hover:not([disabled]){color:var(--ink);background:var(--paper-2)}
+  .arrange .mv[disabled]{opacity:.25;cursor:default}
+  .arrn{margin:12px 0 0;font-size:12.5px;color:var(--ink-3)}
+  .arrn .textbtn{margin-left:10px}
+  .affairs li.empty{display:block;font-family:var(--serif);font-style:italic;color:var(--ink-3);padding:14px 0;border:0}
   .affairs li{display:grid;grid-template-columns:1fr auto;gap:2px 20px;padding:13px 0;border-bottom:1px solid var(--rule);align-items:baseline}
   .affairs .n{grid-column:1;grid-row:1;font-family:var(--serif);font-size:17px;border-bottom:1px solid transparent}
   .affairs .n:hover{border-bottom-color:var(--ink)}
@@ -149,6 +163,7 @@
 
   <section>
     <h2>State of affairs<small id="affn"></small></h2>
+    <div class="affedit" id="affedit" hidden></div>
     <ul class="affairs" id="affairs"></ul>
 
     <div class="todo">
@@ -253,66 +268,137 @@
     store.save('health', H);
   }
 
-  // ---- state of affairs: one row per area ----
+  // ---- state of affairs ----
+  // One builder per area, each handed the day's documents and returning a row or nothing. Keeping them in a
+  // list rather than one long function is what makes the list arrangeable: what shows, and in what order, is
+  // a saved choice, and an area added later is on until it is turned off.
   function row(name, href, note, value, unit, flag){
     return `<li><a class="n" href="${href}">${name}</a><span class="d">${note}</span><span class="v ${flag?'flag':''}">${value}<small>${unit}</small></span></li>`;
   }
-  function renderAffairs(d){
-    const rows=[];
-    // finances
-    if(d.fin && !(d.fin.cats||[]).length && !(d.fin.tx||[]).length && !(d.fin.income||[]).length) d.fin = null;   // a month nobody has touched reads as not started
-    if(d.fin){ const spent=d.fin.tx.reduce((n,t)=>n+t.amt,0), limits=d.fin.cats.reduce((n,c)=>n+c.limit,0), left=limits-spent;
+
+  const AREAS = [
+    { id:'finances', name:'Finances', build(d){
+      if(d.fin && !(d.fin.cats||[]).length && !(d.fin.tx||[]).length && !(d.fin.income||[]).length) d.fin = null;   // a month nobody has touched reads as not started
+      if(!d.fin) return row('Finances','finances.html','Open Finances to set this month’s budget','','not started');
+      const spent=d.fin.tx.reduce((n,t)=>n+t.amt,0), limits=d.fin.cats.reduce((n,c)=>n+c.limit,0), left=limits-spent;
       const landed=(d.fin.income||[]).reduce((n,i)=>n+i.amt,0), cash=landed-spent;   // what is actually left, as the Finances page counts it
       const due=d.fin.cats.find(c=>c.due && (c.bill || !d.fin.tx.some(t=>t.cat===c.id)) && c.due>=C.now.getDate()), next=(d.fin.plan||[]).filter(p=>p.date>=TODAY).sort()[0];
       // one pool hides an overspend: a category can be over while the total still looks healthy
       const over = d.fin.cats.filter(c=>c.limit>0 && d.fin.tx.filter(t=>t.cat===c.id).reduce((n,t)=>n+t.amt,0) > c.limit);
       const overNote = over.length ? `<b class="over">${over.length} over</b> · ${over.map(c=>esc(c.name)).slice(0,2).join(', ')}${over.length>2?'…':''}` : '';
       const note = overNote || (due ? `${esc(due.bill||due.name)} ${due.due===C.now.getDate()?'due today':'due on the '+due.due+ordinal(due.due)}` : next ? `Next paycheck ${C.short(C.fromISO(next.date))}, ${$0(next.amt)}` : `${$0(left)} left of ${$0(limits)} in limits`);
-      rows.push(row('Finances','finances.html',note,$0(cash),`${$0(landed)} in, ${$0(spent)} out`, due && due.due===C.now.getDate()));
-    } else rows.push(row('Finances','finances.html','Open Finances to set this month’s budget','','not started'));   // nothing logged: no cash figure to give
-    // investments: worth at the last price, the day's move, what the cash earns
-    if(d.inv && ((d.inv.holdings||[]).length || (d.inv.balances||[]).length)){ const P=d.inv.prices||{}, px=t=>P[String(t).toUpperCase()];
+      return row('Finances','finances.html',note,$0(cash),`${$0(landed)} in, ${$0(spent)} out`, due && due.due===C.now.getDate());
+    } },
+
+    { id:'investments', name:'Investments', build(d){
+      if(!(d.inv && ((d.inv.holdings||[]).length || (d.inv.balances||[]).length))) return null;   // nothing held: nothing to say
+      const P=d.inv.prices||{}, px=t=>P[String(t).toUpperCase()];
       const latest={}; [...(d.inv.balances||[])].sort((a,b)=>a.date<b.date?-1:1).forEach(b=>{ latest[b.account]=b.value; });
       const worth=(d.inv.holdings||[]).reduce((n,h)=>n+(px(h.ticker)?h.shares*px(h.ticker).price:0),0)+Object.values(latest).reduce((n,v)=>n+v,0);
       const move=(d.inv.holdings||[]).reduce((n,h)=>{ const p=px(h.ticker); if(!p||p.chg==null) return n; const v=h.shares*p.price; return n+(v-v/(1+p.chg/100)); },0);
       const earn=(d.inv.holdings||[]).reduce((n,h)=>n+(h.yield&&px(h.ticker)?h.shares*px(h.ticker).price*h.yield/100/52:0),0);
       const priced=(d.inv.holdings||[]).some(h=>px(h.ticker));
-      rows.push(row('Investments','investments.html', priced ? `${move>=0?'Up':'Down'} ${$0(Math.abs(move))} today${earn?` · cash earns ${'$'+earn.toFixed(2)} a week`:''}` : 'No prices yet — Sync now in the bell', $0(worth), 'portfolio', false)); }
-    // health
-    if(d.health){ const L=d.health, meds=L.meds||0, pills=(L.pills||[]).length, total=meds?4:3, n=['sleep','weight','hr'].filter(k=>L[k]!=null).length+(meds&&pills>=meds?1:0);
+      return row('Investments','investments.html', priced ? `${move>=0?'Up':'Down'} ${$0(Math.abs(move))} today${earn?` · cash earns ${'$'+earn.toFixed(2)} a week`:''}` : 'No prices yet — Sync now in the bell', $0(worth), 'portfolio', false);
+    } },
+
+    { id:'health', name:'Health', build(d){
+      if(!d.health) return row('Health','health.html','Nothing logged yet today','0 of 3','logged today');
+      const L=d.health, meds=L.meds||0, pills=(L.pills||[]).length, total=meds?4:3, n=['sleep','weight','hr'].filter(k=>L[k]!=null).length+(meds&&pills>=meds?1:0);
       const note = L.sleep ? `Slept ${L.sleep} h${L.hr?' · resting pulse '+L.hr:''}` : 'Nothing logged yet today';
-      rows.push(row('Health','health.html',note,`${n} of ${total}`,`logged today${meds&&pills<meds?' · '+(meds-pills)+(meds-pills===1?' supplement':' supplements')+' to take':''}`, false));
-    } else rows.push(row('Health','health.html','Nothing logged yet today','0 of 3','logged today'));
-    // library
-    if(d.lib){ const b=(d.lib.books||[]).find(x=>x.shelf==='reading'), toread=(d.lib.books||[]).filter(x=>x.shelf==='toread').length;
-      if(b) rows.push(row('Library','library.html',`${esc(b.title)}, ${esc(b.author)}`, b.pages?`p. ${b.page||0}`:'reading', b.pages?`of ${b.pages} · ${Math.round((b.page||0)/b.pages*100)}%`:'', false));
-      else rows.push(row('Library','library.html',`${toread} waiting on the shelf`,'','nothing open'));
-    } else rows.push(row('Library','library.html','Open Library to shelve your books','','no books yet'));
-    // school
-    if(d.school){ const items=(d.school.items||[]).filter(toDo).sort((a,b)=>a.due<b.due?-1:1), nx=items[0], cn=id=>(d.school.courses||[]).find(c=>c.id===id);
+      return row('Health','health.html',note,`${n} of ${total}`,`logged today${meds&&pills<meds?' · '+(meds-pills)+(meds-pills===1?' supplement':' supplements')+' to take':''}`, false);
+    } },
+
+    { id:'library', name:'Library', build(d){
+      if(!d.lib) return row('Library','library.html','Open Library to shelve your books','','no books yet');
+      const b=(d.lib.books||[]).find(x=>x.shelf==='reading'), toread=(d.lib.books||[]).filter(x=>x.shelf==='toread').length;
+      return b ? row('Library','library.html',`${esc(b.title)}, ${esc(b.author)}`, b.pages?`p. ${b.page||0}`:'reading', b.pages?`of ${b.pages} · ${Math.round((b.page||0)/b.pages*100)}%`:'', false)
+               : row('Library','library.html',`${toread} waiting on the shelf`,'','nothing open');
+    } },
+
+    { id:'school', name:'School', build(d){
+      if(!d.school) return row('School','school.html','Open School to add your courses','','no courses yet');
+      const items=(d.school.items||[]).filter(toDo).sort((a,b)=>a.due<b.due?-1:1), nx=items[0], cn=id=>(d.school.courses||[]).find(c=>c.id===id);
       const dd = nx ? C.daysBetween(TODAY, nx.due) : null;
       const note = nx ? `${esc(cn(nx.course)?.name||'')} — ${esc(nx.title)}, ${dd<0?'overdue':dd===0?'due today':dd===1?'due tomorrow':'due '+C.monthShort(C.fromISO(nx.due))+' '+C.fromISO(nx.due).getDate()}` : 'Nothing due';
-      rows.push(row('School','school.html',note,`${items.length}`,`open ${items.length===1?'item':'items'}`, dd!==null && dd<=0));
-    } else rows.push(row('School','school.html','Open School to add your courses','','no courses yet'));
-    // Patterns. The row used to appear only once a pair had held, which left the page unreachable for exactly
-    // the weeks before the first finding — so it is always here, and says plainly when it has found nothing.
-    { const n=(d.pat && d.pat.shown || []).length, tested=d.pat && d.pat.tested;
-      rows.push(row('Patterns','patterns.html', n ? 'Things that moved together, worked out overnight' : tested ? 'Nothing has held yet; it looks again every night' : 'Starts once there are thirty days of something',
-        n ? String(n) : '—', n ? 'worth a look' : 'nothing yet', false)); }
-    // the study: three cards a day
-    { const st=d.study, day=st && st.days && st.days[TODAY], titles={stoics:'The Stoics', socrates:'Socrates', sermon:'The Sermon on the Mount'};
-      if(st && (st.pos>0 || day)){ const done=day && day.done, n=day ? (day.recall?1:0)+day.cards.length : 3, at=day ? Math.min(day.at, n) : 0;
-        let run=0; for(let i=0;i<400;i++){ const k=C.iso(C.addDays(C.fromISO(TODAY),-i)); if(st.days[k] && st.days[k].done) run++; else if(i===0) continue; else break; }
-        rows.push(row('The Study','study.html', `${titles[st.path]||st.path} · card ${Math.min(st.pos+1, st.len||42)} of ${st.len||42}${run>=2?` · ${run} days running`:''}`, done ? 'done' : `${at} of ${n}`, done ? 'today’s cards' : 'cards read today', false)); }
-      else rows.push(row('The Study','study.html','Three cards a day, from the Stoics to start','','not begun')); }
-    // calendar
-    { const list=d.day||[], later=list.filter(s=>s.start>NOW), next=later[0];
-      const lastEnd = list.length ? Math.max(...list.map(s=>s.end)) : null;
+      return row('School','school.html',note,`${items.length}`,`open ${items.length===1?'item':'items'}`, dd!==null && dd<=0);
+    } },
+
+    { id:'patterns', name:'Patterns', build(d){
+      // always here, even before the first finding, or the page it links to cannot be reached at all
+      const n=(d.pat && d.pat.shown || []).length, tested=d.pat && d.pat.tested;
+      return row('Patterns','patterns.html', n ? 'Things that moved together, worked out overnight' : tested ? 'Nothing has held yet; it looks again every night' : 'Starts once there are thirty days of something',
+        n ? String(n) : '—', n ? 'worth a look' : 'nothing yet', false);
+    } },
+
+    { id:'study', name:'The Study', build(d){
+      const st=d.study, day=st && st.days && st.days[TODAY], titles={stoics:'The Stoics', socrates:'Socrates', sermon:'The Sermon on the Mount'};
+      if(!(st && (st.pos>0 || day))) return row('The Study','study.html','Three cards a day, from the Stoics to start','','not begun');
+      const done=day && day.done, n=day ? (day.recall?1:0)+day.cards.length : 3, at=day ? Math.min(day.at, n) : 0;
+      let run=0; for(let i=0;i<400;i++){ const k=C.iso(C.addDays(C.fromISO(TODAY),-i)); if(st.days[k] && st.days[k].done) run++; else if(i===0) continue; else break; }
+      return row('The Study','study.html', `${titles[st.path]||st.path} · card ${Math.min(st.pos+1, st.len||42)} of ${st.len||42}${run>=2?` · ${run} days running`:''}`, done ? 'done' : `${at} of ${n}`, done ? 'today’s cards' : 'cards read today', false);
+    } },
+
+    { id:'calendar', name:'Calendar', build(d){
+      const list=d.day||[], lastEnd = list.length ? Math.max(...list.map(s=>s.end)) : null;
       const note = !list.length ? 'A clear day' : lastEnd<=NOW ? 'Nothing more today' : `Free after ${h12(lastEnd)}`;
-      rows.push(row('Calendar','calendar.html',note, `${list.length}`, `${list.length===1?'item':'items'} today`, false)); }
-    F('affairs').innerHTML = rows.join('');
-    F('affn').innerHTML = `${C.now.getHours()<12 ? 'this morning' : C.now.getHours()<18 ? 'this afternoon' : 'this evening'} · <a href="review.html">the week</a>`;
+      return row('Calendar','calendar.html',note, `${list.length}`, `${list.length===1?'item':'items'} today`, false);
+    } },
+  ];
+
+  // what shows and in what order. Kept with the other documents so the arrangement follows you between
+  // devices; an area HQ learns later is on until it is turned off, which is why only the hidden ones are named.
+  let PREFS = { hidden: [], order: [] };
+  const arranged = () => {
+    const seen = new Set();
+    const first = (PREFS.order || []).map(id => AREAS.find(a => a.id === id)).filter(a => a && !seen.has(a.id) && seen.add(a.id));
+    return [...first, ...AREAS.filter(a => !seen.has(a.id))];
+  };
+  const shown = () => arranged().filter(a => !(PREFS.hidden || []).includes(a.id));
+
+  let LAST = null;
+  function renderAffairs(d){
+    LAST = d;
+    const rows = shown().map(a => { try { return a.build(d); } catch { return null; } }).filter(Boolean);
+    F('affairs').innerHTML = rows.join('') || '<li class="empty">Every area is turned off. Arrange the list to bring some back.</li>';
+    F('affn').innerHTML = `${C.now.getHours()<12 ? 'this morning' : C.now.getHours()<18 ? 'this afternoon' : 'this evening'} · <a href="review.html">the week</a> · <button class="textbtn" type="button" id="arrange">Arrange</button>`;
+    F('arrange').addEventListener('click', openArrange);
   }
+
+  // the arranging itself: what to show, and the order, with the list underneath redrawing as you go
+  function openArrange(){
+    const box = F('affedit');
+    if(!box.hidden){ box.hidden = true; return; }
+    box.hidden = false;
+    paintArrange();
+  }
+  function paintArrange(){
+    const hidden = new Set(PREFS.hidden || []);
+    F('affedit').innerHTML = `<ul class="arrange">${arranged().map((a,i,all)=>`
+      <li data-id="${a.id}">
+        <input type="checkbox" id="ar-${a.id}" ${hidden.has(a.id)?'':'checked'}>
+        <label for="ar-${a.id}">${a.name}</label>
+        <button class="mv" type="button" data-up ${i===0?'disabled':''} aria-label="Move ${a.name} up">↑</button>
+        <button class="mv" type="button" data-down ${i===all.length-1?'disabled':''} aria-label="Move ${a.name} down">↓</button>
+      </li>`).join('')}</ul>
+      <p class="arrn">Turned-off areas keep their data; only this list changes. <button class="textbtn" type="button" id="arrdone">Done</button></p>`;
+    F('arrdone').addEventListener('click', ()=>{ F('affedit').hidden = true; });
+  }
+  F('affedit').addEventListener('change', e=>{
+    if(e.target.type !== 'checkbox') return;
+    const id = e.target.closest('li').dataset.id, hidden = new Set(PREFS.hidden || []);
+    e.target.checked ? hidden.delete(id) : hidden.add(id);
+    PREFS.hidden = [...hidden]; savePrefs(); renderAffairs(LAST); paintArrange();
+  });
+  F('affedit').addEventListener('click', e=>{
+    const b = e.target.closest('.mv'); if(!b) return;
+    const id = b.closest('li').dataset.id, order = arranged().map(a=>a.id), i = order.indexOf(id);
+    const j = b.hasAttribute('data-up') ? i-1 : i+1;
+    if(j < 0 || j >= order.length) return;
+    order.splice(j, 0, order.splice(i, 1)[0]);
+    PREFS.order = order; savePrefs(); renderAffairs(LAST); paintArrange();
+  });
+  const savePrefs = () => store.save('prefs', { ...(PREFS.doc||{}), affairs: { hidden: PREFS.hidden, order: PREFS.order } });
+
   const ordinal = n => (n%10===1&&n!==11)?'st':(n%10===2&&n!==12)?'nd':(n%10===3&&n!==13)?'rd':'th';
 
   // ---- greeting with the insight sentence ----
@@ -525,7 +611,8 @@
   window.onTodoChange = doc => { T = doc; renderTodo(); d.day = renderDay(CAL); };   // a tick in the bell shows here at once
   // ---- load everything the other pages keep, then draw ----
   (async () => {
-    const [cal, fin, H, lib, school, today, inv, study, pat] = await Promise.all([store.load('calendar'), store.load('finances.'+YM), store.load('health'), store.load('library'), store.load('school'), store.load(TKEY), store.load('investments'), store.load('study'), store.load('patterns')]);
+    const [cal, fin, H, lib, school, today, inv, study, pat, prefs] = await Promise.all([store.load('calendar'), store.load('finances.'+YM), store.load('health'), store.load('library'), store.load('school'), store.load(TKEY), store.load('investments'), store.load('study'), store.load('patterns'), store.load('prefs')]);
+    if(prefs){ PREFS = { doc: prefs, hidden: (prefs.affairs||{}).hidden || [], order: (prefs.affairs||{}).order || [] }; }   // how this list was last arranged
     RULES = (await store.load('todo.rules')) || { rules: [] }; RULES.rules ??= [];
     if(today){ T = today; if(migrateAt()) saveT(); }
     else {   // first look at a new day: unfinished items from the last few days come along, marked
