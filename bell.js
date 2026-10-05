@@ -21,7 +21,53 @@
     for (const i of (school && school.items || []).filter(i => toDo(i) && i.due && i.due <= today)) due.push({ text: esc(i.title), when: i.due < today ? 'overdue' : 'due today', late: i.due < today, href: 'school.html' });
     if (fin) for (const c of (fin.cats || []).filter(c => c.due === new Date().getDate() && (c.bill || !(fin.tx || []).some(t => t.cat === c.id)))) due.push({ text: esc(c.bill || c.name), when: 'due today', href: 'finances.html' });
     if (health && hour >= 21) { const meds = health.meds || [], taken = (health.days && health.days[today] || {}).pills || [], left = meds.filter(m => !taken.includes(m.id)); if (left.length) due.push({ text: left.map(m => esc(m.name)).join(', '), when: 'not taken yet', late: true, href: 'health.html' }); }
-    return { todos, due };
+    return { todos, due, noticed: await noticing({ school, fin, health, todo, today }) };
+  };
+
+  // Things HQ already knows and has never said. Not alarms — observations, and only when they are old enough
+  // to mean something. Each one is a fact about a document, so nothing here guesses.
+  const days = (a, b) => Math.round((Date.parse(b + 'T12:00:00Z') - Date.parse(a + 'T12:00:00Z')) / 86400000);
+  const noticing = async ({ school, health, todo, today }) => {
+    const out = [];
+    const [lib, inv] = await Promise.all([store.load('library', true).catch(() => null), store.load('investments', true).catch(() => null)]);
+
+    // a book you are in the middle of that has not moved for a fortnight
+    for (const b of (lib && lib.books || []).filter(b => b.shelf === 'reading')) {
+      const log = Object.keys(b.log || {}).sort(), last = log[log.length - 1];
+      if (!last) continue;
+      const n = days(last, today);
+      if (n >= 14) out.push({ text: esc(b.title), when: `at page ${b.page || 0} for ${n} days`, href: 'library.html' });
+    }
+
+    // an exam close enough to matter with nothing studied for that course this week
+    for (const i of (school && school.items || []).filter(i => toDo(i) && i.due >= today)) {
+      const d = days(today, i.due); if (d > 4) continue;
+      if (!/(final|midterm|exam|test|quiz)/i.test(i.title) && i.type !== 'test') continue;
+      const mins = (school.sessions || []).filter(s => s.course === i.course && days(s.date, today) >= 0 && days(s.date, today) < 7).reduce((n, s) => n + (+s.min || 0), 0);
+      if (mins) continue;
+      out.push({ text: esc(i.title), when: d === 0 ? 'today, nothing studied' : `in ${d} ${d === 1 ? 'day' : 'days'}, nothing studied`, late: d <= 1, href: 'school.html' });
+    }
+
+    // a to-do that keeps being carried to the next morning
+    for (const i of (todo && todo.items || []).filter(i => !i.done && i.from)) {
+      const n = days(i.from, today);
+      if (n >= 4) out.push({ text: esc(i.text), when: `carried over ${n} days`, href: 'today.html' });
+    }
+
+    // prices that have stopped arriving, so the portfolio is quietly stale
+    const ats = Object.values(inv && inv.prices || {}).map(p => p && p.at).filter(Boolean).sort();
+    if ((inv && inv.holdings || []).length && ats.length) {
+      const n = Math.round((Date.now() - Date.parse(ats[ats.length - 1])) / 86400000);
+      if (n >= 4) out.push({ text: 'Prices', when: `last fetched ${n} days ago`, href: 'investments.html' });
+    }
+
+    // the feel reading, which only you can answer, left blank for a while
+    if (health) {
+      const rated = Object.entries(health.days || {}).filter(([, r]) => r.energy != null || r.mood != null).map(([d]) => d).sort();
+      const last = rated[rated.length - 1];
+      if (last && days(last, today) >= 5) out.push({ text: 'How the days have felt', when: `not rated for ${days(last, today)} days`, href: 'health.html' });
+    }
+    return out.slice(0, 6);
   };
   // reminders on this device: a push subscription, kept on the server, sent to by /api/sync/notify
   const b64 = s => { const p = '='.repeat((4 - s.length % 4) % 4), r = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(r, c => c.charCodeAt(0)); };
@@ -75,7 +121,7 @@
     const bell = document.querySelector('.band .ib[aria-label="Notifications"]'); if (!bell || !window.store) return;
     bell.classList.add('bell'); bell.insertAdjacentHTML('beforeend', '<span class="dot"></span>');
     bell.setAttribute('aria-expanded', 'false');
-    let pop = null, ledger = {}, notes = { todos: [], due: [] };
+    let pop = null, ledger = {}, notes = { todos: [], due: [], noticed: [] };
     const paint = () => { bell.classList.toggle('bad', notes.todos.some(n => n.late) || notes.due.length > 0 || Object.values(ledger).some(l => l && l.ok === false)); };   // the dot: something late, something due, or a failed sync
     const section = (title, list) => list.length ? `<h4>${title}</h4><ul class="notices">${list.map(n => `<li class="${n.late ? 'late' : ''}">${n.k != null ? `<input type="checkbox" aria-label="Done: ${n.text}" data-k="${n.k}">` : ''}<a href="${n.href}"><span class="t">${n.text}</span><span class="w">${n.when}</span></a></li>`).join('')}</ul>` : '';
     const render = () => {
@@ -84,7 +130,7 @@
         const status = !l ? 'not connected' : l.ok ? `${ago(l.last)}${src.count(l) ? ' · ' + src.count(l) : ''}` : `failed ${ago(l.last)} · ${esc(l.error || '')}`;
         return `<li><span class="n"><a href="${src.page}">${src.name}</a></span><span class="s ${l && !l.ok ? 'bad' : ''}">${status}</span>${l ? `<button class="go" type="button" data-sync="${k}">${k === 'backup' ? 'Back up now' : 'Sync now'}</button>${src.extra && l.ok ? src.extra(l) : ''}` : k === 'backup' ? `<button class="go" type="button" data-sync="${k}">Back up now</button>` : `<a class="go" href="${src.page}">Set up</a>`}</li>`;
       });
-      pop.innerHTML = `${section('To do', notes.todos)}${section('Due', notes.due)}<h4>Syncs</h4><ul>${rows.join('')}</ul><h4>This device</h4><ul><li id="pushrow"><span class="n">Reminders</span><span class="s">checking…</span></li></ul>`;
+      pop.innerHTML = `${section('To do', notes.todos)}${section('Due', notes.due)}${section('Worth knowing', notes.noticed || [])}<h4>Syncs</h4><ul>${rows.join('')}</ul><h4>This device</h4><ul><li id="pushrow"><span class="n">Reminders</span><span class="s">checking…</span></li></ul>`;
       pushState().then(st => {
         const li = pop.querySelector('#pushrow'); if (!li) return;
         li.innerHTML = `<span class="n">Reminders</span><span class="s">${st.can ? (st.on ? 'on: morning, midday and evening, when there is something to say' : 'off on this device') : st.why}</span>${st.can ? `<button class="go" type="button" id="pushtoggle">${st.on ? 'Turn off' : 'Turn on'}</button>` : ''}`;

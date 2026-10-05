@@ -26,13 +26,15 @@ const clockHours = (t, night = false) => { const m = /(\d{1,2})[.:](\d{2})\s*(am
 
 // ---- the series HQ can build for a day, and which of them are the same fact twice ----
 const FAMILY = { sleep: 'sleep', score: 'sleep', deep: 'sleep', light: 'sleep', rem: 'sleep', awake: 'sleep', bed: 'sleep', woke: 'sleep', battery: 'sleep',
-  opens: 'phone', screen: 'phone' };   // reaching for it and time spent on it are the same habit twice
+  opens: 'phone', screen: 'phone',   // reaching for it and time spent on it are the same habit twice
+  energy: 'feel', mood: 'feel' };    // and both are the same question answered twice: how the day went
 const LABEL = {
   sleep: 'hours asleep', score: 'sleep score', deep: 'deep sleep', light: 'light sleep', rem: 'REM sleep', awake: 'time awake in bed',
   bed: 'bedtime', woke: 'waking time', battery: 'body battery', hrv: 'HRV', hr: 'resting heart rate', resp: 'breaths a minute',
   steps: 'steps', weight: 'weight', supplements: 'supplements taken', spend: 'money spent', study: 'minutes studied',
   pages: 'pages read', cards: 'cards read', booked: 'hours on the calendar', todos: 'to-dos ticked',
   grade: 'the running grade', opens: 'times you reached for the phone', screen: 'minutes of screen time',
+  energy: 'how much energy you had', mood: 'how the day felt',
 };
 const HIGHER = { bed: 'later', woke: 'later' };   // for wording: a bigger number is not always "more"
 
@@ -49,6 +51,7 @@ export async function buildSeries(getDoc, today, getMany) {
     const put = (k, v) => { if (v != null && isFinite(v)) S[k][d] = v; };
     put('sleep', num(r.sleep)); put('hr', num(r.hr)); put('weight', num(r.weight)); put('steps', num(r.steps));
     put('opens', num(r.opens)); put('screen', num(r.screen));
+    put('energy', num(r.energy)); put('mood', num(r.mood));
     put('score', num(g.score)); put('hrv', num(g.hrv)); put('battery', num(g.bb)); put('resp', num(g.resp));
     put('deep', g.deep != null ? g.deep / 60 : null); put('light', g.light != null ? g.light / 60 : null);
     put('rem', g.rem != null ? g.rem / 60 : null); put('awake', g.awake != null ? g.awake / 60 : null);
