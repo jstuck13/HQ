@@ -84,6 +84,10 @@
     await fetch('/api/push', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ subscription: sub.toJSON(), label: navigator.userAgent.slice(0, 60) }) });
   };
   const pushOff = async () => { const { sub } = await pushState(); if (!sub) return; await fetch('/api/push', { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) }); await sub.unsubscribe(); };
+  const FOLD = 'hq.bell.syncs';
+  const folded = () => { try { return localStorage.getItem(FOLD) !== 'open'; } catch { return true; } };
+  const setFolded = v => { try { localStorage.setItem(FOLD, v ? 'shut' : 'open'); } catch {} };
+
   const ago = iso => { const m = Math.round((Date.now() - new Date(iso)) / 60000); return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} d ago`; };
 
   const style = document.createElement('style');
@@ -115,6 +119,14 @@
     .bellpop .notices .late .w{color:var(--ox)}
     .bellpop .notices .late .t::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ox);margin:0 8px 2px 0}
     .bellpop h4 ~ h4{margin-top:16px}
+    .bellpop h4.fold{display:flex;align-items:baseline;gap:10px;cursor:pointer;padding-bottom:0;border-bottom:0}
+    .bellpop h4.fold .tw{font-family:var(--sans);font-size:11px;color:var(--ink-3);transition:transform .15s}
+    .bellpop h4.fold[aria-expanded=true] .tw{transform:rotate(90deg)}
+    .bellpop h4.fold .sum{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
+    .bellpop h4.fold .sum.bad{color:var(--ox)}
+    .bellpop h4.fold + ul{margin-top:6px;padding-top:8px;border-top:1px solid var(--rule)}
+    .bellpop h4.fold[aria-expanded=false] + ul{display:none}
+    .bellpop h4.fold:hover{color:var(--ox)}
     .row .right{position:relative}`;
   document.head.appendChild(style);
 
@@ -131,7 +143,20 @@
         const status = !l ? 'not connected' : l.ok ? `${ago(l.last)}${src.count(l) ? ' · ' + src.count(l) : ''}` : `failed ${ago(l.last)} · ${esc(l.error || '')}`;
         return `<li><span class="n"><a href="${src.page}">${src.name}</a></span><span class="s ${l && !l.ok ? 'bad' : ''}">${status}</span>${l ? `<button class="go" type="button" data-sync="${k}">${k === 'backup' ? 'Back up now' : 'Sync now'}</button>${src.extra && l.ok ? src.extra(l) : ''}` : k === 'backup' ? `<button class="go" type="button" data-sync="${k}">Back up now</button>` : `<a class="go" href="${src.page}">Set up</a>`}</li>`;
       });
-      pop.innerHTML = `${section('To do', notes.todos)}${section('Due', notes.due)}${section('Worth knowing', notes.noticed || [])}<h4>Syncs</h4><ul>${rows.join('')}</ul><h4>This device</h4><ul><li id="pushrow"><span class="n">Reminders</span><span class="s">checking…</span></li></ul>`;
+      // what the fold has to say for itself: a count, and loudly if something is failing
+      const names = Object.keys(SOURCES), bad = names.filter(k => ledger[k] && ledger[k].ok === false);
+      const sum = bad.length ? `${bad.length} failing` : `${names.filter(k => ledger[k]).length} of ${names.length} running`;
+      const shut = folded();
+      pop.innerHTML = `${section('To do', notes.todos)}${section('Due', notes.due)}${section('Worth knowing', notes.noticed || [])}`
+        + `<h4 class="fold" id="syncfold" role="button" tabindex="0" aria-expanded="${!shut}"><span class="tw">\u25b8</span>Syncs<span class="sum ${bad.length ? 'bad' : ''}">${sum}</span></h4>`
+        + `<ul>${rows.join('')}</ul>`
+        + `<h4>This device</h4>`
+        + `<ul><li id="pushrow"><span class="n">Reminders</span><span class="s">checking\u2026</span></li></ul>`;
+      const fold = el => { const open = el.getAttribute('aria-expanded') === 'true'; el.setAttribute('aria-expanded', !open); if (el.id === 'syncfold') setFolded(open); };
+      pop.querySelectorAll('h4.fold').forEach(h => {
+        h.addEventListener('click', () => fold(h));
+        h.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fold(h); } });
+      });
       pushState().then(st => {
         const li = pop.querySelector('#pushrow'); if (!li) return;
         li.innerHTML = `<span class="n">Reminders</span><span class="s">${st.can ? (st.on ? 'on: morning, midday and evening, when there is something to say' : 'off on this device') : st.why}</span>${st.can ? `<button class="go" type="button" id="pushtoggle">${st.on ? 'Turn off' : 'Turn on'}</button>` : ''}`;
