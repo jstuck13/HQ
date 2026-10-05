@@ -237,8 +237,20 @@
     try{
       const u=`https://api.open-meteo.com/v1/forecast?latitude=${geo.lat}&longitude=${geo.lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone=auto&forecast_days=1`;
       const w=await (await fetch(u)).json(); const t=Math.round(w.current.temperature_2m), hi=Math.round(w.daily.temperature_2m_max[0]), lo=Math.round(w.daily.temperature_2m_min[0]), rain=w.daily.precipitation_probability_max[0];
+      rememberWhere(geo);   // so the nightly sync can keep what the weather actually was, on the days you never opened this
       F('wx').innerHTML = `<span><span class="k">Out</span><b>${t}°</b> <span class="t">and ${SKY(w.current.weather_code)} · ${lo}° to ${hi}°${rain>=30?` · ${rain}% chance of rain`:''}</span></span>`; F('wx').hidden=false;
     }catch{}
+  }
+
+  // Where the weather is being asked about, kept once beside the readings it will annotate. Two decimals is
+  // about a kilometre — enough for a forecast, not enough to find a house.
+  async function rememberWhere(geo){
+    if(!geo) return;
+    const H = await store.load('health', true).catch(()=>null); if(!H) return;
+    const was = H.geo || {};
+    if(was.lat === geo.lat && was.lon === geo.lon) return;
+    H.geo = { lat: geo.lat, lon: geo.lon };
+    store.save('health', H);
   }
 
   // ---- state of affairs: one row per area ----

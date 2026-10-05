@@ -23,6 +23,12 @@
 
   main{max-width:1180px;margin:0 auto;padding:34px 40px 44px;display:grid;grid-template-columns:1.6fr 1fr;gap:64px}
 
+  .digest{margin-top:14px;max-width:62ch}
+  .digest p{font-family:var(--serif);font-size:16.5px;line-height:1.62;margin:0 0 14px;color:var(--ink)}
+  .digest p b{font-weight:400;color:var(--ox)}
+  .digest .none{font-style:italic;color:var(--ink-3)}
+  h2.later{margin-top:40px}
+
   /* one row per area: name and sentence, the number, seven small bars */
   .wk li{display:grid;grid-template-columns:1fr auto 150px;gap:4px 28px;padding:18px 0;border-bottom:1px solid var(--rule);align-items:center}
   .wk .n{font-family:var(--serif);font-size:17px}
@@ -100,7 +106,9 @@
 
 <main>
   <section>
-    <h2>Area by area<small id="rangen"></small></h2>
+    <h2 id="digest">The week in words<small id="digestn"></small></h2>
+    <div class="digest" id="digestbody"></div>
+    <h2 class="later">Area by area<small id="rangen"></small></h2>
     <ul class="wk" id="wk"></ul>
     <h3>Portrait of the week<small>every hour, every day</small></h3>
     <div class="portrait" id="portrait"></div>
@@ -135,6 +143,98 @@
   const delta = (now, prev, fmt, upGood=true) => { if(now==null||prev==null||(!now&&!prev)) return ''; const d=now-prev; if(Math.abs(d)<1e-9) return ' · level with last week'; const up=d>0; return ` · <span class="${up===upGood?'up':'down'}">${up?'up':'down'} ${fmt(Math.abs(d))}</span> on last week`; };
   const bars = (vals, fmt, tint) => { const days=week(ws), max=Math.max(...vals.map(v=>v||0), 0.0001); return `<span class="bars" aria-hidden="true">${vals.map((v,i)=>`<i class="${v==null?'none':''} ${days[i]===TODAY?'today':''}" data-d="${'MTWTFSS'[i]}" style="height:${v==null?2:Math.max(3,v/max*100)}%;${tint?`--c:${tint}`:''}" title="${v==null?'':fmt(v)}"></i>`).join('')}</span>`; };
   const li = (name, href, sentence, value, unit, small, barsHtml) => `<li><span class="n"><a href="${href}">${name}</a></span><span class="d">${sentence}</span><span class="v">${value}${unit?`<i>${unit}</i>`:''}${small?`<small>${small}</small>`:''}</span>${barsHtml||''}</li>`;
+
+
+  // The week, written out. Everything here is read off the same documents the rows below are drawn from; it says
+  // only what the numbers say, compares with the week before where that is honest, and leaves out whatever is
+  // missing rather than padding it. No encouragement either: a thin week should read like one.
+  function digest({ H, school, lib, fin, days, prev, months }){
+    const ps = [];
+    const dayVals = (ds, k) => ds.map(d => +((H && H.days && H.days[d] || {})[k])).filter(v => v > 0);
+    const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+    const move = (now, then, step, fmt = v => v.toFixed(1)) => {
+      if (then == null || !isFinite(then)) return '';
+      const d = now - then;
+      if (Math.abs(d) < step) return ', much as the week before';
+      return `, ${d > 0 ? 'up' : 'down'} ${fmt(Math.abs(d))} on the week before`;
+    };
+
+    // 1 · the nights, and what you made of them
+    { const sl = dayVals(days, 'sleep'), pv = dayVals(prev, 'sleep');
+      if (sl.length) {
+        const m = mean(sl), lo = Math.min(...sl), hi = Math.max(...sl);
+        let t = `You slept <b>${m.toFixed(1)} hours</b> a night across ${sl.length} ${sl.length === 1 ? 'night' : 'nights'}${pv.length ? move(m, mean(pv), 0.2) : ''}`;
+        if (sl.length > 1) t += `. The shortest was ${lo.toFixed(1)} and the longest ${hi.toFixed(1)}`;
+        const e = dayVals(days, 'energy'), mo = dayVals(days, 'mood');
+        if (e.length || mo.length) t += `, and you rated the days ${e.length ? `<b>${mean(e).toFixed(1)}</b> for energy` : ''}${e.length && mo.length ? ' and ' : ''}${mo.length ? `<b>${mean(mo).toFixed(1)}</b> for mood` : ''} out of five`;
+        else t += `. You did not rate how any of them felt`;
+        ps.push(t + '.');
+      } }
+
+    // 2 · what went out
+    { const tx = months.flatMap(m => (fin[m] && fin[m].tx) || []).filter(t => inWeek(t.date, days));
+      const pv = months.flatMap(m => (fin[m] && fin[m].tx) || []).filter(t => inWeek(t.date, prev));
+      if (tx.length) {
+        const total = tx.reduce((n, t) => n + t.amt, 0), ptotal = pv.reduce((n, t) => n + t.amt, 0);
+        const cats = {}; tx.forEach(t => { cats[t.cat] = (cats[t.cat] || 0) + t.amt; });
+        const top = Object.entries(cats).sort((a, b) => b[1] - a[1])[0];
+        const nameOf = id => { for (const m of months) { const c = (fin[m] && fin[m].cats || []).find(c => c.id === id); if (c) return c.name; } return 'something'; };
+        const big = [...tx].sort((a, b) => b.amt - a.amt)[0];
+        ps.push(`You spent <b>${$0(total)}</b> over ${tx.length} ${tx.length === 1 ? 'purchase' : 'purchases'}${pv.length ? `, against ${$0(ptotal)} the week before` : ''}. Most of it went on ${esc(nameOf(top[0]).toLowerCase())} (${$0(top[1])})${big && big.amt > total / 3 && Math.abs(big.amt - top[1]) > 0.01 ? `, and the largest single thing was ${esc(big.what || 'one purchase')} at ${$0(big.amt)}` : ''}.`);
+      } }
+
+    // 3 · school: what was owed, what was done, and where the mark stands
+    if (school) {
+      const due = (school.items || []).filter(i => i.due && !i.noturn && inWeek(i.due, days));
+      const done = due.filter(i => i.done).length, slipped = due.filter(i => !i.done && i.due < TODAY).length;
+      const mins = (school.sessions || []).filter(x => inWeek(x.date, days)).reduce((n, x) => n + x.min, 0);
+      const pmins = (school.sessions || []).filter(x => inWeek(x.date, prev)).reduce((n, x) => n + x.min, 0);
+      if (due.length || mins) {
+        let t = due.length ? `<b>${done} of ${due.length}</b> ${due.length === 1 ? 'thing was' : 'things were'} due and done${slipped ? `, and <b>${slipped}</b> ${slipped === 1 ? 'has' : 'have'} slipped past` : ''}` : 'Nothing fell due';
+        t += mins ? `. You studied for <b>${hrs(mins)}</b>${pmins ? `, against ${hrs(pmins)} the week before` : ''}` : '. Nothing was studied';
+        const marks = (school.courses || []).map(c => {
+          const h = (c.marks || []).filter(m => m.pct != null); if (!c.mark || h.length < 2) return null;
+          const before = h.filter(m => m.d < days[0]).pop(); if (!before) return null;
+          const d = c.mark.pct - before.pct; if (Math.abs(d) < 0.5) return null;
+          return `${esc(c.name)} ${d > 0 ? 'rose' : 'fell'} ${Math.abs(d).toFixed(1)} to ${Math.round(c.mark.pct)}%`;
+        }).filter(Boolean);
+        if (marks.length) t += `. ${marks.join(', ')}`;
+        ps.push(t + '.');
+      } }
+
+    // 4 · the phone
+    { const o = days.map(d => +((H && H.days && H.days[d] || {}).opens)).map(v => v > 0 ? v : null);
+      const got = o.filter(v => v != null), pv = dayVals(prev, 'opens');
+      if (got.length) {
+        const m = mean(got), worst = days[o.indexOf(Math.max(...got))];
+        ps.push(`You reached for the phone <b>${Math.round(m)} times</b> a day${pv.length ? move(m, mean(pv), 1, v => Math.round(v) + ' times') : ''}. The heaviest was ${C.dayName(C.fromISO(worst))}, at ${Math.max(...got)}.`);
+      } }
+
+    // 5 · reading
+    { const pages = (lib && lib.books || []).reduce((n, b) => {
+        const log = Object.entries(b.log || {}).sort(); let was = null, got = 0;
+        for (const [d, pg] of log) { if (was != null && inWeek(d, days) && +pg - was > 0) got += +pg - was; was = +pg; }
+        return n + got; }, 0);
+      const reading = (lib && lib.books || []).find(b => b.shelf === 'reading');
+      if (pages) ps.push(`You read <b>${pages} pages</b>${reading ? ` of ${esc(reading.title)}, which stands at page ${reading.page || 0}${reading.pages ? ` of ${reading.pages}` : ''}` : ''}.`);
+      else if (reading) ps.push(`${esc(reading.title)} did not move from page ${reading.page || 0}.`);
+    }
+
+    // 6 · what the sky did, and what it is doing to the light
+    { const wx = days.map(d => (H && H.days && H.days[d] || {}).wx).filter(Boolean);
+      if (wx.length >= 3) {
+        const his = wx.map(w => w.hi).filter(v => v != null), wet = wx.filter(w => w.rain > 0.04).length;
+        const dl = wx.map(w => w.daylight).filter(v => v != null);
+        let t = `Outside it reached <b>${Math.round(mean(his))}&deg;</b> on an average day, and it rained on ${wet === 0 ? 'none of them' : wet === wx.length ? 'every one' : `${wet} of ${wx.length}`}`;
+        if (dl.length >= 2) { const lost = (dl[0] - dl[dl.length - 1]) * 60;
+          if (Math.abs(lost) >= 4) t += `. The days ${lost > 0 ? 'lost' : 'gained'} ${Math.round(Math.abs(lost))} minutes of light across the week`; }
+        ps.push(t + '.');
+      } }
+
+    F('digestn').textContent = ps.length ? `${C.dayMonth(C.fromISO(days[0]))} \u2013 ${C.dayMonth(C.fromISO(days[6]))}` : '';
+    F('digestbody').innerHTML = ps.length ? ps.map(t => `<p>${t}</p>`).join('')
+      : `<p class="none">${ws > TODAY ? 'This week has not happened yet.' : 'Nothing was logged this week, so there is nothing to say about it.'}</p>`;
+  }
 
   async function build(){
     const days=week(ws), prev=week(C.iso(C.addDays(C.fromISO(ws),-7))), we=days[6], future = ws>TODAY;
@@ -208,6 +308,8 @@
     }
     if(school && (school.sessions||[]).length){ let n=0; for(let i=0;i<400;i++){ const d=C.iso(C.addDays(C.now,-i)); if(!school.sessions.some(s=>s.date===d)){ if(i===0) continue; break; } n++; } if(n>=2) sk.push([n,'days','a study session','in a row']); }
     F('streaks').innerHTML = sk.length ? sk.map(([k,u,b,t])=>`<li><span class="k">${k}<i> ${u}</i></span><span class="t"><b>${b}</b>${t}</span></li>`).join('') : '<li class="empty">No streaks running yet. Two days of anything starts one.</li>';
+
+    digest({ H, school, lib, fin, days, prev, months });
 
     // the sentence
     const said=[];

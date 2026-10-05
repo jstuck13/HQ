@@ -8,9 +8,54 @@ const TZ = process.env.HQ_TZ || 'America/Chicago';
 const local = () => { const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).formatToParts(new Date()).map(x => [x.type, x.value])); return { date: `${p.year}-${p.month}-${p.day}`, h: (+p.hour % 24) + (+p.minute) / 60 }; };
 const h12 = h => { const hr = Math.floor(h), m = Math.round((h % 1) * 60); return `${hr % 12 || 12}.${String(m).padStart(2, '0')} ${hr < 12 ? 'am' : 'pm'}`; };
 const days = (a, b) => Math.round((new Date(b) - new Date(a)) / 864e5);
+const iso = d => d.toISOString().slice(0, 10);
+const addDays = (s, n) => new Date(Date.parse(s + 'T12:00:00Z') + n * 864e5);
 const slotOf = h => h >= 6 && h < 10 ? 'morning' : h >= 11 && h < 15 ? 'midday' : h >= 18 && h < 22 ? 'evening' : null;
 const KINDS = [[/\b(final|midterm|exam)\b|^E\d\b/i, 5], [/\btest\b/i, 4], [/\bquiz\b/i, 3]];
 const heavy = it => { const k = KINDS.find(([re]) => re.test(it.title)); let w = k ? k[1] : it.type === 'test' ? 4 : 2; if (it.pts > 0) w = Math.max(w, Math.min(5, 1 + it.pts / 25)); return w >= 4; };
+
+
+// Sunday evening, the week being over: what it came to, in three lines, with the rest of it on the week page.
+// Only what the documents say — a thin week reads thin rather than being talked up.
+const weekLines = async (getDoc, today, health, school, lib) => {
+  const days = []; for (let i = 6; i >= 0; i--) days.push(iso(addDays(today, -i)));
+  const prev = []; for (let i = 13; i >= 7; i--) prev.push(iso(addDays(today, -i)));
+  const vals = (ds, k) => ds.map(d => +((health && health.days && health.days[d] || {})[k])).filter(v => v > 0);
+  const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+  const out = [];
+
+  const sl = vals(days, 'sleep'), psl = vals(prev, 'sleep');
+  if (sl.length) {
+    const m = mean(sl), e = vals(days, 'energy'), d = psl.length ? m - mean(psl) : null;
+    out.push(`${m.toFixed(1)} h of sleep a night${d != null && Math.abs(d) >= 0.2 ? `, ${d > 0 ? 'up' : 'down'} ${Math.abs(d).toFixed(1)}` : ''}${e.length ? `, and you rated the days ${mean(e).toFixed(1)} of 5` : ''}.`);
+  }
+
+  // money out, across whichever months the week touched
+  const months = [...new Set(days.map(d => d.slice(0, 7)))];
+  const docs = await Promise.all(months.map(m => getDoc('finances.' + m)));
+  const tx = docs.flatMap(d => (d && d.tx) || []).filter(t => days.includes(t.date));
+  if (tx.length) out.push(`${tx.length} ${tx.length === 1 ? 'purchase' : 'purchases'}, $${Math.round(tx.reduce((n, t) => n + t.amt, 0)).toLocaleString('en-US')} out.`);
+
+  if (school) {
+    const mins = (school.sessions || []).filter(x => days.includes(x.date)).reduce((n, x) => n + x.min, 0);
+    const moved = (school.courses || []).map(c => {
+      const h = (c.marks || []).filter(m => m.pct != null); if (!c.mark || h.length < 2) return null;
+      const was = h.filter(m => m.d < days[0]).pop(); if (!was) return null;
+      const d = c.mark.pct - was.pct; return Math.abs(d) < 0.5 ? null : `${c.name} ${d > 0 ? 'up' : 'down'} ${Math.abs(d).toFixed(1)}`;
+    }).filter(Boolean);
+    if (mins || moved.length) out.push(`${mins ? `${Math.round(mins / 60 * 10) / 10} h studied` : 'Nothing studied'}${moved.length ? ` · ${moved.join(', ')}` : ''}.`);
+  }
+
+  const pages = (lib && lib.books || []).reduce((n, b) => {
+    const log = Object.entries(b.log || {}).sort(); let was = null, got = 0;
+    for (const [d, pg] of log) { if (was != null && days.includes(d) && +pg - was > 0) got += +pg - was; was = +pg; }
+    return n + got; }, 0);
+  if (pages) out.push(`${pages} pages read.`);
+
+  const op = vals(days, 'opens');
+  if (op.length) out.push(`${Math.round(mean(op))} reaches for the phone a day.`);
+  return out;
+};
 
 export default syncRoute('notify', async ({ getDoc, putDoc }) => {
   const { date: today, h } = local(), slot = slotOf(h);
@@ -21,6 +66,7 @@ export default syncRoute('notify', async ({ getDoc, putDoc }) => {
   if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) throw new Error('VAPID keys are not set');
 
   const [health, todo, school, lib, study, ledger] = await Promise.all([getDoc('health'), getDoc('today.' + today), getDoc('school'), getDoc('library'), getDoc('study'), getDoc('sync')]);
+  const sunday = new Date(today + 'T12:00:00Z').getUTCDay() === 0;
   const L = health && health.days && health.days[today] || {}, meds = health && health.meds || [], items = todo && todo.items || [];
   const lines = []; let url = 'today.html';
 
@@ -48,7 +94,11 @@ export default syncRoute('notify', async ({ getDoc, putDoc }) => {
     const due = (school && school.items || []).filter(i => !i.done && i.due === today);
     for (const i of due.slice(0, 2)) { lines.push(`${i.title} is due today and is not ticked.`); url = 'school.html'; }
   }
-  if (slot === 'evening') {
+  if (slot === 'evening' && sunday) {
+    const wk = await weekLines(getDoc, today, health, school, lib);
+    if (wk.length) { lines.push(...wk); url = 'review.html#digest'; }
+  }
+  if (slot === 'evening' && !lines.length) {
     const open = items.filter(i => !i.done);
     if (open.length) lines.push(open.length === 1 ? `“${open[0].text}” is still open on today’s list.` : `${open.length} things still open on today’s list.`);
     const book = lib && (lib.books || []).find(b => b.shelf === 'reading');
@@ -62,8 +112,9 @@ export default syncRoute('notify', async ({ getDoc, putDoc }) => {
   if (!lines.length) { push.sent[today] = { ...(push.sent[today] || {}), [slot]: 'nothing' }; await putDoc('_push', push); return { slot, sent: 0, quiet: true }; }
 
   webpush.setVapidDetails(process.env.VAPID_SUBJECT || 'mailto:hq@example.com', process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
-  const title = slot === 'morning' ? 'Good morning' : slot === 'midday' ? 'Midday' : 'This evening';
-  const payload = JSON.stringify({ title, body: lines.slice(0, 3).join('\n'), url: '/' + url, tag: 'hq-' + slot });
+  const digest = slot === 'evening' && sunday && url.startsWith('review');
+  const title = digest ? 'The week' : slot === 'morning' ? 'Good morning' : slot === 'midday' ? 'Midday' : 'This evening';
+  const payload = JSON.stringify({ title, body: lines.slice(0, digest ? 5 : 3).join('\n'), url: '/' + url, tag: 'hq-' + (digest ? 'week' : slot) });
   let sent = 0; const keep = [];
   for (const s of push.subs) { try { await webpush.sendNotification(s, payload, { TTL: 3600 }); sent++; keep.push(s); } catch (e) { if (e.statusCode === 404 || e.statusCode === 410) continue; keep.push(s); } }   // a gone device is dropped
   push.subs = keep; push.sent[today] = { ...(push.sent[today] || {}), [slot]: new Date().toISOString() };

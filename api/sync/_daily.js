@@ -175,6 +175,37 @@ async function prices(getDoc, putDoc) {
   return { priced: got, of: tickers.length, worth: Math.round(total) };
 }
 
+
+// What the weather actually was, kept beside the day's other readings. Today shows a forecast and forgets it;
+// this writes the settled figures for the last few days, so the record is complete whether or not the app was
+// opened. Daylight is in there because the shortening of the days is the slowest thing that moves how a week
+// feels, and the one you are least likely to notice yourself.
+async function weather(getDoc, putDoc) {
+  const health = await getDoc('health');
+  const geo = health && health.geo;
+  if (!geo || geo.lat == null) return null;
+  const u = `https://api.open-meteo.com/v1/forecast?latitude=${geo.lat}&longitude=${geo.lon}`
+    + '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,sunshine_duration,daylight_duration'
+    + '&temperature_unit=fahrenheit&precipitation_unit=inch&timezone=auto&past_days=5&forecast_days=1';
+  const r = await fetch(u); if (!r.ok) throw new Error(`${r.status} from open-meteo`);
+  const w = (await r.json()).daily; if (!w || !w.time) throw new Error('no daily block');
+  health.days ??= {};
+  let kept = 0;
+  for (let i = 0; i < w.time.length; i++) {
+    const d = w.time[i], hi = w.temperature_2m_max[i], lo = w.temperature_2m_min[i];
+    if (hi == null || lo == null) continue;                       // a day the forecast has not settled yet
+    const rec = (health.days[d] ??= {});
+    const wx = { hi: Math.round(hi), lo: Math.round(lo) };
+    if (w.precipitation_sum[i] != null) wx.rain = +(+w.precipitation_sum[i]).toFixed(2);
+    if (w.sunshine_duration[i] != null) wx.sun = +(w.sunshine_duration[i] / 3600).toFixed(1);
+    if (w.daylight_duration[i] != null) wx.daylight = +(w.daylight_duration[i] / 3600).toFixed(2);
+    if (JSON.stringify(rec.wx || null) === JSON.stringify(wx)) continue;
+    rec.wx = wx; kept++;
+  }
+  if (kept) await putDoc('health', health);                        // untouched when the weather has not changed
+  return { days: kept };
+}
+
 export default syncRoute('daily', async ({ getDoc, putDoc }) => {
   const now = new Date(), date = now.toISOString().slice(0, 10);
   const out = { date, word: null, quote: null }, errors = [];
@@ -242,8 +273,10 @@ export default syncRoute('daily', async ({ getDoc, putDoc }) => {
   let ad = null; try { ad = await publix(getDoc, putDoc); } catch (e) { errors.push('publix ' + e.message); }
   let px = null; try { px = await prices(getDoc, putDoc); } catch (e) { errors.push('prices ' + e.message); }
 
+  let wx = null; try { wx = await weather(getDoc, putDoc); } catch (e) { errors.push('weather ' + e.message); }
+
   let pat = null; try { pat = await patterns(getDoc, putDoc, date, getDocs); } catch (e) { errors.push('patterns ' + e.message); }
 
   await putDoc('daily', out);
-  return { patterns: pat ? `${pat.shown} of ${pat.tested}` : undefined, word: out.word ? out.word.w : null, quote: out.quote ? out.quote.a : null, bogos: ad ? ad.bogos : undefined, priced: px ? px.priced : undefined, worth: px ? px.worth : undefined, errors: errors.length ? errors.join('; ') : undefined };
+  return { patterns: pat ? `${pat.shown} of ${pat.tested}` : undefined, word: out.word ? out.word.w : null, quote: out.quote ? out.quote.a : null, bogos: ad ? ad.bogos : undefined, weather: wx ? wx.days : undefined, priced: px ? px.priced : undefined, worth: px ? px.worth : undefined, errors: errors.length ? errors.join('; ') : undefined };
 });
