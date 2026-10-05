@@ -135,7 +135,7 @@ nav .more:hover,nav .more[aria-expanded=true]{color:var(--band-ink)}
 .row{display:flex;align-items:center;gap:26px}
 .mark{font-family:var(--serif);font-size:20px;letter-spacing:.14em;font-weight:700}
 .date{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted)}
-nav{display:flex;gap:20px;font-size:13.5px;letter-spacing:.04em;color:var(--band-muted);margin-left:10px}
+nav{display:flex;align-items:baseline;gap:20px;font-size:13.5px;letter-spacing:.04em;color:var(--band-muted);margin-left:10px}   /* a button centres its label in a stretched item and a link does not: align the words, not the boxes */
 nav a:hover{color:var(--band-ink)}
 nav a[aria-current]{color:var(--band-ink);border-bottom:1px solid var(--band-ink);padding-bottom:2px}
 .row .right{margin-left:auto;display:flex;gap:18px;align-items:center;font-size:13.5px}
