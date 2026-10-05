@@ -182,9 +182,16 @@
     if(r.hr != null) add('Resting pulse', g.hrv ? `HRV ${g.hrv}` : '', num(r.hr), 'bpm');
     if(r.steps != null) add('Steps', r.stepsFrom === 'garmin' ? 'from the watch' : 'by hand', Math.round(num(r.steps)).toLocaleString('en-US'));
     if(meds) add('Supplements', (H.meds || []).map(m => m.name).join(', '), `${took} of ${meds}`);
+    if(r.energy != null || r.mood != null) add('How it felt', 'your own reading', `${r.energy || '—'} / ${r.mood || '—'}`, '', 'energy, mood');
+    if(r.opens != null) add('Screen', Object.entries(r.apps || {}).sort((a, b) => b[1] - a[1]).map(([n, c]) => `${esc(n)} ${c}`).join(' · '), r.opens, 'opens', r.screen != null ? `${r.screen} min` : '');
     if(mins) add('Studied', `${(SCHOOL.sessions || []).filter(s => s.date === day).length} ${(SCHOOL.sessions || []).filter(s => s.date === day).length === 1 ? 'session' : 'sessions'}`, hrs(mins).split(' ')[0], hrs(mins).includes('h') ? 'h' : 'min');
     if(pages) add('Read', LIB.books.find(b => b.shelf === 'reading') ? esc(LIB.books.find(b => b.shelf === 'reading').title) : '', pages, 'pages');
     if(st && st.done) add('The Study', 'three cards', st.cards.length, 'read');
+
+    // what the sky did, which is the one line here that is about the day rather than about you
+    if(r.wx){ const w = r.wx;
+      add('Outside', [w.rain > 0.04 ? `${w.rain}″ of rain` : 'dry', w.daylight != null ? `${Math.floor(w.daylight)} h ${String(Math.round((w.daylight % 1) * 60)).padStart(2, '0')} of daylight` : ''].filter(Boolean).join(' · '),
+        `${w.hi}°`, '', w.lo != null ? `down to ${w.lo}°` : ''); }
 
     F('held').innerHTML = rows.join('') || `<li class="empty" style="grid-column:1/-1">${day > TODAY ? 'Nothing logged yet — this day has not happened.' : 'Nothing was logged that day.'}</li>`;
     F('heldn').textContent = rows.length ? `${rows.length} ${rows.length === 1 ? 'thing' : 'things'}` : '';

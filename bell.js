@@ -6,7 +6,7 @@
                     daily: { name: 'Nightly: word, quote, Publix ad, prices', page: 'groceries.html', count: l => [l.word ? `“${l.word}”` : '', l.bogos != null ? `${l.bogos} BOGOs` : '', l.priced != null ? `${l.priced} priced` : ''].filter(Boolean).join(' · ') },
                     bills: { name: 'Scheduled expenses', page: 'finances.html', count: l => l.rules != null ? `${l.rules} ${l.rules === 1 ? 'rule' : 'rules'}${l.posted ? ' · ' + l.posted + ' posted' : ''}` : '' },
                     notify: { name: 'Reminders', page: 'today.html', count: l => l.said ? `last: ${esc(l.said).slice(0, 60)}${l.said.length > 60 ? '…' : ''}` : l.quiet ? 'nothing to say' : '' },
-                    backup: { name: 'Nightly backup', page: 'today.html', count: l => l.documents != null ? `${l.documents} documents` : '', extra: l => l.day ? `<a class="go dl" href="/api/sync/backup?day=${l.day}" download>Download</a>` : '' } };
+                    backup: { name: 'Nightly backup', page: 'today.html', count: l => l.documents != null ? `${l.documents} documents` : '', extra: l => l.day ? `<a class="go dl" href="/api/sync/backup?day=${l.day}" download>Download</a><a class="go dl" href="restore.html">Restore</a>` : '<a class="go dl" href="restore.html">Restore</a>' } };
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   // three kinds of notice, nothing else: due today, a bill due today, supplements not taken by nine in the evening
   // two kinds of notice above the syncs: today's timed to-dos (all of them, late ones marked), and what is due — school
@@ -102,6 +102,7 @@
     .bellpop .go{grid-column:2;grid-row:1/3;align-self:center;font-size:12.5px;color:var(--ink-2);letter-spacing:.04em;border-bottom:1px solid transparent;white-space:nowrap}
     .bellpop .go:hover{border-color:currentColor;color:var(--ink)}
     .bellpop .go.dl{grid-column:2;grid-row:3;margin-top:2px}
+    .bellpop .go.dl ~ .go.dl{grid-row:4}
     .bellpop .empty{padding:8px 0 2px;color:var(--ink-3);font-style:italic;font-family:var(--serif);font-size:14px}
     .bellpop ul.notices li{display:grid;grid-template-columns:1fr auto;gap:12px;padding:8px 0;border-bottom:1px dotted var(--rule);align-items:baseline}
     .bellpop ul.notices li:has(input){grid-template-columns:auto 1fr auto}

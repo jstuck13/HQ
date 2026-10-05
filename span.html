@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1F3A2E">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>HQ — A month, a year</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="hq.css">
+<style>
+  .mast{margin-top:20px;padding-top:18px;border-top:1px solid rgba(242,236,223,.28);display:flex;align-items:baseline;gap:22px;flex-wrap:wrap}
+  h1{font-size:32px;line-height:1.3}
+  .mast .sub{font-family:var(--serif);font-style:italic;color:var(--band-muted)}
+  .nav{display:flex;align-items:center;gap:4px;margin-left:auto}
+  .nav button{font-family:var(--sans);font-size:13px;color:var(--band-muted);padding:6px 10px;border-radius:999px;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px}
+  .nav button:hover{color:var(--band-ink);background:rgba(242,236,223,.1)}
+  .nav button[aria-pressed=true]{color:var(--band-ink);background:rgba(242,236,223,.16)}
+  .nav .ic{width:15px;height:15px}
+
+  main{max-width:1180px;margin:0 auto;padding:34px 40px 44px;display:grid;grid-template-columns:7fr 5fr;gap:0 64px}
+  h2{font-size:22px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:4px;display:flex;align-items:baseline;gap:12px}
+  h2 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
+
+  .words{margin-top:14px;max-width:62ch}
+  .words p{font-family:var(--serif);font-size:16.5px;line-height:1.62;margin:0 0 14px;color:var(--ink)}
+  .words p b{font-weight:400;color:var(--ox)}
+  .words .none{font-style:italic;color:var(--ink-3)}
+
+  .tally{list-style:none;margin:14px 0 0;padding:0}
+  .tally li{display:grid;grid-template-columns:1fr auto;gap:4px 16px;padding:11px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+  .tally .k{font-family:var(--serif);font-size:15.5px}
+  .tally .k small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-top:2px}
+  .tally .v{font-family:var(--serif);font-size:22px;text-align:right;white-space:nowrap}
+  .tally .v i{font-style:normal;font-size:12.5px;color:var(--ink-3);margin-left:3px}
+  .tally .empty{color:var(--ink-3);font-style:italic;font-family:var(--serif);border:0}
+
+  @media (max-width:1000px){ main{grid-template-columns:1fr;gap:34px} }
+  @media (max-width:760px){ main{padding:24px 20px 36px} .foot{padding:0 20px 28px} .nav{margin-left:0} }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="in">
+    <div class="row">
+      <a class="mark" href="today.html">HQ</a>
+      <span class="date"></span>
+      <nav aria-label="Areas"><a href="today.html">Today</a><a href="calendar.html">Calendar</a><a href="finances.html">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="health.html">Health</a></nav>
+      <div class="right">
+        <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
+        <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
+        <button class="ib menu" type="button" aria-label="Menu" aria-expanded="false" id="menubtn"><svg class="ic"><use href="icons.svg#menu"/></svg></button>
+      </div>
+    </div>
+    <div class="mast">
+      <h1 id="title">The month</h1>
+      <span class="sub" id="sub"></span>
+      <div class="nav" aria-label="Change what is shown">
+        <button type="button" id="prev"><svg class="ic"><use href="icons.svg#chevron-left"/></svg>Previous</button>
+        <button type="button" id="month" aria-pressed="true">Month</button>
+        <button type="button" id="year" aria-pressed="false">Year</button>
+        <button type="button" id="next">Next<svg class="ic"><use href="icons.svg#chevron-right"/></svg></button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section>
+    <h2>In words<small id="rangen"></small></h2>
+    <div class="words" id="words"></div>
+  </section>
+  <aside>
+    <h2>The count<small>what it adds up to</small></h2>
+    <ul class="tally" id="tally"></ul>
+  </aside>
+</main>
+<p class="foot">Nothing is stored here; the span is read from the other pages each time. <a class="textbtn" href="review.html">The week</a></p>
+
+<script src="clock.js"></script>
+<script src="hq.js"></script>
+<script src="store.js"></script>
+<script src="digest.js"></script>
+<script src="bell.js"></script>
+<script src="search.js"></script>
+<script>
+  const C = clock, TODAY = C.today;
+  document.querySelector('.date').textContent = `${C.full(C.now)} · ${C.time(C.now)}`;
+
+  // where we are: a month as YYYY-MM, or a year as YYYY. Both live in the address so a view can be sent on.
+  const q = new URLSearchParams(location.search);
+  let mode = q.get('y') ? 'year' : 'month';
+  let at = mode === 'year' ? (q.get('y') || String(C.now.getFullYear())) : (q.get('m') || TODAY.slice(0, 7));
+
+  const daysOf = (kind, key) => {
+    const out = [];
+    const from = kind === 'year' ? `${key}-01-01` : `${key}-01`;
+    const to = kind === 'year' ? `${key}-12-31` : C.iso(new Date(+key.slice(0, 4), +key.slice(5, 7), 0, 12));
+    for (let d = from; d <= to; d = C.iso(C.addDays(C.fromISO(d), 1))) out.push(d);
+    return out;
+  };
+  const stepKey = (kind, key, n) => {
+    if (kind === 'year') return String(+key + n);
+    const d = new Date(+key.slice(0, 4), +key.slice(5, 7) - 1 + n, 1, 12);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  };
+
+  async function build(){
+    const days = daysOf(mode, at), prev = daysOf(mode, stepKey(mode, at, -1));
+    const months = [...new Set([...days, ...prev].map(d => d.slice(0, 7)))];
+    const [H, school, lib, ...rest] = await Promise.all([store.load('health'), store.load('school'), store.load('library'), ...months.map(m => store.load('finances.' + m))]);
+    const fin = Object.fromEntries(months.map((m, i) => [m, rest[i]]));
+
+    const label = mode === 'year' ? at : C.monthName(C.fromISO(days[0])) + ' ' + at.slice(0, 4);
+    const now = mode === 'year' ? String(C.now.getFullYear()) : TODAY.slice(0, 7);
+    F('title').textContent = at === now ? (mode === 'year' ? 'This year.' : 'This month.') : `${label}.`;
+    F('sub').textContent = at === now ? label : '';
+    F('rangen').textContent = `${C.dayMonth(C.fromISO(days[0]))} – ${C.dayMonth(C.fromISO(days[days.length - 1]))}`;
+    document.querySelectorAll('#month,#year').forEach(b => b.setAttribute('aria-pressed', b.id === mode));
+
+    const ps = window.hqDigest({ H, school, lib, fin, days, prev, months, span: mode, today: TODAY });
+    F('words').innerHTML = ps.length ? ps.map(t => `<p>${t}</p>`).join('')
+      : `<p class="none">${days[0] > TODAY ? 'That has not happened yet.' : 'Nothing was logged then, so there is nothing to say about it.'}</p>`;
+
+    tally({ H, school, lib, fin, days, months });
+    hqReveal();
+  }
+
+  // the same span as a handful of figures, for the things prose says badly
+  function tally({ H, school, lib, fin, days, months }){
+    const inSpan = d => d >= days[0] && d <= days[days.length - 1];
+    const rows = [], add = (k, sub, v, unit) => { if (v) rows.push(`<li><span class="k">${k}${sub ? `<small>${sub}</small>` : ''}</span><span class="v">${v}${unit ? `<i>${unit}</i>` : ''}</span></li>`); };
+    const logged = days.filter(d => H && H.days && H.days[d] && Object.keys(H.days[d]).some(k => k !== 'wx'));
+    add('Days with something logged', `${days.filter(d => d <= TODAY).length} days so far`, logged.length);
+    const tx = months.flatMap(m => (fin[m] && fin[m].tx) || []).filter(t => inSpan(t.date));
+    add('Money out', `${tx.length} ${tx.length === 1 ? 'purchase' : 'purchases'}`, tx.length ? $0(tx.reduce((n, t) => n + t.amt, 0)) : '');
+    const income = months.flatMap(m => (fin[m] && fin[m].income) || []).filter(t => inSpan(t.date));
+    add('Money in', `${income.length} ${income.length === 1 ? 'payment' : 'payments'}`, income.length ? $0(income.reduce((n, t) => n + t.amt, 0)) : '');
+    const mins = (school && school.sessions || []).filter(s => inSpan(s.date)).reduce((n, s) => n + s.min, 0);
+    const sess = (school && school.sessions || []).filter(s => inSpan(s.date)).length;
+    add('Studied', `${sess} ${sess === 1 ? 'session' : 'sessions'}`, mins ? hrs(mins) : '');   // the whole figure: 3 h 45, not 3 h
+    let pages = 0; for (const b of (lib && lib.books || [])) { const log = Object.entries(b.log || {}).sort(); let was = null;
+      for (const [d, p] of log) { if (was != null && inSpan(d)) pages += Math.max(0, +p - was); was = +p; } }
+    add('Pages read', '', pages ? pages.toLocaleString('en-US') : '');
+    const done = (lib && lib.books || []).filter(b => b.shelf === 'read' && b.finished && inSpan(b.finished));
+    add('Books finished', done.map(b => b.title).join(', '), done.length || '');
+    const op = days.map(d => +((H && H.days && H.days[d] || {}).opens)).filter(v => v > 0);
+    add('Reaches for the phone', op.length ? `over ${op.length} days` : '', op.length ? Math.round(op.reduce((a, b) => a + b, 0)).toLocaleString('en-US') : '');
+    F('tally').innerHTML = rows.join('') || '<li class="empty">Nothing counted yet.</li>';
+  }
+
+  const go = () => {
+    const url = mode === 'year' ? `?y=${at}` : `?m=${at}`;
+    history.replaceState(null, '', url); build();
+  };
+  F('prev').addEventListener('click', () => { at = stepKey(mode, at, -1); go(); });
+  F('next').addEventListener('click', () => { at = stepKey(mode, at, 1); go(); });
+  F('month').addEventListener('click', () => { if (mode === 'month') return; mode = 'month'; at = at.slice(0, 4) === TODAY.slice(0, 4) ? TODAY.slice(0, 7) : `${at.slice(0, 4)}-12`; go(); });
+  F('year').addEventListener('click', () => { if (mode === 'year') return; mode = 'year'; at = at.slice(0, 4); go(); });
+
+  build();
+</script>
+</body>
+</html>

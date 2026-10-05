@@ -294,9 +294,11 @@
       const note = nx ? `${esc(cn(nx.course)?.name||'')} — ${esc(nx.title)}, ${dd<0?'overdue':dd===0?'due today':dd===1?'due tomorrow':'due '+C.monthShort(C.fromISO(nx.due))+' '+C.fromISO(nx.due).getDate()}` : 'Nothing due';
       rows.push(row('School','school.html',note,`${items.length}`,`open ${items.length===1?'item':'items'}`, dd!==null && dd<=0));
     } else rows.push(row('School','school.html','Open School to add your courses','','no courses yet'));
-    // patterns, and only when a pair has actually held
-    { const n=(d.pat && d.pat.shown || []).length;
-      if(n) rows.push(row('Patterns','patterns.html','Things that moved together, worked out overnight', String(n), n===1?'worth a look':'worth a look', false)); }
+    // Patterns. The row used to appear only once a pair had held, which left the page unreachable for exactly
+    // the weeks before the first finding — so it is always here, and says plainly when it has found nothing.
+    { const n=(d.pat && d.pat.shown || []).length, tested=d.pat && d.pat.tested;
+      rows.push(row('Patterns','patterns.html', n ? 'Things that moved together, worked out overnight' : tested ? 'Nothing has held yet; it looks again every night' : 'Starts once there are thirty days of something',
+        n ? String(n) : '—', n ? 'worth a look' : 'nothing yet', false)); }
     // the study: three cards a day
     { const st=d.study, day=st && st.days && st.days[TODAY], titles={stoics:'The Stoics', socrates:'Socrates', sermon:'The Sermon on the Mount'};
       if(st && (st.pos>0 || day)){ const done=day && day.done, n=day ? (day.recall?1:0)+day.cards.length : 3, at=day ? Math.min(day.at, n) : 0;

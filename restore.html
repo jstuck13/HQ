@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1F3A2E">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>HQ — Restore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="hq.css">
+<style>
+  .mast{margin-top:20px;padding-top:18px;border-top:1px solid rgba(242,236,223,.28);display:flex;align-items:baseline;gap:28px;flex-wrap:wrap}
+  h1{font-size:32px;line-height:1.3}
+  .mast .sub{font-family:var(--serif);font-style:italic;color:var(--band-muted)}
+
+  main{max-width:900px;margin:0 auto;padding:34px 40px 44px}
+  h2{font-size:22px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:4px;display:flex;align-items:baseline;gap:12px}
+  h2 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
+  .lede{font-family:var(--serif);font-size:16.5px;line-height:1.6;max-width:62ch;margin:14px 0 30px;color:var(--ink-2)}
+
+  .days{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 8px}
+  .days button{font-family:var(--serif);font-size:15px;padding:7px 14px;border:1px solid var(--rule);border-radius:999px;background:var(--paper);color:var(--ink-2);cursor:pointer}
+  .days button:hover{border-color:var(--ink-2);color:var(--ink)}
+  .days button[aria-pressed=true]{background:var(--band);border-color:var(--band);color:var(--band-ink)}
+  .days .n{font-family:var(--sans);font-size:11.5px;color:var(--ink-3);margin-left:8px}
+  .days button[aria-pressed=true] .n{color:var(--band-muted)}
+
+  .docs{margin-top:22px}
+  .docs li{display:grid;grid-template-columns:auto 1fr auto;gap:0 14px;padding:11px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+  .docs input{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px;align-self:center}
+  .docs input:checked{background:var(--band);border-color:var(--band)}
+  .docs input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+  .docs input:disabled{opacity:.35;cursor:default}
+  .docs .k{font-family:var(--serif);font-size:16px}
+  .docs .k small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-top:2px}
+  .docs .s{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);white-space:nowrap}
+  .docs .s.diff{color:var(--ox)}
+  .docs li.same .k{color:var(--ink-3)}
+
+  .act{margin-top:26px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .act .go{font-family:var(--sans);font-size:13.5px;letter-spacing:.04em;background:var(--band);color:var(--band-ink);border:0;border-radius:999px;padding:10px 20px;cursor:pointer}
+  .act .go[disabled]{opacity:.4;cursor:default}
+  .act .cancel{font-size:13.5px;color:var(--ink-3)}
+  .act .cancel:hover{color:var(--ink)}
+  .sure{font-family:var(--serif);font-style:italic;font-size:16px;color:var(--ox)}
+  .done{font-family:var(--serif);font-size:16.5px;line-height:1.6;margin-top:22px;padding:16px 18px;background:var(--card);border-radius:12px;box-shadow:var(--shadow);max-width:62ch}
+  .empty{font-family:var(--serif);font-style:italic;color:var(--ink-3);padding:18px 0}
+  @media (max-width:760px){ main{padding:24px 20px 36px} }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="in">
+    <div class="row">
+      <a class="mark" href="today.html">HQ</a>
+      <span class="date"></span>
+      <nav aria-label="Areas"><a href="today.html">Today</a><a href="calendar.html">Calendar</a><a href="finances.html">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="health.html">Health</a></nav>
+      <div class="right">
+        <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
+        <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
+        <button class="ib menu" type="button" aria-label="Menu" aria-expanded="false" id="menubtn"><svg class="ic"><use href="icons.svg#menu"/></svg></button>
+      </div>
+    </div>
+    <div class="mast">
+      <h1>Restore</h1>
+      <span class="sub">putting a page back the way it was</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <h2>From a backup<small id="n"></small></h2>
+  <p class="lede">Every document is copied nightly and thirty days are kept. Pick the day you want back, then pick
+    only the pages that went wrong — the rest of HQ carries on untouched. Whatever is replaced is itself copied
+    first, so this is as undoable as the thing it undoes.</p>
+  <div class="days" id="days"></div>
+  <ul class="docs" id="docs"></ul>
+  <div class="act" id="act" hidden>
+    <button class="go" type="button" id="go" disabled>Restore</button>
+    <span class="sure" id="sure" hidden></span>
+    <button class="cancel textbtn" type="button" id="cancel" hidden>Keep what is there</button>
+  </div>
+  <div class="done" id="done" hidden></div>
+</main>
+<p class="foot">Backups are made by the nightly sync; you can run one at any time from the bell.</p>
+
+<script src="clock.js"></script>
+<script src="hq.js"></script>
+<script src="store.js"></script>
+<script src="bell.js"></script>
+<script src="search.js"></script>
+<script>
+  const C = clock;
+  document.querySelector('.date').textContent = `${C.full(C.now)} · ${C.time(C.now)}`;
+  let picked = null, info = null;
+
+  const ask = async (url, opts) => { const r = await fetch(url, opts); if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || r.status); return r.json(); };
+
+  async function start(){
+    let list;
+    try { list = await ask('/api/restore'); }
+    catch (e) { F('days').innerHTML = `<p class="empty">${esc(String(e.message))}</p>`; hqReveal(); return; }
+    const real = list.filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d.day));
+    F('n').textContent = real.length ? `${real.length} ${real.length === 1 ? 'day' : 'days'} kept` : '';
+    const safety = list.find(d => d.day === 'before-restore');
+    F('days').innerHTML = real.length
+      ? real.map(d => `<button type="button" data-day="${d.day}" aria-pressed="false">${C.dayMonthLong(C.fromISO(d.day))}<span class="n">${d.keys.length}</span></button>`).join('')
+        + (safety ? `<button type="button" data-day="before-restore" aria-pressed="false">What the last restore replaced<span class="n">${safety.keys.length}</span></button>` : '')
+      : '<p class="empty">No backups yet. Run one from the bell and it will appear here tomorrow.</p>';
+    hqReveal();
+  }
+
+  F('days').addEventListener('click', async e => {
+    const b = e.target.closest('[data-day]'); if (!b) return;
+    document.querySelectorAll('#days button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    picked = b.dataset.day; F('done').hidden = true; F('sure').hidden = true; F('cancel').hidden = true;
+    F('docs').innerHTML = '<li class="empty">Reading that day…</li>';
+    try { info = await ask(`/api/restore?day=${encodeURIComponent(picked)}`); }
+    catch (err) { F('docs').innerHTML = `<li class="empty">${esc(String(err.message))}</li>`; return; }
+    renderDocs();
+  });
+
+  // Only what differs is worth restoring, so only that can be ticked; the rest is shown so the day reads honestly.
+  function renderDocs(){
+    const ks = info.keys.filter(k => k.inBackup);
+    F('docs').innerHTML = ks.map(k => {
+      const state = k.missingNow ? 'gone from HQ now' : k.changed ? 'differs from now' : 'the same as now';
+      return `<li class="${k.changed || k.missingNow ? '' : 'same'}">
+        <input type="checkbox" value="${esc(k.key)}" ${k.changed || k.missingNow ? '' : 'disabled'} aria-label="Restore ${esc(k.key)}">
+        <span class="k">${esc(k.key)}<small>${pretty(k.key)}</small></span>
+        <span class="s ${k.changed || k.missingNow ? 'diff' : ''}">${state}</span></li>`;
+    }).join('') || '<li class="empty">That backup holds nothing.</li>';
+    F('act').hidden = false; F('go').disabled = true;
+  }
+  const pretty = k => ({ today: 'a day’s to-dos', finances: 'a month of money', school: 'courses, due items and sessions',
+    library: 'books, notes and reading', health: 'daily readings and supplements', calendar: 'entries and categories',
+    investments: 'holdings and balances', groceries: 'the list, trips and the book', study: 'paths, cards and lines',
+    patterns: 'what the nightly search found', daily: 'the word and the quote', sync: 'when each source last ran' })[k.split('.')[0]] || '';
+
+  F('docs').addEventListener('change', () => {
+    F('go').disabled = !document.querySelectorAll('#docs input:checked').length;
+    F('sure').hidden = true; F('cancel').hidden = true; F('go').textContent = 'Restore';
+  });
+
+  F('go').addEventListener('click', async () => {
+    const keys = [...document.querySelectorAll('#docs input:checked')].map(i => i.value);
+    if (!keys.length) return;
+    if (F('sure').hidden) {   // asked once, plainly, because this replaces what is there now
+      F('sure').textContent = `Replace ${keys.length === 1 ? keys[0] : `${keys.length} documents`} with ${picked === 'before-restore' ? 'what the last restore replaced' : 'the copy from ' + C.dayMonthLong(C.fromISO(picked))}?`;
+      F('sure').hidden = false; F('cancel').hidden = false; F('go').textContent = 'Yes, restore';
+      return;
+    }
+    F('go').disabled = true; F('go').textContent = 'Restoring…';
+    try {
+      const r = await ask('/api/restore', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ day: picked, keys }) });
+      try { keys.forEach(k => localStorage.removeItem('hq.' + k)); } catch {}      // the cached copy is now the old one
+      F('done').hidden = false;
+      F('done').innerHTML = `Put back ${r.restored.map(k => `<b>${esc(k)}</b>`).join(', ')} as ${r.restored.length === 1 ? 'it stood' : 'they stood'} ${picked === 'before-restore' ? 'before the last restore' : 'on ' + C.dayMonthLong(C.fromISO(picked))}.
+        ${r.kept ? 'What was there a moment ago is kept under “What the last restore replaced”, at the top of this page.' : ''}
+        <br><a class="textbtn" href="today.html">Back to Today</a>`;
+      F('sure').hidden = true; F('cancel').hidden = true; F('go').textContent = 'Restore';
+      info = await ask(`/api/restore?day=${encodeURIComponent(picked)}`); renderDocs();
+      start();
+    } catch (err) { F('done').hidden = false; F('done').textContent = `It would not restore: ${err.message}`; F('go').disabled = false; F('go').textContent = 'Restore'; }
+  });
+  F('cancel').addEventListener('click', () => { F('sure').hidden = true; F('cancel').hidden = true; F('go').textContent = 'Restore'; });
+
+  start();
+</script>
+</body>
+</html>
