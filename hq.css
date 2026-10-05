@@ -26,6 +26,21 @@
   --sans:"Figtree",system-ui,sans-serif;
   --shadow:0 1px 2px rgba(30,27,22,.05), 0 6px 18px -6px rgba(30,27,22,.12);
   --hour:44px;
+  /* motion tiers: each does a different job, so each has its own duration. Anything else is drift. */
+  --t-track:.12s;     /* follows the pointer: a chart tooltip */
+  --t:.15s;           /* the hover nudge; the default */
+  --t-curtain:.45s;   /* the splash lifting */
+  --t-draw:.6s;       /* a value drawing itself: the allocation ring */
+  /* the phase ramp: the area tints pushed up for 10px swatches, which paper-adjacent tints cannot carry.
+     Named by hue, not meaning — review.html and today.html both key them locally to different legends. */
+  --sage:#7F9C8C; --sage-mid:#9DB4A4; --sage-pale:#C9D6CE;   /* three greens, light to pale */
+  --slate:#A9BBC9; --lilac:#C9B8DB;
+  /* three more category tints, so a calendar can hold more than the four named areas. Paper-adjacent, like the four. */
+  --mint:#E2EBE2; --oat:#EDE4DA; --dove:#E6E9EC;
+  --gain:#CFE3D5;     /* money up, on the band; oxblood can only say one direction */
+  --loss:#E8C1BD;     /* money down, on the band */
+  --wheat:#D9C79A; --rose:#C9A9AE;   /* the rest of the allocation ring's categorical ramp */
+  --photo:#fff;       /* behind a product cutout, which is shot on pure white and halos against warm card */
   --ornament:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='12' viewBox='0 0 160 12'%3E%3Cpath d='M0 6.5h62M98 6.5h62' stroke='%23D3C9B6'/%3E%3Cpath d='M80 1.5l5 5-5 5-5-5z' fill='%236A6256'/%3E%3C/svg%3E") center/min(160px, 100%) 12px no-repeat;   /* a lozenge between two rules: the mark of an empty page; it shrinks rather than spill a narrow column */
 }
 /* lamplight: after eight in the evening the paper warms a shade and the ink softens (clock.js sets it) */
@@ -34,7 +49,7 @@
 html{color-scheme:light}
 /* the splash: the mark over the band colour from the first paint until a page's first documents have answered and drawn (hq.js/store.js
    set body.hq-in), so nothing is seen half-built. Pure CSS so it is there before any script runs; index.html keeps its own gated one. */
-body::before,body::after{content:"";position:fixed;left:0;right:0;z-index:9;pointer-events:none;transition:opacity .35s ease,visibility 0s .35s}
+body::before,body::after{content:"";position:fixed;left:0;right:0;z-index:9;pointer-events:none;transition:opacity var(--t-curtain) ease,visibility 0s var(--t-curtain)}
 body::before{content:"HQ";top:0;bottom:0;background:var(--band);color:#F2ECDF;display:grid;place-items:center;font-family:var(--serif);font-size:44px;letter-spacing:.14em;text-indent:.14em;font-weight:700;animation:splash-in .7s ease-out both}   /* the letters fade in, the backdrop is solid from the first frame */
 body::after{top:calc(50% + 40px);height:12px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='12' viewBox='0 0 160 12'%3E%3Cpath d='M0 6.5h62M98 6.5h62' stroke='%23F2ECDF' stroke-opacity='.35'/%3E%3Cpath d='M80 1.5l5 5-5 5-5-5z' fill='%23B9C9BE'/%3E%3C/svg%3E") center/160px 12px no-repeat;animation:splash-rule .9s cubic-bezier(.2,.8,.2,1) .15s both}
 body.hq-in::before,body.hq-in::after{opacity:0;visibility:hidden}

@@ -118,13 +118,13 @@
   .hbar{fill:var(--ink)} .hbar.over{fill:var(--ox)} .hbar-t{fill:var(--rule)}
   .legend{display:flex;gap:16px;font-size:12.5px;color:var(--ink-3);margin-top:8px}
   .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
-  .bar-in,.bar-out{transition:opacity .12s} .dim{opacity:.35}
+  .bar-in,.bar-out{transition:opacity var(--t-track)} .dim{opacity:.35}
   svg path[data-t]{cursor:default}
   .xh{stroke:var(--ink-3);stroke-width:1;opacity:0}
   .hv{fill:var(--ink);stroke:var(--card);stroke-width:2;opacity:0}
   .fig svg,.chart svg,#cash svg,#ive svg{touch-action:pan-y}
   .tk.on{fill:var(--paper)}   /* written inside a bar that has run nearly the whole way */
-  .tip{position:absolute;pointer-events:none;background:var(--card);box-shadow:var(--shadow);border-radius:6px;padding:4px 8px;font-size:12.5px;white-space:nowrap;opacity:0;transition:opacity .12s;transform:translate(-50%,-100%)}
+  .tip{position:absolute;pointer-events:none;background:var(--card);box-shadow:var(--shadow);border-radius:6px;padding:4px 8px;font-size:12.5px;white-space:nowrap;opacity:0;transition:opacity var(--t-track);transform:translate(-50%,-100%)}
   .tip b{font-family:var(--serif);font-weight:400;font-size:14px}
   .foot .textbtn{font-style:normal;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:8px} .foot .textbtn.ox{color:var(--ox)} .foot .textbtn:hover{color:var(--ink)}
 

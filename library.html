@@ -23,7 +23,7 @@
   h2 .back{font-size:12.5px;color:var(--ink);letter-spacing:0}
 
   /* covers */
-  .cover{display:block;position:relative;aspect-ratio:2/3;background:var(--straw);border:1px solid var(--rule);overflow:hidden;border-radius:2px;transition:box-shadow .2s ease,transform .2s ease}
+  .cover{display:block;position:relative;aspect-ratio:2/3;background:var(--straw);border:1px solid var(--rule);overflow:hidden;border-radius:2px;transition:box-shadow var(--t) ease,transform var(--t) ease}
   .wall a .cover,.open .cover{box-shadow:0 8px 10px -7px rgba(43,36,25,.45),0 1px 2px rgba(43,36,25,.12)}   /* a book sits on the shelf; the empty slot does not */
   .wall a:hover .cover{box-shadow:0 12px 16px -9px rgba(43,36,25,.5),0 1px 2px rgba(43,36,25,.12);transform:translateY(-2px)}
   .cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
@@ -96,7 +96,7 @@
   #read,#toread{--h:600px} .notes .scrollbox{--h:360px}   /* two rows of covers, and a book's notes, before either scrolls */
   .book{text-align:left;display:block;width:100%;align-self:start}
   .add{align-self:start}
-  .book .cover{transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s}
+  .book .cover{transition:transform var(--t) cubic-bezier(.2,.8,.2,1),box-shadow var(--t)}
   .book:hover .cover{transform:translateY(-3px);box-shadow:var(--shadow)}
   .book.cur .cover{outline:2px solid var(--ox);outline-offset:3px}
   .book .cap{display:block;margin-top:14px}   /* clear of the selected outline (2px + 3px offset) and the hover lift */

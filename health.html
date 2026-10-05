@@ -28,25 +28,27 @@
   .ledger .head span:first-child{font-family:var(--sans)}
   .ledger .n{font-family:var(--serif);font-size:17px}
   .ledger .n small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
-  .ledger .v{font-family:var(--serif);font-size:24px;line-height:1.1;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-  .ledger .v input{font-family:var(--serif);font-size:24px;width:5.2ch;border-bottom:1px dotted var(--ink-2);text-align:right;padding:0 2px}
+  .ledger .v{--vw:80px;font-family:var(--serif);font-size:24px;line-height:1.1;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .ledger .v input{font-family:var(--serif);font-size:24px;width:var(--vw);border-bottom:1px dotted var(--ink-2);text-align:right;padding:0 2px}
   .ledger .v input:focus{border-bottom-color:var(--ink);outline:none}
   .ledger .v input::placeholder{color:var(--ink-3)}
   .ledger .v .u{font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
-  .ledger .v .fig{min-width:2ch;text-align:right}   /* counted by the phone, not typed here */
+  .ledger .v .fig,.ledger .v .tickbox{width:var(--vw);text-align:right;padding:0 2px}   /* the width of a typed reading, so every unit lands on one line */
   .ledger.own{margin-top:0}
   .ledger.own .n{position:relative;padding-right:52px}
   .ledger.own .n .x{position:absolute;right:0;top:2px;font-size:12px;color:var(--ink-3);opacity:0;transition:opacity .15s}
   .ledger.own li:hover .x,.ledger.own li:focus-within .x{opacity:1} .ledger.own .x:hover{color:var(--ox)}
-  .ledger .tickbox{font-family:var(--serif);font-size:18px;color:var(--ink-3);border-bottom:1px dotted var(--ink-2);background:none;border-top:0;border-left:0;border-right:0;padding:0 2px;cursor:pointer}
+  .ledger .tickbox{font-family:var(--serif);font-size:17px;color:var(--ink-3);border-bottom:1px dotted var(--ink-2);background:none;border-top:0;border-left:0;border-right:0;padding:0 2px;cursor:pointer}
   .ledger .tickbox.on{color:var(--ink)}
-  .addr{display:grid;grid-template-columns:1.4fr 1fr 1fr auto;gap:12px;padding:14px 0 2px;align-items:baseline;border-top:1px dotted var(--rule)}
-  .addr input,.addr select{font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0;background:none;width:100%}
+  .addr{display:flex;flex-wrap:wrap;gap:12px 20px;padding:14px 0 2px;align-items:baseline;border-top:1px dotted var(--rule)}
+  .addr input,.addr select{font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0;background:none}
+  .addr #r-name{flex:1 1 200px;min-width:0} .addr #r-unit{width:110px} .addr #r-kind{width:124px}
   .addr input:focus,.addr select:focus{outline:none;border-bottom-color:var(--ink)}
   .addr input::placeholder{color:var(--ink-3);font-style:italic}
   .addr .textbtn{font-size:13.5px;white-space:nowrap}
   .ledger .feel{display:flex;align-items:center;gap:8px;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);width:100%}
-  .ledger .feel .dots{display:inline-flex;gap:6px;margin-left:auto}
+  .ledger .feel .dots{display:inline-flex;gap:6px}
+  .ledger .feel i{font-style:normal}
   .ledger .feel button{width:15px;height:15px;border-radius:50%;border:1px solid var(--ink-2);background:var(--paper);padding:0;cursor:pointer}
   .ledger .feel button.on{background:var(--band);border-color:var(--band)}
   .ledger .feel .dots:hover button{background:var(--band);border-color:var(--band)}
@@ -59,7 +61,7 @@
   .ledger li.logged .n,.ledger li.logged .l,.ledger li.logged .a,.ledger li.logged .u{color:var(--ink-3)}
   .ledger li.logged .n small,.ledger li.logged .l small,.ledger li.logged .a small{color:var(--rule)}
   .ledger li.logged .v input{border-bottom-color:transparent}
-  .ledger li{transition:color .2s}
+  .ledger li{transition:color var(--t)}
 
   .pills{margin-top:0}
   .pills li{display:flex;align-items:center;gap:14px;padding:9px 0;border-bottom:1px dotted var(--rule)}
@@ -114,7 +116,7 @@
   .chart .tk.val{font-family:var(--serif);font-size:13px;fill:var(--ink-2);stroke:var(--paper);stroke-width:3.5;paint-order:stroke fill}   /* on the expanded chart every reading says what it is, and stays legible where the line runs behind it */
   .chart .xh{stroke:var(--ink-3);stroke-width:1;opacity:0}
   .chart .hv{fill:var(--ink);stroke:var(--paper);stroke-width:2;opacity:0}
-  .chart .tip{position:absolute;pointer-events:none;background:var(--card);box-shadow:var(--shadow);border-radius:6px;padding:4px 8px;font-size:12.5px;white-space:nowrap;opacity:0;transition:opacity .12s;transform:translate(-50%,-100%)}
+  .chart .tip{position:absolute;pointer-events:none;background:var(--card);box-shadow:var(--shadow);border-radius:6px;padding:4px 8px;font-size:12.5px;white-space:nowrap;opacity:0;transition:opacity var(--t-track);transform:translate(-50%,-100%)}
   .chart .tip b{font-family:var(--serif);font-weight:400;font-size:14px}
   .chart{position:relative}
   .chart svg{touch-action:pan-y}   /* a drag across reads the trend; up and down still scrolls the page */
@@ -133,7 +135,7 @@
     .ledger .l,.ledger .a{grid-column:auto;display:block;font-size:12.5px} .ledger .l small,.ledger .a small{display:inline;margin-left:4px}
     .ledger .l::before{content:"last "} .ledger .a::before{content:"avg "} .ledger .a{margin-left:0} .ledger .l,.ledger .a{white-space:nowrap}
     .addl{grid-template-columns:1fr 1fr} .addl .textbtn{grid-column:1/-1;justify-self:start}
-    .addr{grid-template-columns:1fr 1fr} .addr .textbtn{grid-column:1/-1;justify-self:start}
+    .addr #r-name{flex:1 1 100%}
     .ledger li{grid-template-columns:1fr auto} .ledger .n{grid-column:1} .ledger .v{grid-column:2;grid-row:1} .ledger .l{grid-column:1;grid-row:2} .ledger .a{grid-column:2;grid-row:2;text-align:right}
     .next li{grid-template-columns:1fr auto} .next .t{grid-column:2;grid-row:1}
     .strip{grid-template-columns:1fr}
@@ -180,7 +182,7 @@
           <span class="v"><input id="steps" inputmode="numeric" placeholder="—"></span>
           <span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>
         <li data-k="feel"><span class="n">How it feels<small>Your own reading, not the watch's</small></span>
-          <span class="v"><span class="feel">Energy <span class="dots" data-feel="energy"></span></span><span class="feel">Mood <span class="dots" data-feel="mood"></span></span></span>
+          <span class="v"><span class="feel"><span class="dots" data-feel="energy"></span><i>energy</i></span><span class="feel"><span class="dots" data-feel="mood"></span><i>mood</i></span></span>
           <span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>
         <li data-k="opens"><span class="n">Screen<small id="opensh">Times you reached for the phone</small></span>
           <span class="v"><span class="fig" id="opensv">—</span><span class="u">opens</span><span class="aux"><input id="screen" inputmode="numeric" placeholder="—"> min of screen time</span></span>
@@ -265,7 +267,7 @@
   function renderOwn(){
     const rows = mine().map(r => {
       const k = r.kind || 'number', v = L[r.id];
-      const cell = k === 'scale' ? `<span class="feel"><span class="dots" data-feel="${esc(r.id)}"></span></span>`
+      const cell = k === 'scale' ? `<span class="feel"><span class="dots" data-feel="${esc(r.id)}"></span><i>${esc(r.unit || 'of 5')}</i></span>`
         : k === 'tick' ? `<button class="tickbox ${+v ? 'on' : ''}" type="button" data-tick="${esc(r.id)}" aria-pressed="${!!+v}">${+v ? 'yes' : 'not yet'}</button>`
         : `<input id="own-${esc(r.id)}" data-own="${esc(r.id)}" inputmode="${KINDS[k].input}" placeholder="—" value="${v != null ? esc(v) : ''}"><span class="u">${esc(r.unit || '')}</span>`;
       return `<li data-k="${esc(r.id)}"><span class="n">${esc(r.name)}<small>${esc(r.note || 'yours')}</small><button class="x" type="button" data-rmr="${esc(r.id)}" aria-label="Remove ${esc(r.name)}">remove</button></span>

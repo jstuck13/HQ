@@ -17,6 +17,19 @@ colors:
   area-health: "#F5E4E6"
   area-study: "#ECE6F3"
   chart-out: "#B9AE99"
+  sage: "#7F9C8C"
+  sage-mid: "#9DB4A4"
+  sage-pale: "#C9D6CE"
+  slate: "#A9BBC9"
+  lilac: "#C9B8DB"
+  mint: "#E2EBE2"
+  oat: "#EDE4DA"
+  dove: "#E6E9EC"
+  wheat: "#D9C79A"
+  rose: "#C9A9AE"
+  gain: "#CFE3D5"
+  loss: "#E8C1BD"
+  photo: "#FFFFFF"
 typography:
   cover:
     fontFamily: "Libre Caslon Text, Georgia, serif"
@@ -51,6 +64,16 @@ typography:
     fontSize: "20px"
     fontWeight: 700
     letterSpacing: "0.14em"
+  display-tight:
+    fontFamily: "Libre Caslon Text, Georgia, serif"
+    fontSize: "30px"
+    fontWeight: 400
+    lineHeight: 1.25
+  prose:
+    fontFamily: "Libre Caslon Text, Georgia, serif"
+    fontSize: "16.5px"
+    fontWeight: 400
+    lineHeight: 1.6
   body:
     fontFamily: "Figtree, system-ui, sans-serif"
     fontSize: "15px"
@@ -65,6 +88,15 @@ typography:
     fontFamily: "Figtree, system-ui, sans-serif"
     fontSize: "12.5px"
     fontWeight: 400
+  subcaption:
+    fontFamily: "Figtree, system-ui, sans-serif"
+    fontSize: "11.5px"
+    fontWeight: 400
+  stamp:
+    fontFamily: "Figtree, system-ui, sans-serif"
+    fontSize: "10.5px"
+    fontWeight: 400
+    letterSpacing: "0.04em"
   hour:
     fontFamily: "Libre Caslon Text, Georgia, serif"
     fontSize: "13px"
@@ -74,6 +106,11 @@ rounded:
   badge: "6px"
   block: "10px"
   card: "16px"
+motion:
+  track: "0.12s"
+  nudge: "0.15s"
+  curtain: "0.45s"
+  draw: "0.6s"
 spacing:
   xs: "8px"
   sm: "12px"
@@ -141,7 +178,7 @@ This is the incumbent world, chosen by the owner as "the first official design, 
 - One accent, oxblood, reserved for "now" and for flags that need the owner's attention.
 - Hairline rules (1px, solid or dotted) structure lists instead of containers.
 - Area tints are pale and paper-adjacent; they identify, they do not decorate.
-- Motion is limited to a 150ms nudge on hover; reduced-motion removes it.
+- Motion has four tiers, one per job: 120ms to track the pointer, 150ms for the hover nudge, 450ms for the splash curtain, 600ms for a value drawing itself. Reduced-motion removes them.
 
 ## Colors
 
@@ -167,8 +204,18 @@ Warm ivory and near-black ink under a deep bottle-green band, with a single oxbl
 - **Ink 3** (`ink-3`): captions, counts, hour marks, completed to-dos, and the footer.
 - **Rule** (`rule`): every hairline (ledger row dividers, dotted to-do dividers, hour rules).
 
+### Ramps
+Four small ramps sit beside the palette. Each exists because the four area tints are paper-adjacent by design and cannot carry a 10px swatch or a chart series.
+
+- **The phase ramp** (`sage`, `sage-mid`, `sage-pale`, `slate`, `lilac`): the area tints pushed up in saturation, for banded timelines and weekly bars. Named by hue, not by meaning — `review.html` keys them to day phases (sleep, busy, study, free) and `today.html` to sleep stages (light, REM), so **every surface using them must print its own key**. The same swatch may mean different things on different pages; it may never mean two things on one.
+- **The category tints** (`a-calendar`, `a-fitness`, `a-study`, `a-health`, `mint`, `straw`, `oat`, `dove`): eight paper-adjacent fills, so a calendar can hold more categories than there are named areas. A category's tint is saved into its document as hex, not as a token, because it is the owner's data.
+- **The chart ramp** (`band`, `sage`, `chart-out`, `lilac`, `slate`, `wheat`, `rose`, `oxblood`): the allocation ring's eight series, in order.
+- **Direction** (`gain`, `loss`): money up and money down on the band. See the amended accent rule below.
+
 ### Named Rules
 **The One Warm Accent Rule.** Oxblood is the only saturated warm color on the paper, and it is used only for "now", for flagged values, and for focus. A screen with nothing urgent has no oxblood on it.
+
+**The Direction Exception.** Oxblood can only say one thing, and money moves two ways. `gain` and `loss` are the one sanctioned pair outside it, and they live only on the band in `investments.html`. They are not general-purpose success and error colours; nothing on paper uses them.
 
 **The Band Stays in the Band Rule.** Bottle green is a surface, not a text color. On paper it appears only as the checked-checkbox fill and the selection highlight.
 
@@ -186,9 +233,13 @@ Warm ivory and near-black ink under a deep bottle-green band, with a single oxbl
 - **Title** (400, 17px): area names in ledger rows. Event block titles use the same serif at 14.5px inside the timeline card.
 - **Numeral** (400, 24px, 1.1): the one number per area, right-aligned, with a 12px sans unit line beneath.
 - **Wordmark** (700, 20px, 0.14em tracking): "HQ" in the band; the only bold in the system.
+- **Display Tight** (400, 30px, 1.25): a display line that must shrink to fit (a long quote on the cover, a closing line) and the week's large numeral in `review.html`. One step under Display.
+- **Prose** (400 serif, 16.5px, 1.6): serif copy meant to be read as sentences rather than scanned — the digest paragraphs in `review.html` and `span.html`, the lede and confirmation in `restore.html`, flashcard bodies in `study.html`. Above Body because it is read, not labelled.
 - **Body** (400, 15px, 1.5): to-do labels and default text.
 - **Label** (400, 13.5px, 0.04em): nav links and text buttons in the band; ledger row descriptions at the same size without tracking.
 - **Caption** (400, 12.5px): section counts, event subtitles, to-do timing, and the footer (which switches to serif italic).
+- **Subcaption** (400, 11.5px): the smallest readable label inside a dense surface — the timeline's now-badge time, month-day chips, `day.html` event subtitles, plot captions, tile sub-labels.
+- **Stamp** (400, 10.5px, 0.04em; 10px under 760px): the fixed version stamp at 50% opacity, and chart micro-numerals. Deliberately near-subliminal.
 - **Hour** (400, 13px serif): hour marks down the timeline's left rail, right-aligned in a 42px column.
 
 ### Named Rules
@@ -213,6 +264,22 @@ Almost flat. The page is two tonal layers (band over paper) and one lifted objec
 
 ### Named Rules
 **The One Card Rule.** Only the day's timeline earns a card and a shadow. Status, lists and to-dos sit on the paper on rules. A second card on a screen is a decision, not a default.
+
+## Motion
+
+Four tiers, one per job. A duration outside them is drift, and `lint.mjs` fails the build for it.
+
+| Tier | Duration | Job |
+|---|---|---|
+| `track` | 120ms | follows the pointer: a chart tooltip appearing under the cursor |
+| `nudge` | 150ms | the hover nudge; the default, and the only one most surfaces need |
+| `curtain` | 450ms | the splash lifting once a page's first documents have answered |
+| `draw` | 600ms | a value drawing itself: the allocation ring's stroke |
+
+Held in `hq.css` as `--t-track`, `--t`, `--t-curtain`, `--t-draw`. `index.html` ships standalone without `hq.css` and repeats the two it needs.
+
+### Named Rules
+**The Same Object, One Speed Rule.** If two places animate the same thing they use the same tier. The splash curtain fades at `curtain` whether it is the cover's or `hq.css`'s; a book cover lifts at `nudge` on every shelf.
 
 ## Shapes
 
@@ -252,6 +319,7 @@ Caslon 22px with a 1px Ink underline, 10px padding beneath, and a right-aligned 
 ## Do's and Don'ts
 
 ### Do:
+- **Do** run `node lint.mjs` before a commit; it holds the type scale, the palette and the motion tiers. `node lint.mjs --selfcheck` checks the lint itself.
 - **Do** keep the bottle-green band as the top of every screen, with the wordmark, italic serif date, nav and text actions inside the 1180px column.
 - **Do** set every number in oldstyle tabular figures and write times with a full stop (8.40).
 - **Do** put the day's timeline in the one white card, and everything else on Paper on hairlines.
@@ -262,6 +330,6 @@ Caslon 22px with a 1px Ink underline, 10px padding beneath, and a right-aligned 
 ### Don't:
 - **Don't** add filled or pill buttons; actions are text with an icon and a hover underline.
 - **Don't** use Caslon bold anywhere but the wordmark, or Figtree above 500.
-- **Don't** introduce a second accent or saturated area colors; the tints are identity, not status.
+- **Don't** introduce a second accent; `gain`/`loss` on the band are the one exception and are not for success and error. Keep area tints paper-adjacent — the saturated ramps are for swatches and chart series, never for a large fill.
 - **Don't** put cards around lists or status rows; the rule is the container.
 - **Don't** use cool grays; every neutral is warm (ink-tinted shadows, ivory paper, tan rules).

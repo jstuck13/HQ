@@ -24,14 +24,14 @@
   h3 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
 
   .figs{display:grid;grid-template-columns:auto repeat(3,1fr);gap:16px 22px;padding:14px 0 10px;border-bottom:1px solid var(--rule);align-items:center}
-  .ring{width:84px;height:84px} .ring svg{width:100%;height:100%;display:block;overflow:visible} .ring circle{fill:none;stroke-width:9;transition:stroke-dasharray .6s ease}
+  .ring{width:84px;height:84px} .ring svg{width:100%;height:100%;display:block;overflow:visible} .ring circle{fill:none;stroke-width:9;transition:stroke-dasharray var(--t-draw) ease}
   .ring .track{stroke:var(--paper-2)}
   .ring:empty{display:none}
   .fig .k{font-size:12.5px;color:var(--ink-3)}
   .fig .v{font-family:var(--serif);font-size:26px;line-height:1.1;margin-top:2px}
   .fig .n{font-size:12.5px;color:var(--ink-3)}
   .up{color:var(--band)} .down{color:var(--ox)}
-  .mast .up{color:#CFE3D5} .mast .down{color:#E8C1BD}
+  .mast .up{color:var(--gain)} .mast .down{color:var(--loss)}
 
   /* holdings */
   .hold li{display:grid;grid-template-columns:1fr 84px 96px 96px 64px;gap:12px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline;position:relative}
@@ -221,7 +221,7 @@
 
     // the ring: each holding's share of the whole, cash and hand balances included
     { const parts=[...I.holdings.map(h=>({k:h.ticker.toUpperCase(), v:holdingValue(h)})), ...latestBalances().map(b=>({k:b.account, v:b.value}))].filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
-      const sum=parts.reduce((n,x)=>n+x.v,0), R=32, CIRC=2*Math.PI*R, tints=['#1F3A2E','#7F9C8C','#B9AE99','#C9B8DB','#A9BBC9','#D9C79A','#C9A9AE','#7A2E2B'];
+      const sum=parts.reduce((n,x)=>n+x.v,0), R=32, CIRC=2*Math.PI*R, tints=['var(--band)','var(--sage)','var(--chart-out)','var(--lilac)','var(--slate)','var(--wheat)','var(--rose)','var(--ox)'];
       let off=0; F('ring').innerHTML = sum ? `<svg viewBox="0 0 84 84"><circle class="track" cx="42" cy="42" r="${R}"/>${parts.map((x,i)=>{ const len=x.v/sum*CIRC, el=`<circle cx="42" cy="42" r="${R}" stroke="${tints[i%tints.length]}" stroke-dasharray="${(len-2).toFixed(2)} ${(CIRC-len+2).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 42 42)"><title>${esc(x.k)} · ${Math.round(x.v/sum*100)}%</title></circle>`; off+=len; return el; }).join('')}</svg>` : ''; }
     // holdings
     const rows = I.holdings.map(h=>{ const p=price(h.ticker), v=holdingValue(h); return {h,p,v}; }).sort((a,b)=>b.v-a.v);
