@@ -100,6 +100,14 @@
   h2 .otherday{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto;border-bottom:1px solid var(--rule)}
   h2 .otherday:hover{color:var(--ox);border-bottom-color:var(--ox)}
   .todo{margin-top:34px}
+  .propose{margin-top:10px;padding:14px 16px;background:var(--card);border-radius:12px;box-shadow:var(--shadow)}
+  .propose .pq{margin:0 0 8px;font-family:var(--serif);font-size:15px}
+  .propose ul{list-style:none;margin:0;padding:0}
+  .propose li{display:flex;align-items:baseline;gap:12px;padding:7px 0;border-bottom:1px dotted var(--rule)}
+  .propose li:last-child{border-bottom:0}
+  .propose .t{font-family:var(--serif);font-size:15.5px;flex:1}
+  .propose .w{font-size:12.5px;color:var(--ink-3);white-space:nowrap}
+  .propose .pa{margin:10px 0 0;display:flex;gap:18px}
   .saidt{margin:8px 0 0;font-size:13px;color:var(--ox);font-family:var(--serif);font-style:italic}
   .reps{list-style:none;margin:10px 0 0;padding:0}
   .reps li{display:flex;align-items:baseline;gap:12px;padding:6px 0;border-top:1px dotted var(--rule);font-size:13.5px;color:var(--ink-2)}
@@ -170,6 +178,7 @@
       <h2>To do<small id="todon"></small></h2>
       <ul id="todo"></ul>
       <form class="addt" id="addt"><input id="t-text" placeholder="Anything: a to-do, 12.40 lunch, 173.2, or Dentist Thursday 3–4 pm" required><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
+      <div class="propose" id="propose" hidden></div>
       <p class="saidt" id="saidt" hidden></p>
       <ul class="reps" id="reps"></ul>
     </div>
@@ -442,10 +451,37 @@
     T.items.splice(+b.dataset.rm,1); saveT(); renderTodo();
     hqUndo(gone?gone.text:'the to-do', ()=>{ T.items=was; saveT(); renderTodo(); }); } });
   // "… by 3 pm" / "… at 3.30pm" at the end of a to-do becomes its time; it then sits on the timeline and the bell watches it
-  const parseAt = t => { const m=/\s(?:by|at)\s+(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?\.?$/i.exec(t); if(!m || +m[1]>12) return {text:t}; let h=+m[1]%12; const mm=+(m[2]||0)/60, ap=(m[3]||'').toLowerCase();
-    if(ap.startsWith('p')) h+=12; else if(!ap && (h+mm<=NOW || +m[1]===12)) h+=12;   // no am/pm: the next time that clock reading comes round
-    return {text:t.slice(0,m.index).trim(), at:h+mm}; };
+  const atFrom = (h1, m2, ap) => { let h=+h1%12; const mm=+(m2||0)/60, a=(ap||'').toLowerCase();
+    if(a.startsWith('p')) h+=12; else if(!a && (h+mm<=NOW || +h1===12)) h+=12;   // no am/pm: the next time that clock reading comes round
+    return h+mm; };
+  const parseAt = t => {
+    // "by" and "before" name a deadline whatever else is in the sentence, so they are looked for anywhere;
+    // a bare "at" is left at the end, where it cannot be mistaken for the start of an appointment.
+    const any = /\b(?:by|before)\s+(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?\b/i.exec(t);
+    if(any && +any[1] <= 12) return { text: (t.slice(0, any.index) + ' ' + t.slice(any.index + any[0].length)).replace(/\s+/g,' ').trim(), at: atFrom(any[1], any[2], any[3]) };
+    const m = /\s(?:by|at)\s+(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?\.?$/i.exec(t);
+    if(!m || +m[1] > 12) return { text: t };
+    return { text: t.slice(0, m.index).trim(), at: atFrom(m[1], m[2], m[3]) };
+  };
   const migrateAt = () => { let n=0; T.items.forEach(i=>{ if(i.at==null){ const p=parseAt(i.text); if(p.at!=null){ Object.assign(i,p); n++; } } }); return n; };
+  // ---- one sentence, possibly several things ----
+  // A capture is split only on a strong signal: a semicolon, or commas when more than one clause carries its
+  // own "every …". Splitting on every comma would wreck "Dentist, Tuesday 3 pm", which is one thing.
+  // What is said once and belongs to all of them — a deadline — is carried across; that is the nuance a
+  // single-clause parser has no way to express.
+  const TYPEHINT = /^\s*(to-?\s?dos?|todos?|tasks?|reminders?)\s*[,:]\s*/i;
+  const splitCapture = raw => {
+    let t = raw.trim(), hint = null;
+    const h = TYPEHINT.exec(t); if(h){ hint = 'todo'; t = t.slice(h[0].length); }
+    let parts = t.split(/\s*;\s*/).filter(Boolean);
+    if(parts.length === 1){
+      const commas = t.split(/\s*,\s*(?:and\s+)?|\s+and\s+(?=\S)/).filter(Boolean);
+      // two or more clauses each describing how often: that is a list, not one sentence with commas in it
+      if(commas.length > 1 && commas.filter(c => REP_RE.test(c)).length > 1) parts = commas;
+    }
+    return { parts: parts.map(x => x.trim()).filter(Boolean), hint };
+  };
+
   // ---- one box, three meanings ----
   // "12.40 lunch" is money, "173.2" on its own is a weight, anything else is a to-do. A to-do may carry
   // "by 3 pm" (it then sits on the timeline) and "every Monday" (it comes back on its own).
@@ -453,18 +489,36 @@
   const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);   // two made in the same millisecond must not share an id
   const saveRules = () => store.save('todo.rules', RULES);
   const DAYNAMES = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
-  const parseRep = t => {
-    const m = /\s+every\s+(day|weekday|weekdays|other day|[a-z]+)\s*$/i.exec(t);
+  // How often a standing item comes back. Three shapes, and the third is new: 'daily', 'weekdays', a weekday
+  // number, or { every: n, from: 'YYYY-MM-DD' } for a period — every other day, every third day. A period needs
+  // a starting day or there is no way to know which days are the on ones.
+  // The phrase is looked for anywhere in the sentence, not only at its end, since "on every day before 9 pm"
+  // puts it in the middle and the old pattern only ever read the tail.
+  const REP_RE = /\b(?:on\s+)?every\s+(other\s+day|second\s+day|third\s+day|\d{1,2}\s*(?:nd|rd|th)?\s+days?|day|weekdays?|[a-z]{3,9}day|mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)\b/i;
+  const takeRep = t => {
+    const m = REP_RE.exec(t);
     if(!m) return { text: t };
-    const w = m[1].toLowerCase();
+    const w = m[1].toLowerCase().replace(/\s+/g, ' ').trim();
     let rep = null;
     if(w === 'day') rep = 'daily';
     else if(w === 'weekday' || w === 'weekdays') rep = 'weekdays';
-    else { const i = DAYNAMES.findIndex(n => n === w || n.slice(0,3) === w.slice(0,3)); if(i >= 0) rep = i; }
-    return rep === null ? { text: t } : { text: t.slice(0, m.index).trim(), rep };
+    else if(w === 'other day' || w === 'second day') rep = { every: 2, from: TODAY };
+    else if(w === 'third day') rep = { every: 3, from: TODAY };
+    else { const n = /^(\d{1,2})/.exec(w);
+      if(n && +n[1] >= 1) rep = +n[1] === 1 ? 'daily' : { every: +n[1], from: TODAY };
+      else { const i = DAYNAMES.findIndex(d => d === w || d.slice(0,3) === w.slice(0,3)); if(i >= 0) rep = i; } }
+    if(rep === null) return { text: t };
+    return { text: (t.slice(0, m.index) + ' ' + t.slice(m.index + m[0].length)).replace(/\s+/g, ' ').trim(), rep };
   };
-  const repSays = rep => rep === 'daily' ? 'every day' : rep === 'weekdays' ? 'every weekday' : `every ${DAYNAMES[rep][0].toUpperCase()}${DAYNAMES[rep].slice(1)}`;
-  const repToday = rep => { const wd = C.now.getDay(); return rep === 'daily' || (rep === 'weekdays' && wd >= 1 && wd <= 5) || rep === wd; };
+  const parseRep = takeRep;   // the old name, kept where it is still called
+  const everyWord = n => n === 2 ? 'other' : n === 3 ? 'third' : n === 4 ? 'fourth' : `${n}th`;
+  const repSays = rep => rep && rep.every ? (rep.every === 2 ? 'every other day' : `every ${everyWord(rep.every)} day`)
+    : rep === 'daily' ? 'every day' : rep === 'weekdays' ? 'every weekday' : `every ${DAYNAMES[rep][0].toUpperCase()}${DAYNAMES[rep].slice(1)}`;
+  const repToday = rep => {
+    if(rep && rep.every) { const n = C.daysBetween(rep.from || TODAY, TODAY); return n >= 0 && n % rep.every === 0; }
+    const wd = C.now.getDay();
+    return rep === 'daily' || (rep === 'weekdays' && wd >= 1 && wd <= 5) || rep === wd;
+  };
   // a standing item joins the day it belongs to, once
   const postRules = () => { let n = 0;
     for(const r of RULES.rules || []) if(repToday(r.rep) && !T.items.some(i => i.rule === r.id)) { T.items.push({ text: r.text, at: r.at, done: false, rule: r.id }); n++; }
@@ -547,8 +601,46 @@
 
   function said(text){ const el = F('saidt'); el.textContent = text; el.hidden = false; clearTimeout(said.t); said.t = setTimeout(() => { el.hidden = true; }, 6000); }
 
-  async function capture(raw){
+  // What a capture would make, as a list. Nothing is written here.
+  function planCapture(raw){
+    const { parts, hint } = splitCapture(raw);
+    if(parts.length < 2) return null;                       // one thing: the ordinary path handles it
+    const plans = parts.map(part => {
+      const r = takeRep(part);
+      const p = parseAt(r.text);
+      return { text: tidy(p.text), at: p.at, rep: r.rep };
+    });
+    const anyAt = plans.find(x => x.at != null);            // a time said once belongs to all of them
+    if(anyAt) plans.forEach(x => { if(x.at == null) x.at = anyAt.at; });
+    if(hint === 'todo') plans.forEach(x => { x.kind = 'todo'; });
+    return plans.every(x => x.text) ? plans : null;
+  }
+
+  function makePlanned(plans){
+    for(const x of plans){
+      if(x.rep != null){
+        const id = uid('r');
+        (RULES.rules ??= []).push({ id, text: x.text, at: x.at, rep: x.rep });
+        if(repToday(x.rep) && !T.items.some(i => i.rule === id)) T.items.push({ text: x.text, at: x.at, done: false, rule: id });
+      } else T.items.push({ text: x.text, at: x.at, done: false });
+    }
+    saveRules(); saveT(); renderTodo(); d.day = renderDay(CAL);
+    return plans.length;
+  }
+
+  // the proposal: what it read, before anything is written
+  function proposeCapture(raw, plans){
+    const box = F('propose');
+    box.hidden = false;
+    box.innerHTML = `<p class="pq">More than one thing in that. Make them?</p><ul>${plans.map(x => `<li><span class="t">${esc(x.text)}</span><span class="w">${[x.rep != null ? repSays(x.rep) : 'today', x.at != null ? 'by ' + h12(x.at) : ''].filter(Boolean).join(' · ')}</span></li>`).join('')}</ul>
+      <p class="pa"><button class="textbtn" type="button" id="pyes">Yes, make ${plans.length}</button><button class="textbtn" type="button" id="pno">No, just one to-do</button></p>`;
+    F('pyes').addEventListener('click', () => { const n = makePlanned(plans); box.hidden = true; F('t-text').value = ''; said(`Made ${n} standing to-dos`); });
+    F('pno').addEventListener('click', () => { box.hidden = true; F('t-text').value = ''; capture(raw, true); });
+  }
+
+  async function capture(raw, asOne){
     const t = raw.trim(); if(!t) return;
+    if(!asOne){ const plans = planCapture(t); if(plans){ proposeCapture(t, plans); return; } }
     // money
     const amt = money(t);
     if(amt != null && amt > 0){
