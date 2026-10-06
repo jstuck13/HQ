@@ -32,8 +32,11 @@
 
   /* the sheet: one line per to-do, whatever days it fell on */
   .sheet{list-style:none;margin:16px 0 0;padding:0}
-  .sheet .head{display:grid;grid-template-columns:1fr 158px 212px 112px;gap:0 18px;padding:0 0 8px;border-bottom:1px solid var(--ink);font-size:12px;color:var(--ink-3);letter-spacing:.04em}
-  .sheet li.row{display:grid;grid-template-columns:1fr 158px 212px 112px;gap:0 18px;padding:9px 0;border-bottom:1px solid var(--rule);align-items:baseline;cursor:pointer}
+  .sheet .head{display:grid;grid-template-columns:1fr 158px 212px 112px 62px;gap:0 18px;padding:0 0 8px;border-bottom:1px solid var(--ink);font-size:12px;color:var(--ink-3);letter-spacing:.04em}
+  .sheet li.row{display:grid;grid-template-columns:1fr 158px 212px 112px 62px;gap:0 18px;padding:9px 0;border-bottom:1px solid var(--rule);align-items:baseline;cursor:pointer}
+  /* always there rather than revealed on hover, because a phone has no hover to reveal it with */
+  .sheet .x{font:inherit;font-size:12px;color:var(--ink-3);background:none;border:0;padding:0;text-align:right;cursor:pointer;opacity:.5}
+  .sheet .x:hover,.sheet .x:focus-visible{opacity:1;color:var(--ox)}
   .sheet li.row:hover{background:var(--paper-2)}
   .sheet .t{font-family:var(--serif);font-size:15.5px;min-width:0;overflow-wrap:anywhere}
   .sheet li.over .t{color:var(--ink-3)}
@@ -63,6 +66,7 @@
     .sheet .t{grid-column:1;grid-row:1} .sheet .f{grid-column:1;grid-row:2;white-space:normal}
     .sheet .m{grid-column:1;grid-row:3}
     .sheet .s{grid-column:2;grid-row:1;align-self:baseline}
+    .sheet .x{grid-column:2;grid-row:3;align-self:baseline}
   }
   @media (max-width:760px){ main{padding:24px 20px 36px} .foot{padding:0 20px 28px} }
 </style>
@@ -116,7 +120,7 @@
   // How far either way to look. A to-do lives in the document for the day it was on, so the only way to see
   // them all is to read the days; 120 back and 45 on covers a term without making the page a download.
   const BACK = 120, AHEAD = 45, YM = TODAY.slice(0, 7);
-  let ROWS = [], ITEMS = [], RULES = { rules: [] }, open = null;
+  let DAYS = [], DOCS = [], ROWS = [], ITEMS = [], RULES = { rules: [] }, open = null;
   // what the box writes into. The List is otherwise a read of the days, but the box can make anything, so the
   // three documents the other meanings go to are read along with them.
   let T = { items: [] }, CAL = null, FIN = null, HEALTH = null;
@@ -132,17 +136,25 @@
   const idOf = i => i.text.trim().toLowerCase();
 
   async function load(){
-    const days = [];
-    for(let i = -BACK; i <= AHEAD; i++) days.push(C.iso(C.addDays(C.now, i)));
+    DAYS = [];
+    for(let i = -BACK; i <= AHEAD; i++) DAYS.push(C.iso(C.addDays(C.now, i)));
     const [rules, cal, fin, health, ...docs] = await Promise.all([store.load('todo.rules'), store.load('calendar'),
-      store.load('finances.' + YM), store.load('health'), ...days.map(d => store.load('today.' + d))]);
+      store.load('finances.' + YM), store.load('health'), ...DAYS.map(d => store.load('today.' + d))]);
     RULES = rules || { rules: [] }; RULES.rules ??= [];
-    CAL = cal; FIN = fin; HEALTH = health;
-    T = docs[days.indexOf(TODAY)] || { items: [] };
+    CAL = cal; FIN = fin; HEALTH = health; DOCS = docs;
+    T = docs[DAYS.indexOf(TODAY)] || { items: [] };
     CAP.fold();   // a standing to-do that had grown a twin rule showed up twice on every day it fell on
+    rebuild();
+    F('t-text').disabled = false;   // not before the days are in, or a capture would write over today's list
+    render();
+    hqReveal();
+  }
+
+  // the days, read into lines and then into things — done again after a deletion without going back to the server
+  function rebuild(){
     ROWS = [];
-    days.forEach((d, k) => {
-      const doc = docs[k]; if(!doc || !doc.items) return;
+    DAYS.forEach((d, k) => {
+      const doc = DOCS[k]; if(!doc || !doc.items) return;
       // one line per time a thing was on a day, so the same thing twice on one day is one line: a tick on
       // either copy is a tick, and the most logged against it stands
       const seen = new Map();
@@ -155,9 +167,6 @@
     });
     ROWS.sort((a, b) => a.day < b.day ? 1 : a.day > b.day ? -1 : 0);   // newest first, as a ledger reads
     ITEMS = gather();
-    F('t-text').disabled = false;   // not before the days are in, or a capture would write over today's list
-    render();
-    hqReveal();
   }
 
   // ---- one line per to-do, not one per day it fell on ----
@@ -176,25 +185,46 @@
       const rule = it.rule ? RULES.rules.find(x => x.id === it.rule) : null;
       if(rule){ it.rep = rule.rep; it.until = rule.until; it.at = rule.at; it.target = rule.target; }
       else it.rep = null;
-      it.past = it.days.filter(d => d.day <= TODAY);
-      it.ahead = it.days.filter(d => d.day > TODAY);
-      it.ticked = it.past.filter(d => d.done).length;
-      it.logged = it.past.reduce((n, d) => n + (+d.did || 0), 0);
+      it.times = times(it);
+      it.past = it.times.filter(o => o.made <= TODAY);
+      it.ahead = it.times.filter(o => o.made > TODAY);
+      it.ticked = it.past.filter(o => o.done).length;
+      it.logged = it.past.reduce((n, o) => n + (+o.did || 0), 0);
       let run = 0; for(let i = it.past.length - 1; i >= 0 && !it.past[i].done; i--) run++;
-      it.run = run;                                        // days let go, ending now
+      it.run = run;                                        // times let go, ending now
       it.today = it.days.find(d => d.day === TODAY) || null;
-      it.open = it.past.some(d => !d.done);
+      it.waiting = it.past.find(o => !o.done && o.last >= TODAY) || null;   // one still sitting there, from whenever
+      it.open = it.past.some(o => !o.done);
       it.over = !!(it.until && TODAY > it.until);
       return it;
     }).sort((a, b) => rank(a) - rank(b) || (last(a) < last(b) ? 1 : -1));
+  };
+
+  // How many times a to-do was actually asked of you, which is not the same as how many mornings it was in
+  // front of you. A standing item is asked afresh every day its rule falls on, so each of those days counts.
+  // A plain one is asked once: rollover copies it into the next day while it is unticked, stamping `from` with
+  // the day it was first written, and those copies are the same load of laundry put off — not another load.
+  const times = it => {
+    if(it.rep != null) return it.days.map(d => ({ made: d.day, last: d.day, done: !!d.done, did: +d.did || 0, waited: 0 }));
+    const by = new Map();
+    for(const d of it.days){
+      const made = d.from || d.day;
+      const o = by.get(made) || { made, last: d.day, done: false, did: 0, waited: 0 };
+      o.last = d.day;                                      // the last morning this one was still there
+      if(d.done){ o.done = true; o.settled = d.day; }
+      if(+d.did > o.did) o.did = +d.did;
+      o.waited = C.daysBetween(made, o.settled || o.last);
+      by.set(made, o);
+    }
+    return [...by.values()].sort((a, b) => a.made < b.made ? -1 : 1);
   };
   // what is on the docket, in that order: today's unfinished, today's done, what is still standing, then the rest
   const rank = it => it.today && !it.today.done ? 0 : it.today ? 1 : (it.rep != null && !it.over) ? 2 : 3;
   const last = it => it.days[it.days.length - 1].day;
 
   const often = it => it.rep != null ? hqRecur.says(it.rep)
-    : it.days.length === 1 ? 'once'
-    : `${it.days.length} times, as it came up`;
+    : it.times.length === 1 ? 'once'
+    : `${it.times.length} times, as it came up`;
 
   // what the thing carries, which is part of what it is rather than a statistic
   const carries = it => {
@@ -207,14 +237,15 @@
 
   // when it is next wanted — the one forward-looking thing the glance needs
   const next = it => {
+    if(it.waiting && it.waiting.made !== TODAY) return { cls: 'late', text: `since ${dayLabel(it.waiting.made)}` };
     if(it.today) return it.today.done ? { cls: 'yes', text: 'done today' } : { cls: 'late', text: 'today' };
-    if(it.ahead.length) return { cls: '', text: dayLabel(it.ahead[0].day) };
+    if(it.ahead.length) return { cls: '', text: dayLabel(it.ahead[0].made) };
     if(it.rep != null && !it.over){
       const d = hqRecur.next(it.rep, C.iso(C.addDays(C.now, 1)), 1)[0];
       if(d) return { cls: '', text: dayLabel(d) };
     }
     const l = it.past[it.past.length - 1];
-    return { cls: '', text: l ? `last ${dayLabel(l.day)}` : '—' };
+    return { cls: '', text: l ? `last ${dayLabel(l.made)}` : '—' };
   };
 
   function render(){
@@ -222,40 +253,73 @@
     F('count').textContent = ITEMS.length ? `${rows.length} of ${ITEMS.length} to-dos` : '';
     if(!rows.length){ F('sheet').innerHTML = '<li class="empty">Nothing matches.</li>'; return; }
 
-    F('sheet').innerHTML = '<li class="head"><span>To-do</span><span>How often</span><span>What it carries</span><span style="text-align:right">Next</span></li>'
+    F('sheet').innerHTML = '<li class="head"><span>To-do</span><span>How often</span><span>What it carries</span><span style="text-align:right">Next</span><span></span></li>'
       + rows.map((it, k) => {
         const n = next(it);
         const row = `<li class="row ${it.over ? 'over' : ''}" data-k="${k}" role="button" tabindex="0" aria-expanded="${open === it.key}">
           <span class="t">${esc(it.text)}</span>
           <span class="f">${esc(often(it))}</span>
           <span class="m">${carries(it)}</span>
-          <span class="s ${n.cls}">${esc(n.text)}</span></li>`;
+          <span class="s ${n.cls}">${esc(n.text)}</span>
+          <button class="x" type="button" data-rm="${k}" aria-label="Delete ${esc(it.text)}">remove</button></li>`;
         return row + (open === it.key ? expanded(it) : '');
       }).join('');
   }
 
-  // up close: the fraction, and every day it was on the list with whether it was ticked
+  // up close: the fraction, and every time it was asked for, with whether it was done and how long it sat
   function expanded(it){
     const facts = [];
-    facts.push(`<span>first on <b>${dayLabel(it.days[0].day)}</b></span>`);
-    if(it.days.length > 1) facts.push(`<span>last on <b>${dayLabel(last(it))}</b></span>`);
+    facts.push(`<span>first asked <b>${dayLabel(it.times[0].made)}</b></span>`);
+    if(it.times.length > 1) facts.push(`<span>last asked <b>${dayLabel(it.times[it.times.length - 1].made)}</b></span>`);
     if(it.rep != null) facts.push(`<span>comes back <b>${esc(hqRecur.says(it.rep))}</b></span>`);
     if(it.until) facts.push(`<span>${it.over ? 'ended' : 'until'} <b>${C.dayMonth(C.fromISO(it.until))}</b></span>`);
     if(it.at != null) facts.push(`<span>wanted <b>by ${h12(it.at)}</b></span>`);
     if(it.target) facts.push(`<span>${it.logged ? `<b>${+it.logged.toFixed(1)}</b> ${esc(it.target.unit)} logged in all, against ${it.target.n} a time` : `nothing logged yet against ${it.target.n} ${esc(it.target.unit)}`}</span>`);
-    if(it.run >= 2) facts.push(`<span>let go <b>${it.run} days</b> running</span>`);
+    // how often it was put off, and by how long — the thing the old count was hiding by calling each morning a to-do
+    const put = it.past.filter(o => o.waited > 0);
+    if(put.length) facts.push(`<span>put off <b>${put.length === 1 ? 'once' : `${put.length} times`}</b>, the longest by ${Math.max(...put.map(o => o.waited))} days</span>`);
+    if(it.run >= 2) facts.push(`<span>let go <b>${it.run} times</b> running</span>`);
     if(it.ahead.length) facts.push(`<span><b>${it.ahead.length}</b> still to come</span>`);
     const big = it.past.length
-      ? `${it.ticked} / ${it.past.length}<small>ticked, of the ${it.past.length === 1 ? 'day' : 'days'} it has been on the list · ${Math.round(it.ticked / it.past.length * 100)}%</small>`
-      : `—<small>it has not come round yet${it.ahead.length ? `, and is first on ${dayLabel(it.ahead[0].day)}` : ''}</small>`;
+      ? `${it.ticked} / ${it.past.length}<small>done, of the ${it.past.length === 1 ? 'time' : 'times'} it was asked for · ${Math.round(it.ticked / it.past.length * 100)}%</small>`
+      : `—<small>it has not come round yet${it.ahead.length ? `, and is first on ${dayLabel(it.ahead[0].made)}` : ''}</small>`;
+    const chip = o => {
+      const sat = o.waited > 0 ? ` +${o.waited}` : '';
+      const why = o.done ? (o.waited > 0 ? `done ${dayLabel(o.settled)}, ${o.waited} days after it was asked` : 'done the same day')
+        : o.last >= TODAY ? `still waiting since ${dayLabel(o.made)}` : `never done; sat ${o.waited} days`;
+      return `<i class="${o.done ? 'yes' : 'no'}" title="${esc(why)}">${C.dayMonth(C.fromISO(o.made))}${sat}</i>`;
+    };
     return `<li class="more"><div class="card">
       <p class="big">${big}</p>
       <p class="facts">${facts.join('')}</p>
-      ${it.past.length ? `<p class="when">${it.past.map(x => `<i class="${x.done ? 'yes' : 'no'}">${C.dayMonth(C.fromISO(x.day))}</i>`).join('')}</p>` : ''}
+      ${it.past.length ? `<p class="when">${it.past.map(chip).join('')}</p>` : ''}
     </div></li>`;
   }
 
+  // Deleting takes the to-do off every day it sits on and stops it coming back, which is what "delete" has to
+  // mean on a page that shows every day at once. All of it goes back together if you undo.
+  function remove(it){
+    const touched = [], wasRules = hqCopy(RULES.rules);
+    DAYS.forEach((d, k) => {
+      const doc = DOCS[k]; if(!doc || !doc.items) return;
+      const keep = doc.items.filter(i => !i || !i.text || idOf(i) !== it.key);
+      if(keep.length === doc.items.length) return;
+      touched.push({ key: 'today.' + d, doc, was: hqCopy(doc.items) });
+      doc.items = keep; store.save('today.' + d, doc);
+    });
+    const hadRule = RULES.rules.some(r => idOf(r) === it.key);
+    if(hadRule){ RULES.rules = RULES.rules.filter(r => idOf(r) !== it.key); store.save('todo.rules', RULES); }
+    open = null; rebuild(); render();
+    hqUndo(it.text, () => {
+      touched.forEach(t => { t.doc.items = t.was; store.save(t.key, t.doc); });
+      if(hadRule){ RULES.rules = wasRules; store.save('todo.rules', RULES); }
+      rebuild(); render();
+    });
+  }
+
   F('sheet').addEventListener('click', e => {
+    const rm = e.target.closest('[data-rm]');
+    if(rm){ e.stopPropagation(); const it = ITEMS.filter(matches)[+rm.dataset.rm]; if(it) remove(it); return; }
     const li = e.target.closest('.row'); if(!li) return;
     const it = ITEMS.filter(matches)[+li.dataset.k]; if(!it) return;
     open = open === it.key ? null : it.key; render();
