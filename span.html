@@ -113,8 +113,11 @@
   async function build(){
     const days = daysOf(mode, at), prev = daysOf(mode, stepKey(mode, at, -1));
     const months = [...new Set([...days, ...prev].map(d => d.slice(0, 7)))];
-    const [H, school, lib, ...rest] = await Promise.all([store.load('health'), store.load('school'), store.load('library'), ...months.map(m => store.load('finances.' + m))]);
+    const wanted = mode === 'month' ? days.filter(d => d <= TODAY) : [];   // a year is 365 documents; the month is worth fetching
+    const [H, school, lib, ...rest] = await Promise.all([store.load('health'), store.load('school'), store.load('library'),
+      ...months.map(m => store.load('finances.' + m)), ...wanted.map(d => store.load('today.' + d))]);
     const fin = Object.fromEntries(months.map((m, i) => [m, rest[i]]));
+    const todos = rest.slice(months.length);
 
     const label = mode === 'year' ? at : C.monthName(C.fromISO(days[0])) + ' ' + at.slice(0, 4);
     const now = mode === 'year' ? String(C.now.getFullYear()) : TODAY.slice(0, 7);
@@ -123,7 +126,7 @@
     F('rangen').textContent = `${C.dayMonth(C.fromISO(days[0]))} – ${C.dayMonth(C.fromISO(days[days.length - 1]))}`;
     document.querySelectorAll('#month,#year').forEach(b => b.setAttribute('aria-pressed', b.id === mode));
 
-    const ps = window.hqDigest({ H, school, lib, fin, days, prev, months, span: mode, today: TODAY });
+    const ps = window.hqDigest({ H, school, lib, fin, days, prev, months, todos, span: mode, today: TODAY });
     F('words').innerHTML = ps.length ? ps.map(t => `<p>${t}</p>`).join('')
       : `<p class="none">${days[0] > TODAY ? 'That has not happened yet.' : 'Nothing was logged then, so there is nothing to say about it.'}</p>`;
 

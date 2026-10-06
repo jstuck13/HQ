@@ -11,7 +11,7 @@
   const hrs = m => m >= 60 ? (m % 60 ? `${Math.floor(m / 60)} h ${m % 60}` : `${m / 60} h`) : `${m} min`;
   const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
 
-  window.hqDigest = function ({ H, school, lib, fin, days, prev, months, span = 'week', today }) {
+  window.hqDigest = function ({ H, school, lib, fin, days, prev, months, todos, span = 'week', today }) {
     const C = window.clock, TODAY = today || C.today;
     const inSpan = (d, ds) => d >= ds[0] && d <= ds[ds.length - 1];
     const vals = (ds, k) => ds.map(d => +((H && H.days && H.days[d] || {})[k])).filter(v => v > 0);
@@ -55,7 +55,31 @@
         ps.push(t + '.');
       } }
 
-    // 3 · school: what was owed, what was done, and where the mark went
+    // 3 · the list, and any target set against it. A target you log against and never hear about again is a
+    //     measurement with no feedback, which is the surest way to stop logging it.
+    if (todos && todos.length) {
+      const items = todos.flatMap(t => (t && t.items) || []);
+      if (items.length) {
+        const done = items.filter(i => i.done).length;
+        let t = `You ticked <b>${done} of ${items.length}</b> ${items.length === 1 ? 'thing' : 'things'} off the list`;
+        // every target that appeared, by what it was for: the days it was met out of the days it was asked
+        const by = {};
+        todos.forEach(doc => ((doc && doc.items) || []).forEach(i => {
+          if (!i.target || !i.target.n) return;
+          const key = `${i.text}|${i.target.n}|${i.target.unit}`;
+          (by[key] ??= { text: i.text, n: i.target.n, unit: i.target.unit, asked: 0, met: 0, sum: 0 });
+          by[key].asked++; by[key].sum += +i.did || 0;
+          if (i.done || (+i.did || 0) >= i.target.n) by[key].met++;
+        }));
+        const hit = Object.values(by).filter(x => x.asked > 1)
+          .sort((a, b) => b.asked - a.asked).slice(0, 2)
+          .map(x => `${esc(x.text)} on <b>${x.met} of ${x.asked}</b> days${x.sum ? ` (${+x.sum.toFixed(1)} ${esc(x.unit)} in all)` : ''}`);
+        if (hit.length) t += `. You hit ${hit.join(', and ')}`;
+        ps.push(t + '.');
+      }
+    }
+
+    // 4 · school: what was owed, what was done, and where the mark went
     if (school) {
       const due = (school.items || []).filter(i => i.due && !i.noturn && inSpan(i.due, days));
       const done = due.filter(i => i.done).length, slipped = due.filter(i => !i.done && i.due < TODAY).length;
@@ -74,7 +98,7 @@
         ps.push(t + '.');
       } }
 
-    // 4 · the phone
+    // 5 · the phone
     { const raw = days.map(d => +((H && H.days && H.days[d] || {}).opens)).map(v => v > 0 ? v : null);
       const got = raw.filter(v => v != null), pv = vals(prev, 'opens');
       if (got.length) {
@@ -82,7 +106,7 @@
         ps.push(`You reached for the phone <b>${Math.round(m)} times</b> a day${pv.length ? move(m, mean(pv), 1, v => Math.round(v) + ' times') : ''}. The heaviest was ${span === 'week' ? C.dayName(C.fromISO(worst)) : C.dayMonth(C.fromISO(worst))}, at ${Math.max(...got)}.`);
       } }
 
-    // 5 · reading; over a longer span, what was actually finished
+    // 6 · reading; over a longer span, what was actually finished
     { const pages = (lib && lib.books || []).reduce((n, b) => {
         const log = Object.entries(b.log || {}).sort(); let was = null, got = 0;
         for (const [d, pg] of log) { if (was != null && inSpan(d, days) && +pg - was > 0) got += +pg - was; was = +pg; }
@@ -96,7 +120,7 @@
       if (t) ps.push(t + '.');
     }
 
-    // 6 · what the sky did, and what it did to the light
+    // 7 · what the sky did, and what it did to the light
     { const wx = days.map(d => (H && H.days && H.days[d] || {}).wx).filter(Boolean);
       if (wx.length >= 3) {
         const his = wx.map(w => w.hi).filter(v => v != null), wet = wx.filter(w => w.rain > 0.04).length;

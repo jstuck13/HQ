@@ -60,6 +60,14 @@
         return d >= n ? [{ text: 'Prices', when: `last fetched ${d} days ago`, href: 'investments.html' }] : [];
       } },
 
+    { id: 'letgo', name: 'A standing item you keep letting go', unit: 'days running', days: 4,
+      find: ({ rules }, n) => (rules && rules.rules || []).map(r => {
+        const e = Object.entries(r.log || {}).sort(); if(!e.length) return null;
+        let run = 0; for(let i = e.length - 1; i >= 0 && !e[i][1]; i--) run++;
+        if(run < n) return null;
+        return { text: esc(r.text), when: `let go ${run} days running`, href: 'today.html' };
+      }).filter(Boolean) },
+
     { id: 'feel', name: 'Days left unrated', unit: 'days', days: 5,
       find: ({ health, today }, n) => {
         const rated = Object.entries(health && health.days || {}).filter(([, r]) => r.energy != null || r.mood != null).map(([d]) => d).sort();
@@ -80,9 +88,9 @@
   const noticeDays = r => { const v = +(NPREFS.days || {})[r.id]; return v > 0 ? v : r.days; };
 
   const noticing = async ({ school, health, todo, today }) => {
-    const [lib, inv] = await Promise.all([store.load('library', true).catch(() => null), store.load('investments', true).catch(() => null)]);
+    const [lib, inv, rules] = await Promise.all([store.load('library', true).catch(() => null), store.load('investments', true).catch(() => null), store.load('todo.rules', true).catch(() => null)]);
     await noticePrefs();
-    const ctx = { school, health, todo, today, lib, inv };
+    const ctx = { school, health, todo, today, lib, inv, rules };
     const out = [];
     for (const r of NOTICES) {
       if ((NPREFS.off || []).includes(r.id)) continue;

@@ -447,7 +447,7 @@
   const YDAY = C.iso(C.addDays(C.fromISO(TODAY),-1));
   const saveT = () => store.save(TKEY, T);
   function renderTodo(){
-    F('reps').innerHTML = (RULES.rules||[]).map(r=>`<li class="${ruleOver(r)?'over':''}"><span>${esc(r.text)}<small>${[repSays(r.rep), r.target&&!r.text.toLowerCase().includes(r.target.unit)?`${r.target.n} ${esc(r.target.unit)}`:'', r.at!=null?`by ${h12(r.at)}`:'', r.until?(ruleOver(r)?`ended ${C.dayMonth(C.fromISO(r.until))}`:`until ${C.dayMonth(C.fromISO(r.until))}`):''].filter(Boolean).join(' · ')}</small></span><button class="textbtn" type="button" data-stop="${r.id}">${ruleOver(r)?'remove':'stop'}</button></li>`).join('');
+    F('reps').innerHTML = (RULES.rules||[]).map(r=>`<li class="${ruleOver(r)?'over':''}"><span>${esc(r.text)}<small>${[repSays(r.rep), r.target&&!r.text.toLowerCase().includes(r.target.unit)?`${r.target.n} ${esc(r.target.unit)}`:'', r.at!=null?`by ${h12(r.at)}`:'', r.until?(ruleOver(r)?`ended ${C.dayMonth(C.fromISO(r.until))}`:`until ${C.dayMonth(C.fromISO(r.until))}`):'', recordSays(r)].filter(Boolean).join(' · ')}</small></span><button class="textbtn" type="button" data-stop="${r.id}">${ruleOver(r)?'remove':'stop'}</button></li>`).join('');
     const done=T.items.filter(i=>i.done).length;
     F('todon').textContent = T.items.length ? `${done} of ${T.items.length}` : 'nothing yet';
     F('todo').innerHTML = T.items.length ? T.items.map((i,k)=>`<li><input type="checkbox" id="t${k}" ${i.done?'checked':''} data-k="${k}"><label for="t${k}">${esc(i.text)}</label>${i.rule?'<span class="rp" title="comes back on its own">\u21bb</span>':''}${i.target?`<span class="tg"><input class="did" value="${i.did||0}" inputmode="decimal" data-did="${k}" aria-label="How much of ${esc(i.text)} so far"> of ${i.target.n}${i.text.toLowerCase().includes(i.target.unit)?'':' '+esc(i.target.unit)}</span>`:''}${i.at!=null?`<span class="w ${!i.done&&i.at<NOW?'due':''}">by ${h12(i.at)}</span>`:''}${i.from?`<span class="w from">from ${i.from===YDAY?'yesterday':C.short(C.fromISO(i.from))}</span>`:''}${i.rule?`<button class="w skip" type="button" data-skip="${k}">not today</button>`:''}<button class="w x" type="button" data-rm="${k}" aria-label="Remove">remove</button></li>`).join('') : '<li class="empty">Nothing on the list. Add the one thing today needs.</li>';
@@ -457,13 +457,15 @@
       const v=parseFloat(e.target.value); i.did = isNaN(v)||v<=0 ? undefined : v;
       if(i.target && i.did >= i.target.n) i.done = true;    // the target met is the thing done
       saveT(); renderTodo(); d.day=renderDay(CAL); return; }
-    if(e.target.type==='checkbox'){ T.items[+e.target.dataset.k].done=e.target.checked; saveT(); renderTodo(); d.day=renderDay(CAL); } });
+    if(e.target.type==='checkbox'){ const it=T.items[+e.target.dataset.k]; it.done=e.target.checked;
+      if(it.rule) markRule(it.rule, it.done);
+      saveT(); renderTodo(); d.day=renderDay(CAL); } });
   // Skipping one day: the instance goes and is remembered as skipped, so posting it again does not undo that.
   // The rule itself is untouched — it comes back tomorrow.
   F('todo').addEventListener('click', e=>{ const sk=e.target.closest('[data-skip]'); if(sk){
       const k=+sk.dataset.skip, it=T.items[k]; if(!it||!it.rule) return;
       const was=hqCopy(T.items), wasSkip=hqCopy(T.skipped||[]);
-      T.items.splice(k,1); T.skipped=[...(T.skipped||[]), it.rule]; saveT(); renderTodo(); d.day=renderDay(CAL);
+      T.items.splice(k,1); T.skipped=[...(T.skipped||[]), it.rule]; markRule(it.rule, false); saveT(); renderTodo(); d.day=renderDay(CAL);
       hqUndo(`${it.text} for today`, ()=>{ T.items=was; T.skipped=wasSkip; saveT(); renderTodo(); d.day=renderDay(CAL); });
       return; }
     const b=e.target.closest('[data-rm]'); if(b){ const was=hqCopy(T.items), gone=T.items[+b.dataset.rm];
@@ -582,8 +584,26 @@
     const wd = C.now.getDay();
     return rep === 'daily' || (rep === 'weekdays' && wd >= 1 && wd <= 5) || rep === wd;
   };
+  // what the record adds up to, said plainly and only about days you answered
+  const recordSays = r => { const k = ruleRecord(r); if(!k) return '';
+    if(k.run >= 3) return `let go ${k.run} days running`;
+    return `kept ${k.kept} of ${k.of} answered`; };
+
   // a standing item joins the day it belongs to, once — unless it has run out, or you skipped today
   const ruleOver = r => r.until && TODAY > r.until;
+  // A rule keeps what happened, a day at a time: 1 kept, 0 let go. Only days you answered are recorded —
+  // a day you never looked at HQ is not held against you, and that is why the figure says "of the days you
+  // answered" rather than pretending to know about the rest.
+  const ruleFor = id => (RULES.rules || []).find(r => r.id === id);
+  const markRule = (id, kept) => { const r = ruleFor(id); if(!r) return;
+    r.log ??= {}; r.log[TODAY] = kept ? 1 : 0;
+    const keys = Object.keys(r.log).sort(); if(keys.length > 120) keys.slice(0, keys.length - 120).forEach(k => delete r.log[k]);
+    saveRules(); };
+  const ruleRecord = r => { const e = Object.entries(r.log || {}).sort();
+    if(!e.length) return null;
+    const kept = e.filter(([, v]) => v).length;
+    let run = 0; for(let i = e.length - 1; i >= 0 && !e[i][1]; i--) run++;   // days let go, ending now
+    return { kept, of: e.length, run }; };
   const postRules = () => { let n = 0;
     for(const r of RULES.rules || []){
       if(!repToday(r.rep) || ruleOver(r)) continue;
