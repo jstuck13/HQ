@@ -79,35 +79,40 @@ export default syncRoute('notify', async ({ getDoc, putDoc }) => {
       if (!e.ok) return `${name} is failing: ${String(e.error || 'it would not run').slice(0, 60)}`;
       return age >= 2 ? `${name} has not run in ${age} days.` : null;
     }).filter(Boolean);
-    if (stale.length) { lines.push(...stale.slice(0, 2)); url = 'calendar.html'; }
+    if (stale.length && !off.has('syncs')) { lines.push(...stale.slice(0, 2)); url = 'calendar.html'; }
   }
 
+  // What you have turned off. A nudge HQ learns later is on until it is named here.
+  const prefs = (await getDoc('prefs')) || {};
+  const off = new Set(((prefs.nudges || {}).off) || []);
+  const nudge = (id, line) => { if (!off.has(id) && line) lines.push(line); };
+
   if (slot === 'morning') {
-    if (L.weight == null) { lines.push('Step on the scale — weight is not logged yet.'); url = 'health.html'; }
-    if (meds.length && !(L.pills || []).length) lines.push(`${meds.length} ${meds.length === 1 ? 'supplement' : 'supplements'} to take.`);
+    if (L.weight == null) { nudge('weight', 'Step on the scale — weight is not logged yet.'); url = 'health.html'; }
+    if (meds.length && !(L.pills || []).length) nudge('supplements', `${meds.length} ${meds.length === 1 ? 'supplement' : 'supplements'} to take.`);
     const first = items.filter(i => !i.done && i.at != null).sort((a, b) => a.at - b.at)[0];
-    if (first) lines.push(`First up: ${first.text} by ${h12(first.at)}.`);
+    if (first) nudge('firstup', `First up: ${first.text} by ${h12(first.at)}.`);
   }
   if (slot === 'midday') {
     const late = items.filter(i => !i.done && i.at != null && i.at < h);
-    for (const i of late.slice(0, 2)) lines.push(`“${i.text}” was due by ${h12(i.at)}.`);
+    for (const i of late.slice(0, 2)) nudge('late', `“${i.text}” was due by ${h12(i.at)}.`);
     const due = (school && school.items || []).filter(i => !i.done && i.due === today);
-    for (const i of due.slice(0, 2)) { lines.push(`${i.title} is due today and is not ticked.`); url = 'school.html'; }
+    for (const i of due.slice(0, 2)) { nudge('duetoday', `${i.title} is due today and is not ticked.`); url = 'school.html'; }
   }
   if (slot === 'evening' && sunday) {
     const wk = await weekLines(getDoc, today, health, school, lib);
-    if (wk.length) { lines.push(...wk); url = 'review.html#digest'; }
+    if (wk.length && !off.has('week')) { lines.push(...wk); url = 'review.html#digest'; }
   }
   if (slot === 'evening' && !lines.length) {
     const open = items.filter(i => !i.done);
-    if (open.length) lines.push(open.length === 1 ? `“${open[0].text}” is still open on today’s list.` : `${open.length} things still open on today’s list.`);
+    if (open.length) nudge('open', open.length === 1 ? `“${open[0].text}” is still open on today’s list.` : `${open.length} things still open on today’s list.`);
     const book = lib && (lib.books || []).find(b => b.shelf === 'reading');
-    if (book && !(book.log && book.log[today])) { const left = book.pages ? book.pages - (book.page || 0) : null; lines.push(`Twenty pages of ${book.title} before bed?${left ? ` ${left} to go.` : ''}`); if (!open.length) url = 'library.html'; }
-    if (meds.length) { const left = meds.filter(m => !(L.pills || []).includes(m.id)); if (left.length) lines.push(`${left.map(m => m.name).join(', ')} not ticked yet.`); }
-    if (study && study.pos > 0 && !(study.days && study.days[today] && study.days[today].done)) { lines.push(`Three cards before bed? ${({ stoics: 'The Stoics are', socrates: 'Socrates is', sermon: 'The Sermon is' })[study.path] || 'The Study is'} waiting.`); if (!open.length) url = 'study.html'; }
+    if (book && !(book.log && book.log[today])) { const left = book.pages ? book.pages - (book.page || 0) : null; nudge('pages', `Twenty pages of ${book.title} before bed?${left ? ` ${left} to go.` : ''}`); if (!open.length) url = 'library.html'; }
+    if (meds.length) { const left = meds.filter(m => !(L.pills || []).includes(m.id)); if (left.length) nudge('pills', `${left.map(m => m.name).join(', ')} not ticked yet.`); }
+    if (study && study.pos > 0 && !(study.days && study.days[today] && study.days[today].done)) { nudge('cards', `Three cards before bed? ${({ stoics: 'The Stoics are', socrates: 'Socrates is', sermon: 'The Sermon is' })[study.path] || 'The Study is'} waiting.`); if (!open.length) url = 'study.html'; }
     if (school) { const weekMin = cid => (school.sessions || []).filter(s => s.course === cid && days(s.date, today) >= 0 && days(s.date, today) < 7).reduce((n, s) => n + s.min, 0);
       const soon = (school.items || []).filter(i => !i.done && heavy(i) && days(today, i.due) >= 0 && days(today, i.due) <= 3 && weekMin(i.course) === 0)[0];
-      if (soon) { const d = days(today, soon.due); lines.push(`${soon.title} is ${d === 0 ? 'today' : d === 1 ? 'tomorrow' : `in ${d} days`} and nothing has been studied this week.`); } }
+      if (soon) { const d = days(today, soon.due); nudge('exam', `${soon.title} is ${d === 0 ? 'today' : d === 1 ? 'tomorrow' : `in ${d} days`} and nothing has been studied this week.`); } }
   }
   if (!lines.length) { push.sent[today] = { ...(push.sent[today] || {}), [slot]: 'nothing' }; await putDoc('_push', push); return { slot, sent: 0, quiet: true }; }
 

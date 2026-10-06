@@ -24,51 +24,73 @@
     return { todos, due, noticed: await noticing({ school, fin, health, todo, today }) };
   };
 
-  // Things HQ already knows and has never said. Not alarms — observations, and only when they are old enough
-  // to mean something. Each one is a fact about a document, so nothing here guesses.
+  // Things HQ already knows and has never said. Each one is named, can be switched off, and carries the number
+  // of days that makes it worth saying — my figures are a starting point, not a judgement about your weeks.
+  // Nothing here guesses: every rule is a plain fact about a document.
   const days = (a, b) => Math.round((Date.parse(b + 'T12:00:00Z') - Date.parse(a + 'T12:00:00Z')) / 86400000);
+  const NOTICES = [
+    { id: 'book', name: 'A book that has not moved', unit: 'days', days: 14,
+      find: ({ lib, today }, n) => (lib && lib.books || []).filter(b => b.shelf === 'reading').map(b => {
+        const log = Object.keys(b.log || {}).sort(), last = log[log.length - 1];
+        if (!last) return null;
+        const d = days(last, today); if (d < n) return null;
+        return { text: esc(b.title), when: `at page ${b.page || 0} for ${d} days`, href: 'library.html' };
+      }).filter(Boolean) },
+
+    { id: 'exam', name: 'An exam with nothing studied', unit: 'days ahead', days: 4,
+      find: ({ school, today }, n) => (school && school.items || []).filter(i => toDo(i) && i.due >= today).map(i => {
+        const d = days(today, i.due); if (d > n) return null;
+        if (!/\b(final|midterm|exam|test|quiz)\b/i.test(i.title) && i.type !== 'test') return null;
+        const mins = (school.sessions || []).filter(x => x.course === i.course && days(x.date, today) >= 0 && days(x.date, today) < 7).reduce((m, x) => m + (+x.min || 0), 0);
+        if (mins) return null;
+        return { text: esc(i.title), when: d === 0 ? 'today, nothing studied' : `in ${d} ${d === 1 ? 'day' : 'days'}, nothing studied`, late: d <= 1, href: 'school.html' };
+      }).filter(Boolean) },
+
+    { id: 'carried', name: 'A to-do carried over', unit: 'days', days: 4,
+      find: ({ todo, today }, n) => (todo && todo.items || []).filter(i => !i.done && i.from).map(i => {
+        const d = days(i.from, today); if (d < n) return null;
+        return { text: esc(i.text), when: `carried over ${d} days`, href: 'today.html' };
+      }).filter(Boolean) },
+
+    { id: 'prices', name: 'Prices that stopped arriving', unit: 'days', days: 4,
+      find: ({ inv }, n) => {
+        const ats = Object.values(inv && inv.prices || {}).map(x => x && x.at).filter(Boolean).sort();
+        if (!(inv && inv.holdings || []).length || !ats.length) return [];
+        const d = Math.round((Date.now() - Date.parse(ats[ats.length - 1])) / 86400000);
+        return d >= n ? [{ text: 'Prices', when: `last fetched ${d} days ago`, href: 'investments.html' }] : [];
+      } },
+
+    { id: 'feel', name: 'Days left unrated', unit: 'days', days: 5,
+      find: ({ health, today }, n) => {
+        const rated = Object.entries(health && health.days || {}).filter(([, r]) => r.energy != null || r.mood != null).map(([d]) => d).sort();
+        const last = rated[rated.length - 1];
+        return last && days(last, today) >= n ? [{ text: 'How the days have felt', when: `not rated for ${days(last, today)} days`, href: 'health.html' }] : [];
+      } },
+  ];
+
+  // what you have turned off, and the numbers you have changed; kept with the other documents
+  let NPREFS = { off: [], days: {} };
+  const noticePrefs = async () => {
+    const doc = await store.load('prefs', true).catch(() => null);
+    const n = (doc || {}).notices || {};
+    NPREFS = { doc: doc || {}, off: n.off || [], days: n.days || {} };
+    return NPREFS;
+  };
+  const saveNoticePrefs = () => store.save('prefs', { ...(NPREFS.doc || {}), notices: { off: NPREFS.off, days: NPREFS.days } });
+  const noticeDays = r => { const v = +(NPREFS.days || {})[r.id]; return v > 0 ? v : r.days; };
+
   const noticing = async ({ school, health, todo, today }) => {
-    const out = [];
     const [lib, inv] = await Promise.all([store.load('library', true).catch(() => null), store.load('investments', true).catch(() => null)]);
-
-    // a book you are in the middle of that has not moved for a fortnight
-    for (const b of (lib && lib.books || []).filter(b => b.shelf === 'reading')) {
-      const log = Object.keys(b.log || {}).sort(), last = log[log.length - 1];
-      if (!last) continue;
-      const n = days(last, today);
-      if (n >= 14) out.push({ text: esc(b.title), when: `at page ${b.page || 0} for ${n} days`, href: 'library.html' });
-    }
-
-    // an exam close enough to matter with nothing studied for that course this week
-    for (const i of (school && school.items || []).filter(i => toDo(i) && i.due >= today)) {
-      const d = days(today, i.due); if (d > 4) continue;
-      if (!/(final|midterm|exam|test|quiz)/i.test(i.title) && i.type !== 'test') continue;
-      const mins = (school.sessions || []).filter(s => s.course === i.course && days(s.date, today) >= 0 && days(s.date, today) < 7).reduce((n, s) => n + (+s.min || 0), 0);
-      if (mins) continue;
-      out.push({ text: esc(i.title), when: d === 0 ? 'today, nothing studied' : `in ${d} ${d === 1 ? 'day' : 'days'}, nothing studied`, late: d <= 1, href: 'school.html' });
-    }
-
-    // a to-do that keeps being carried to the next morning
-    for (const i of (todo && todo.items || []).filter(i => !i.done && i.from)) {
-      const n = days(i.from, today);
-      if (n >= 4) out.push({ text: esc(i.text), when: `carried over ${n} days`, href: 'today.html' });
-    }
-
-    // prices that have stopped arriving, so the portfolio is quietly stale
-    const ats = Object.values(inv && inv.prices || {}).map(p => p && p.at).filter(Boolean).sort();
-    if ((inv && inv.holdings || []).length && ats.length) {
-      const n = Math.round((Date.now() - Date.parse(ats[ats.length - 1])) / 86400000);
-      if (n >= 4) out.push({ text: 'Prices', when: `last fetched ${n} days ago`, href: 'investments.html' });
-    }
-
-    // the feel reading, which only you can answer, left blank for a while
-    if (health) {
-      const rated = Object.entries(health.days || {}).filter(([, r]) => r.energy != null || r.mood != null).map(([d]) => d).sort();
-      const last = rated[rated.length - 1];
-      if (last && days(last, today) >= 5) out.push({ text: 'How the days have felt', when: `not rated for ${days(last, today)} days`, href: 'health.html' });
+    await noticePrefs();
+    const ctx = { school, health, todo, today, lib, inv };
+    const out = [];
+    for (const r of NOTICES) {
+      if ((NPREFS.off || []).includes(r.id)) continue;
+      try { out.push(...r.find(ctx, noticeDays(r))); } catch {}
     }
     return out.slice(0, 6);
   };
+
   // reminders on this device: a push subscription, kept on the server, sent to by /api/sync/notify
   const b64 = s => { const p = '='.repeat((4 - s.length % 4) % 4), r = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(r, c => c.charCodeAt(0)); };
   const pushState = async () => {
@@ -87,6 +109,15 @@
   const FOLD = 'hq.bell.syncs';
   const folded = () => { try { return localStorage.getItem(FOLD) !== 'open'; } catch { return true; } };
   const setFolded = v => { try { localStorage.setItem(FOLD, v ? 'shut' : 'open'); } catch {} };
+
+  // the nudges /api/sync/notify can send, named here so one can be silenced without silencing the lot
+  const NUDGES = [
+    ['weight', 'Step on the scale', 'morning'], ['supplements', 'Supplements to take', 'morning'], ['firstup', 'What is first today', 'morning'],
+    ['late', 'A to-do past its time', 'midday'], ['duetoday', 'Something due today', 'midday'],
+    ['open', 'Still open tonight', 'evening'], ['pages', 'Pages before bed', 'evening'], ['pills', 'Supplements not ticked', 'evening'],
+    ['cards', 'Three cards before bed', 'evening'], ['exam', 'An exam with nothing studied', 'evening'],
+    ['week', 'The week, on a Sunday', 'Sunday'], ['syncs', 'A source that has stopped', 'morning'],
+  ];
 
   const ago = iso => { const m = Math.round((Date.now() - new Date(iso)) / 60000); return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} d ago`; };
 
@@ -127,6 +158,18 @@
     .bellpop h4.fold + ul{margin-top:6px;padding-top:8px;border-top:1px solid var(--rule)}
     .bellpop h4.fold[aria-expanded=false] + ul{display:none}
     .bellpop h4.fold:hover{color:var(--ox)}
+    .bellpop h4.watch{display:flex;align-items:baseline;gap:10px}
+    .bellpop h4.watch .tune{margin-left:auto;font-family:var(--sans);font-size:11.5px;color:var(--ink-3);background:none;border:0;padding:0;cursor:pointer;letter-spacing:.03em}
+    .bellpop h4.watch .tune:hover{color:var(--ox)}
+    .bellpop .watchbox{padding:4px 0 2px}
+    .bellpop .watchbox li{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dotted var(--rule);font-size:13px}
+    .bellpop .watchbox input[type=checkbox]{appearance:none;width:14px;height:14px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px;flex:none}
+    .bellpop .watchbox input:checked{background:var(--band);border-color:var(--band)}
+    .bellpop .watchbox input:checked::after{content:"";width:6px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+    .bellpop .watchbox label{flex:1;cursor:pointer;font-family:var(--serif);font-size:14px}
+    .bellpop .watchbox .n{width:3.2ch;font-family:var(--serif);font-size:14px;text-align:right;border-bottom:1px dotted var(--ink-2);background:none;padding:0}
+    .bellpop .watchbox .n:focus{outline:none;border-bottom-color:var(--ink)}
+    .bellpop .watchbox .u{color:var(--ink-3);font-size:11.5px;white-space:nowrap}
     .row .right{position:relative}`;
   document.head.appendChild(style);
 
@@ -147,11 +190,66 @@
       const names = Object.keys(SOURCES), bad = names.filter(k => ledger[k] && ledger[k].ok === false);
       const sum = bad.length ? `${bad.length} failing` : `${names.filter(k => ledger[k]).length} of ${names.length} running`;
       const shut = folded();
-      pop.innerHTML = `${section('To do', notes.todos)}${section('Due', notes.due)}${section('Worth knowing', notes.noticed || [])}`
+      const noticed = notes.noticed || [];
+      pop.innerHTML = `${section('To do', notes.todos)}${section('Due', notes.due)}`
+        + `<h4 class="watch">Worth knowing<button type="button" class="tune" id="tunewatch">what to watch</button></h4>`
+        + (noticed.length ? `<ul class="notices">${noticed.map(n => `<li class="${n.late ? 'late' : ''}"><a href="${n.href}"><span class="t">${n.text}</span><span class="w">${n.when}</span></a></li>`).join('')}</ul>`
+                          : '<p class="empty">Nothing worth saying today.</p>')
+        + `<div id="watchbox" hidden></div>`
         + `<h4 class="fold" id="syncfold" role="button" tabindex="0" aria-expanded="${!shut}"><span class="tw">\u25b8</span>Syncs<span class="sum ${bad.length ? 'bad' : ''}">${sum}</span></h4>`
         + `<ul>${rows.join('')}</ul>`
         + `<h4>This device</h4>`
-        + `<ul><li id="pushrow"><span class="n">Reminders</span><span class="s">checking\u2026</span></li></ul>`;
+        + `<ul><li id="pushrow"><span class="n">Reminders</span><span class="s">checking…</span></li>`
+        + `<li><span class="n">What it may say</span><span class="s">the nudges, one by one</span><button class="go" type="button" id="tunenudge">Choose</button></li>`
+        + `<li id="nudgebox" hidden></li></ul>`;
+      const paintWatch = () => {
+        const box = pop.querySelector('#watchbox'); if (!box) return;
+        box.className = 'watchbox';
+        box.innerHTML = `<ul>${NOTICES.map(r => `<li data-r="${r.id}">
+          <input type="checkbox" id="w-${r.id}" ${(NPREFS.off || []).includes(r.id) ? '' : 'checked'}>
+          <label for="w-${r.id}">${r.name}</label>
+          <input class="n" inputmode="numeric" value="${noticeDays(r)}" aria-label="After how many ${r.unit}">
+          <span class="u">${r.unit}</span></li>`).join('')}</ul>`;
+      };
+      pop.querySelector('#tunewatch')?.addEventListener('click', () => {
+        const box = pop.querySelector('#watchbox');
+        if (!box.hidden) { box.hidden = true; return; }
+        box.hidden = false; paintWatch();
+      });
+      pop.querySelector('#watchbox')?.addEventListener('change', async e => {
+        const li = e.target.closest('[data-r]'); if (!li) return;
+        const id = li.dataset.r;
+        if (e.target.type === 'checkbox') {
+          const off = new Set(NPREFS.off || []);
+          e.target.checked ? off.delete(id) : off.add(id);
+          NPREFS.off = [...off];
+        } else {
+          const v = parseInt(e.target.value, 10);
+          const base = NOTICES.find(r => r.id === id);
+          if (v > 0) NPREFS.days[id] = v; else { delete NPREFS.days[id]; e.target.value = base.days; }
+        }
+        saveNoticePrefs();
+        notes = await notices(); paint(); render();
+        pop.querySelector('#watchbox').hidden = false; paintWatch();
+      });
+
+      pop.querySelector('#tunenudge')?.addEventListener('click', () => {
+        const box = pop.querySelector('#nudgebox');
+        if (!box.hidden) { box.hidden = true; return; }
+        box.hidden = false; box.className = 'watchbox';
+        const offs = new Set(((NPREFS.doc || {}).nudges || {}).off || []);
+        box.innerHTML = `<ul>${NUDGES.map(([id, name, when]) => `<li data-n="${id}">
+          <input type="checkbox" id="n-${id}" ${offs.has(id) ? '' : 'checked'}>
+          <label for="n-${id}">${name}</label><span class="u">${when}</span></li>`).join('')}</ul>`;
+      });
+      pop.querySelector('#nudgebox')?.addEventListener('change', e => {
+        const li = e.target.closest('[data-n]'); if (!li) return;
+        const doc = NPREFS.doc || {};
+        const set = new Set((doc.nudges || {}).off || []);
+        e.target.checked ? set.delete(li.dataset.n) : set.add(li.dataset.n);
+        NPREFS.doc = hqPrefs.save({ nudges: { off: [...set] } });
+      });
+
       const fold = el => { const open = el.getAttribute('aria-expanded') === 'true'; el.setAttribute('aria-expanded', !open); if (el.id === 'syncfold') setFolded(open); };
       pop.querySelectorAll('h4.fold').forEach(h => {
         h.addEventListener('click', () => fold(h));

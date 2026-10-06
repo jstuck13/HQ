@@ -13,13 +13,21 @@
     ['finances.' + today().slice(0, 7), d => [...(d.tx || []).map(t => ({ area: 'Finances', title: t.what || '', sub: [day(t.date), t.amt != null ? '$' + t.amt : ''].filter(Boolean).join(' · '), href: 'finances.html' })),
                             ...(d.cats || []).map(c => ({ area: 'Finances', title: c.name, sub: c.limit ? 'limit $' + c.limit : 'category', href: 'finances.html' }))]],
     ['health', d => [...(d.next || []).map(n => ({ area: 'Health', title: n.name, sub: [day(n.date), n.note].filter(Boolean).join(' · '), href: 'health.html' })),
-                     ...(d.meds || []).map(m => ({ area: 'Health', title: m.name, sub: m.when || 'supplement', href: 'health.html' }))]],
+                     ...(d.meds || []).map(m => ({ area: 'Health', title: m.name, sub: m.when || 'supplement', href: 'health.html' })),
+                     ...(d.readings || []).map(r => ({ area: 'Health', title: r.name, sub: ['a reading of your own', r.unit].filter(Boolean).join(' · '), href: 'health.html' }))]],
+    ['patterns', d => (d.shown || []).map((x, i) => ({ area: 'Patterns', title: [(d.labels || {})[x.a], 'and', (d.labels || {})[x.b]].filter(Boolean).join(' '), sub: `moved together on ${x.n} days${x.lag ? ', a day apart' : ''}`, href: 'patterns.html#pair-' + i }))],
     ['investments', d => (d.holdings || []).map(h => ({ area: 'Investments', title: h.ticker, sub: [(d.prices || {})[h.ticker] && d.prices[h.ticker].name, h.account, `${h.shares} shares`].filter(Boolean).join(' · '), href: 'investments.html' }))],
     ['study', d => (d.notes || []).map(n => ({ area: 'The Study', title: n.text, sub: day(n.date), href: 'study.html' }))],
     ['groceries', d => [...(d.list || []).map(l => ({ area: 'Groceries', title: l.text, sub: l.done ? 'got it' : 'on the list', href: 'groceries.html' })),
                       ...Object.values((d.trips || []).reduce((m, t) => { t.items.forEach(i => { m[i.name.toLowerCase()] ??= { area: 'Groceries', title: i.name, sub: `${'$' + i.price} at ${t.store}, ${day(t.date)}`, href: 'groceries.html' }; }); return m; }, {}))]],
     ['today.' + today(), d => (d.items || []).map(i => ({ area: 'Today', title: i.text, sub: i.done ? 'done' : 'to do', href: 'today.html' }))],
   ];
+
+  // The pages, so the box can navigate as well as find. Everything HQ has is in hq.js's list, including the
+  // pages the band does not hold, which are otherwise only reachable through More.
+  const pageRows = q => (window.HQ_PAGES || [])
+    .filter(p => p.name.toLowerCase().includes(q) || p.id.includes(q))
+    .map(p => ({ area: 'Go to', title: p.name, sub: p.file, href: p.file, page: true }));
   let rows = null;
   const gather = async () => { if (rows) return rows; const docs = await Promise.all(SOURCES.map(([k]) => store.load(k).catch(() => null))); rows = docs.flatMap((d, i) => d ? SOURCES[i][1](d) : []).filter(r => r.title); return rows; };
 
@@ -48,7 +56,8 @@
     const render = async q => {
       const list = pop.querySelector('ul'); q = q.trim().toLowerCase();
       if (!q) { list.innerHTML = ''; return; }
-      const hits = (await gather()).filter(r => (r.title + ' ' + r.sub).toLowerCase().includes(q)).slice(0, 30);
+      // a page that matches comes first: you are navigating, not looking something up
+      const hits = [...pageRows(q), ...(await gather()).filter(r => (r.title + ' ' + r.sub).toLowerCase().includes(q))].slice(0, 30);
       const add = q.length >= 3 && !hits.some(r => r.area === 'Library') ? `<li><a href="library.html?find=${encodeURIComponent(q)}"><span class="t">Add “${esc(q)}” to the Library</span><span class="s">search Open Library for it</span><span class="a">Library</span></a></li>` : '';
       list.innerHTML = hits.length || add ? hits.map(r => `<li><a href="${r.href}"><span class="t">${hi(r.title, q)}</span><span class="s">${esc(r.sub)}</span><span class="a">${r.area}</span></a></li>`).join('') + add : '<li class="none">Nothing matches.</li>';
     };

@@ -10,7 +10,7 @@ const $0 = n => (n<0?'−':'') + '$' + Math.round(Math.abs(n)).toLocaleString('e
 const toDo = i => !i.done && !i.noturn;
 // The version this copy of the app was built with. version.json holds the same number and is never cached,
 // so a page that has been open — or served from the offline shell — can tell when a newer one has been deployed.
-const HQ_VERSION = '4.19.2';
+const HQ_VERSION = '4.20.0';
 
 // a newer version is not forced on you mid-sentence: it says so, and waits to be asked
 async function watchVersion(){
@@ -158,6 +158,20 @@ const HQ_PAGES = [
   { id: 'restore', name: 'Restore', file: 'restore.html' },
 ];
 const HQ_BAND = ['today', 'calendar', 'finances', 'library', 'school', 'health'];   // what the band holds until you say otherwise
+window.HQ_PAGES = HQ_PAGES;   // the search box navigates by this list too
+
+// One door to the preferences document. Four things write to it now — the band, the state of affairs, what the
+// bell watches, and what the nudges may say — and each used to merge onto its own snapshot, so whichever wrote
+// last could drop what another had just set. Every write merges onto the cached copy instead.
+window.hqPrefs = {
+  get(){ try { return JSON.parse(localStorage.getItem('hq.prefs')) || {}; } catch { return {}; } },
+  save(patch){
+    const doc = { ...this.get(), ...patch };
+    try { localStorage.setItem('hq.prefs', JSON.stringify(doc)); } catch {}
+    if (window.store) store.save('prefs', doc);
+    return doc;
+  },
+};
 
 {
   const page = location.pathname.split('/').pop() || 'index.html';
@@ -194,9 +208,7 @@ const HQ_BAND = ['today', 'calendar', 'finances', 'library', 'school', 'health']
       const id = b.dataset.pin, now = bandIds();
       const next = now.includes(id) ? now.filter(x => x !== id) : [...now, id];
       if (!next.length) return;                                   // the band is never left empty
-      const doc = prefs(); doc.nav = next;
-      try { localStorage.setItem('hq.prefs', JSON.stringify(doc)); } catch {}
-      if (window.store) store.save('prefs', doc);                 // and kept, so the phone agrees
+      hqPrefs.save({ nav: next });                                // merged onto whatever else is in there
       paintNav();
       // the band under you has changed, but you may well want to move another: the list stays open
       const nav2 = document.querySelector('.band nav[aria-label="Areas"]');

@@ -397,7 +397,7 @@
     order.splice(j, 0, order.splice(i, 1)[0]);
     PREFS.order = order; savePrefs(); renderAffairs(LAST); paintArrange();
   });
-  const savePrefs = () => store.save('prefs', { ...(PREFS.doc||{}), affairs: { hidden: PREFS.hidden, order: PREFS.order } });
+  const savePrefs = () => { PREFS.doc = hqPrefs.save({ affairs: { hidden: PREFS.hidden, order: PREFS.order } }); };
 
   const ordinal = n => (n%10===1&&n!==11)?'st':(n%10===2&&n!==12)?'nd':(n%10===3&&n!==13)?'rd':'th';
 
