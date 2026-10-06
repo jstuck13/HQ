@@ -89,6 +89,9 @@
 
 <main>
   <h2>Every to-do<small id="count"></small></h2>
+  <form class="addt" id="addt"><input id="t-text" placeholder="Anything: a to-do, 12.40 lunch, 173.2, or Dentist Thursday 3–4 pm" required disabled><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
+  <div class="propose" id="propose" hidden></div>
+  <p class="saidt" id="saidt" hidden></p>
   <div class="sift">
     <input type="search" id="q" placeholder="Find a to-do…" aria-label="Find a to-do">
     <label><input type="checkbox" id="openonly">only what is still open</label>
@@ -102,6 +105,7 @@
 <script src="hq.js"></script>
 <script src="store.js"></script>
 <script src="recur.js"></script>
+<script src="capture.js"></script>
 <script src="bell.js"></script>
 <script src="search.js"></script>
 <script>
@@ -110,8 +114,11 @@
 
   // How far either way to look. A to-do lives in the document for the day it was on, so the only way to see
   // them all is to read the days; 120 back and 45 on covers a term without making the page a download.
-  const BACK = 120, AHEAD = 45;
+  const BACK = 120, AHEAD = 45, YM = TODAY.slice(0, 7);
   let ROWS = [], RULES = { rules: [] }, open = null;
+  // what the box writes into. The List is otherwise a read of the days, but the box can make anything, so the
+  // three documents the other meanings go to are read along with them.
+  let T = { items: [] }, CAL = null, FIN = null, HEALTH = null;
 
   const dayLabel = iso => iso === TODAY ? 'today'
     : iso === C.iso(C.addDays(C.now, -1)) ? 'yesterday'
@@ -124,14 +131,18 @@
   async function load(){
     const days = [];
     for(let i = -BACK; i <= AHEAD; i++) days.push(C.iso(C.addDays(C.now, i)));
-    const [rules, ...docs] = await Promise.all([store.load('todo.rules'), ...days.map(d => store.load('today.' + d))]);
+    const [rules, cal, fin, health, ...docs] = await Promise.all([store.load('todo.rules'), store.load('calendar'),
+      store.load('finances.' + YM), store.load('health'), ...days.map(d => store.load('today.' + d))]);
     RULES = rules || { rules: [] }; RULES.rules ??= [];
+    CAL = cal; FIN = fin; HEALTH = health;
+    T = docs[days.indexOf(TODAY)] || { items: [] };
     ROWS = [];
     days.forEach((d, k) => {
       const doc = docs[k]; if(!doc || !doc.items) return;
       doc.items.forEach(i => { if(i && i.text) ROWS.push({ ...i, day: d, key: idOf(i) }); });
     });
     ROWS.sort((a, b) => a.day < b.day ? 1 : a.day > b.day ? -1 : 0);   // newest first, as a ledger reads
+    F('t-text').disabled = false;   // not before the days are in, or a capture would write over today's list
     render();
     hqReveal();
   }
@@ -207,6 +218,22 @@
     return (!q || r.text.toLowerCase().includes(q)) && (!F('openonly').checked || !r.done) && (!F('standing').checked || r.rule);
   };
   ['q', 'openonly', 'standing'].forEach(id => F(id).addEventListener('input', () => { open = null; render(); }));
+
+  // the same box as Today's, from capture.js. A capture can land on any day — tomorrow, next Thursday — so
+  // afterwards the days are simply read again rather than guessed at.
+  hqCapture({
+    todo: () => T,
+    rules: () => RULES,
+    cal: () => CAL || (CAL = { cats: [{ id: 'cal', name: 'Appointments', tint: '#E9EEF3' }], series: [], notes: {}, hidden: [] }),
+    fin: () => FIN || (FIN = { expected: 0, income: [], plan: [], cats: [], tx: [], history: [] }),
+    health: () => HEALTH || (HEALTH = { days: {}, meds: [], next: [] }),
+    saveTodo: () => store.save('today.' + TODAY, T),
+    saveRules: () => store.save('todo.rules', RULES),
+    saveCal: () => store.save('calendar', CAL),
+    saveFin: () => store.save('finances.' + YM, FIN),
+    saveHealth: () => store.save('health', HEALTH),
+    redraw: what => { if (what === 'todo') load(); },
+  });
 
   load();
 </script>

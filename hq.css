@@ -151,3 +151,19 @@ ul{list-style:none;margin:0;padding:0}
 @media (max-width:900px){
   .band .in{padding:14px 20px 20px} .date{display:none} .row{flex-wrap:wrap;gap:14px} .menu{display:grid;place-items:center;width:32px;height:32px;color:var(--band-ink)} nav{display:none;order:9;width:100%;flex-wrap:wrap;gap:10px 18px;margin:12px 0 0;padding-top:12px;border-top:1px solid rgba(242,236,223,.28)} .band.nav-open nav{display:flex} .band h1{font-size:26px}   /* outranks each page's own h1 size */
 }
+
+/* ---- the all-in-one box, on Today and The List (capture.js) ---- */
+.propose{margin-top:10px;padding:14px 16px;background:var(--card);border-radius:12px;box-shadow:var(--shadow)}
+.propose .pq{margin:0 0 8px;font-family:var(--serif);font-size:15px}
+.propose ul{list-style:none;margin:0;padding:0}
+.propose li{display:flex;align-items:baseline;gap:12px;padding:7px 0;border-bottom:1px dotted var(--rule)}
+.propose li:last-child{border-bottom:0}
+.propose .t{font-family:var(--serif);font-size:15.5px;flex:1}
+.propose .w{font-size:12.5px;color:var(--ink-3);white-space:nowrap}
+.propose .pa{margin:10px 0 0;display:flex;gap:18px}
+.saidt{margin:8px 0 0;font-size:13px;color:var(--ox);font-family:var(--serif);font-style:italic}
+.addt{display:grid;grid-template-columns:1fr auto;gap:12px;padding:12px 0;align-items:baseline}
+.addt input{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0}
+.addt input:focus{outline:none;border-bottom-color:var(--ink)}
+.addt input::placeholder{color:var(--ink-3);font-style:italic}
+.addt .textbtn{font-size:13.5px}
