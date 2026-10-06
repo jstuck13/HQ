@@ -1,6 +1,21 @@
 // The pages' one data door. load(key) / save(key, doc).
 // Server is the truth; localStorage is a cache so pages render instantly and still work offline.
 // A page that only has the cache (no server yet, or signed out) keeps working exactly as before.
+
+// One address, or none of the above holds. Every Vercel deployment also answers on a one-off hostname of its
+// own, and a browser keeps cookies and localStorage per hostname — so opening HQ there asks for the passcode
+// again, shows a directory nobody arranged, and, being signed out, falls back to that origin's empty cache
+// instead of the server. It looks for all the world like two devices disagreeing about your data. They are not
+// disagreeing; they are two different origins. So a deployment host hands you to the address it is all kept
+// under. ?stay opts out, for looking at a preview on purpose. This is the first thing in the first shared
+// script, because it has to happen before anything is read.
+(function () {
+  const HOME = 'hq-six-puce.vercel.app';
+  const h = location.hostname;
+  if (h !== HOME && h.endsWith('.vercel.app') && !/(?:^|[?&])stay(?:[=&]|$)/.test(location.search))
+    location.replace(`${location.protocol}//${HOME}${location.pathname}${location.search}${location.hash}`);
+})();
+
 (function () {
   const ls = {
     get: k => { try { return JSON.parse(localStorage.getItem('hq.' + k)); } catch { return null; } },
