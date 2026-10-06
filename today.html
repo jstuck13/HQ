@@ -108,6 +108,12 @@
   .propose .t{font-family:var(--serif);font-size:15.5px;flex:1}
   .propose .w{font-size:12.5px;color:var(--ink-3);white-space:nowrap}
   .propose .pa{margin:10px 0 0;display:flex;gap:18px}
+  .todo .tg{font-size:12.5px;color:var(--ink-3);white-space:nowrap}
+  .todo .tg .did{width:3.2ch;font-family:var(--serif);font-size:14px;text-align:right;border-bottom:1px dotted var(--ink-2);background:none;padding:0;color:var(--ink)}
+  .todo .tg .did:focus{outline:none;border-bottom-color:var(--ink)}
+  .todo .skip{color:var(--ink-3);opacity:0;transition:opacity .15s}
+  .todo li:hover .skip,.todo li:focus-within .skip{opacity:1} .todo .skip:hover{color:var(--ox)}
+  .reps li.over{opacity:.55}
   .saidt{margin:8px 0 0;font-size:13px;color:var(--ox);font-family:var(--serif);font-style:italic}
   .reps{list-style:none;margin:10px 0 0;padding:0}
   .reps li{display:flex;align-items:baseline;gap:12px;padding:6px 0;border-top:1px dotted var(--rule);font-size:13.5px;color:var(--ink-2)}
@@ -441,13 +447,26 @@
   const YDAY = C.iso(C.addDays(C.fromISO(TODAY),-1));
   const saveT = () => store.save(TKEY, T);
   function renderTodo(){
-    F('reps').innerHTML = (RULES.rules||[]).map(r=>`<li><span>${esc(r.text)}<small>${repSays(r.rep)}${r.at!=null?` · by ${h12(r.at)}`:''}</small></span><button class="textbtn" type="button" data-stop="${r.id}">stop</button></li>`).join('');
+    F('reps').innerHTML = (RULES.rules||[]).map(r=>`<li class="${ruleOver(r)?'over':''}"><span>${esc(r.text)}<small>${[repSays(r.rep), r.target&&!r.text.toLowerCase().includes(r.target.unit)?`${r.target.n} ${esc(r.target.unit)}`:'', r.at!=null?`by ${h12(r.at)}`:'', r.until?(ruleOver(r)?`ended ${C.dayMonth(C.fromISO(r.until))}`:`until ${C.dayMonth(C.fromISO(r.until))}`):''].filter(Boolean).join(' · ')}</small></span><button class="textbtn" type="button" data-stop="${r.id}">${ruleOver(r)?'remove':'stop'}</button></li>`).join('');
     const done=T.items.filter(i=>i.done).length;
     F('todon').textContent = T.items.length ? `${done} of ${T.items.length}` : 'nothing yet';
-    F('todo').innerHTML = T.items.length ? T.items.map((i,k)=>`<li><input type="checkbox" id="t${k}" ${i.done?'checked':''} data-k="${k}"><label for="t${k}">${esc(i.text)}</label>${i.rule?'<span class="rp" title="comes back on its own">\u21bb</span>':''}${i.at!=null?`<span class="w ${!i.done&&i.at<NOW?'due':''}">by ${h12(i.at)}</span>`:''}${i.from?`<span class="w from">from ${i.from===YDAY?'yesterday':C.short(C.fromISO(i.from))}</span>`:''}<button class="w x" type="button" data-rm="${k}" aria-label="Remove">remove</button></li>`).join('') : '<li class="empty">Nothing on the list. Add the one thing today needs.</li>';
+    F('todo').innerHTML = T.items.length ? T.items.map((i,k)=>`<li><input type="checkbox" id="t${k}" ${i.done?'checked':''} data-k="${k}"><label for="t${k}">${esc(i.text)}</label>${i.rule?'<span class="rp" title="comes back on its own">\u21bb</span>':''}${i.target?`<span class="tg"><input class="did" value="${i.did||0}" inputmode="decimal" data-did="${k}" aria-label="How much of ${esc(i.text)} so far"> of ${i.target.n}${i.text.toLowerCase().includes(i.target.unit)?'':' '+esc(i.target.unit)}</span>`:''}${i.at!=null?`<span class="w ${!i.done&&i.at<NOW?'due':''}">by ${h12(i.at)}</span>`:''}${i.from?`<span class="w from">from ${i.from===YDAY?'yesterday':C.short(C.fromISO(i.from))}</span>`:''}${i.rule?`<button class="w skip" type="button" data-skip="${k}">not today</button>`:''}<button class="w x" type="button" data-rm="${k}" aria-label="Remove">remove</button></li>`).join('') : '<li class="empty">Nothing on the list. Add the one thing today needs.</li>';
   }
-  F('todo').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ T.items[+e.target.dataset.k].done=e.target.checked; saveT(); renderTodo(); d.day=renderDay(CAL); } });
-  F('todo').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ const was=hqCopy(T.items), gone=T.items[+b.dataset.rm];
+  F('todo').addEventListener('change', e=>{
+    if(e.target.matches('[data-did]')){ const i=T.items[+e.target.dataset.did]; if(!i) return;
+      const v=parseFloat(e.target.value); i.did = isNaN(v)||v<=0 ? undefined : v;
+      if(i.target && i.did >= i.target.n) i.done = true;    // the target met is the thing done
+      saveT(); renderTodo(); d.day=renderDay(CAL); return; }
+    if(e.target.type==='checkbox'){ T.items[+e.target.dataset.k].done=e.target.checked; saveT(); renderTodo(); d.day=renderDay(CAL); } });
+  // Skipping one day: the instance goes and is remembered as skipped, so posting it again does not undo that.
+  // The rule itself is untouched — it comes back tomorrow.
+  F('todo').addEventListener('click', e=>{ const sk=e.target.closest('[data-skip]'); if(sk){
+      const k=+sk.dataset.skip, it=T.items[k]; if(!it||!it.rule) return;
+      const was=hqCopy(T.items), wasSkip=hqCopy(T.skipped||[]);
+      T.items.splice(k,1); T.skipped=[...(T.skipped||[]), it.rule]; saveT(); renderTodo(); d.day=renderDay(CAL);
+      hqUndo(`${it.text} for today`, ()=>{ T.items=was; T.skipped=wasSkip; saveT(); renderTodo(); d.day=renderDay(CAL); });
+      return; }
+    const b=e.target.closest('[data-rm]'); if(b){ const was=hqCopy(T.items), gone=T.items[+b.dataset.rm];
     T.items.splice(+b.dataset.rm,1); saveT(); renderTodo();
     hqUndo(gone?gone.text:'the to-do', ()=>{ T.items=was; saveT(); renderTodo(); }); } });
   // "… by 3 pm" / "… at 3.30pm" at the end of a to-do becomes its time; it then sits on the timeline and the bell watches it
@@ -464,6 +483,50 @@
     return { text: t.slice(0, m.index).trim(), at: atFrom(m[1], m[2], m[3]) };
   };
   const migrateAt = () => { let n=0; T.items.forEach(i=>{ if(i.at==null){ const p=parseAt(i.text); if(p.at!=null){ Object.assign(i,p); n++; } } }); return n; };
+  // A target is a number with a unit after it, which nothing else the box reads ever has: money is a bare
+  // amount or carries a currency mark, a weight is a bare number. So "read 20 pages" is unambiguous.
+  const UNITS_T = 'pages?|minutes?|mins?|hours?|hrs?|km|kilometres?|kilometers?|miles?|sets?|reps?|glasses|cups?|words?|chapters?';
+  const UNIT_NAME = u => { const w = u.toLowerCase();
+    return /^pages?$/.test(w) ? 'pages' : /^(minutes?|mins?)$/.test(w) ? 'min' : /^(hours?|hrs?)$/.test(w) ? 'h'
+      : /^(km|kilomet)/.test(w) ? 'km' : /^miles?$/.test(w) ? 'miles' : /^sets?$/.test(w) ? 'sets'
+      : /^reps?$/.test(w) ? 'reps' : /^glasses$/.test(w) ? 'glasses' : /^cups?$/.test(w) ? 'cups'
+      : /^words?$/.test(w) ? 'words' : 'chapters'; };
+  const takeTarget = t => {
+    const m = new RegExp(`\\b(\\d{1,4}(?:\\.\\d{1,2})?)\\s*(${UNITS_T})\\b`, 'i').exec(t);
+    if(!m) return { text: t };
+    return { text: t, target: { n: +m[1], unit: UNIT_NAME(m[2]) } };   // the phrase is read, not removed
+  };
+
+  // An end: a day it stops on, or a stretch from today. Both say when, so both become one date.
+  const WORDNUM = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, twelve: 12 };
+  const MONTHS = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+  const takeUntil = t => {
+    const span = /\bfor\s+(?:the\s+next\s+)?(\d{1,3}|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve)\s+(days?|weeks?|months?)\b/i.exec(t);
+    if(span){
+      const n = +span[1] || WORDNUM[span[1].toLowerCase()] || 1;
+      const mult = /^week/i.test(span[2]) ? 7 : /^month/i.test(span[2]) ? 30 : 1;
+      return { text: (t.slice(0, span.index) + ' ' + t.slice(span.index + span[0].length)).replace(/\s+/g,' ').trim(),
+               until: C.iso(C.addDays(C.now, n * mult)) };
+    }
+    const m = /\b(?:until|till|thru|through|up to)\s+((?:the\s+)?[a-z0-9]+(?:\s+\d{1,2})?)/i.exec(t);
+    if(!m) return { text: t };
+    const until = untilDate(m[1].trim());
+    if(!until) return { text: t };
+    return { text: (t.slice(0, m.index) + ' ' + t.slice(m.index + m[0].length)).replace(/\s+/g,' ').trim(), until };
+  };
+  // "December" means the end of it; "the 20th" the next 20th; a weekday the next one of those
+  const untilDate = w => {
+    const t = w.toLowerCase().replace(/^the\s+/, '');
+    const mi = MONTHS.findIndex(x => x === t || x.slice(0,3) === t.slice(0,3));
+    if(mi >= 0){ const y = C.now.getFullYear() + (mi < C.now.getMonth() ? 1 : 0); return C.iso(new Date(y, mi + 1, 0, 12)); }
+    const nth = /^(\d{1,2})(?:st|nd|rd|th)?$/.exec(t);
+    if(nth){ const dd = +nth[1]; if(dd < 1 || dd > 31) return null;
+      const now = C.now, m = dd >= now.getDate() ? now.getMonth() : now.getMonth() + 1;
+      return C.iso(new Date(now.getFullYear(), m, dd, 12)); }
+    try { const d = C.parseDay(t); if(d && d > TODAY) return d; } catch {}
+    return null;
+  };
+
   // ---- one sentence, possibly several things ----
   // A capture is split only on a strong signal: a semicolon, or commas when more than one clause carries its
   // own "every …". Splitting on every comma would wreck "Dentist, Tuesday 3 pm", which is one thing.
@@ -519,9 +582,15 @@
     const wd = C.now.getDay();
     return rep === 'daily' || (rep === 'weekdays' && wd >= 1 && wd <= 5) || rep === wd;
   };
-  // a standing item joins the day it belongs to, once
+  // a standing item joins the day it belongs to, once — unless it has run out, or you skipped today
+  const ruleOver = r => r.until && TODAY > r.until;
   const postRules = () => { let n = 0;
-    for(const r of RULES.rules || []) if(repToday(r.rep) && !T.items.some(i => i.rule === r.id)) { T.items.push({ text: r.text, at: r.at, done: false, rule: r.id }); n++; }
+    for(const r of RULES.rules || []){
+      if(!repToday(r.rep) || ruleOver(r)) continue;
+      if((T.skipped || []).includes(r.id)) continue;
+      if(T.items.some(i => i.rule === r.id)) continue;
+      T.items.push({ text: r.text, at: r.at, done: false, rule: r.id, target: r.target }); n++;
+    }
     return n; };
 
   // ---- an appointment, told apart from a to-do by having a span or a day of its own ----
@@ -606,10 +675,12 @@
     const { parts, hint } = splitCapture(raw);
     if(parts.length < 2) return null;                       // one thing: the ordinary path handles it
     const plans = parts.map(part => {
-      const r = takeRep(part);
-      const p = parseAt(r.text);
-      return { text: tidy(p.text), at: p.at, rep: r.rep };
+      const r = takeRep(part), u = takeUntil(r.text), g = takeTarget(u.text);
+      const p = parseAt(g.text);
+      return { text: tidy(p.text), at: p.at, rep: r.rep, target: g.target, until: u.until };
     });
+    const anyUntil = plans.find(x => x.until);                 // an end said once belongs to all of them too
+    if(anyUntil) plans.forEach(x => { if(!x.until) x.until = anyUntil.until; });
     const anyAt = plans.find(x => x.at != null);            // a time said once belongs to all of them
     if(anyAt) plans.forEach(x => { if(x.at == null) x.at = anyAt.at; });
     if(hint === 'todo') plans.forEach(x => { x.kind = 'todo'; });
@@ -620,9 +691,9 @@
     for(const x of plans){
       if(x.rep != null){
         const id = uid('r');
-        (RULES.rules ??= []).push({ id, text: x.text, at: x.at, rep: x.rep });
-        if(repToday(x.rep) && !T.items.some(i => i.rule === id)) T.items.push({ text: x.text, at: x.at, done: false, rule: id });
-      } else T.items.push({ text: x.text, at: x.at, done: false });
+        (RULES.rules ??= []).push({ id, text: x.text, at: x.at, rep: x.rep, target: x.target, until: x.until });
+        if(repToday(x.rep) && !T.items.some(i => i.rule === id)) T.items.push({ text: x.text, at: x.at, done: false, rule: id, target: x.target });
+      } else T.items.push({ text: x.text, at: x.at, done: false, target: x.target });
     }
     saveRules(); saveT(); renderTodo(); d.day = renderDay(CAL);
     return plans.length;
@@ -632,7 +703,7 @@
   function proposeCapture(raw, plans){
     const box = F('propose');
     box.hidden = false;
-    box.innerHTML = `<p class="pq">More than one thing in that. Make them?</p><ul>${plans.map(x => `<li><span class="t">${esc(x.text)}</span><span class="w">${[x.rep != null ? repSays(x.rep) : 'today', x.at != null ? 'by ' + h12(x.at) : ''].filter(Boolean).join(' · ')}</span></li>`).join('')}</ul>
+    box.innerHTML = `<p class="pq">More than one thing in that. Make them?</p><ul>${plans.map(x => `<li><span class="t">${esc(x.text)}</span><span class="w">${[x.rep != null ? repSays(x.rep) : 'today', x.target ? `${x.target.n} ${x.target.unit}` : '', x.at != null ? 'by ' + h12(x.at) : '', x.until ? 'until ' + C.dayMonth(C.fromISO(x.until)) : ''].filter(Boolean).join(' · ')}</span></li>`).join('')}</ul>
       <p class="pa"><button class="textbtn" type="button" id="pyes">Yes, make ${plans.length}</button><button class="textbtn" type="button" id="pno">No, just one to-do</button></p>`;
     F('pyes').addEventListener('click', () => { const n = makePlanned(plans); box.hidden = true; F('t-text').value = ''; said(`Made ${n} standing to-dos`); });
     F('pno').addEventListener('click', () => { box.hidden = true; F('t-text').value = ''; capture(raw, true); });
@@ -674,14 +745,17 @@
     }
     // a to-do, which may repeat, may carry a time, and may belong to another day
     const r = parseRep(t);
-    if(r.rep != null){ const p = parseAt(r.text); const id = uid('r'); (RULES.rules ??= []).push({ id, text: p.text, at: p.at, rep: r.rep }); saveRules();
-      if(repToday(r.rep) && !T.items.some(i => i.rule === id)) T.items.push({ text: p.text, at: p.at, done: false, rule: id });
-      said(`“${p.text}” will come back ${repSays(r.rep)}`);
+    if(r.rep != null){ const u = takeUntil(r.text), g = takeTarget(u.text); const p = parseAt(g.text); p.text = tidy(p.text);
+      const id = uid('r'); (RULES.rules ??= []).push({ id, text: p.text, at: p.at, rep: r.rep, target: g.target, until: u.until }); saveRules();
+      if(repToday(r.rep) && !ruleOver({ until: u.until })) T.items.push({ text: p.text, at: p.at, done: false, rule: id, target: g.target });
+      said(`“${p.text}” will come back ${repSays(r.rep)}${g.target ? `, ${g.target.n} ${g.target.unit} a time` : ''}${u.until ? `, until ${C.dayMonth(C.fromISO(u.until))}` : ''}`);
       saveT(); renderTodo(); d.day = renderDay(CAL); return;
     }
     const dw = parseDayWord(r.text);
-    const p = parseAt(dw ? dw.text : r.text);
+    const g0 = takeTarget(dw ? dw.text : r.text);
+    const p = parseAt(g0.text);
     p.text = tidy(p.text);
+    if(g0.target) p.target = g0.target;
     if(dw && dw.date !== TODAY){                      // a day of its own: it waits in that day's list
       const key = 'today.' + dw.date;
       const doc = (await store.load(key)) || { items: [] };
