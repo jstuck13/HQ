@@ -528,6 +528,7 @@
       for(let i=1;i<=3 && !T.items.length;i++){ const k=C.iso(C.addDays(C.fromISO(TODAY),-i)), prev=await store.load('today.'+k); if(prev && prev.items){ T.items = prev.items.filter(x=>!x.done && !x.rule).map(x=>({text:x.text, done:false, from:x.from||k})); break; } }
       if(T.items.length) saveT();
     }
+    CAP.fold();                // any standing to-do that had grown a twin rule becomes one again
     if(postRules()) saveT();   // the standing items join the day, once
     const health = H && H.days ? Object.assign({meds:(H.meds||[]).length}, H.days[TODAY] || {pills:[]}) : null;
     Object.assign(d, { fin, health, lib, school, H, inv, study, pat }); CAL = cal;

@@ -206,15 +206,59 @@
       return plans.every(x => x.text) ? plans : null;
     }
 
+    // One standing to-do, one rule. Asked again — the same words, perhaps a new cadence or a new deadline — the
+    // rule is told, not twinned. Minting a fresh id every time was how the same practice came to sit on a day
+    // three times over, once for each rule that quietly accumulated behind it.
+    const keyOf = text => String(text || '').trim().toLowerCase();
+    function upsertRule(x) {
+      const T = ctx.todo(), RULES = ctx.rules();
+      T.items ??= []; RULES.rules ??= [];
+      const had = RULES.rules.find(r => keyOf(r.text) === keyOf(x.text));
+      const id = had ? had.id : uid('r');
+      const made = { id, text: x.text, at: x.at, rep: x.rep, target: x.target, until: x.until };
+      if (had) Object.assign(had, made); else RULES.rules.push(made);
+      const it = T.items.find(i => i.rule === id);
+      if (it) Object.assign(it, { text: x.text, at: x.at, target: x.target });   // the day's copy follows the rule
+      else if (window.hqRecur.on(x.rep, TODAY) && !(x.until && TODAY > x.until) && !(T.skipped || []).includes(id))
+        T.items.push({ text: x.text, at: x.at, done: false, rule: id, target: x.target });
+      return !!had;
+    }
+
+    // Two rules for the same standing to-do are one rule said twice. This folds them back together: the first
+    // stays, what the others kept is merged into its record, and the day's items are pointed at the keeper.
+    function fold() {
+      const T = ctx.todo(), RULES = ctx.rules();
+      T.items ??= []; RULES.rules ??= [];
+      const keep = new Map(), moved = new Map(), rules = [];
+      for (const r of RULES.rules) {
+        const first = keep.get(keyOf(r.text));
+        if (!first) { keep.set(keyOf(r.text), r); rules.push(r); continue; }
+        moved.set(r.id, first.id);
+        first.log = Object.assign({}, r.log, first.log);   // the keeper's own days win where both have one
+      }
+      if (!moved.size) return 0;
+      RULES.rules = rules;
+      T.items.forEach(i => { if (i.rule && moved.has(i.rule)) i.rule = moved.get(i.rule); });
+      const byRule = new Map();
+      T.items = T.items.filter(i => {
+        if (!i.rule) return true;
+        const had = byRule.get(i.rule);
+        if (!had) { byRule.set(i.rule, i); return true; }
+        if (i.done) had.done = true;                       // a tick on any of the copies is a tick
+        if (+i.did > (+had.did || 0)) had.did = i.did;
+        return false;
+      });
+      if (T.skipped) T.skipped = [...new Set(T.skipped.map(id => moved.get(id) || id))];
+      ctx.saveRules(); ctx.saveTodo();
+      return moved.size;
+    }
+
     function makePlanned(plans) {
       const T = ctx.todo(), RULES = ctx.rules();
       T.items ??= []; RULES.rules ??= [];
       for (const x of plans) {
-        if (x.rep != null) {
-          const id = uid('r');
-          RULES.rules.push({ id, text: x.text, at: x.at, rep: x.rep, target: x.target, until: x.until });
-          if (window.hqRecur.on(x.rep, TODAY) && !T.items.some(i => i.rule === id)) T.items.push({ text: x.text, at: x.at, done: false, rule: id, target: x.target });
-        } else T.items.push({ text: x.text, at: x.at, done: false, target: x.target });
+        if (x.rep != null) upsertRule(x);
+        else T.items.push({ text: x.text, at: x.at, done: false, target: x.target });
       }
       ctx.saveRules(); ctx.saveTodo(); ctx.redraw('todo');
       return plans.length;
@@ -274,10 +318,9 @@
       const r = takeRep(t);
       if (r.rep != null) {
         const u = takeUntil(r.text), g = takeTarget(u.text); const p = parseAt(g.text); p.text = tidy(p.text);
-        const id = uid('r');
-        (RULES.rules ??= []).push({ id, text: p.text, at: p.at, rep: r.rep, target: g.target, until: u.until }); ctx.saveRules();
-        if (window.hqRecur.on(r.rep, TODAY) && !(u.until && TODAY > u.until)) T.items.push({ text: p.text, at: p.at, done: false, rule: id, target: g.target });
-        said(`“${p.text}” will come back ${window.hqRecur.says(r.rep)}${g.target ? `, ${g.target.n} ${g.target.unit} a time` : ''}${u.until ? `, until ${C.dayMonth(C.fromISO(u.until))}` : ''}`);
+        const had = upsertRule({ text: p.text, at: p.at, rep: r.rep, target: g.target, until: u.until });
+        ctx.saveRules();
+        said(`“${p.text}” ${had ? 'now comes back' : 'will come back'} ${window.hqRecur.says(r.rep)}${g.target ? `, ${g.target.n} ${g.target.unit} a time` : ''}${u.until ? `, until ${C.dayMonth(C.fromISO(u.until))}` : ''}`);
         ctx.saveTodo(); ctx.redraw('todo'); return;
       }
       const dw = parseDayWord(r.text);
@@ -301,6 +344,6 @@
     if (form) form.addEventListener('submit', e => { e.preventDefault();
       const i = el(ids.input), t = i.value.trim(); if (!t) return; form.reset(); capture(t); });
 
-    return { capture, said, planCapture, parseAt, takeRep, takeTarget, takeUntil, parseWhen, parseDayWord, money, whatOf, catFor, tidy, uid };
+    return { capture, said, fold, planCapture, parseAt, takeRep, takeTarget, takeUntil, parseWhen, parseDayWord, money, whatOf, catFor, tidy, uid };
   };
 })();

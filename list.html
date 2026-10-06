@@ -125,8 +125,10 @@
     : iso === C.iso(C.addDays(C.now, 1)) ? 'tomorrow'
     : C.dayMonth(C.fromISO(iso));
 
-  // what a to-do is, across the days: a rule if it has one, otherwise its own words
-  const idOf = i => i.rule ? 'r:' + i.rule : 't:' + i.text.trim().toLowerCase();
+  // What a to-do is, across the days: its own words. Keying on the rule instead would split one practice in
+  // two wherever it had grown a twin rule, and nothing in HQ ever edits a to-do's text, so the words are the
+  // steadier name of the thing.
+  const idOf = i => i.text.trim().toLowerCase();
 
   async function load(){
     const days = [];
@@ -136,10 +138,19 @@
     RULES = rules || { rules: [] }; RULES.rules ??= [];
     CAL = cal; FIN = fin; HEALTH = health;
     T = docs[days.indexOf(TODAY)] || { items: [] };
+    CAP.fold();   // a standing to-do that had grown a twin rule showed up twice on every day it fell on
     ROWS = [];
     days.forEach((d, k) => {
       const doc = docs[k]; if(!doc || !doc.items) return;
-      doc.items.forEach(i => { if(i && i.text) ROWS.push({ ...i, day: d, key: idOf(i) }); });
+      // one line per time a thing was on a day, so the same thing twice on one day is one line: a tick on
+      // either copy is a tick, and the most logged against it stands
+      const seen = new Map();
+      doc.items.forEach(i => {
+        if(!i || !i.text) return;
+        const key = idOf(i), had = seen.get(key);
+        if(had){ if(i.done) had.done = true; if(+i.did > (+had.did || 0)) had.did = i.did; return; }
+        const row = { ...i, day: d, key }; seen.set(key, row); ROWS.push(row);
+      });
     });
     ROWS.sort((a, b) => a.day < b.day ? 1 : a.day > b.day ? -1 : 0);   // newest first, as a ledger reads
     F('t-text').disabled = false;   // not before the days are in, or a capture would write over today's list
@@ -221,7 +232,7 @@
 
   // the same box as Today's, from capture.js. A capture can land on any day — tomorrow, next Thursday — so
   // afterwards the days are simply read again rather than guessed at.
-  hqCapture({
+  const CAP = hqCapture({
     todo: () => T,
     rules: () => RULES,
     cal: () => CAL || (CAL = { cats: [{ id: 'cal', name: 'Appointments', tint: '#E9EEF3' }], series: [], notes: {}, hidden: [] }),
