@@ -200,24 +200,8 @@
     }).sort((a, b) => rank(a) - rank(b) || (last(a) < last(b) ? 1 : -1));
   };
 
-  // How many times a to-do was actually asked of you, which is not the same as how many mornings it was in
-  // front of you. A standing item is asked afresh every day its rule falls on, so each of those days counts.
-  // A plain one is asked once: rollover copies it into the next day while it is unticked, stamping `from` with
-  // the day it was first written, and those copies are the same load of laundry put off — not another load.
-  const times = it => {
-    if(it.rep != null) return it.days.map(d => ({ made: d.day, last: d.day, done: !!d.done, did: +d.did || 0, waited: 0 }));
-    const by = new Map();
-    for(const d of it.days){
-      const made = d.from || d.day;
-      const o = by.get(made) || { made, last: d.day, done: false, did: 0, waited: 0 };
-      o.last = d.day;                                      // the last morning this one was still there
-      if(d.done){ o.done = true; o.settled = d.day; }
-      if(+d.did > o.did) o.did = +d.did;
-      o.waited = C.daysBetween(made, o.settled || o.last);
-      by.set(made, o);
-    }
-    return [...by.values()].sort((a, b) => a.made < b.made ? -1 : 1);
-  };
+  // how many times it was actually asked for — the counting lives in recur.js, which the digest reads too
+  const times = it => hqRecur.askings(it.days, it.rep != null);
   // what is on the docket, in that order: today's unfinished, today's done, what is still standing, then the rest
   const rank = it => it.today && !it.today.done ? 0 : it.today ? 1 : (it.rep != null && !it.over) ? 2 : 3;
   const last = it => it.days[it.days.length - 1].day;

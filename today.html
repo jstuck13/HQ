@@ -456,9 +456,13 @@
       T.items.splice(k,1); T.skipped=[...(T.skipped||[]), it.rule]; markRule(it.rule, false); saveT(); renderTodo(); d.day=renderDay(CAL);
       hqUndo(`${it.text} for today`, ()=>{ T.items=was; T.skipped=wasSkip; saveT(); renderTodo(); d.day=renderDay(CAL); });
       return; }
-    const b=e.target.closest('[data-rm]'); if(b){ const was=hqCopy(T.items), gone=T.items[+b.dataset.rm];
-    T.items.splice(+b.dataset.rm,1); saveT(); renderTodo();
-    hqUndo(gone?gone.text:'the to-do', ()=>{ T.items=was; saveT(); renderTodo(); }); } });
+    const b=e.target.closest('[data-rm]'); if(b){ const was=hqCopy(T.items), wasDrop=hqCopy(T.dropped||[]), gone=T.items[+b.dataset.rm];
+    T.items.splice(+b.dataset.rm,1);
+    // Removing a to-do is deciding against it, so it is remembered as dropped. Without that, work that follows
+    // you from day to day would simply come back tomorrow and removing it would never mean anything.
+    if(gone && !gone.rule) T.dropped=[...new Set([...(T.dropped||[]), askOf(gone, TODAY)])];
+    saveT(); renderTodo();
+    hqUndo(gone?gone.text:'the to-do', ()=>{ T.items=was; T.dropped=wasDrop; saveT(); renderTodo(); }); } });
   const migrateAt = () => { let n=0; T.items.forEach(i=>{ if(i.at==null){ const p=parseAt(i.text); if(p.at!=null){ Object.assign(i,p); n++; } } }); return n; };
   // ---- standing to-dos: the rules, and what each one's record adds up to ----
   let RULES = { rules: [] };
@@ -517,6 +521,39 @@
     hqUndo(goneR?goneR.text:'the standing to-do', ()=>{ RULES.rules=wasR; saveRules(); renderTodo(); });
     T.items=T.items.filter(i=>i.rule!==id); saveT(); renderTodo(); d.day=renderDay(CAL); });
 
+  // ---- unfinished work follows you ----
+  // An unticked to-do is copied into the next day, carrying `from` with the day it was first written, so the
+  // chain can be read back as one thing put off rather than several. This used to happen only when today had
+  // no document at all — so the moment anything else made one first (a capture typed on The List, the bell
+  // ticking something) nothing carried and yesterday's list was stranded. And the search stopped at the first
+  // previous day holding any items whatsoever, even a day whose items were every one of them done or standing,
+  // which lost everything older. It now runs once a day whatever made the document, reads a fortnight back, and
+  // leaves alone anything you dropped on purpose.
+  const CARRY = 14;
+  const askOf = (x, day) => `${x.from || day}|${x.text.trim().toLowerCase()}`;
+  async function carryForward(){
+    if(T.rolled === TODAY) return 0;
+    const back = [];
+    for(let i = CARRY; i >= 1; i--) back.push(C.iso(C.addDays(C.fromISO(TODAY), -i)));
+    const docs = await Promise.all(back.map(k => store.load('today.' + k)));
+    const dropped = new Set(T.dropped || []);
+    docs.forEach(p => (p && p.dropped || []).forEach(a => dropped.add(a)));
+    const here = new Set(T.items.map(i => i.text.trim().toLowerCase()));
+    let n = 0;
+    // the same reading The List and the digest use: a chain of copies is one asking, put off
+    for(const g of hqRecur.tally(docs, back)){
+      if(g.standing) continue;                           // a standing item is posted by its rule, never carried
+      const word = g.text.trim().toLowerCase(), latest = g.days[g.days.length - 1];
+      for(const a of g.asks){
+        if(a.done || dropped.has(`${a.made}|${word}`) || here.has(word)) continue;
+        T.items.push({ text: g.text, at: latest.at, target: g.target, done: false, from: a.made });
+        here.add(word); n++;                             // one line per thing, however many times it was asked
+      }
+    }
+    T.rolled = TODAY;                                    // once a day, whatever made the document
+    return n || 1;                                       // the mark itself is worth saving
+  }
+
   window.onTodoChange = doc => { T = doc; renderTodo(); d.day = renderDay(CAL); };   // a tick in the bell shows here at once
   // ---- load everything the other pages keep, then draw ----
   (async () => {
@@ -524,10 +561,7 @@
     if(prefs){ PREFS = { doc: prefs, hidden: (prefs.affairs||{}).hidden || [], order: (prefs.affairs||{}).order || [] }; }   // how this list was last arranged
     RULES = (await store.load('todo.rules')) || { rules: [] }; RULES.rules ??= [];
     if(today){ T = today; if(migrateAt()) saveT(); }
-    else {   // first look at a new day: unfinished items from the last few days come along, marked
-      for(let i=1;i<=3 && !T.items.length;i++){ const k=C.iso(C.addDays(C.fromISO(TODAY),-i)), prev=await store.load('today.'+k); if(prev && prev.items){ T.items = prev.items.filter(x=>!x.done && !x.rule).map(x=>({text:x.text, done:false, from:x.from||k})); break; } }
-      if(T.items.length) saveT();
-    }
+    if(await carryForward()) saveT();   // unfinished work from the days behind comes along, marked
     CAP.fold();                // any standing to-do that had grown a twin rule becomes one again
     if(postRules()) saveT();   // the standing items join the day, once
     const health = H && H.days ? Object.assign({meds:(H.meds||[]).length}, H.days[TODAY] || {pills:[]}) : null;

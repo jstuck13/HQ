@@ -58,20 +58,21 @@
     // 3 · the list, and any target set against it. A target you log against and never hear about again is a
     //     measurement with no feedback, which is the surest way to stop logging it.
     if (todos && todos.length) {
-      const items = todos.flatMap(t => (t && t.items) || []);
-      if (items.length) {
-        const done = items.filter(i => i.done).length;
-        let t = `You ticked <b>${done} of ${items.length}</b> ${items.length === 1 ? 'thing' : 'things'} off the list`;
-        // every target that appeared, by what it was for: the days it was met out of the days it was asked
-        const by = {};
-        todos.forEach(doc => ((doc && doc.items) || []).forEach(i => {
-          if (!i.target || !i.target.n) return;
-          const key = `${i.text}|${i.target.n}|${i.target.unit}`;
-          (by[key] ??= { text: i.text, n: i.target.n, unit: i.target.unit, asked: 0, met: 0, sum: 0 });
-          by[key].asked++; by[key].sum += +i.did || 0;
-          if (i.done || (+i.did || 0) >= i.target.n) by[key].met++;
-        }));
-        const hit = Object.values(by).filter(x => x.asked > 1)
+      // Count askings, not mornings. An unticked to-do is copied into the next day while it stays unticked, so
+      // counting the copies turns one load of laundry put off till Tuesday into five things you failed to do.
+      const things = window.hqRecur.tally(todos, days), asked = things.flatMap(g => g.asks);
+      if (asked.length) {
+        const done = asked.filter(a => a.done).length;
+        let t = `You ticked <b>${done} of ${asked.length}</b> ${asked.length === 1 ? 'thing' : 'things'} off the list`;
+        // anything put off rather than done on the day it was asked, which the old count hid by calling each
+        // morning a fresh failure
+        const put = asked.filter(a => a.waited > 0 && a.done);
+        if (put.length) t += `, ${put.length === 1 ? 'one of them' : `${put.length} of them`} after sitting ${put.length === 1 ? `${put[0].waited} days` : `as long as ${Math.max(...put.map(a => a.waited))} days`}`;
+        // every target that appeared, by the times it was met out of the times it was asked
+        const hit = things.filter(g => g.target && g.asks.length > 1)
+          .map(g => ({ text: g.text, unit: g.target.unit, asked: g.asks.length,
+                       met: g.asks.filter(a => a.done || a.did >= g.target.n).length,
+                       sum: g.asks.reduce((n, a) => n + a.did, 0) }))
           .sort((a, b) => b.asked - a.asked).slice(0, 2)
           .map(x => `${esc(x.text)} on <b>${x.met} of ${x.asked}</b> days${x.sum ? ` (${+x.sum.toFixed(1)} ${esc(x.unit)} in all)` : ''}`);
         if (hit.length) t += `. You hit ${hit.join(', and ')}`;

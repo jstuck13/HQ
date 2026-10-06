@@ -130,6 +130,7 @@
 <script src="clock.js"></script>
 <script src="hq.js"></script>
 <script src="store.js"></script>
+<script src="recur.js"></script>
 <script src="digest.js"></script>
 <script src="bell.js"></script>
 <script src="search.js"></script>
@@ -213,8 +214,11 @@
       if(pages||finished.length||reading) rows.push(li('Library','library.html', `${finished.length?`finished <b>${finished.map(b=>esc(b.title)).join(', ')}</b>`:reading?`reading <b>${esc(reading.title)}</b>`:'nothing open'}${pages?` · <b>${pages}</b> pages logged${delta(pages,ppages,v=>`${Math.round(v)} pages`)}`:''}`, pages||finished.length, '', pages?'pages':finished.length===1?'book finished':'books finished', bars(perDay.map((v,i)=>days[i]<=TODAY?v:null), v=>`${v} pages`, '#D9C79A')));
     }
     // to do
-    { const all = todos.flatMap(t=>t&&t.items||[]), done=all.filter(i=>i.done).length;
-      if(all.length) rows.push(li('To do','today.html', `<b>${done}</b> of ${all.length} ticked${all.length-done?` · ${all.length-done} still open`:''}`, all.length?Math.round(done/all.length*100):0, '%', 'done', bars(todos.map((t,i)=>t&&t.items&&t.items.length?t.items.filter(x=>x.done).length:(days[i]<=TODAY?0:null)), v=>`${v} done`, '#B9C9BE')));
+    // askings, not mornings: an unticked to-do is copied into the next day while it stays unticked, so counting
+    // the copies turns one thing put off till Tuesday into four more you failed to do. The bars count the day
+    // each was actually ticked, which is the honest place to put it.
+    { const asks = hqRecur.tally(todos, days).flatMap(g=>g.asks), done=asks.filter(a=>a.done).length;
+      if(asks.length) rows.push(li('To do','list.html', `<b>${done}</b> of ${asks.length} ticked${asks.length-done?` · ${asks.length-done} still open`:''}`, asks.length?Math.round(done/asks.length*100):0, '%', 'done', bars(days.map(d=>d<=TODAY?asks.filter(a=>a.settled===d).length:null), v=>`${v} done`, '#B9C9BE')));
     }
     F('wk').innerHTML = rows.length ? rows.join('') : '<li class="empty">Nothing logged in this week yet. The other pages fill this one in.</li>';
     C.countIn('.wk .v');
@@ -237,7 +241,7 @@
     if(H && H.days){ const s=days.map(d=>+((H.days[d]||{}).sleep)||null).filter(Boolean); if(s.length) said.push(`you averaged ${avg(s).toFixed(1)} hours of sleep`); }
     if(school && (school.sessions||[]).length){ const t=(school.sessions||[]).filter(s=>inWeek(s.date,days)).reduce((n,s)=>n+s.min,0); if(t) said.push(`studied for ${hrs(t)}`); }
     { const tx=months.flatMap(m=>(fin[m]&&fin[m].tx)||[]).filter(t=>inWeek(t.date,days)); if(tx.length) said.push(`spent ${$0(tx.reduce((n,t)=>n+t.amt,0))}`); }
-    { const all=todos.flatMap(t=>t&&t.items||[]); if(all.length) said.push(`ticked ${all.filter(i=>i.done).length} of ${all.length} things`); }
+    { const asks=hqRecur.tally(todos, days).flatMap(g=>g.asks); if(asks.length) said.push(`ticked ${asks.filter(a=>a.done).length} of ${asks.length} things`); }
     F('said').textContent = said.length ? `${ws===thisMon?'So far this week':'That week'} ${said.length>1 ? said.slice(0,-1).join(', ')+' and '+said[said.length-1] : said[0]}.` : 'Once the week has some numbers in it, they will be summed up here.';
   }
 
