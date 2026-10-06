@@ -13,7 +13,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
 
 const R = '.impeccable/review';
-const PAGES = 'today,calendar,finances,library,school,health,review,groceries,investments,study,patterns,span,day';
+const PAGES = 'today,calendar,finances,library,school,health,review,groceries,investments,study,patterns,span,day,list';
 const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const quick = process.argv.includes('--quick');
 

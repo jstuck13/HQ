@@ -181,7 +181,7 @@
     <ul class="affairs" id="affairs"></ul>
 
     <div class="todo">
-      <h2>To do<small id="todon"></small></h2>
+      <h2>To do<small id="todon"></small><a class="otherday" href="list.html">The list</a></h2>
       <ul id="todo"></ul>
       <form class="addt" id="addt"><input id="t-text" placeholder="Anything: a to-do, 12.40 lunch, 173.2, or Dentist Thursday 3–4 pm" required><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
       <div class="propose" id="propose" hidden></div>
@@ -195,6 +195,7 @@
 <script src="clock.js"></script>
 <script src="hq.js"></script>
 <script src="store.js"></script>
+<script src="recur.js"></script>
 <script src="bell.js"></script>
 <script src="search.js"></script>
 <script>
@@ -576,14 +577,8 @@
     return { text: (t.slice(0, m.index) + ' ' + t.slice(m.index + m[0].length)).replace(/\s+/g, ' ').trim(), rep };
   };
   const parseRep = takeRep;   // the old name, kept where it is still called
-  const everyWord = n => n === 2 ? 'other' : n === 3 ? 'third' : n === 4 ? 'fourth' : `${n}th`;
-  const repSays = rep => rep && rep.every ? (rep.every === 2 ? 'every other day' : `every ${everyWord(rep.every)} day`)
-    : rep === 'daily' ? 'every day' : rep === 'weekdays' ? 'every weekday' : `every ${DAYNAMES[rep][0].toUpperCase()}${DAYNAMES[rep].slice(1)}`;
-  const repToday = rep => {
-    if(rep && rep.every) { const n = C.daysBetween(rep.from || TODAY, TODAY); return n >= 0 && n % rep.every === 0; }
-    const wd = C.now.getDay();
-    return rep === 'daily' || (rep === 'weekdays' && wd >= 1 && wd <= 5) || rep === wd;
-  };
+  const repSays = r => hqRecur.says(r);            // the wording lives in recur.js, which The List reads too
+  const repToday = r => hqRecur.on(r, TODAY);
   // what the record adds up to, said plainly and only about days you answered
   const recordSays = r => { const k = ruleRecord(r); if(!k) return '';
     if(k.run >= 3) return `let go ${k.run} days running`;

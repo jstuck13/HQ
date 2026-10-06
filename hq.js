@@ -10,7 +10,7 @@ const $0 = n => (n<0?'−':'') + '$' + Math.round(Math.abs(n)).toLocaleString('e
 const toDo = i => !i.done && !i.noturn;
 // The version this copy of the app was built with. version.json holds the same number and is never cached,
 // so a page that has been open — or served from the offline shell — can tell when a newer one has been deployed.
-const HQ_VERSION = '4.23.0';
+const HQ_VERSION = '4.24.0';
 
 // a newer version is not forced on you mid-sentence: it says so, and waits to be asked
 async function watchVersion(){
@@ -151,6 +151,7 @@ const HQ_PAGES = [
   { id: 'school', name: 'School', file: 'school.html' },
   { id: 'health', name: 'Health', file: 'health.html' },
   { id: 'study', name: 'The Study', file: 'study.html' },
+  { id: 'list', name: 'The list', file: 'list.html' },
   { id: 'review', name: 'The week', file: 'review.html' },
   { id: 'span', name: 'A month, a year', file: 'span.html' },
   { id: 'patterns', name: 'Patterns', file: 'patterns.html' },

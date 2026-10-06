@@ -5,7 +5,7 @@ const V = 'hq-shell-2';   // a new name empties the old one on activate: raise i
 const SHELL = [
   '/', '/index.html', '/today.html', '/calendar.html', '/finances.html', '/groceries.html', '/investments.html',
   '/library.html', '/school.html', '/health.html', '/review.html', '/study.html', '/patterns.html', '/day.html',
-  '/restore.html', '/span.html', '/digest.js',
+  '/restore.html', '/span.html', '/list.html', '/digest.js', '/recur.js',
   '/hq.css', '/hq.js', '/clock.js', '/store.js', '/bell.js', '/search.js', '/icons.svg', '/manifest.json',
   '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png',
   '/paths/index.json', '/paths/stoics.json', '/paths/socrates.json', '/paths/sermon.json',
