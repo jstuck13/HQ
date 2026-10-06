@@ -126,6 +126,7 @@
   // How far either way to look. A to-do lives in the document for the day it was on, so the only way to see
   // them all is to read the days; 120 back and 45 on covers a term without making the page a download.
   const BACK = 120, AHEAD = 45, YM = TODAY.slice(0, 7);
+  const ASKED = new URLSearchParams(location.search).get('q') || '';   // the search box sends you here with what you looked for
   let DAYS = [], DOCS = [], ROWS = [], ITEMS = [], RULES = { rules: [] }, open = null;
   // what the box writes into. The List is otherwise a read of the days, but the box can make anything, so the
   // three documents the other meanings go to are read along with them.
@@ -148,7 +149,11 @@
       store.load('finances.' + YM), store.load('health'), ...DAYS.map(d => store.load('today.' + d))]);
     RULES = rules || { rules: [] }; RULES.rules ??= [];
     CAL = cal; FIN = fin; HEALTH = health; DOCS = docs;
-    T = docs[DAYS.indexOf(TODAY)] || { items: [] };
+    // today's document is the one the box writes into, so it must be the same object the sheet is read from —
+    // a separate empty one would take the capture and the sheet would never see it
+    const ti = DAYS.indexOf(TODAY);
+    DOCS[ti] ||= { items: [] };
+    T = DOCS[ti];
     CAP.fold();   // a standing to-do that had grown a twin rule showed up twice on every day it fell on
     rebuild();
     F('t-text').disabled = false;   // not before the days are in, or a capture would write over today's list
@@ -346,6 +351,7 @@
     return (!q || it.key.includes(q)) && (!F('openonly').checked || it.open) && (!F('standing').checked || it.rep != null);
   };
   ['q', 'openonly', 'standing'].forEach(id => F(id).addEventListener('input', () => { open = null; render(); }));
+  if(ASKED) F('q').value = ASKED;   // arrived from the search box: the sieve is already set to what was asked
 
   // the same box as Today's, from capture.js. A capture can land on any day — tomorrow, next Thursday — so
   // afterwards the days are simply read again rather than guessed at.
@@ -360,7 +366,19 @@
     saveCal: () => store.save('calendar', CAL),
     saveFin: () => store.save('finances.' + YM, FIN),
     saveHealth: () => store.save('health', HEALTH),
-    redraw: what => { if (what === 'todo') load(); },
+    // A capture mutates the document in place, so the sheet is read again from what is already in hand rather
+    // than fetching all hundred and seventy days back. The one case that needs anything from the server is a
+    // capture that landed on another day — and capture.js hands over that day's document with it, so even
+    // that costs nothing. A day outside the window can only be shown by reading the window again.
+    redraw: (what, where) => {
+      if (what !== 'todo') return;
+      if (where && where.day && where.day !== TODAY) {
+        const k = DAYS.indexOf(where.day);
+        if (k < 0) { load(); return; }
+        DOCS[k] = where.doc;
+      }
+      rebuild(); render();
+    },
   });
 
   load();

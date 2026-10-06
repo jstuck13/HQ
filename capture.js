@@ -334,7 +334,8 @@
         doc.items ??= []; doc.items.push({ ...p, done: false });
         store.save(key, doc);
         said(`“${p.text}” on ${C.dayMonth(C.fromISO(dw.date))}${p.at != null ? ` by ${h12(p.at)}` : ''} — it will be waiting`);
-        ctx.redraw('todo'); return;
+        ctx.redraw('todo', { day: dw.date, doc });   // a page showing other days can take it from here
+        return;
       }
       T.items.push({ ...p, done: false });
       ctx.saveTodo(); ctx.redraw('todo');

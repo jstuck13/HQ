@@ -20,8 +20,31 @@
     ['study', d => (d.notes || []).map(n => ({ area: 'The Study', title: n.text, sub: day(n.date), href: 'study.html' }))],
     ['groceries', d => [...(d.list || []).map(l => ({ area: 'Groceries', title: l.text, sub: l.done ? 'got it' : 'on the list', href: 'groceries.html' })),
                       ...Object.values((d.trips || []).reduce((m, t) => { t.items.forEach(i => { m[i.name.toLowerCase()] ??= { area: 'Groceries', title: i.name, sub: `${'$' + i.price} at ${t.store}, ${day(t.date)}`, href: 'groceries.html' }; }); return m; }, {}))]],
-    ['today.' + today(), d => (d.items || []).map(i => ({ area: 'Today', title: i.text, sub: i.done ? 'done' : 'to do', href: 'today.html' }))],
   ];
+
+  // The to-dos of days gone by. These are the one thing not in SOURCES, because they live one document per day
+  // and waiting on seventy-odd loads would make opening the box feel broken. They are fetched once, in the
+  // background, when the box is first opened, and folded in the moment they land — so the first keystroke is as
+  // quick as it ever was and a search a second later reaches the whole span.
+  // A chain of copies is one thing, so they are grouped by their words and only the latest state is shown.
+  const BACK = 60, AHEAD = 14;
+  let dayRows = null, dayWork = null, onDays = null;
+  const gatherDays = () => (dayWork ||= (async () => {
+    const C = window.clock; if (!C) return (dayRows = []);
+    const days = []; for (let i = -BACK; i <= AHEAD; i++) days.push(C.iso(C.addDays(C.now, i)));
+    const docs = await Promise.all(days.map(d => store.load('today.' + d, true).catch(() => null)));
+    const by = new Map();
+    docs.forEach((doc, i) => ((doc && doc.items) || []).forEach(it => {
+      if (!it || !it.text) return;
+      by.set(it.text.trim().toLowerCase(), { text: it.text, day: days[i], done: !!it.done, from: it.from, rule: it.rule });
+    }));                                                   // days run oldest first, so the last write is the latest
+    dayRows = [...by.values()].map(x => ({
+      area: 'To do', title: x.text, href: 'list.html?q=' + encodeURIComponent(x.text),
+      sub: x.done ? `done ${day(x.day)}` : x.from ? `waiting since ${day(x.from)}` : x.rule ? `standing · ${day(x.day)}` : `to do · ${day(x.day)}`,
+    }));
+    if (onDays) onDays();
+    return dayRows;
+  })());
 
   // The pages, so the box can navigate as well as find. Everything HQ has is in hq.js's list, including the
   // pages the band does not hold, which are otherwise only reachable through More.
@@ -57,11 +80,14 @@
       const list = pop.querySelector('ul'); q = q.trim().toLowerCase();
       if (!q) { list.innerHTML = ''; return; }
       // a page that matches comes first: you are navigating, not looking something up
-      const hits = [...pageRows(q), ...(await gather()).filter(r => (r.title + ' ' + r.sub).toLowerCase().includes(q))].slice(0, 30);
+      const hits = [...pageRows(q), ...[...(await gather()), ...(dayRows || [])].filter(r => (r.title + ' ' + r.sub).toLowerCase().includes(q))].slice(0, 30);
       const add = q.length >= 3 && !hits.some(r => r.area === 'Library') ? `<li><a href="library.html?find=${encodeURIComponent(q)}"><span class="t">Add “${esc(q)}” to the Library</span><span class="s">search Open Library for it</span><span class="a">Library</span></a></li>` : '';
       list.innerHTML = hits.length || add ? hits.map(r => `<li><a href="${r.href}"><span class="t">${hi(r.title, q)}</span><span class="s">${esc(r.sub)}</span><span class="a">${r.area}</span></a></li>`).join('') + add : '<li class="none">Nothing matches.</li>';
     };
     const open = () => { if (!pop) { pop = document.createElement('div'); pop.className = 'srch'; pop.innerHTML = '<input type="text" autocomplete="off" placeholder="Search everything" aria-label="Search"><ul></ul>'; btn.parentElement.appendChild(pop); pop.querySelector('input').addEventListener('input', e => render(e.target.value)); }
+      // once the days are in, whatever is already typed is answered again, now with the to-dos in it
+      onDays = () => { if (pop && !pop.hidden) render(pop.querySelector('input').value); };
+      gatherDays();
       pop.hidden = false; btn.setAttribute('aria-expanded', 'true'); pop.querySelector('input').focus(); pop.querySelector('input').select(); };
     const close = () => { if (pop) pop.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
     btn.addEventListener('click', e => { e.stopPropagation(); (pop && !pop.hidden) ? close() : open(); });
