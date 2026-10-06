@@ -46,6 +46,15 @@
   };
   const now = new Date();
   window.clock = { now, today: iso(now), iso, fromISO, addDays, monday, time, hourLabel, dayName, dayShort, monthName, monthShort, long, short, dayMonth, dayMonthLong, weekdayDayMonth, month, full, greeting, daysBetween, parseDay, countIn };
+  // This is read once, so every page is built for the day it opened on — and a phone keeps HQ open and
+  // suspended for days at a time, where no timer of ours ever runs. Coming back to it, a page still showing
+  // Tuesday's to-do list is not a stale render, it is the wrong day's document: so if the date has moved on
+  // while we were away, the page is built again. This is why one device could show a list the other did not.
+  const sameDay = () => iso(new Date()) === window.clock.today;
+  const recheck = () => { if (!sameDay()) location.reload(); };
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') recheck(); });
+  addEventListener('pageshow', recheck);     // iOS hands a suspended page back this way, not through visibility
+  addEventListener('focus', recheck);
   // lamplight: from eight in the evening until six the pages take a warmer, dimmer palette
   const lamp = () => { const h = new Date().getHours(), next = (h >= 20 || h < 6) ? 'evening' : '', root = document.documentElement;
     if (root.dataset.light !== undefined && root.dataset.light !== next) { root.classList.add('hq-fade'); setTimeout(() => root.classList.remove('hq-fade'), 2400); }   // a live flip crossfades
