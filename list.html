@@ -32,8 +32,13 @@
 
   /* the sheet: one line per to-do, whatever days it fell on */
   .sheet{list-style:none;margin:16px 0 0;padding:0}
-  .sheet .head{display:grid;grid-template-columns:1fr 158px 212px 112px 62px;gap:0 18px;padding:0 0 8px;border-bottom:1px solid var(--ink);font-size:12px;color:var(--ink-3);letter-spacing:.04em}
-  .sheet li.row{display:grid;grid-template-columns:1fr 158px 212px 112px 62px;gap:0 18px;padding:9px 0;border-bottom:1px solid var(--rule);align-items:baseline;cursor:pointer}
+  .sheet .head{display:grid;grid-template-columns:15px 1fr 158px 212px 112px 62px;gap:0 14px;padding:0 0 8px;border-bottom:1px solid var(--ink);font-size:12px;color:var(--ink-3);letter-spacing:.04em}
+  .sheet li.row{display:grid;grid-template-columns:15px 1fr 158px 212px 112px 62px;gap:0 14px;padding:9px 0;border-bottom:1px solid var(--rule);align-items:baseline;cursor:pointer}
+  /* only what is on today's list can be ticked; the rest of the page is record, not work */
+  .sheet li.row>input[type=checkbox]{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px;align-self:center}
+  .sheet li.row>input:checked{background:var(--band);border-color:var(--band)}
+  .sheet li.row>input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+  .sheet li.done .t{color:var(--ink-3);background:linear-gradient(currentColor,currentColor) left 58%/100% 1px no-repeat}
   /* always there rather than revealed on hover, because a phone has no hover to reveal it with */
   .sheet .x{font:inherit;font-size:12px;color:var(--ink-3);background:none;border:0;padding:0;text-align:right;cursor:pointer;opacity:.5}
   .sheet .x:hover,.sheet .x:focus-visible{opacity:1;color:var(--ox)}
@@ -62,11 +67,12 @@
 
   @media (max-width:860px){
     .sheet .head{display:none}
-    .sheet li.row{grid-template-columns:1fr auto;gap:2px 12px;padding:11px 0}
-    .sheet .t{grid-column:1;grid-row:1} .sheet .f{grid-column:1;grid-row:2;white-space:normal}
-    .sheet .m{grid-column:1;grid-row:3}
-    .sheet .s{grid-column:2;grid-row:1;align-self:baseline}
-    .sheet .x{grid-column:2;grid-row:3;align-self:baseline}
+    .sheet li.row{grid-template-columns:15px 1fr auto;gap:2px 12px;padding:11px 0}
+    .sheet li.row>input[type=checkbox],.sheet li.row>span:first-child{grid-column:1;grid-row:1}
+    .sheet .t{grid-column:2;grid-row:1} .sheet .f{grid-column:2;grid-row:2;white-space:normal}
+    .sheet .m{grid-column:2;grid-row:3}
+    .sheet .s{grid-column:3;grid-row:1;align-self:baseline}
+    .sheet .x{grid-column:3;grid-row:3;align-self:baseline}
   }
   @media (max-width:760px){ main{padding:24px 20px 36px} .foot{padding:0 20px 28px} }
 </style>
@@ -237,10 +243,11 @@
     F('count').textContent = ITEMS.length ? `${rows.length} of ${ITEMS.length} to-dos` : '';
     if(!rows.length){ F('sheet').innerHTML = '<li class="empty">Nothing matches.</li>'; return; }
 
-    F('sheet').innerHTML = '<li class="head"><span>To-do</span><span>How often</span><span>What it carries</span><span style="text-align:right">Next</span><span></span></li>'
+    F('sheet').innerHTML = '<li class="head"><span></span><span>To-do</span><span>How often</span><span>What it carries</span><span style="text-align:right">Next</span><span></span></li>'
       + rows.map((it, k) => {
         const n = next(it);
-        const row = `<li class="row ${it.over ? 'over' : ''}" data-k="${k}" role="button" tabindex="0" aria-expanded="${open === it.key}">
+        const row = `<li class="row ${it.over ? 'over' : ''} ${it.today && it.today.done ? 'done' : ''}" data-k="${k}" role="button" tabindex="0" aria-expanded="${open === it.key}">
+          ${it.today ? `<input type="checkbox" data-tick="${k}" ${it.today.done ? 'checked' : ''} aria-label="Tick ${esc(it.text)} off today">` : '<span></span>'}
           <span class="t">${esc(it.text)}</span>
           <span class="f">${esc(often(it))}</span>
           <span class="m">${carries(it)}</span>
@@ -280,6 +287,24 @@
     </div></li>`;
   }
 
+  // Ticking is only ever for the one that is live — the copy on today's list. Everything else on this page is
+  // record, and a record is not a thing you can still go and do. A standing item's rule keeps the day too, the
+  // same way Today writes it, so the two pages tell the same story about what was kept and what was let go.
+  function tick(it, on){
+    const doc = DOCS[DAYS.indexOf(TODAY)]; if(!doc || !doc.items) return;
+    let hit = false;
+    doc.items.forEach(i => { if(i && i.text && idOf(i) === it.key){ i.done = on; hit = true; } });
+    if(!hit) return;
+    store.save('today.' + TODAY, doc);
+    if(it.rule && hqRecur.mark(RULES.rules.find(r => r.id === it.rule), TODAY, on)) store.save('todo.rules', RULES);
+    // the lines keep the order they had: a row that slid away the moment you ticked it would take your place
+    // in the page with it. The tidying happens on the next load, which is when you are not mid-sentence.
+    const was = new Map(ITEMS.map((x, i) => [x.key, i]));
+    rebuild();
+    ITEMS.sort((a, b) => (was.has(a.key) ? was.get(a.key) : 1e9) - (was.has(b.key) ? was.get(b.key) : 1e9));
+    render();
+  }
+
   // Deleting takes the to-do off every day it sits on and stops it coming back, which is what "delete" has to
   // mean on a page that shows every day at once. All of it goes back together if you undo.
   function remove(it){
@@ -302,6 +327,8 @@
   }
 
   F('sheet').addEventListener('click', e => {
+    const box = e.target.closest('[data-tick]');
+    if(box){ e.stopPropagation(); const it = ITEMS.filter(matches)[+box.dataset.tick]; if(it) tick(it, box.checked); return; }
     const rm = e.target.closest('[data-rm]');
     if(rm){ e.stopPropagation(); const it = ITEMS.filter(matches)[+rm.dataset.rm]; if(it) remove(it); return; }
     const li = e.target.closest('.row'); if(!li) return;

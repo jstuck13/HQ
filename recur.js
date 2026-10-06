@@ -41,6 +41,15 @@
       }
       return [...by.values()].sort((a, b) => a.made < b.made ? -1 : 1);
     },
+    // A rule keeps what happened, a day at a time: 1 kept, 0 let go, and only for days you answered — a day you
+    // never opened HQ is not held against you. Both Today and The List tick these, so both write it the same way.
+    mark: (rule, day, kept) => {
+      if (!rule) return false;
+      rule.log ??= {}; rule.log[day] = kept ? 1 : 0;
+      const ks = Object.keys(rule.log).sort();
+      if (ks.length > 120) ks.slice(0, ks.length - 120).forEach(k => delete rule.log[k]);
+      return true;
+    },
     // A span of days read as things, and the times each was asked for.
     //   docs: [dayDocument | null] running parallel to days: ['YYYY-MM-DD']
     //   → [{ text, standing, target, days, asks }]

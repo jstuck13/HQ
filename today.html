@@ -122,6 +122,7 @@
   .todo .w{font-size:12.5px;color:var(--ink-3)}
   .todo .w.due{color:var(--ox)}
   .todo .w.from{font-style:italic;font-family:var(--serif)}
+  .todo .w.from.long{color:var(--ox)}   /* past four days it stops being a note and starts being the point */
   .todo li{position:relative} .todo .x{opacity:0;position:absolute;right:0;top:50%;transform:translateY(-50%);background:var(--paper);padding-left:10px}   /* out of the flow, so the time sits flush right */
   .todo li:hover .x,.todo li:focus-within .x{opacity:1} .todo .x:hover{color:var(--ox)}
   .hr span{width:46px}
@@ -434,11 +435,17 @@
   const TKEY = 'today.' + TODAY; let T = {items:[]}, CAL = null, d = {};
   const YDAY = C.iso(C.addDays(C.fromISO(TODAY),-1));
   const saveT = () => store.save(TKEY, T);
+  // How long this one has been following you. "from Tue 29" left you to work that out for yourself, which is
+  // the whole of the thing worth knowing: four days of the same line is not four to-dos, it is one you keep
+  // walking past. After four it is said in the colour the overdue times use.
+  const waitedSays = from => { if(!from) return '';
+    const n = C.daysBetween(from, TODAY); if(n <= 0) return '';
+    return `<span class="w from${n >= 4 ? ' long' : ''}">${n === 1 ? 'since yesterday' : `waiting ${n} days`}</span>`; };
   function renderTodo(){
     F('reps').innerHTML = (RULES.rules||[]).map(r=>`<li class="${ruleOver(r)?'over':''}"><span>${esc(r.text)}<small>${[repSays(r.rep), r.target&&!r.text.toLowerCase().includes(r.target.unit)?`${r.target.n} ${esc(r.target.unit)}`:'', r.at!=null?`by ${h12(r.at)}`:'', r.until?(ruleOver(r)?`ended ${C.dayMonth(C.fromISO(r.until))}`:`until ${C.dayMonth(C.fromISO(r.until))}`):'', recordSays(r)].filter(Boolean).join(' · ')}</small></span><button class="textbtn" type="button" data-stop="${r.id}">${ruleOver(r)?'remove':'stop'}</button></li>`).join('');
     const done=T.items.filter(i=>i.done).length;
     F('todon').textContent = T.items.length ? `${done} of ${T.items.length}` : 'nothing yet';
-    F('todo').innerHTML = T.items.length ? T.items.map((i,k)=>`<li><input type="checkbox" id="t${k}" ${i.done?'checked':''} data-k="${k}"><label for="t${k}">${esc(i.text)}</label>${i.rule?'<span class="rp" title="comes back on its own">\u21bb</span>':''}${i.target?`<span class="tg"><input class="did" value="${i.did||0}" inputmode="decimal" data-did="${k}" aria-label="How much of ${esc(i.text)} so far"> of ${i.target.n}${i.text.toLowerCase().includes(i.target.unit)?'':' '+esc(i.target.unit)}</span>`:''}${i.at!=null?`<span class="w ${!i.done&&i.at<NOW?'due':''}">by ${h12(i.at)}</span>`:''}${i.from?`<span class="w from">from ${i.from===YDAY?'yesterday':C.short(C.fromISO(i.from))}</span>`:''}${i.rule?`<button class="w skip" type="button" data-skip="${k}">not today</button>`:''}<button class="w x" type="button" data-rm="${k}" aria-label="Remove">remove</button></li>`).join('') : '<li class="empty">Nothing on the list. Add the one thing today needs.</li>';
+    F('todo').innerHTML = T.items.length ? T.items.map((i,k)=>`<li><input type="checkbox" id="t${k}" ${i.done?'checked':''} data-k="${k}"><label for="t${k}">${esc(i.text)}</label>${i.rule?'<span class="rp" title="comes back on its own">\u21bb</span>':''}${i.target?`<span class="tg"><input class="did" value="${i.did||0}" inputmode="decimal" data-did="${k}" aria-label="How much of ${esc(i.text)} so far"> of ${i.target.n}${i.text.toLowerCase().includes(i.target.unit)?'':' '+esc(i.target.unit)}</span>`:''}${i.at!=null?`<span class="w ${!i.done&&i.at<NOW?'due':''}">by ${h12(i.at)}</span>`:''}${waitedSays(i.from)}${i.rule?`<button class="w skip" type="button" data-skip="${k}">not today</button>`:''}<button class="w x" type="button" data-rm="${k}" aria-label="Remove">remove</button></li>`).join('') : '<li class="empty">Nothing on the list. Add the one thing today needs.</li>';
   }
   F('todo').addEventListener('change', e=>{
     if(e.target.matches('[data-did]')){ const i=T.items[+e.target.dataset.did]; if(!i) return;
@@ -480,10 +487,7 @@
   // a day you never looked at HQ is not held against you, and that is why the figure says "of the days you
   // answered" rather than pretending to know about the rest.
   const ruleFor = id => (RULES.rules || []).find(r => r.id === id);
-  const markRule = (id, kept) => { const r = ruleFor(id); if(!r) return;
-    r.log ??= {}; r.log[TODAY] = kept ? 1 : 0;
-    const keys = Object.keys(r.log).sort(); if(keys.length > 120) keys.slice(0, keys.length - 120).forEach(k => delete r.log[k]);
-    saveRules(); };
+  const markRule = (id, kept) => { if(hqRecur.mark(ruleFor(id), TODAY, kept)) saveRules(); };   // The List writes this too
   const ruleRecord = r => { const e = Object.entries(r.log || {}).sort();
     if(!e.length) return null;
     const kept = e.filter(([, v]) => v).length;
