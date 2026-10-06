@@ -6,6 +6,19 @@
     get: k => { try { return JSON.parse(localStorage.getItem('hq.' + k)); } catch { return null; } },
     set: (k, v) => { try { localStorage.setItem('hq.' + k, JSON.stringify(v)); } catch {} },
   };
+  // Which cached documents hold an edit the server has not confirmed. Without this the cache was treated as a
+  // second source of truth: any document the server did not have was served from, and pushed back up from,
+  // whatever this browser happened to keep. A phone that had opened HQ every day for months therefore went on
+  // showing every day's to-do list it had ever cached — and resurrecting them on the server — while a second
+  // device, with a different cache, showed none of them. The server is the truth. The cache is a cache, with
+  // the one exception of an edit that has not managed to leave yet.
+  const DIRTY = 'hq!unsent';
+  const dirty = {
+    all: () => { try { return JSON.parse(localStorage.getItem(DIRTY)) || {}; } catch { return {}; } },
+    has: k => k in dirty.all(),
+    add: k => { try { const d = dirty.all(); if (d[k]) return; d[k] = 1; localStorage.setItem(DIRTY, JSON.stringify(d)); } catch {} },
+    drop: k => { try { const d = dirty.all(); if (!(k in d)) return; delete d[k]; localStorage.setItem(DIRTY, JSON.stringify(d)); } catch {} },
+  };
   const timers = {}, loaded = {}, seen = {}, pending = {};
   let inflight = 0, settle;                      // when every load in flight has answered and nothing new starts, the page has drawn: drop the splash
   let queue = {}, flushing = null;               // loads asked for in the same tick travel to the server as one request   // a key can be saved only after its load has answered; `seen` is the server's updated_at we last read
@@ -21,8 +34,10 @@
     const keys = Object.keys(q), docs = await fetchDocs(keys);
     for (const key of keys) {
       const cached = ls.get(key), doc = docs && docs[key]; let out = cached;
-      if (doc && doc.data !== undefined) { ls.set(key, doc.data); seen[key] = doc.updated_at; out = doc.data; }
-      else if (docs && cached) { loaded[key] = true; save(key, cached); }   // first run against an empty server: seed it from the cache
+      if (doc && doc.data !== undefined) { ls.set(key, doc.data); seen[key] = doc.updated_at; dirty.drop(key); out = doc.data; }
+      else if (!docs) { /* the server did not answer: the cache is all there is, and is not written back */ }
+      else if (cached && dirty.has(key)) { loaded[key] = true; save(key, cached); }   // an edit that never reached the server
+      else out = null;                     // the server answered and has no such document, so neither have we
       q[key].forEach(resolve => resolve(out));
     }
   }
@@ -47,7 +62,7 @@
 
   function save(key, doc) {
     if (!loaded[key]) return;                  // still waiting on the server: nothing to save yet
-    ls.set(key, doc);
+    ls.set(key, doc); dirty.add(key);           // unsent until the server says otherwise
     clearTimeout(timers[key]); pending[key] = doc;
     timers[key] = setTimeout(() => put(key), 400);   // debounced; a stale base comes back as a conflict
   }
@@ -56,8 +71,8 @@
     try {
       const headers = { 'content-type': 'application/json' }; if (seen[key]) headers['x-hq-base'] = seen[key];
       const r = await fetch(`/api/state?key=${encodeURIComponent(key)}`, { method: 'PUT', headers, body: JSON.stringify(doc), keepalive });
-      if (r.status === 409) { const cur = await r.json(); ls.set(key, cur.data); seen[key] = cur.updated_at; changedElsewhere(); return; }
-      if (r.ok) { const j = await r.json().catch(() => ({})); if (j.updated_at) seen[key] = j.updated_at; }
+      if (r.status === 409) { const cur = await r.json(); ls.set(key, cur.data); seen[key] = cur.updated_at; dirty.drop(key); changedElsewhere(); return; }
+      if (r.ok) { dirty.drop(key); const j = await r.json().catch(() => ({})); if (j.updated_at) seen[key] = j.updated_at; }
     } catch {}
   }
   // another device wrote this document since the page loaded: take the newer copy and start again from it
