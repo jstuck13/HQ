@@ -10,7 +10,7 @@ const $0 = n => (n<0?'−':'') + '$' + Math.round(Math.abs(n)).toLocaleString('e
 const toDo = i => !i.done && !i.noturn;
 // The version this copy of the app was built with. version.json holds the same number and is never cached,
 // so a page that has been open — or served from the offline shell — can tell when a newer one has been deployed.
-const HQ_VERSION = '4.32.0';
+const HQ_VERSION = '4.34.0';
 
 // a newer version is not forced on you mid-sentence: it says so, and waits to be asked
 async function watchVersion(){
@@ -18,8 +18,8 @@ async function watchVersion(){
     try {
       const r = await fetch('/version.json', { cache: 'no-store' });
       if (!r.ok) return;
-      const v = (await r.json()).v;
-      if (v && v !== HQ_VERSION) offerUpdate(v);
+      const { v, said } = await r.json();
+      if (v && v !== HQ_VERSION) offerUpdate(v, said);
     } catch {}
   };
   await look();
@@ -30,11 +30,15 @@ async function watchVersion(){
 }
 const freshStart = async () => { try { const ks = await caches.keys(); await Promise.all(ks.filter(k => k.startsWith('hq-shell')).map(k => caches.delete(k))); } catch {} };
 let offered = false;
-function offerUpdate(v){
+function offerUpdate(v, said){
   if (offered) return; offered = true;
   const bar = document.createElement('div');
   bar.className = 'hq-newer';
-  bar.innerHTML = `<span>Version ${v} is ready.</span><button type="button">Reload</button><button type="button" class="later" aria-label="Not now">\u00d7</button>`;
+  bar.setAttribute('role', 'status');   // it arrives on its own, so it says itself
+  // Every release is written down in a sentence; it was being fetched and thrown away, leaving a bare number
+  // to speak for it. The sentence is the part that tells you whether you want the reload now or later.
+  bar.innerHTML = `<span class="what"><span>Version ${v} is ready.</span>${said ? `<span class="said">${esc(said)}</span>` : ''}</span>`
+    + `<button type="button">Reload</button><button type="button" class="later" aria-label="Not now">×</button>`;
   bar.querySelector('button').addEventListener('click', async () => {
     await freshStart();                                       // so the reload fetches the new files rather than the kept ones
     location.reload();
@@ -157,6 +161,7 @@ const HQ_PAGES = [
   { id: 'patterns', name: 'Patterns', file: 'patterns.html' },
   { id: 'day', name: 'Another day', file: 'day.html' },
   { id: 'restore', name: 'Restore', file: 'restore.html' },
+  { id: 'colophon', name: 'Colophon', file: 'colophon.html' },
 ];
 const HQ_BAND = ['today', 'calendar', 'finances', 'library', 'school', 'health'];   // what the band holds until you say otherwise
 window.HQ_PAGES = HQ_PAGES;   // the search box navigates by this list too
@@ -220,7 +225,12 @@ window.hqPrefs = {
     document.addEventListener('click', shut);
   }
 
-  addEventListener('DOMContentLoaded', paintNav);
+  // Painted now, not on DOMContentLoaded. The band is above the loading curtain and keeps its view-transition
+  // name across a navigation, so until this runs the tabs on screen are the ones written into the markup —
+  // the six defaults, no "The list", no "More" — and that stale set is what gets held up and crossfaded for
+  // the length of the transition. Every page loads hq.js after the band, so the nav is already there.
+  if (document.querySelector('.band nav[aria-label="Areas"]')) paintNav();
+  else addEventListener('DOMContentLoaded', paintNav);
   // the saved arrangement arrives after the cached one; redraw only if it differs from what is on screen
   addEventListener('DOMContentLoaded', () => setTimeout(async () => {
     if (!window.store) return;

@@ -16,6 +16,64 @@
     location.replace(`${location.protocol}//${HOME}${location.pathname}${location.search}${location.hash}`);
 })();
 
+// Nothing told you when a page broke. A render that threw left a half-drawn page behind a curtain that lifted
+// on its own four-second timer, and HQ said not a word — so every fault had to be noticed by eye, which is a
+// poor way to find out that yesterday's to-dos are missing. A page that throws now says so, once and quietly,
+// and the last twenty are kept in this browser so they can be read back afterwards. Nothing is sent anywhere:
+// an error reporter that needs the network is one more thing to fail, and a write on every error is a loop
+// waiting to happen if what broke was the writing.
+(function () {
+  const KEY = 'hq!oops', KEEP = 20;
+  const page = () => (location.pathname.split('/').pop() || 'index.html').replace(/\.html$/, '') || 'index';
+  const read = () => { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } };
+  const write = l => { try { localStorage.setItem(KEY, JSON.stringify(l.slice(-KEEP))); } catch {} };
+  window.hqOops = { list: read, clear: () => write([]) };
+
+  // One notice at a time, and it keeps the FIRST message. When a render breaks it usually takes several things
+  // down with it, and the first is the one that explains the rest; replacing it with the latest would bury the
+  // cause under its own consequences. Anything else that goes wrong afterwards is counted, not spelled out.
+  let bar = null, first = '', extra = 0;
+  function show(what) {
+    if (bar) {
+      if (what === first) return;                         // the same thing again says nothing new
+      bar.querySelector('.m').textContent = `${first} — and ${++extra} more since`;
+      return;
+    }
+    first = what; extra = 0;
+    bar = document.createElement('div');
+    bar.setAttribute('role', 'alert');
+    bar.style.cssText = 'position:fixed;left:16px;bottom:16px;max-width:min(420px,calc(100vw - 32px));display:flex;align-items:flex-start;gap:10px;background:var(--ox,#7A2E2B);color:#F2ECDF;font:13px/1.45 var(--sans,system-ui);padding:10px 12px;border-radius:10px;box-shadow:0 6px 18px -6px rgba(0,0,0,.4);z-index:60';
+    const m = document.createElement('span'); m.className = 'm'; m.textContent = what;
+    const x = document.createElement('button');
+    x.type = 'button'; x.textContent = '×'; x.setAttribute('aria-label', 'Dismiss');
+    x.style.cssText = 'font:inherit;font-size:16px;line-height:1;color:inherit;background:none;border:0;padding:0 2px;cursor:pointer;opacity:.8';
+    x.addEventListener('click', () => { bar.remove(); bar = null; extra = 0; });   // dismissed: the next fault starts fresh
+    bar.append(m, x);
+    (document.body || document.documentElement).appendChild(bar);
+  }
+  function note(what, where) {
+    try {
+      const l = read(), last = l[l.length - 1], now = new Date().toISOString(), p = page();
+      // the same thing failing in a loop is one fault, counted — not twenty lines of the same sentence
+      if (last && last.what === what && last.page === p) { last.n = (last.n || 1) + 1; last.at = now; }
+      else l.push({ what, where, page: p, at: now, n: 1 });
+      write(l);
+      show(`Something on ${p === 'index' ? 'the welcome page' : p} went wrong — ${what}`);
+    } catch {}                                            // a reporter that throws is worse than no reporter
+  }
+  addEventListener('error', e => {
+    if (e && e.target && e.target.tagName && !e.message) return;        // a picture or script that would not load, not a throw
+    const msg = String((e && e.message) || '');
+    if (!msg || (msg === 'Script error.' && !e.filename)) return;       // another origin's script: there is nothing to report
+    note(msg, e.filename ? `${String(e.filename).split('/').pop()}:${e.lineno}` : '');
+  });
+  // an await that rejected with nobody to catch it: the commonest way a page half-draws
+  addEventListener('unhandledrejection', e => {
+    const r = e && e.reason;
+    note(String((r && r.message) || r || 'A promise was rejected with no reason given'), '');
+  });
+})();
+
 (function () {
   const ls = {
     get: k => { try { return JSON.parse(localStorage.getItem('hq.' + k)); } catch { return null; } },
@@ -64,16 +122,40 @@
       return r.ok ? await r.json() : null;
     } catch { offline(true); return null; }    // offline or no API (plain static server): cache it is
   }
-  // with no network the pages still open on their last copy; say so quietly rather than let it look live
-  let note;
-  function offline(on) {
-    if (on && !navigator.onLine && !note) {
-      note = document.createElement('div'); note.textContent = 'Offline — showing your last copy.';
-      note.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--band,#1F3A2E);color:var(--band-ink,#F2ECDF);font:13px/1.4 var(--sans,system-ui);padding:9px 16px;border-radius:999px;opacity:.92;z-index:50;pointer-events:none';
+  // One quiet line at the foot of the page, for the two things the pages cannot show on their own: that what
+  // you are reading is a kept copy, and that what you have written has not left yet. The second matters more,
+  // so it is the one said — an edit you cannot tell apart from a lost one is the worst state to leave someone in.
+  let note, noteText = null;
+  function pill(text) {
+    if (text === noteText) return;
+    noteText = text;
+    if (!text) { if (note) { note.remove(); note = null; } return; }
+    if (!note) {
+      note = document.createElement('div');
+      note.setAttribute('role', 'status');   // it appears without focus moving, so it must say itself
+      note.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);max-width:calc(100vw - 40px);text-align:center;background:var(--band,#1F3A2E);color:var(--band-ink,#F2ECDF);font:13px/1.4 var(--sans,system-ui);padding:9px 16px;border-radius:999px;opacity:.92;z-index:50;pointer-events:none';
       document.body.appendChild(note);
-      addEventListener('online', () => location.reload(), { once: true });
-    } else if (!on && note) { note.remove(); note = null; }
+    }
+    note.textContent = text;
   }
+  // coming back on to the network is what sends a waiting edit: the reload runs flush, which pushes it
+  let watchingOnline = false;
+  const onlineReloads = () => { if (watchingOnline) return; watchingOnline = true; addEventListener('online', () => location.reload(), { once: true }); };
+
+  let isOffline = false, isUnsent = false;
+  const tell = () => pill(
+    isUnsent ? 'Saved here — not sent yet. It will go when you are back.'
+    : isOffline ? 'Offline — showing your last copy.' : null);
+
+  // with no network the pages still open on their last copy; say so quietly rather than let it look live
+  function offline(on) {
+    isOffline = on && !navigator.onLine;
+    if (isOffline) onlineReloads();
+    tell();
+  }
+  // an edit that could not reach the server. It is in localStorage and marked unsent, so a later load pushes it;
+  // the one thing that must not happen is for it to look saved when it is only saved here.
+  function unsent(on) { isUnsent = on; if (on) onlineReloads(); tell(); }
 
   function save(key, doc) {
     if (!loaded[key]) return;                  // still waiting on the server: nothing to save yet
@@ -87,14 +169,17 @@
       const headers = { 'content-type': 'application/json' }; if (seen[key]) headers['x-hq-base'] = seen[key];
       const r = await fetch(`/api/state?key=${encodeURIComponent(key)}`, { method: 'PUT', headers, body: JSON.stringify(doc), keepalive });
       if (r.status === 409) { const cur = await r.json(); ls.set(key, cur.data); seen[key] = cur.updated_at; dirty.drop(key); changedElsewhere(); return; }
-      if (r.ok) { dirty.drop(key); const j = await r.json().catch(() => ({})); if (j.updated_at) seen[key] = j.updated_at; }
-    } catch {}
+      if (r.ok) { dirty.drop(key); const j = await r.json().catch(() => ({})); if (j.updated_at) seen[key] = j.updated_at;
+        if (!Object.keys(dirty.all()).length) unsent(false); }                       // the queue is empty again: stop saying it is not
+      else unsent(true);                        // a refusal is as unsent as a dropped connection — the server answered, but not yes
+    } catch { unsent(true); }                   // it stays in the cache, marked, for the next load to push
   }
   // another device wrote this document since the page loaded: take the newer copy and start again from it
   let told = false;
   function changedElsewhere() {
     if (told) return; told = true;
     const t = document.createElement('div');
+    t.setAttribute('role', 'alert');        // the page is about to reload under them; this one interrupts
     t.textContent = 'Changed on another device — showing the latest. Redo your last edit if it is missing.';
     t.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);max-width:calc(100vw - 40px);background:var(--band,#1F3A2E);color:var(--band-ink,#F2ECDF);font:14px/1.4 var(--sans,system-ui);padding:12px 18px;border-radius:10px;box-shadow:0 6px 18px -6px rgba(0,0,0,.3);z-index:50;text-align:center';
     document.body.appendChild(t);

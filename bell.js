@@ -1,12 +1,13 @@
 // The bell: what has synced, when, and whether anything failed. One script, every page.
 (function () {
-  const SOURCES = { canvas: { name: 'Canvas', page: 'school.html', count: l => l.items != null ? `${l.items} items` : '' },
-                    google: { name: 'Google Calendar', page: 'calendar.html', count: l => l.calendars != null ? `${l.calendars} ${l.calendars === 1 ? 'calendar' : 'calendars'}` : '' },
-                    garmin: { name: 'Garmin', page: 'health.html', count: l => l.days != null ? `${l.days} days` : '' },
-                    daily: { name: 'Nightly: word, quote, Publix ad, prices', page: 'groceries.html', count: l => [l.word ? `“${l.word}”` : '', l.bogos != null ? `${l.bogos} BOGOs` : '', l.priced != null ? `${l.priced} priced` : ''].filter(Boolean).join(' · ') },
-                    bills: { name: 'Scheduled expenses', page: 'finances.html', count: l => l.rules != null ? `${l.rules} ${l.rules === 1 ? 'rule' : 'rules'}${l.posted ? ' · ' + l.posted + ' posted' : ''}` : '' },
-                    notify: { name: 'Reminders', page: 'today.html', count: l => l.said ? `last: ${esc(l.said).slice(0, 60)}${l.said.length > 60 ? '…' : ''}` : l.quiet ? 'nothing to say' : '' },
-                    backup: { name: 'Nightly backup', page: 'today.html', count: l => l.documents != null ? `${l.documents} documents` : '', extra: l => l.day ? `<a class="go dl" href="/api/sync/backup?day=${l.day}" download>Download</a><a class="go dl" href="restore.html">Restore</a>` : '<a class="go dl" href="restore.html">Restore</a>' } };
+  const SOURCES = { canvas: { brings: 'courses, assignments and tests', when: 'once a day', name: 'Canvas', page: 'school.html', count: l => l.items != null ? `${l.items} items` : '' },
+                    google: { brings: 'events from every calendar you have shared', when: 'once a day', name: 'Google Calendar', page: 'calendar.html', count: l => l.calendars != null ? `${l.calendars} ${l.calendars === 1 ? 'calendar' : 'calendars'}` : '' },
+                    garmin: { brings: 'sleep, resting heart rate, weight and steps', when: 'once a day', name: 'Garmin', page: 'health.html', count: l => l.days != null ? `${l.days} days` : '' },
+                    daily: { brings: 'the word, the quote, the Publix ad and prices', when: 'once a day', name: 'Nightly: word, quote, Publix ad, prices', page: 'groceries.html', count: l => [l.word ? `“${l.word}”` : '', l.bogos != null ? `${l.bogos} BOGOs` : '', l.priced != null ? `${l.priced} priced` : ''].filter(Boolean).join(' · ') },
+                    bills: { brings: 'the expenses that repeat, posted when due', when: 'once a day', name: 'Scheduled expenses', page: 'finances.html', count: l => l.rules != null ? `${l.rules} ${l.rules === 1 ? 'rule' : 'rules'}${l.posted ? ' · ' + l.posted + ' posted' : ''}` : '' },
+                    notify: { brings: 'the reminders the phone is sent', when: 'three times a day', name: 'Reminders', page: 'today.html', count: l => l.said ? `last: ${esc(l.said).slice(0, 60)}${l.said.length > 60 ? '…' : ''}` : l.quiet ? 'nothing to say' : '' },
+                    backup: { brings: 'every document, kept for thirty days', when: 'once a day', name: 'Nightly backup', page: 'today.html', count: l => l.documents != null ? `${l.documents} documents` : '', extra: l => l.day ? `<a class="go dl" href="/api/sync/backup?day=${l.day}" download>Download</a><a class="go dl" href="restore.html">Restore</a>` : '<a class="go dl" href="restore.html">Restore</a>' } };
+  window.hqSources = SOURCES;   // the colophon reads the same list, so these names live in one place only
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   // three kinds of notice, nothing else: due today, a bill due today, supplements not taken by nine in the evening
   // two kinds of notice above the syncs: today's timed to-dos (all of them, late ones marked), and what is due — school
@@ -28,6 +29,28 @@
   // of days that makes it worth saying — my figures are a starting point, not a judgement about your weeks.
   // Nothing here guesses: every rule is a plain fact about a document.
   const days = (a, b) => Math.round((Date.parse(b + 'T12:00:00Z') - Date.parse(a + 'T12:00:00Z')) / 86400000);
+
+  // A page that threw is not a fact about a document — it is a fact about this browser, like whether reminders
+  // are switched on — so it belongs under "This device". store.js writes them down (hq!oops); the bell is where
+  // they can be found afterwards, since the notice on the page itself only lasts until it is dismissed.
+  // One row per page, keeping the FIRST message, which is the one that explains the rest.
+  const faults = () => {
+    let l = []; try { l = (window.hqOops && window.hqOops.list()) || []; } catch {}
+    const by = new Map();
+    for (const x of l) {
+      if (!x || !x.what) continue;
+      const g = by.get(x.page) || { page: x.page, what: x.what, n: 0, at: x.at };
+      g.n += x.n || 1; if (!g.at || x.at > g.at) g.at = x.at;
+      by.set(x.page, g);
+    }
+    return [...by.values()].sort((a, b) => (a.at < b.at ? 1 : -1));
+  };
+  const faultRow = f => {
+    const where = f.page === 'index' ? 'The welcome page' : f.page;
+    const what = f.what.length > 70 ? f.what.slice(0, 70) + '…' : f.what;
+    return `<li class="oops"><span class="n">${esc(where)} did not work</span>`
+      + `<span class="s">${esc(what)}${f.n > 1 ? ` · ${f.n} times` : ''}</span></li>`;
+  };
   const NOTICES = [
     { id: 'book', name: 'A book that has not moved', unit: 'days', days: 14,
       find: ({ lib, today }, n) => (lib && lib.books || []).filter(b => b.shelf === 'reading').map(b => {
@@ -157,6 +180,8 @@
     .bellpop .notices .w{font-size:12.5px;color:var(--ink-3);font-family:var(--sans);white-space:nowrap}
     .bellpop .notices .late .w{color:var(--ox)}
     .bellpop .notices .late .t::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ox);margin:0 8px 2px 0}
+    .bellpop li.oops .n{color:var(--ox)}
+    .bellpop li.oops .s{font-family:var(--mono,ui-monospace,monospace);font-size:11.5px;overflow-wrap:anywhere}
     .bellpop h4 ~ h4{margin-top:16px}
     .bellpop h4.fold{display:flex;align-items:baseline;gap:10px;cursor:pointer;padding-bottom:0;border-bottom:0}
     .bellpop h4.fold .tw{font-family:var(--sans);font-size:11px;color:var(--ink-3);transition:transform .15s}
@@ -186,7 +211,7 @@
     bell.classList.add('bell'); bell.insertAdjacentHTML('beforeend', '<span class="dot"></span>');
     bell.setAttribute('aria-expanded', 'false');
     let pop = null, ledger = {}, notes = { todos: [], due: [], noticed: [] };
-    const paint = () => { bell.classList.toggle('bad', notes.todos.some(n => n.late) || notes.due.length > 0 || Object.values(ledger).some(l => l && l.ok === false)); };   // the dot: something late, something due, or a failed sync
+    const paint = () => { bell.classList.toggle('bad', notes.todos.some(n => n.late) || notes.due.length > 0 || Object.values(ledger).some(l => l && l.ok === false) || faults().length > 0); };   // the dot: something late, something due, a failed sync, or a page that threw
     const section = (title, list) => list.length ? `<h4>${title}</h4><ul class="notices">${list.map(n => `<li class="${n.late ? 'late' : ''}">${n.k != null ? `<input type="checkbox" aria-label="Done: ${n.text}" data-k="${n.k}">` : ''}<a href="${n.href}"><span class="t">${n.text}</span><span class="w">${n.when}</span></a></li>`).join('')}</ul>` : '';
     const render = () => {
       const rows = Object.entries(SOURCES).map(([k, src]) => {
@@ -209,7 +234,12 @@
         + `<h4>This device</h4>`
         + `<ul><li id="pushrow"><span class="n">Reminders</span><span class="s">checking…</span></li>`
         + `<li><span class="n">What it may say</span><span class="s">the nudges, one by one</span><button class="go" type="button" id="tunenudge">Choose</button></li>`
-        + `<li id="nudgebox" hidden></li></ul>`;
+        + `<li id="nudgebox" hidden></li>`
+        + (() => { const f = faults(); if (!f.length) return '';
+            const total = f.reduce((n, x) => n + x.n, 0);
+            return f.slice(0, 3).map(faultRow).join('')
+              + `<li><span class="n">Faults kept here</span><span class="s">${total} in this browser${f.length > 3 ? `, across ${f.length} pages` : ''}</span><button class="go" type="button" id="oopsclear">Clear</button></li>`; })()
+        + `</ul>`;
       const paintWatch = () => {
         const box = pop.querySelector('#watchbox'); if (!box) return;
         box.className = 'watchbox';
@@ -241,6 +271,11 @@
         pop.querySelector('#watchbox').hidden = false; paintWatch();
       });
 
+      // once they have been read they are no use; the record is this browser's, so clearing it asks nobody
+      pop.querySelector('#oopsclear')?.addEventListener('click', () => {
+        try { window.hqOops && window.hqOops.clear(); } catch {}
+        paint(); render();
+      });
       pop.querySelector('#tunenudge')?.addEventListener('click', () => {
         const box = pop.querySelector('#nudgebox');
         if (!box.hidden) { box.hidden = true; return; }
