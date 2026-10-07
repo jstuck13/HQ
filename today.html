@@ -20,6 +20,12 @@
 
   main{max-width:1180px;margin:0 auto;padding:34px 40px 44px;display:grid;grid-template-columns:1.1fr 1fr;gap:64px}
   h2 small a{border-bottom:1px solid var(--rule)} h2 small a:hover{color:var(--ink);border-color:var(--ink)}
+  /* the two columns, and the blocks stacked down each. The gap lives here rather than on the blocks, so a
+     block reads the same whether it ended up first in its column or last. */
+  .col{display:flex;flex-direction:column;gap:34px;min-width:0}
+  .pgedit{grid-column:1/-1;margin:0 0 6px;padding:14px 16px;background:var(--card);border-radius:12px;box-shadow:var(--shadow)}
+  .mast .arr{display:block;margin-top:10px;font-family:var(--sans);font-size:12.5px;color:var(--band-muted);background:none;border:0;padding:0;cursor:pointer;border-bottom:1px solid transparent}
+  .mast .arr:hover{color:var(--band-ink);border-bottom-color:rgba(242,236,223,.4)}
 
   /* hour-ruled timeline (clean's donation, in ink and paper) */
   .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:18px 20px 20px;margin-top:14px}
@@ -53,7 +59,6 @@
   #wx{margin-top:6px}
 
   /* morning report: last night and the body, read from Health */
-  .report{margin-top:34px}
   .rep{display:grid;grid-template-columns:auto 1fr;gap:6px 28px;align-items:start}
   .rep .big{grid-row:1/3}
   .rep .big b{display:block;font-family:var(--serif);font-weight:400;font-size:44px;line-height:1;letter-spacing:-.01em}
@@ -99,7 +104,6 @@
   .affairs .v.flag small{color:var(--ox)}
   h2 .otherday{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto;border-bottom:1px solid var(--rule)}
   h2 .otherday:hover{color:var(--ox);border-bottom-color:var(--ox)}
-  .todo{margin-top:34px}
   .todo .tg{font-size:12.5px;color:var(--ink-3);white-space:nowrap}
   .todo .tg .did{width:3.2ch;font-family:var(--serif);font-size:14px;text-align:right;border-bottom:1px dotted var(--ink-2);background:none;padding:0;color:var(--ink)}
   .todo .tg .did:focus{outline:none;border-bottom-color:var(--ink)}
@@ -148,34 +152,42 @@
         <button class="ib menu" type="button" aria-label="Menu" aria-expanded="false" id="menubtn"><svg class="ic"><use href="icons.svg#menu"/></svg></button>
       </div>
     </div>
-    <div class="mast"><h1 id="greet">Good morning, Jacob.</h1><p class="upnext" id="upnext" hidden></p><p class="upnext" id="wx" hidden></p></div>
+    <div class="mast"><h1 id="greet">Good morning, Jacob.</h1><p class="upnext" id="upnext" hidden></p><p class="upnext" id="wx" hidden></p><button class="arr" type="button" id="arrpage">Arrange this page</button></div>
   </div>
 </header>
 
 <main>
-  <section>
-    <h2>The day<small id="dayn"></small><a class="otherday" href="day.html?d=">Another day</a></h2>
-    <div class="card"><div class="tl" id="tl"></div></div>
-    <div class="report">
+  <!-- Each block is moved whole into whichever column it has been put in; nothing inside them is rebuilt, so
+       every id, listener and render function below goes on working wherever the block ends up. -->
+  <div class="pgedit" id="pgedit" hidden></div>
+  <div class="col" id="cola">
+    <section data-block="day">
+      <h2>The day<small id="dayn"></small><a class="otherday" href="day.html?d=">Another day</a></h2>
+      <div class="card"><div class="tl" id="tl"></div></div>
+    </section>
+
+    <section class="report" data-block="report">
       <h2>Morning report<small id="repn"></small></h2>
       <div class="card rep" id="rep"></div>
-    </div>
-  </section>
+    </section>
+  </div>
 
-  <section>
-    <h2>State of affairs<small id="affn"></small></h2>
-    <div class="affedit" id="affedit" hidden></div>
-    <ul class="affairs" id="affairs"></ul>
+  <div class="col" id="colb">
+    <section data-block="affairs">
+      <h2>State of affairs<small id="affn"></small></h2>
+      <div class="affedit" id="affedit" hidden></div>
+      <ul class="affairs" id="affairs"></ul>
+    </section>
 
-    <div class="todo">
+    <section class="todo" data-block="todo">
       <h2>To do<small id="todon"></small><a class="otherday" href="list.html">The list</a></h2>
       <ul id="todo"></ul>
       <form class="addt" id="addt"><input id="t-text" placeholder="Anything: a to-do, 12.40 lunch, 173.2, or Dentist Thursday 3–4 pm" required><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
       <div class="propose" id="propose" hidden></div>
       <p class="saidt" id="saidt" hidden></p>
       <ul class="reps" id="reps"></ul>
-    </div>
-  </section>
+    </section>
+  </div>
 </main>
 <p class="foot" id="foot"></p>
 
@@ -403,6 +415,74 @@
   });
   const savePrefs = () => { PREFS.doc = hqPrefs.save({ affairs: { hidden: PREFS.hidden, order: PREFS.order } }); };
 
+  // ---- the page's own shape ----
+  // The same bargain the State of Affairs list makes, one level up: which blocks the page shows, which column
+  // each sits in, and in what order down it. The blocks are the ones already in the markup — they are moved
+  // whole, never rebuilt, so every id and listener inside them survives being put somewhere else.
+  const BLOCKS = [
+    { id: 'day', name: 'The day', col: 'a' },
+    { id: 'report', name: 'Morning report', col: 'a' },
+    { id: 'affairs', name: 'State of affairs', col: 'b' },
+    { id: 'todo', name: 'To do', col: 'b' },
+  ];
+  let PAGE = { hidden: [], order: [], col: {} };
+  const blockEl = id => document.querySelector(`[data-block="${id}"]`);
+  const blockCol = b => PAGE.col[b.id] || b.col;
+  const pageOrder = () => {                              // saved order first, then anything HQ learned later
+    const seen = new Set();
+    const first = (PAGE.order || []).map(id => BLOCKS.find(b => b.id === id)).filter(b => b && !seen.has(b.id) && seen.add(b.id));
+    return [...first, ...BLOCKS.filter(b => !seen.has(b.id))];
+  };
+  function paintPage(){
+    for(const b of pageOrder()){
+      const el = blockEl(b.id); if(!el) continue;
+      const off = (PAGE.hidden || []).includes(b.id);
+      el.hidden = off;
+      if(!off) F(blockCol(b) === 'a' ? 'cola' : 'colb').appendChild(el);   // appending in order is the ordering
+    }
+  }
+  function openPageEdit(){
+    const box = F('pgedit');
+    if(!box.hidden){ box.hidden = true; return; }
+    box.hidden = false; paintPageEdit();
+  }
+  function paintPageEdit(){
+    const hidden = new Set(PAGE.hidden || []), all = pageOrder();
+    F('pgedit').innerHTML = `<ul class="arrange">${all.map((b,i)=>`
+      <li data-id="${b.id}">
+        <input type="checkbox" id="pg-${b.id}" ${hidden.has(b.id)?'':'checked'}>
+        <label for="pg-${b.id}">${b.name}</label>
+        <button class="mv" type="button" data-side aria-label="Move ${b.name} to the other column">${blockCol(b)==='a'?'left':'right'}</button>
+        <button class="mv" type="button" data-up ${i===0?'disabled':''} aria-label="Move ${b.name} up">↑</button>
+        <button class="mv" type="button" data-down ${i===all.length-1?'disabled':''} aria-label="Move ${b.name} down">↓</button>
+      </li>`).join('')}</ul>
+      <p class="arrn">A block turned off keeps everything in it; only this page changes. On a narrow screen the columns become one, in this order. <button class="textbtn" type="button" id="pgdone">Done</button></p>`;
+    F('pgdone').addEventListener('click', ()=>{ F('pgedit').hidden = true; });
+  }
+  const savePage = () => { PREFS.doc = hqPrefs.save({ today: { hidden: PAGE.hidden, order: PAGE.order, col: PAGE.col } }); };
+  F('pgedit').addEventListener('change', e=>{
+    if(e.target.type !== 'checkbox') return;
+    const id = e.target.closest('li').dataset.id, hidden = new Set(PAGE.hidden || []);
+    e.target.checked ? hidden.delete(id) : hidden.add(id);
+    PAGE.hidden = [...hidden]; savePage(); paintPage(); paintPageEdit();
+  });
+  F('pgedit').addEventListener('click', e=>{
+    const b = e.target.closest('.mv'); if(!b) return;
+    const id = b.closest('li').dataset.id;
+    if(b.hasAttribute('data-side')){
+      const was = BLOCKS.find(x => x.id === id);
+      PAGE.col = { ...PAGE.col, [id]: blockCol(was) === 'a' ? 'b' : 'a' };
+    } else {
+      const order = pageOrder().map(x => x.id), i = order.indexOf(id);
+      const j = b.hasAttribute('data-up') ? i-1 : i+1;
+      if(j < 0 || j >= order.length) return;
+      order.splice(j, 0, order.splice(i, 1)[0]);
+      PAGE.order = order;
+    }
+    savePage(); paintPage(); paintPageEdit();
+  });
+  F('arrpage').addEventListener('click', openPageEdit);
+
   const ordinal = n => (n%10===1&&n!==11)?'st':(n%10===2&&n!==12)?'nd':(n%10===3&&n!==13)?'rd':'th';
 
   // ---- greeting with the insight sentence ----
@@ -562,7 +642,9 @@
   // ---- load everything the other pages keep, then draw ----
   (async () => {
     const [cal, fin, H, lib, school, today, inv, study, pat, prefs] = await Promise.all([store.load('calendar'), store.load('finances.'+YM), store.load('health'), store.load('library'), store.load('school'), store.load(TKEY), store.load('investments'), store.load('study'), store.load('patterns'), store.load('prefs')]);
-    if(prefs){ PREFS = { doc: prefs, hidden: (prefs.affairs||{}).hidden || [], order: (prefs.affairs||{}).order || [] }; }   // how this list was last arranged
+    if(prefs){ PREFS = { doc: prefs, hidden: (prefs.affairs||{}).hidden || [], order: (prefs.affairs||{}).order || [] };   // how this list was last arranged
+      const t = prefs.today || {}; PAGE = { hidden: t.hidden || [], order: t.order || [], col: t.col || {} }; }           // and how the page itself was
+    paintPage();
     RULES = (await store.load('todo.rules')) || { rules: [] }; RULES.rules ??= [];
     if(today){ T = today; if(migrateAt()) saveT(); }
     if(await carryForward()) saveT();   // unfinished work from the days behind comes along, marked
