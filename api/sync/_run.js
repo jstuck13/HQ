@@ -12,7 +12,13 @@ export const putDoc = async (key, data) => sql`INSERT INTO documents (key, data,
 const allowed = req => (process.env.CRON_SECRET && req.headers.authorization === `Bearer ${process.env.CRON_SECRET}`) || isAuthed(req);
 
 export function syncRoute(name, run) {
-  return async function handler(req, res) {
+  // The work itself is hung off the handler so it can be run without a request, a session or a database —
+  // which is the only way to ask a sync the questions that matter: what does it do when the other end answers
+  // with an error, or with nothing, or leaves a field out? Those answers are where it deletes things.
+  handler.run = run;
+  handler.sourceName = name;
+  return handler;
+  async function handler(req, res) {
     if (!allowed(req)) return res.status(401).json({ error: 'sign in' });
     await ensureTable();
     const ledger = (await getDoc('sync')) || {};
@@ -27,7 +33,7 @@ export function syncRoute(name, run) {
       await putDoc('sync', ledger);
       return res.status(500).json(ledger[name]);
     }
-  };
+  }
 }
 
 // Canvas-style pagination: follow rel="next" links until there are none.

@@ -91,7 +91,6 @@
 <script src="search.js"></script>
 <script>
   const C = clock, TODAY = C.today;
-  document.querySelector('.date').textContent = `${C.full(C.now)} · ${C.time(C.now)}`;
 
   // where we are: a month as YYYY-MM, or a year as YYYY. Both live in the address so a view can be sent on.
   const q = new URLSearchParams(location.search);

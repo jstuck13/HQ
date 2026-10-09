@@ -101,8 +101,8 @@
 <main>
   <h2>Every to-do<small id="count"></small></h2>
   <form class="addt" id="addt"><input id="t-text" placeholder="Anything: a to-do, 12.40 lunch, 173.2, or Dentist Thursday 3–4 pm" required disabled><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
-  <div class="propose" id="propose" hidden></div>
-  <p class="saidt" id="saidt" hidden></p>
+  <div class="propose" id="propose" role="status" aria-live="polite" hidden></div>
+  <p class="saidt" id="saidt" role="status" aria-live="polite" hidden></p>
   <div class="sift">
     <input type="search" id="q" placeholder="Find a to-do…" aria-label="Find a to-do">
     <label><input type="checkbox" id="openonly">only what is still open</label>
@@ -121,7 +121,6 @@
 <script src="search.js"></script>
 <script>
   const C = clock, TODAY = C.today;
-  document.querySelector('.date').textContent = `${C.full(C.now)} · ${C.time(C.now)}`;
 
   // How far either way to look. A to-do lives in the document for the day it was on, so the only way to see
   // them all is to read the days; 120 back and 45 on covers a term without making the page a download.

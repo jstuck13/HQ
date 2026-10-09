@@ -38,11 +38,15 @@ export default syncRoute('canvas', async ({ getDoc, putDoc }) => {
     if (school.ignored.includes(id)) continue;
     const canvasLink = { t: 'Canvas', u: `${base}/courses/${c.id}`, source: 'canvas' };
     const tidy = n => String(n).replace(/\s*\((?:Fall|Spring|Summer|Winter|Autumn)\s*\d{4}\)\s*$/i, '').trim();   // "MATH-2650-100 (Fall 2026)" → "MATH-2650-100"
-    // Canvas reports the running mark on the enrolment; it is absent when a course does not publish one
-    const en = (c.enrollments || []).find(e => e.type === 'student' || e.computed_current_score != null) || {};
-    const mark = en.computed_current_score != null ? { pct: +en.computed_current_score, letter: en.computed_current_grade || undefined, at: new Date().toISOString().slice(0, 10) } : undefined;
+    // Canvas reports the running mark on the student enrolment, and there are three answers here rather than
+    // two: a score, an enrolment saying there is none, and no enrolment mentioned at all. The third arrives on
+    // a perfectly good response and is not a teacher withdrawing a grade — so only the second clears a mark
+    // that is already here. Treating silence as withdrawal threw away a mark Canvas simply had not repeated.
+    const en = (c.enrollments || []).find(e => e.type === 'student' || e.computed_current_score != null);
+    const mark = en && en.computed_current_score != null ? { pct: +en.computed_current_score, letter: en.computed_current_grade || undefined, at: new Date().toISOString().slice(0, 10) } : undefined;
     if (existing) { existing.name = tidy(c.course_code && c.name.length > 40 ? c.course_code : c.name); existing.links = [canvasLink, ...existing.links.filter(l => l.source !== 'canvas')];
-      if (mark) { existing.mark = mark; remember(existing, mark); } else delete existing.mark; }
+      if (mark) { existing.mark = mark; remember(existing, mark); }
+      else if (en) delete existing.mark; }                 // said out loud: there is no score on this course
     else { const fresh = { id, name: tidy(c.course_code && c.name.length > 40 ? c.course_code : c.name), conf: 3, links: [canvasLink], source: 'canvas', mark };
       if (mark) remember(fresh, mark);
       school.courses.push(fresh); nc++; }

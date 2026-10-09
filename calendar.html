@@ -43,9 +43,13 @@
   .filters input{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px}
   .filters input:checked{background:var(--band);border-color:var(--band)}
   .filters input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
-  .filters label{flex:1;min-width:0;cursor:pointer;display:flex;align-items:center;gap:10px;overflow-wrap:break-word}
+  /* A flex row had nothing left to give: the swatch was being crushed from 14px to a 2px sliver to make room
+     for a long category name, and the count still spilled 5px past the label. One grid with a single
+     shrinkable track settles it — the swatch and the count take the width they need, the name takes what is
+     left and wraps, and `margin-left:auto` is no longer doing a job the track does properly. */
+  .filters label{flex:1;min-width:0;cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;overflow-wrap:break-word}
   .filters .sw{width:14px;height:14px;border-radius:2px;background:var(--c);border:1px solid var(--rule)}
-  .filters .n{margin-left:auto;padding-left:6px;font-size:12.5px;color:var(--ink-3);flex:none}
+  .filters .n{padding-left:6px;font-size:12.5px;color:var(--ink-3);text-align:right}
 
   /* week card */
   .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:14px 16px 18px;margin-top:14px}
@@ -628,7 +632,10 @@
   renderAll(); reset();
   store.load('school').then(doc => { SCHOOL = doc; if(S.cats.length) renderAll(); });   // due dates sit under the week alongside the entries
   store.load('calendar').then(doc => { if (doc) { S = doc; migrate(); renderAll(); reset(); } else save(); if(!store.signedOut) renderSync();
-    const q = new URLSearchParams(location.search); if(q.get('d')){ const e=q.get('e'); if(e && S.series.some(s=>String(s.id)===e)) openEntry(idOf(e), q.get('d')); else goto(q.get('d')); history.replaceState(null,'',location.pathname); } });
+    const q = new URLSearchParams(location.search); if(q.get('d')){ const e=q.get('e'); if(e && S.series.some(s=>String(s.id)===e)) openEntry(idOf(e), q.get('d')); else goto(q.get('d'));
+      // the address is tidied once the arriving transition is done: replacing the history entry under a live
+      // one is a way to have it abandoned, and this page is reached from a search hit or a notice with ?d= on it
+      (window.hqSettled ? window.hqSettled() : Promise.resolve()).then(() => history.replaceState(null,'',location.pathname)); } });
 </script>
 </body>
 </html>

@@ -345,6 +345,25 @@
     if (form) form.addEventListener('submit', e => { e.preventDefault();
       const i = el(ids.input), t = i.value.trim(); if (!t) return; form.reset(); capture(t); });
 
+    // Shared from somewhere else on the phone. manifest.json names this page as a share target, so the share
+    // sheet can hand over a selection, a note or a link; it arrives as a query and is put in the box rather
+    // than read straight away, because what the box made of it should be seen and corrected before it is kept.
+    // The query is then dropped from the address so a reload does not offer the same thing twice.
+    // guarded: the box is also built outside a browser by the tests, where there is no address to read
+    if (typeof location !== 'undefined' && location.search) {
+      const q = new URLSearchParams(location.search);
+      const shared = [q.get('title'), q.get('text'), q.get('url')].map(x => (x || '').trim()).filter(Boolean);
+      const input = el(ids.input);
+      if (shared.length && input) {
+        // a shared link usually arrives as title + url, and the title is the part worth reading
+        const seen = new Set(); const text = tidy(shared.filter(x => !seen.has(x) && seen.add(x)).join(' '));
+        input.value = text;
+        said('Shared — read it over, then add it.');
+        input.focus(); input.setSelectionRange(text.length, text.length);
+        if (typeof history !== 'undefined' && history.replaceState) history.replaceState(null, '', location.pathname + location.hash);
+      }
+    }
+
     return { capture, said, fold, planCapture, parseAt, takeRep, takeTarget, takeUntil, parseWhen, parseDayWord, money, whatOf, catFor, tidy, uid };
   };
 })();

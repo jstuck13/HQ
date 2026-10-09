@@ -96,7 +96,6 @@
 <script src="search.js"></script>
 <script>
   const C = clock;
-  document.querySelector('.date').textContent = `${C.full(C.now)} · ${C.time(C.now)}`;
   let picked = null, info = null;
 
   const ask = async (url, opts) => { const r = await fetch(url, opts); if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || r.status); return r.json(); };

@@ -51,26 +51,34 @@
     bar.append(m, x);
     (document.body || document.documentElement).appendChild(bar);
   }
-  function note(what, where) {
+  // A view transition that gives up is not a fault: the navigation happened, the page works, all that was lost
+  // is the crossfade. The browser rejects its own promise to say so, which arrives here as an unhandled
+  // rejection. Saying it out loud would fill the one place HQ admits to being broken with something nobody can
+  // act on — but discarding it throws away the evidence of why it aborts. So it is written down and kept quiet:
+  // marked soft, left out of the notice and out of the bell, and still there in hqOops.list().
+  const cosmetic = (name, what) => name === 'AbortError'
+    || /transition was abort|view ?transition|skipped the view transition/i.test(what);
+
+  function note(what, where, soft) {
     try {
       const l = read(), last = l[l.length - 1], now = new Date().toISOString(), p = page();
       // the same thing failing in a loop is one fault, counted — not twenty lines of the same sentence
       if (last && last.what === what && last.page === p) { last.n = (last.n || 1) + 1; last.at = now; }
-      else l.push({ what, where, page: p, at: now, n: 1 });
+      else l.push({ what, where, page: p, at: now, n: 1, ...(soft ? { soft: true } : {}) });
       write(l);
-      show(`Something on ${p === 'index' ? 'the welcome page' : p} went wrong — ${what}`);
+      if (!soft) show(`Something on ${p === 'index' ? 'the welcome page' : p} went wrong — ${what}`);
     } catch {}                                            // a reporter that throws is worse than no reporter
   }
   addEventListener('error', e => {
     if (e && e.target && e.target.tagName && !e.message) return;        // a picture or script that would not load, not a throw
     const msg = String((e && e.message) || '');
     if (!msg || (msg === 'Script error.' && !e.filename)) return;       // another origin's script: there is nothing to report
-    note(msg, e.filename ? `${String(e.filename).split('/').pop()}:${e.lineno}` : '');
+    note(msg, e.filename ? `${String(e.filename).split('/').pop()}:${e.lineno}` : '', cosmetic((e.error && e.error.name) || '', msg));
   });
   // an await that rejected with nobody to catch it: the commonest way a page half-draws
   addEventListener('unhandledrejection', e => {
-    const r = e && e.reason;
-    note(String((r && r.message) || r || 'A promise was rejected with no reason given'), '');
+    const r = e && e.reason, what = String((r && r.message) || r || 'A promise was rejected with no reason given');
+    note(what, '', cosmetic((r && r.name) || '', what));
   });
 })();
 

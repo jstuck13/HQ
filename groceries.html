@@ -48,6 +48,13 @@
 
   /* price book */
   .book li{display:grid;grid-template-columns:1fr auto auto;gap:4px 18px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+  /* Each row was its own grid, so an `auto` track sized to that row alone and the price column wandered up to
+     62px down the list. Subgrid hands the rows one shared set of tracks, which is what a column is: sized to
+     the widest row, identical in every other. The rule above stays as the fallback where subgrid is not known. */
+  @supports (grid-template-columns: subgrid) {
+    .book{display:grid;grid-template-columns:1fr auto auto}
+    .book li{grid-column:1/-1;grid-template-columns:subgrid}
+  }
   .book .n{font-family:var(--serif);font-size:15.5px}
   .book .n small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
   .book .p{font-family:var(--serif);font-size:17px;text-align:right;white-space:nowrap}

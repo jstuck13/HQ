@@ -18,7 +18,19 @@ export default syncRoute('google', async ({ getDoc, putDoc }) => {
   if (!tok.access_token) throw new Error('Google refused the refresh token; reconnect');
   const headers = { Authorization: `Bearer ${tok.access_token}` };
 
-  const cals = (await (await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', { headers })).json()).items || [];
+  // Ask Google, and say what Google answered. This used to read `.items || []`, so a refusal — a scope not
+  // granted, a revoked token — arrived as "no calendars", which reads like an empty account and is impossible
+  // to act on. Listing calendars needs calendar.readonly; the events scope alone cannot do it.
+  const lr = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', { headers });
+  const lj = await lr.json().catch(() => ({}));
+  if (!lr.ok) {
+    const why = (lj.error && (lj.error.message || lj.error.status)) || `HTTP ${lr.status}`;
+    const granted = String(g.scope || tok.scope || '');
+    const canList = /auth\/calendar(\.readonly|\.calendarlist[^\s]*)?(\s|$)/.test(granted);
+    throw new Error(canList ? `Google refused the calendar list: ${why}`
+      : `Google will not list your calendars: ${why}. The connection does not include permission to see which calendars you have — reconnect Google on the Calendar page to grant it.`);
+  }
+  const cals = lj.items || [];
   const chosen = cals.filter(c => c.selected !== false && c.accessRole !== 'freeBusyReader');
   const from = new Date(); from.setDate(from.getDate() - 14);
   const to = new Date(); to.setDate(to.getDate() + 90);
@@ -31,10 +43,11 @@ export default syncRoute('google', async ({ getDoc, putDoc }) => {
   // a category you gave one instance of a repeating event applies to its siblings, new ones included
   const groupCat = {}; for (const s of cal.series) if (s.group && s.cat && s.cat !== 'cal') groupCat[s.group] = s.cat;
 
+  let failed = 0;
   for (const c of chosen) {
     const u = new URL(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(c.id)}/events`);
     u.search = new URLSearchParams({ timeMin: from.toISOString(), timeMax: to.toISOString(), singleEvents: 'true', orderBy: 'startTime', maxResults: '500' }).toString();
-    const r = await fetch(u, { headers }); if (!r.ok) continue;
+    const r = await fetch(u, { headers }); if (!r.ok) { failed++; continue; }
     for (const e of (await r.json()).items || []) {
       if (e.status === 'cancelled' || !e.start) continue;
       if (ours.has(e.id)) continue;                                      // HQ's own entry, coming home
@@ -50,10 +63,18 @@ export default syncRoute('google', async ({ getDoc, putDoc }) => {
       else { cal.series.push({ ...record, cat: (group && groupCat[group]) || 'cal' }); added++; }
     }
   }
-  // events that vanished from Google inside the window vanish here too (notes on them are kept)
-  const before = cal.series.length;
-  cal.series = cal.series.filter(s => s.source !== 'google' || seen.has(s.id) || s.date < iso(from) || s.date > iso(to));
-  const removed = before - cal.series.length;
+  // Events that vanished from Google inside the window vanish here too (notes on them are kept) — but only when
+  // we actually managed to read every calendar. Absence of evidence is not evidence of deletion: a calendar that
+  // did not answer looks exactly like a calendar with nothing in it, and pruning on that reading empties the
+  // page. Reconnecting the account is precisely when a scope is most likely to be refused on the first run, so
+  // that is when the old code was most likely to delete the lot.
+  const complete = chosen.length > 0 && failed === 0;
+  let removed = 0;
+  if (complete) {
+    const before = cal.series.length;
+    cal.series = cal.series.filter(s => s.source !== 'google' || seen.has(s.id) || s.date < iso(from) || s.date > iso(to));
+    removed = before - cal.series.length;
+  }
 
   // Write back onto whatever the document is NOW, not onto the copy this run started with. A run takes seconds;
   // an entry added on the page in that time used to be carried away with the stale copy, and the page — seeing
@@ -65,5 +86,10 @@ export default syncRoute('google', async ({ getDoc, putDoc }) => {
     if (!fresh.cats.some(c => c.id === 'cal')) fresh.cats.unshift({ id: 'cal', name: 'Appointments', tint: '#E9EEF3' });
     await putDoc('calendar', fresh);
   }
+  // What was read is kept either way; what could not be read is said out loud rather than quietly acted on,
+  // so a half-answered run shows red in the bell instead of looking like a clean sync that found nothing.
+  if (!complete) throw new Error(chosen.length === 0
+    ? `Google listed ${cals.length} ${cals.length === 1 ? 'calendar' : 'calendars'} and none could be read from — nothing was removed. Tick the calendars you want in Google Calendar.`
+    : `${failed} of ${chosen.length} calendars did not answer — nothing was removed. Sync again.`);
   return { calendars: chosen.length, added, updated, removed };
 });

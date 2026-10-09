@@ -38,7 +38,7 @@
     let l = []; try { l = (window.hqOops && window.hqOops.list()) || []; } catch {}
     const by = new Map();
     for (const x of l) {
-      if (!x || !x.what) continue;
+      if (!x || !x.what || x.soft) continue;          // kept for evidence, never shown: see store.js
       const g = by.get(x.page) || { page: x.page, what: x.what, n: 0, at: x.at };
       g.n += x.n || 1; if (!g.at || x.at > g.at) g.at = x.at;
       by.set(x.page, g);
@@ -97,6 +97,20 @@
         const last = rated[rated.length - 1];
         return last && days(last, today) >= n ? [{ text: 'How the days have felt', when: `not rated for ${days(last, today)} days`, href: 'health.html' }] : [];
       } },
+
+    // A sync that FAILS turns the bell red and says why. A sync that simply stops being run says nothing at
+    // all: the ledger keeps its last success, so a cron that never fired again reads as "ran, 9 days ago" —
+    // and the syncs list is folded shut by default, so nobody looks. Silence was the one state nothing
+    // watched for, and the nightly backup is the one it matters most for, being the way back from a bad day.
+    { id: 'quiet', name: 'A sync that has gone quiet', unit: 'days', days: 2,
+      find: ({ ledger, today }, n) => Object.keys(SOURCES).map(k => {
+        const l = (ledger || {})[k];
+        if (!l || !l.last) return null;                       // never connected is not gone quiet
+        if (l.ok === false) return null;                      // already failing out loud; this rule is about silence
+        const d = days(String(l.last).slice(0, 10), today);
+        if (!(d >= n)) return null;
+        return { text: esc(SOURCES[k].name), when: `last ran ${d} days ago`, late: true, quiet: true, href: SOURCES[k].page };
+      }).filter(Boolean) },
   ];
 
   // what you have turned off, and the numbers you have changed; kept with the other documents
@@ -111,9 +125,9 @@
   const noticeDays = r => { const v = +(NPREFS.days || {})[r.id]; return v > 0 ? v : r.days; };
 
   const noticing = async ({ school, health, todo, today }) => {
-    const [lib, inv, rules] = await Promise.all([store.load('library', true).catch(() => null), store.load('investments', true).catch(() => null), store.load('todo.rules', true).catch(() => null)]);
+    const [lib, inv, rules, ledger] = await Promise.all([store.load('library', true).catch(() => null), store.load('investments', true).catch(() => null), store.load('todo.rules', true).catch(() => null), store.ledger().catch(() => ({}))]);
     await noticePrefs();
-    const ctx = { school, health, todo, today, lib, inv, rules };
+    const ctx = { school, health, todo, today, lib, inv, rules, ledger };
     const out = [];
     for (const r of NOTICES) {
       if ((NPREFS.off || []).includes(r.id)) continue;
@@ -140,6 +154,11 @@
   const FOLD = 'hq.bell.syncs';
   const folded = () => { try { return localStorage.getItem(FOLD) !== 'open'; } catch { return true; } };
   const setFolded = v => { try { localStorage.setItem(FOLD, v ? 'shut' : 'open'); } catch {} };
+  // Faults fold too, so a run of them cannot push the rest of the bell off the screen. Unlike the syncs they
+  // start open: a fault you have never seen is a fault you cannot act on. Once you compress it, it stays so.
+  const OFOLD = 'hq.bell.faults';
+  const ofolded = () => { try { return localStorage.getItem(OFOLD) === 'shut'; } catch { return false; } };
+  const setOfolded = v => { try { localStorage.setItem(OFOLD, v ? 'shut' : 'open'); } catch {} };
 
   // the nudges /api/sync/notify can send, named here so one can be silenced without silencing the lot
   const NUDGES = [
@@ -211,7 +230,7 @@
     bell.classList.add('bell'); bell.insertAdjacentHTML('beforeend', '<span class="dot"></span>');
     bell.setAttribute('aria-expanded', 'false');
     let pop = null, ledger = {}, notes = { todos: [], due: [], noticed: [] };
-    const paint = () => { bell.classList.toggle('bad', notes.todos.some(n => n.late) || notes.due.length > 0 || Object.values(ledger).some(l => l && l.ok === false) || faults().length > 0); };   // the dot: something late, something due, a failed sync, or a page that threw
+    const paint = () => { bell.classList.toggle('bad', notes.todos.some(n => n.late) || notes.due.length > 0 || Object.values(ledger).some(l => l && l.ok === false) || faults().length > 0 || (notes.noticed || []).some(n => n.quiet)); };   // the dot: something late or due, a sync that failed or went quiet, or a page that threw
     const section = (title, list) => list.length ? `<h4>${title}</h4><ul class="notices">${list.map(n => `<li class="${n.late ? 'late' : ''}">${n.k != null ? `<input type="checkbox" aria-label="Done: ${n.text}" data-k="${n.k}">` : ''}<a href="${n.href}"><span class="t">${n.text}</span><span class="w">${n.when}</span></a></li>`).join('')}</ul>` : '';
     const render = () => {
       const rows = Object.entries(SOURCES).map(([k, src]) => {
@@ -234,12 +253,14 @@
         + `<h4>This device</h4>`
         + `<ul><li id="pushrow"><span class="n">Reminders</span><span class="s">checking…</span></li>`
         + `<li><span class="n">What it may say</span><span class="s">the nudges, one by one</span><button class="go" type="button" id="tunenudge">Choose</button></li>`
-        + `<li id="nudgebox" hidden></li>`
-        + (() => { const f = faults(); if (!f.length) return '';
-            const total = f.reduce((n, x) => n + x.n, 0);
-            return f.slice(0, 3).map(faultRow).join('')
-              + `<li><span class="n">Faults kept here</span><span class="s">${total} in this browser${f.length > 3 ? `, across ${f.length} pages` : ''}</span><button class="go" type="button" id="oopsclear">Clear</button></li>`; })()
-        + `</ul>`;
+        + `<li id="nudgebox" hidden></li></ul>`
+        + (() => {
+            const f = faults(); if (!f.length) return '';
+            const total = f.reduce((n, x) => n + x.n, 0), oshut = ofolded();
+            const sum = `${f.length} ${f.length === 1 ? 'page' : 'pages'}${total > f.length ? ` · ${total} times` : ''}`;
+            return `<h4 class="fold" id="oopsfold" role="button" tabindex="0" aria-expanded="${!oshut}"><span class="tw">▸</span>Faults<span class="sum bad">${sum}</span></h4>`
+              + `<ul>${f.map(faultRow).join('')}`
+              + `<li><span class="n">Kept in this browser</span><span class="s">the last twenty, this device only</span><button class="go" type="button" id="oopsclear">Clear</button></li></ul>`; })();
       const paintWatch = () => {
         const box = pop.querySelector('#watchbox'); if (!box) return;
         box.className = 'watchbox';
@@ -293,7 +314,7 @@
         NPREFS.doc = hqPrefs.save({ nudges: { off: [...set] } });
       });
 
-      const fold = el => { const open = el.getAttribute('aria-expanded') === 'true'; el.setAttribute('aria-expanded', !open); if (el.id === 'syncfold') setFolded(open); };
+      const fold = el => { const open = el.getAttribute('aria-expanded') === 'true'; el.setAttribute('aria-expanded', !open); if (el.id === 'syncfold') setFolded(open); if (el.id === 'oopsfold') setOfolded(open); };
       pop.querySelectorAll('h4.fold').forEach(h => {
         h.addEventListener('click', () => fold(h));
         h.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fold(h); } });

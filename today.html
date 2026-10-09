@@ -183,8 +183,8 @@
       <h2>To do<small id="todon"></small><a class="otherday" href="list.html">The list</a></h2>
       <ul id="todo"></ul>
       <form class="addt" id="addt"><input id="t-text" placeholder="Anything: a to-do, 12.40 lunch, 173.2, or Dentist Thursday 3–4 pm" required><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
-      <div class="propose" id="propose" hidden></div>
-      <p class="saidt" id="saidt" hidden></p>
+      <div class="propose" id="propose" role="status" aria-live="polite" hidden></div>
+      <p class="saidt" id="saidt" role="status" aria-live="polite" hidden></p>
       <ul class="reps" id="reps"></ul>
     </section>
   </div>

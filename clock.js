@@ -55,6 +55,19 @@
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') recheck(); });
   addEventListener('pageshow', recheck);     // iOS hands a suspended page back this way, not through visibility
   addEventListener('focus', recheck);
+
+  // The browser hands the incoming page transition over on pagereveal, and its `finished` promise rejects when
+  // the transition is abandoned — which browsers do readily and harmlessly. With nobody holding that promise it
+  // is an unhandled rejection, and that is how "Transition was aborted because of invalid state" came to be
+  // reported as though a page had broken. Taking it and saying an abandoned crossfade is fine is the fix at
+  // source; the reporter's filter is only the net beneath it.
+  // What is kept is a promise that settles when any incoming transition is done, so a page with a tidying-up
+  // job to do on arrival can wait rather than yank the ground out from under the animation.
+  let settled = Promise.resolve();
+  const hold = e => { if (e && e.viewTransition) settled = e.viewTransition.finished.catch(() => {}); };
+  addEventListener('pagereveal', hold);
+  addEventListener('pageswap', hold);
+  window.hqSettled = () => settled;
   // lamplight: from eight in the evening until six the pages take a warmer, dimmer palette
   const lamp = () => { const h = new Date().getHours(), next = (h >= 20 || h < 6) ? 'evening' : '', root = document.documentElement;
     if (root.dataset.light !== undefined && root.dataset.light !== next) { root.classList.add('hq-fade'); setTimeout(() => root.classList.remove('hq-fade'), 2400); }   // a live flip crossfades
@@ -67,7 +80,7 @@
     .band .mast{animation:hq-arrive .4s ease-out both}
     main>*{animation:hq-arrive .45s ease-out both}
     main>*:nth-child(2){animation-delay:.06s} main>*:nth-child(3){animation-delay:.12s} main>*:nth-child(n+4){animation-delay:.18s}
-    @keyframes hq-breathe{0%,100%{background-color:var(--ox)}50%{background-color:#C29B99}}
+    @keyframes hq-breathe{0%,100%{background-color:var(--ox)}50%{background-color:var(--ox-lit)}}
     @keyframes hq-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.45)}}   /* solid throughout: a fading dot lets the rule show through it */
     .now{animation:hq-breathe 4s ease-in-out infinite}
     .now::before{animation:hq-pulse 4s ease-in-out infinite}
@@ -78,12 +91,19 @@
     html:not([data-ready]) svg .bar-in,html:not([data-ready]) svg .bar-out{transform-box:fill-box;transform-origin:bottom;animation:hq-grow .5s ease-out both}
     html:not([data-ready]) svg .hbar{transform-box:fill-box;transform-origin:left;animation:hq-widen .5s ease-out both}
     html:not([data-ready]) .cats .bar i{animation:hq-widen .5s ease-out both;transform-origin:left}
-    .hq-fade,.hq-fade *{transition:background-color 2s ease,color 2s ease,border-color 2s ease!important}
+    .hq-fade,.hq-fade *{transition:background-color var(--t-lamp) ease,color var(--t-lamp) ease,border-color var(--t-lamp) ease!important}
     @keyframes hq-strike{from{background-size:0 1px}to{background-size:100% 1px}}
     html[data-ready] .todo input:checked+label,html[data-ready] .pills input:checked+label{animation:hq-strike .3s ease-out both}
   }`;
   document.head.appendChild(motion);
   addEventListener('DOMContentLoaded', () => setTimeout(() => { document.documentElement.dataset.ready = '1'; }, 800));   // strikes animate only after the page has settled
-  // the band's date line, on every page that has one
-  addEventListener('DOMContentLoaded', () => { document.querySelectorAll('.band .date').forEach(el => { el.textContent = `${long(now)} · ${time(now)}`; }); });
+  // The band's date line, on every page that has one — written the moment this script runs, not on
+  // DOMContentLoaded. The band sits above the loading curtain and carries a view-transition name, so it stays
+  // on screen and animated right through a navigation: an empty date line is not a flicker there, it is held
+  // up and crossfaded. Every page loads clock.js after the band, so the element is already there; the
+  // DOMContentLoaded pass is the fallback for any page that ever loads it earlier.
+  const dateline = () => { const els = document.querySelectorAll('.band .date');
+    els.forEach(el => { el.textContent = `${long(now)} · ${time(now)}`; });
+    return els.length > 0; };
+  if (!dateline()) addEventListener('DOMContentLoaded', dateline);
 })();
