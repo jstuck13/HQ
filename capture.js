@@ -106,20 +106,29 @@
     const hourOf = (h, m, ap, ref) => { let n = +h % 12; if (ap && ap[0].toLowerCase() === 'p') n += 12;
       else if (!ap && n + (+m || 0) / 60 < (ref != null ? ref : 7)) n += 12;   // no am/pm: the reading that is still to come
       return n + (+m || 0) / 60; };
+    // A day is rarely said on its own: it is "this Sunday", "next Sunday", "on Friday". The qualifier is part of
+    // naming the day, so it is read with the day and taken out with it — left behind, it became the task, and
+    // "laundry this sunday by 6" turned into a to-do called "laundry this".
     function parseDayWord(raw) {
       const t = ' ' + String(raw).trim();
-      const dm = /\s(today|tonight|tomorrow|tmrw|mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.exec(t)
-              || /\s(\d{1,2}\s+[A-Za-z]{3,9}|[A-Za-z]{3,9}\s+\d{1,2})(?:\b|$)/.exec(t);
+      const dm = /\s(?:(this|next|coming|on)\s+)?(today|tonight|tomorrow|tmrw|mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.exec(t)
+              || /\s(?:(this|next|coming|on)\s+)?(\d{1,2}\s+[A-Za-z]{3,9}|[A-Za-z]{3,9}\s+\d{1,2})(?:\b|$)/.exec(t);
       if (!dm) return null;
-      const w = dm[1].toLowerCase();
+      const q = (dm[1] || '').toLowerCase(), w = dm[2].toLowerCase();
       let date = null;
       if (w === 'today' || w === 'tonight') date = TODAY;
       else if (w === 'tomorrow' || w === 'tmrw') date = C.iso(C.addDays(C.now, 1));
       else { const i = DAYNAMES.findIndex(n => n.startsWith(w.slice(0, 3)));
-        if (i >= 0) { let n = (i - C.now.getDay() + 7) % 7; if (!n) n = 7; date = C.iso(C.addDays(C.now, n)); }   // "Thursday" means the next one
-        else { const guess = C.parseDay(dm[1]); if (guess && guess !== TODAY) date = guess; } }
+        if (i >= 0) {
+          let n = (i - C.now.getDay() + 7) % 7;                 // 0 when it is that day already
+          // "this Sunday" said on a Sunday is today; a bare "Sunday" has always meant the next one, and still
+          // does; "next Sunday" is the one after whichever Sunday is coming.
+          if (q === 'next') n += 7;
+          else if (!n && q !== 'this' && q !== 'coming') n = 7;
+          date = C.iso(C.addDays(C.now, n));
+        } else { const guess = C.parseDay(dm[2]); if (guess && guess !== TODAY) date = guess; } }
       if (!date) return null;
-      return { date, said: dm[1], text: tidy(t.slice(0, dm.index) + ' ' + t.slice(dm.index + dm[0].length)) };
+      return { date, said: dm[0].trim(), text: tidy(t.slice(0, dm.index) + ' ' + t.slice(dm.index + dm[0].length)) };
     }
 
     // ---- an appointment, told apart from a to-do by having a span or a day of its own. "Dentist 3–4 pm" and

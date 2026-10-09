@@ -1,4 +1,4 @@
-// Set the version in the three places that must agree, and say what changed.
+// Set the version in the four places that must agree, and say what changed.
 //
 //   node bump.mjs patch "Garmin says why a metric came back empty"
 //   node bump.mjs minor "Today: one box that works out what you meant"
@@ -37,5 +37,9 @@ const swap = (file, re, make) => {
 };
 swap('hq.js', /const HQ_VERSION = '[^']+';/, `const HQ_VERSION = '${v}';`);
 swap('index.html', /const PAGE_VERSION = '[^']+';/, `const PAGE_VERSION = '${v}';`);
+// The offline shell is named for the version it holds, so a release always empties the last one. Without this
+// a change to hq.css or a shared script reaches a new visitor and not the installed app, which is the worse
+// of the two failures: it looks like it shipped.
+swap('sw.js', /const V = 'hq-shell-[^']+';/, `const V = 'hq-shell-${v}';`);
 
 console.log(`${current.v} → ${v}${said ? ' · ' + said : ''}`);

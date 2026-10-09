@@ -84,6 +84,20 @@
     main{grid-template-columns:1fr;gap:36px;padding:24px 20px 36px} .foot{padding:0 20px 28px}
     .wk li{grid-template-columns:1fr auto;gap:6px 18px} .bars{grid-column:1/-1;grid-row:3;margin-top:14px;height:36px}
   }
+
+  /* On paper. The week is the page most worth printing, and it is almost all colour-coded bars — which a
+     browser drops by default, so they are asked for explicitly or the sheet comes out blank where the
+     reading should be. The two columns become one; a row is never split across the fold. */
+  @media print {
+    main{display:block}
+    .wk li{break-inside:avoid}
+    .wk li .bars{grid-column:3}
+    .bars i, .prow .ph i, .pkey i{print-color-adjust:exact; -webkit-print-color-adjust:exact}
+    .prow, .pscale, .pkey{break-inside:avoid}
+    .digest{max-width:none}
+    section{break-inside:avoid-page}
+    h2.later{margin-top:28px}
+  }
 </style>
 </head>
 <body>

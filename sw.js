@@ -1,11 +1,13 @@
 // HQ's service worker: it receives pushes, and it keeps the shell — the pages themselves — so the app opens
 // at once and still opens with no signal. Data is never cached here: /api goes to the network, and store.js
 // already keeps a localStorage copy of every document for when the network is not there.
-const V = 'hq-shell-3';   // a new name empties the old one on activate: raise it whenever what is kept must go
+const V = 'hq-shell-4.37.0';   // the version this shell was built from. A new name empties the old one on
+// activate, and bump.mjs writes this line, so every release invalidates the kept copy by construction —
+// a change to hq.css or a shared script can no longer sit unseen behind yesterday's cache.
 const SHELL = [
   '/', '/index.html', '/today.html', '/calendar.html', '/finances.html', '/groceries.html', '/investments.html',
   '/library.html', '/school.html', '/health.html', '/review.html', '/study.html', '/patterns.html', '/day.html',
-  '/restore.html', '/span.html', '/list.html', '/digest.js', '/recur.js', '/capture.js',
+  '/restore.html', '/span.html', '/list.html', '/colophon.html', '/digest.js', '/recur.js', '/capture.js',
   '/hq.css', '/hq.js', '/clock.js', '/store.js', '/bell.js', '/search.js', '/icons.svg', '/manifest.json',
   '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png',
   '/paths/index.json', '/paths/stoics.json', '/paths/socrates.json', '/paths/sermon.json',

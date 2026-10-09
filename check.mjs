@@ -13,6 +13,8 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
 
 const R = '.impeccable/review';
+// colophon and restore are missing their .impeccable/review/dbg-*.html fixture, and alignrun.py exits non-zero
+// on a page without one, so they stay out of this list until a fixture exists for them.
 const PAGES = 'today,calendar,finances,library,school,health,review,groceries,investments,study,patterns,span,day,list';
 const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const quick = process.argv.includes('--quick');
@@ -53,7 +55,7 @@ step('tests', true, () => {
 });
 
 // 2 · the design linter the repo carries: the type scale, the palette, motion
-step('design linter', false, () => {
+step('design linter', true, () => {
   if (!existsSync('lint.mjs')) return { skipped: true, note: 'no lint.mjs' };
   const r = run('node', ['lint.mjs']);
   const m = /(\d+) findings? across (\d+) files?/.exec((r.stdout || '') + (r.stderr || ''));

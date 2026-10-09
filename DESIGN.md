@@ -27,6 +27,7 @@ colors:
   dove: "#E6E9EC"
   wheat: "#D9C79A"
   rose: "#C9A9AE"
+  ox-lit: "#C29B99"
   gain: "#CFE3D5"
   loss: "#E8C1BD"
   photo: "#FFFFFF"
@@ -111,6 +112,7 @@ motion:
   nudge: "0.15s"
   curtain: "0.45s"
   draw: "0.6s"
+  lamp: "2s"
 spacing:
   xs: "8px"
   sm: "12px"
@@ -190,6 +192,7 @@ Warm ivory and near-black ink under a deep bottle-green band, with a single oxbl
 - **Band Sage** (`band-muted`): resting state for nav links, the italic date, and icon buttons on the band; they rise to Band Ivory on hover or when current.
 
 ### Secondary
+- **Oxblood Lit** (`ox-lit`): oxblood at the top of its breath, the far end of the now-line's slow pulse. It is never used statically.
 - **Oxblood** (`oxblood`): the "now" line and badge on the timeline, flagged numerals and due labels in lists, and the focus-visible outline. It is the only warm accent and it always means attention.
 
 ### Tertiary
@@ -275,8 +278,11 @@ Four tiers, one per job. A duration outside them is drift, and `lint.mjs` fails 
 | `nudge` | 150ms | the hover nudge; the default, and the only one most surfaces need |
 | `curtain` | 450ms | the splash lifting once a page's first documents have answered |
 | `draw` | 600ms | a value drawing itself: the allocation ring's stroke |
+| `lamp` | 2s | the room changing: lamplight warming the paper after eight in the evening |
 
-Held in `hq.css` as `--t-track`, `--t`, `--t-curtain`, `--t-draw`. `index.html` ships standalone without `hq.css` and repeats the two it needs.
+Held in `hq.css` as `--t-track`, `--t`, `--t-curtain`, `--t-draw`, `--t-lamp`.
+
+Separately from these, `clock.js` injects a layer of *keyframe* animations — the arrival of the masthead and each main child, the now-line's breath, a chart line drawing itself, bars growing, the strike drawn through a ticked to-do. Those have their own durations and are not yet part of this system; the linter does not hold them. `index.html` ships standalone without `hq.css` and repeats the two it needs.
 
 ### Named Rules
 **The Same Object, One Speed Rule.** If two places animate the same thing they use the same tier. The splash curtain fades at `curtain` whether it is the cover's or `hq.css`'s; a book cover lifts at `nudge` on every shelf.

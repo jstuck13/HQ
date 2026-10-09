@@ -31,12 +31,14 @@
   --t:.15s;           /* the hover nudge; the default */
   --t-curtain:.45s;   /* the splash lifting */
   --t-draw:.6s;       /* a value drawing itself: the allocation ring */
+  --t-lamp:2s;        /* the room changing: lamplight warming the paper after eight */
   /* the phase ramp: the area tints pushed up for 10px swatches, which paper-adjacent tints cannot carry.
      Named by hue, not meaning — review.html and today.html both key them locally to different legends. */
   --sage:#7F9C8C; --sage-mid:#9DB4A4; --sage-pale:#C9D6CE;   /* three greens, light to pale */
   --slate:#A9BBC9; --lilac:#C9B8DB;
   /* three more category tints, so a calendar can hold more than the four named areas. Paper-adjacent, like the four. */
   --mint:#E2EBE2; --oat:#EDE4DA; --dove:#E6E9EC;
+  --ox-lit:#C29B99;   /* oxblood at the top of its breath: the now-line, pulsing */
   --gain:#CFE3D5;     /* money up, on the band; oxblood can only say one direction */
   --loss:#E8C1BD;     /* money down, on the band */
   --wheat:#D9C79A; --rose:#C9A9AE;   /* the rest of the allocation ring's categorical ramp */
@@ -49,8 +51,11 @@
 html{color-scheme:light}
 /* the splash: the mark over the band colour from the first paint until a page's first documents have answered and drawn (hq.js/store.js
    set body.hq-in), so nothing is seen half-built. Pure CSS so it is there before any script runs; index.html keeps its own gated one. */
+/* The curtain carries no wordmark: the band is above it and already says HQ. What is left is the ornament,
+   which is this system's mark of a page with nothing on it yet. index.html keeps its own lettered splash,
+   because the cover has no band to say it. */
 body::before,body::after{content:"";position:fixed;left:0;right:0;z-index:9;pointer-events:none;transition:opacity var(--t-curtain) ease,visibility 0s var(--t-curtain)}
-body::before{content:"HQ";top:0;bottom:0;background:var(--band);color:#F2ECDF;display:grid;place-items:center;font-family:var(--serif);font-size:44px;letter-spacing:.14em;text-indent:.14em;font-weight:700;animation:splash-in .7s ease-out both}   /* the letters fade in, the backdrop is solid from the first frame */
+body::before{content:"";top:0;bottom:0;background:var(--band);color:#F2ECDF;display:grid;place-items:center;font-family:var(--serif);font-size:44px;letter-spacing:.14em;text-indent:.14em;font-weight:700;animation:splash-in .7s ease-out both}   /* the letters fade in, the backdrop is solid from the first frame */
 body::after{top:calc(50% + 40px);height:12px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='12' viewBox='0 0 160 12'%3E%3Cpath d='M0 6.5h62M98 6.5h62' stroke='%23F2ECDF' stroke-opacity='.35'/%3E%3Cpath d='M80 1.5l5 5-5 5-5-5z' fill='%23B9C9BE'/%3E%3C/svg%3E") center/160px 12px no-repeat;animation:splash-rule .9s cubic-bezier(.2,.8,.2,1) .15s both}
 body.hq-in::before,body.hq-in::after{opacity:0;visibility:hidden}
 @keyframes splash-in{from{color:transparent}to{color:#F2ECDF}}
@@ -123,8 +128,12 @@ nav .more:hover,nav .more[aria-expanded=true]{color:var(--band-ink)}
 @media (prefers-reduced-motion:no-preference){ .hq-undo{animation:hq-undo-in .25s ease-out both} @keyframes hq-undo-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}} }
 @media (max-width:760px){.hq-undo{left:14px;right:14px;bottom:14px;justify-content:space-between}}
 .hq-newer{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:16px;
-  background:var(--band);color:var(--band-ink);border-radius:999px;padding:9px 12px 9px 20px;box-shadow:0 8px 22px -10px rgba(0,0,0,.45);
-  font-size:13.5px;max-width:calc(100vw - 32px)}
+  background:var(--band);color:var(--band-ink);border-radius:16px;padding:10px 12px 10px 20px;box-shadow:0 8px 22px -10px rgba(0,0,0,.45);
+  font-size:13.5px;max-width:min(560px, calc(100vw - 32px))}
+/* it carries the release's own sentence now, so it is a rounded block that may run to two lines, rather than a
+   pill that could only ever hold a number */
+.hq-newer .what{display:flex;flex-direction:column;gap:2px;min-width:0}
+.hq-newer .said{font-family:var(--serif);font-style:italic;font-size:13px;opacity:.82}
 .hq-newer button{background:none;border:0;font:inherit;color:var(--band-ink);cursor:pointer;padding:4px 10px;border-radius:999px;border:1px solid rgba(242,236,223,.4)}
 .hq-newer button:hover{background:rgba(242,236,223,.14)}
 .hq-newer .later{border:0;padding:4px 8px;font-size:16px;line-height:1;opacity:.7}
@@ -167,3 +176,63 @@ ul{list-style:none;margin:0;padding:0}
 .addt input:focus{outline:none;border-bottom-color:var(--ink)}
 .addt input::placeholder{color:var(--ink-3);font-style:italic}
 .addt .textbtn{font-size:13.5px}
+
+/* ───────────────────────────────────────────────────────────────────────────────
+   One app, not fifteen documents. The band is byte-for-byte the same on every page, so it is named and
+   therefore held still across a navigation while what is under it changes.
+   The page itself is deliberately NOT named: a whole-page crossfade would dissolve into the splash, which
+   still covers the next page until its documents answer, so the fade would run green. Nothing fades —
+   the masthead simply never blinks. Nothing moves either, so there is no reduced-motion case to answer.
+   A browser without view transitions navigates exactly as it did. */
+@view-transition { navigation: auto; }
+:root { view-transition-name: none; }
+.band { view-transition-name: hq-band; position:relative; z-index:10; }
+/* The wordmark is named too, so coming in from the cover it is the one thing that stays put: the mark
+   you pressed is the mark you arrive under, and it travels the few pixels between the two layouts
+   rather than being torn down and redrawn. Between ordinary pages it sits in the same place on both
+   sides, so naming it costs nothing there. */
+.band .mark { view-transition-name: hq-mark; }
+/* The band sits above the curtain rather than under it, on every load. It is static markup — the mark, the
+   date, the nav — so it is right the moment it is parsed and has nothing to wait for. Only the part that is
+   actually waiting on documents is veiled, and the held band is then something you can see rather than a
+   snapshot under a green sheet. */
+
+/* ───────────────────────────────────────────────────────────────────────────────
+   On paper. The app's whole thesis is a well-kept agenda, so it should be able to
+   become one: the band gives up its colour and becomes a ruled masthead, the one
+   card gives up its shadow, and everything that only exists to be clicked leaves.
+   Rows and cards are kept whole across a page break. */
+@media print {
+  @page { margin: 16mm 14mm; }
+  :root { --paper:#fff; --card:#fff; --paper-2:#fff; --tint:#fff; --shadow:none; }
+  html, body { background:#fff; }
+  body::before, body::after { display:none !important; }   /* the splash never prints */
+
+  /* the band, unprinted: ink on white under a hairline, holding only the mark and the date */
+  .band { background:#fff; color:var(--ink); border-bottom:1px solid var(--ink); }
+  .band .in { padding:0 0 10px; max-width:none; }
+  .band .row { border-bottom:0; padding-bottom:0; }
+  .band .mark { color:var(--ink); }
+  .band .date { color:var(--ink-2); }
+  .band nav, .band .right, .band .mast .upnext { display:none; }
+  .band .mast { padding-top:8px; }
+  .band .mast h1 { font-size:22px; }
+
+  /* nothing that exists only to be pressed, hovered or dismissed. Named, not every button: a few
+     buttons are the data (a book on the shelf, a logged value, a rating), and those stay. */
+  .morepop, .bellpop, .hq-ver, .hq-undo, .ib, .addt, .textbtn, .x, .mv, .rm, .rmb,
+  .skip, .turn, .next, .back, .pin, dialog { display:none !important; }
+  /* a button that is really a value prints as the value */
+  .tickbox, .book { border:0 !important; cursor:default; }
+  /* an unticked to-do prints as an empty square to tick with a pen, so checkboxes stay */
+
+  main { max-width:none; padding:0; }
+  /* two columns on screen, one on paper: a sheet is narrower than a desk */
+  main, .cols, .grid, .two { display:block !important; }
+  .card { box-shadow:none; border:1px solid var(--rule); break-inside:avoid; }
+  .sec, section, li, tr, .prow, .ledger li, .wk { break-inside:avoid; }
+  h1, h2, h3 { break-after:avoid; }
+  a { color:var(--ink); text-decoration:none; }
+  .scrollbox { overflow:visible !important; max-height:none !important; -webkit-mask-image:none !important; mask-image:none !important; }
+  .scrollbox.more { -webkit-mask-image:none !important; mask-image:none !important; }
+}

@@ -28,10 +28,12 @@
   .found .facts{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:12.5px;color:var(--ink-3)}
   .found .facts b{font-weight:500;color:var(--ink-2)}
   .found .plot{margin-top:14px}
-  .plot svg{width:100%;height:auto;aspect-ratio:320/82;display:block;overflow:visible}
-  .plot .cap{margin:4px 0 0;font-size:11.5px;color:var(--ink-3)}
-  .plot .dot{fill:var(--band);opacity:.75}
+  /* a scatter needs height: at four-to-one a lean flattens into a smear and the picture says nothing */
+  .plot svg{width:100%;height:auto;aspect-ratio:320/200;display:block;overflow:visible}
+  .plot .cap{margin:6px 0 0;font-size:11.5px;color:var(--ink-3);line-height:1.5}
+  .plot .dot{fill:var(--band);opacity:.7;stroke:var(--paper);stroke-width:1}   /* a day that lands on another still reads as two */
   .plot .ax{stroke:var(--rule);stroke-width:1}
+  .plot .fit{stroke:var(--ink);stroke-width:1.5;opacity:.55}                   /* the lean the sentence claims, drawn */
   .plot .lbl{font-family:var(--serif);font-size:11px;fill:var(--ink-3)}
 
   .empty{font-family:var(--serif);font-style:italic;color:var(--ink-3);line-height:1.6;max-width:56ch;margin:18px 0}
@@ -102,28 +104,76 @@
   const strength = r => Math.abs(r) >= 0.7 ? 'closely' : Math.abs(r) >= 0.55 ? 'clearly' : 'somewhat';
   // the wording never says one thing caused the other, and "more" is not right for a clock reading
   const moreOf = k => (P.higher && P.higher[k]) ? `a later ${P.labels[k]}` : `more ${P.labels[k]}`;
-  const lessOf = k => (P.higher && P.higher[k]) ? `an earlier ${P.labels[k]}` : `less ${P.labels[k]}`;
+  // "less pages read" is wrong: most of these labels open with a plural you can count
+  const COUNTED = /^(hours|minutes|pages|cards|steps|times|breaths|days|supplements|to-dos)\b/;
+  const lessOf = k => (P.higher && P.higher[k]) ? `an earlier ${P.labels[k]}`
+    : `${COUNTED.test(P.labels[k]) ? 'fewer' : 'less'} ${P.labels[k]}`;
+
+  // "there tends to be fewer minutes" does not agree; a counted label takes the plural verb, a mass one does not
+  const plural = k => !(P.higher && P.higher[k]) && COUNTED.test(P.labels[k]);
+
+  // What the pair amounts to, in one line. The chart's title and its spoken label both use this: a reader
+  // opening it full screen should be told the finding, not handed the names of the two columns.
+  const cap1 = t => t.charAt(0).toUpperCase() + t.slice(1);
+  function headline(x){
+    const up = x.rho > 0;
+    const a = moreOf(x.a), b = up ? moreOf(x.b) : lessOf(x.b);
+    return x.lag ? `${cap1(a)} one day, ${b} the next` : `${cap1(a)} went with ${b}`;
+  }
 
   function sentence(x){
     const up = x.rho > 0;
     const a = moreOf(x.a), b = up ? moreOf(x.b) : lessOf(x.b);
     return x.lag
-      ? `On days after <b>${a}</b>, there tends to be <b>${b}</b>.`
+      ? `On days after <b>${a}</b>, there ${plural(x.b) ? 'tend' : 'tends'} to be <b>${b}</b>.`
       : `Days with <b>${a}</b> tend to be days with <b>${b}</b>.`;
   }
 
-  // the two series, ranked and drawn against each other: the reader can see the cloud for themselves
+  // The two series drawn against each other, so the lean in the sentence can be seen rather than taken on
+  // trust. A scatter with no scale and no fitted line is decoration; this one carries both, and says in words
+  // which way it leans before it names an axis.
+  const tidyNum = v => Math.abs(v) >= 100 ? String(Math.round(v)) : Math.abs(v) >= 10 ? v.toFixed(0) : v.toFixed(1);
+  // Bedtime and waking time are kept as hours from midnight, and a bedtime past four in the afternoon is
+  // carried back a day so that "late" is always the bigger number — which means a raw axis reads "-1.5" for
+  // half past ten at night. The same `higher` map that fixes the wording marks exactly those two, so an axis
+  // for either is written as a clock.
+  const clockLabel = v => {
+    let h = ((v % 24) + 24) % 24, hr = Math.floor(h), m = Math.round((h - hr) * 60);
+    if (m === 60) { m = 0; hr = (hr + 1) % 24; }
+    return `${hr % 12 || 12}.${String(m).padStart(2, '0')} ${hr < 12 ? 'am' : 'pm'}`;
+  };
+  const axisVal = (k, v) => (P.higher && P.higher[k]) ? clockLabel(v) : tidyNum(v);
   function plot(pts, x, w0, h0){
     if(!pts || pts.length < 4) return '';
-    const W=w0||320, H=h0||82, P0={t:6,r:6,b:14,l:6};
-    const xs=pts.map(p=>p[0]), ys=pts.map(p=>p[1]);
-    const lo=a=>Math.min(...a), hi=a=>Math.max(...a);
-    const sx=v=>P0.l+(W-P0.l-P0.r)*((v-lo(xs))/((hi(xs)-lo(xs))||1));
-    const sy=v=>P0.t+(H-P0.t-P0.b)*(1-(v-lo(ys))/((hi(ys)-lo(ys))||1));
-    return `<div class="plot"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Each day as a point: one measure across, the other up">
-      <line class="ax" x1="${P0.l}" x2="${W-P0.r}" y1="${H-P0.b}" y2="${H-P0.b}"/>
-      ${pts.map(p=>`<circle class="dot" r="${w0?4.2:2.6}" cx="${sx(p[0]).toFixed(1)}" cy="${sy(p[1]).toFixed(1)}"/>`).join('')}
-    </svg><p class="cap">across: ${esc(P.labels[x.a])} · up: ${esc(P.labels[x.b])}${x.lag ? ' the next day' : ''} · one point a day</p></div>`;
+    // The viewBox is kept close to the size it is actually drawn at, because everything inside it scales with
+    // it: an 11px label in a 320-wide box shown 620px wide arrives as 21px. Expanded, w0/h0 are real pixels,
+    // so both paths now sit at about 1:1 and the type is the size the stylesheet says.
+    const W = w0 || 640, H = h0 || 400, P0 = { t: 14, r: 14, b: 32, l: 48 };
+    const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const sx = v => P0.l + (W - P0.l - P0.r) * ((v - x0) / ((x1 - x0) || 1));
+    const sy = v => P0.t + (H - P0.t - P0.b) * (1 - (v - y0) / ((y1 - y0) || 1));
+    const clampY = v => Math.max(P0.t, Math.min(H - P0.b, sy(v)));
+
+    // least squares through the cloud: not the statistic (that is Spearman, on ranks), just the direction made visible
+    const n = pts.length, mx = xs.reduce((a, v) => a + v, 0) / n, my = ys.reduce((a, v) => a + v, 0) / n;
+    let num = 0, den = 0;
+    for (let i = 0; i < n; i++) { num += (xs[i] - mx) * (ys[i] - my); den += (xs[i] - mx) ** 2; }
+    const slope = den ? num / den : 0, fit = v => my + slope * (v - mx);
+
+    const la = esc(P.labels[x.a]), lb = esc(P.labels[x.b]);
+    const leans = x.rho > 0 ? 'up' : 'down';
+    return `<div class="plot"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(headline(x))}. Each dot is one day; the cloud leans ${leans}.">
+      <line class="ax" x1="${P0.l}" x2="${P0.l}" y1="${P0.t}" y2="${H - P0.b}"/>
+      <line class="ax" x1="${P0.l}" x2="${W - P0.r}" y1="${H - P0.b}" y2="${H - P0.b}"/>
+      <text class="lbl" x="${P0.l - 8}" y="${P0.t + 4}" text-anchor="end">${axisVal(x.b, y1)}</text>
+      <text class="lbl" x="${P0.l - 8}" y="${H - P0.b}" text-anchor="end">${axisVal(x.b, y0)}</text>
+      <text class="lbl" x="${P0.l}" y="${H - P0.b + 17}">${axisVal(x.a, x0)}</text>
+      <text class="lbl" x="${W - P0.r}" y="${H - P0.b + 17}" text-anchor="end">${axisVal(x.a, x1)}</text>
+      <line class="fit" x1="${sx(x0).toFixed(1)}" y1="${clampY(fit(x0)).toFixed(1)}" x2="${sx(x1).toFixed(1)}" y2="${clampY(fit(x1)).toFixed(1)}"/>
+      ${pts.map(p => `<circle class="dot" r="4.2" cx="${sx(p[0]).toFixed(1)}" cy="${sy(p[1]).toFixed(1)}"/>`).join('')}
+    </svg><p class="cap">Each dot is one of ${n} days, and the line is the lean — it runs ${leans}.
+      Across, ${la}; up, ${lb}${x.lag ? ' the next day' : ''}.</p></div>`;
   }
 
   function render(){
@@ -144,7 +194,7 @@
 
     // each cloud on its own: the same drawing, given the screen
     shown.forEach((x,i)=>{ const el=document.querySelectorAll('#found .plot')[i]; if(!el) return;
-      zoomable(el, `pair-${i}`, `${P.labels[x.a]} against ${P.labels[x.b]}${x.lag?' the next day':''}`,
+      zoomable(el, `pair-${i}`, headline(x),
         box => { const w=Math.max(280, box.clientWidth), h=zoomHeight(w, box.clientHeight-60); box.innerHTML = plot(x.points, x, w, h); });
     });
 

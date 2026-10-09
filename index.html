@@ -17,6 +17,10 @@
     --paper:#F5F0E6; --ink:#1E1B16; --ink-2:#4D463C; --ink-3:#6A6256; --rule:#D3C9B6; --ox:#7A2E2B;
     --serif:"Libre Caslon Text",Georgia,serif; --sans:"Figtree",system-ui,sans-serif;
   }
+  /* the cover takes part in the same navigation as the rest (see hq.css); nothing is named here, so entering
+     the app is a clean swap rather than a crossfade between a green page and a paper one */
+  @view-transition { navigation: auto; }
+  :root{view-transition-name:none}
   *{box-sizing:border-box}
   html{color-scheme:dark}
   body{margin:0;min-height:100vh;background:var(--band);color:var(--band-ink);font:16px/1.5 var(--sans);-webkit-font-smoothing:antialiased;font-variant-numeric:oldstyle-nums tabular-nums;display:flex;flex-direction:column}
@@ -38,7 +42,7 @@
   @keyframes splash-rule{from{transform:scaleX(0);opacity:0}to{transform:none;opacity:1}}
   @media (prefers-reduced-motion:reduce){.splash .m,.splash .o{animation:none} .splash{transition:none}}
   .row{display:flex;align-items:baseline;gap:26px;padding-bottom:16px;border-bottom:1px solid var(--band-rule)}
-  .mark{font-family:var(--serif);font-size:20px;letter-spacing:.14em;font-weight:700}
+  .mark{font-family:var(--serif);font-size:20px;letter-spacing:.14em;font-weight:700;view-transition-name:hq-mark}
   .date{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted);white-space:nowrap}
 
   .cover{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:80px;align-items:center;padding:48px 0 40px}
@@ -181,7 +185,7 @@
   // The front door. With the API present, the passcode sets the session cookie; on a plain static server it just opens.
   // The number THIS copy was built with. version.json carries the same number and is never cached, so when the
   // two disagree the page you are looking at came from the kept copy and a newer one is on the server.
-  const PAGE_VERSION = '4.36.1';
+  const PAGE_VERSION = '4.37.0';
   const ver = document.getElementById('ver');
   ver.textContent = 'Version ' + PAGE_VERSION;
   // asked at load, on returning to the tab, and every ten minutes while it is open, so a door left ajar
