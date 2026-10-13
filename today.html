@@ -105,7 +105,10 @@
   h2 .otherday{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto;border-bottom:1px solid var(--rule)}
   h2 .otherday:hover{color:var(--ox);border-bottom-color:var(--ox)}
   .todo .tg{font-size:12.5px;color:var(--ink-3);white-space:nowrap}
-  .todo .tg .did{width:3.2ch;font-family:var(--serif);font-size:14px;text-align:right;border-bottom:1px dotted var(--ink-2);background:none;padding:0;color:var(--ink)}
+  /* The figure sets this chip's baseline, being the first thing in it, so at 14px inside 12.5px text it put
+     the whole chip 3px out of line with every other chip in the column. It keeps the serif face that marks
+     it as a figure and takes the size of the words around it. */
+  .todo .tg .did{width:3.6ch;font-family:var(--serif);font-size:inherit;text-align:right;border-bottom:1px dotted var(--ink-2);background:none;padding:0;color:var(--ink)}
   .todo .tg .did:focus{outline:none;border-bottom-color:var(--ink)}
   .todo .skip{color:var(--ink-3);opacity:0;transition:opacity .15s}
   .todo li:hover .skip,.todo li:focus-within .skip{opacity:1} .todo .skip:hover{color:var(--ox)}
@@ -117,8 +120,11 @@
   .reps li .textbtn{margin-left:auto;font-size:12.5px;color:var(--ink-3)}
   .todo .rp{color:var(--ink-3);font-size:13px;margin-left:6px}
   .todo ul{border-left:1px solid color-mix(in srgb, var(--ox) 32%, transparent);padding-left:14px}
-  .todo li{display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px solid var(--rule)}
-  .todo input[type=checkbox]{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px}
+  /* The row aligns on the words, not on the boxes. Centring each item centred it on its own height, so the
+     target chip — which holds a 14px input inside 12.5px text — sat its words 2px above everything beside
+     them. The box is the one thing that wants centring, and it asks for that itself. */
+  .todo li{display:flex;align-items:baseline;gap:14px;padding:8px 0;border-bottom:1px solid var(--rule)}
+  .todo input[type=checkbox]{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px;align-self:center}
   .todo input[type=checkbox]:checked{background:var(--band);border-color:var(--band)}
   .todo input[type=checkbox]:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
   .todo label{cursor:pointer;margin-right:auto}
@@ -524,10 +530,12 @@
   // A deadline day replaces the waiting line, because the two say contradictory things: something due on Friday
   // has not been waiting four days, it has had four days. Only once the day is past is it held against you,
   // and then it is said in the colour everything overdue is said in.
+  // Said the way a deadline time is said — the same face, and the same colour once it is past. It wore the
+  // italic serif of the "since yesterday" note for a while, which put two spellings of a deadline in one column.
   const dueSays = due => { if(!due) return '';
     const n = C.daysBetween(due, TODAY);
-    if(n > 0) return `<span class="w from long">${n === 1 ? 'a day overdue' : `${n} days overdue`}</span>`;
-    return `<span class="w from">due ${n === 0 ? 'today' : C.short(C.fromISO(due))}</span>`; };
+    if(n > 0) return `<span class="w due">${n === 1 ? 'a day overdue' : `${n} days overdue`}</span>`;
+    return `<span class="w">due ${n === 0 ? 'today' : C.short(C.fromISO(due))}</span>`; };
   function renderTodo(){
     F('reps').innerHTML = (RULES.rules||[]).map(r=>`<li class="${ruleOver(r)?'over':''}"><span>${esc(r.text)}<small>${[repSays(r.rep), r.target&&!r.text.toLowerCase().includes(r.target.unit)?`${r.target.n} ${esc(r.target.unit)}`:'', r.at!=null?`by ${h12(r.at)}`:'', r.until?(ruleOver(r)?`ended ${C.dayMonth(C.fromISO(r.until))}`:`until ${C.dayMonth(C.fromISO(r.until))}`):'', recordSays(r)].filter(Boolean).join(' · ')}</small></span><button class="textbtn" type="button" data-stop="${r.id}">${ruleOver(r)?'remove':'stop'}</button></li>`).join('');
     const done=T.items.filter(i=>i.done).length;
