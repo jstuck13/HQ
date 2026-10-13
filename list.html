@@ -198,9 +198,14 @@
       it.times = times(it);
       it.past = it.times.filter(o => o.made <= TODAY);
       it.ahead = it.times.filter(o => o.made > TODAY);
-      it.ticked = it.past.filter(o => o.done).length;
+      // An asking still inside its deadline is pending: neither kept nor let go. It is left out of the fraction
+      // and out of the run of let-go days, because counting it would read a day you still have as a day you
+      // missed — and would drag a figure down for work that is not yet owed.
+      it.pending = it.past.filter(o => o.pending);
+      it.judged = it.past.filter(o => !o.pending);
+      it.ticked = it.judged.filter(o => o.done).length;
       it.logged = it.past.reduce((n, o) => n + (+o.did || 0), 0);
-      let run = 0; for(let i = it.past.length - 1; i >= 0 && !it.past[i].done; i--) run++;
+      let run = 0; for(let i = it.judged.length - 1; i >= 0 && !it.judged[i].done; i--) run++;
       it.run = run;                                        // times let go, ending now
       it.today = it.days.find(d => d.day === TODAY) || null;
       it.waiting = it.past.find(o => !o.done && o.last >= TODAY) || null;   // one still sitting there, from whenever
@@ -231,6 +236,11 @@
 
   // when it is next wanted — the one forward-looking thing the glance needs
   const next = it => {
+    // a deadline day outranks everything: it is both what is owed and when
+    const owed = it.past.find(o => !o.done && o.due);
+    if(owed) return owed.over > 0
+      ? { cls: 'late', text: owed.over === 1 ? 'a day overdue' : `${owed.over} days overdue` }
+      : { cls: '', text: `due ${dayLabel(owed.due)}` };
     if(it.waiting && it.waiting.made !== TODAY) return { cls: 'late', text: `since ${dayLabel(it.waiting.made)}` };
     if(it.today) return it.today.done ? { cls: 'yes', text: 'done today' } : { cls: 'late', text: 'today' };
     if(it.ahead.length) return { cls: '', text: dayLabel(it.ahead[0].made) };
@@ -275,8 +285,11 @@
     if(put.length) facts.push(`<span>put off <b>${put.length === 1 ? 'once' : `${put.length} times`}</b>, the longest by ${Math.max(...put.map(o => o.waited))} days</span>`);
     if(it.run >= 2) facts.push(`<span>let go <b>${it.run} times</b> running</span>`);
     if(it.ahead.length) facts.push(`<span><b>${it.ahead.length}</b> still to come</span>`);
-    const big = it.past.length
-      ? `${it.ticked} / ${it.past.length}<small>done, of the ${it.past.length === 1 ? 'time' : 'times'} it was asked for · ${Math.round(it.ticked / it.past.length * 100)}%</small>`
+    if(it.pending.length) facts.push(`<span><b>${it.pending.length}</b> still inside ${it.pending.length === 1 ? 'its' : 'their'} deadline</span>`);
+    const late = it.judged.filter(o => o.over > 0);
+    if(late.length) facts.push(`<span>late <b>${late.length === 1 ? 'once' : `${late.length} times`}</b>, the worst by ${Math.max(...late.map(o => o.over))} days</span>`);
+    const big = it.judged.length
+      ? `${it.ticked} / ${it.judged.length}<small>done, of the ${it.judged.length === 1 ? 'time' : 'times'} it was asked for · ${Math.round(it.ticked / it.judged.length * 100)}%${it.pending.length ? ` · ${it.pending.length} not yet due` : ''}</small>`
       : `—<small>it has not come round yet${it.ahead.length ? `, and is first on ${dayLabel(it.ahead[0].made)}` : ''}</small>`;
     const chip = o => {
       const sat = o.waited > 0 ? ` +${o.waited}` : '';

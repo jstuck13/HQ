@@ -109,32 +109,60 @@
     // A day is rarely said on its own: it is "this Sunday", "next Sunday", "on Friday". The qualifier is part of
     // naming the day, so it is read with the day and taken out with it — left behind, it became the task, and
     // "laundry this sunday by 6" turned into a to-do called "laundry this".
+    // Which day a phrase names. Read in one place, because two readers of the same words would drift: a day of
+    // its own ("laundry Sunday") and a deadline ("laundry by Sunday") name the day identically and mean
+    // entirely different things about it.
+    const resolveDay = (q, raw) => {
+      const w = String(raw).toLowerCase().replace(/^the\s+/, '');
+      if (w === 'today' || w === 'tonight') return TODAY;
+      if (w === 'tomorrow' || w === 'tmrw') return C.iso(C.addDays(C.now, 1));
+      const i = DAYNAMES.findIndex(n => n.startsWith(w.slice(0, 3)));
+      if (i >= 0) {
+        let n = (i - C.now.getDay() + 7) % 7;                   // 0 when it is that day already
+        // "this Sunday" said on a Sunday is today; a bare "Sunday" has always meant the next one, and still
+        // does; "next Sunday" is the one after whichever Sunday is coming.
+        if (q === 'next') n += 7;
+        else if (!n && q !== 'this' && q !== 'coming') n = 7;
+        return C.iso(C.addDays(C.now, n));
+      }
+      const by = untilDate(w);                                  // "the 15th", "December", "17 Oct"
+      if (by) return by;
+      const guess = C.parseDay(raw); return guess && guess !== TODAY ? guess : null;
+    };
+
     function parseDayWord(raw) {
       const t = ' ' + String(raw).trim();
       const dm = /\s(?:(this|next|coming|on)\s+)?(today|tonight|tomorrow|tmrw|mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.exec(t)
               || /\s(?:(this|next|coming|on)\s+)?(\d{1,2}\s+[A-Za-z]{3,9}|[A-Za-z]{3,9}\s+\d{1,2})(?:\b|$)/.exec(t);
       if (!dm) return null;
-      const q = (dm[1] || '').toLowerCase(), w = dm[2].toLowerCase();
-      let date = null;
-      if (w === 'today' || w === 'tonight') date = TODAY;
-      else if (w === 'tomorrow' || w === 'tmrw') date = C.iso(C.addDays(C.now, 1));
-      else { const i = DAYNAMES.findIndex(n => n.startsWith(w.slice(0, 3)));
-        if (i >= 0) {
-          let n = (i - C.now.getDay() + 7) % 7;                 // 0 when it is that day already
-          // "this Sunday" said on a Sunday is today; a bare "Sunday" has always meant the next one, and still
-          // does; "next Sunday" is the one after whichever Sunday is coming.
-          if (q === 'next') n += 7;
-          else if (!n && q !== 'this' && q !== 'coming') n = 7;
-          date = C.iso(C.addDays(C.now, n));
-        } else { const guess = C.parseDay(dm[2]); if (guess && guess !== TODAY) date = guess; } }
+      const date = resolveDay((dm[1] || '').toLowerCase(), dm[2]);
       if (!date) return null;
       return { date, said: dm[0].trim(), text: tidy(t.slice(0, dm.index) + ' ' + t.slice(dm.index + dm[0].length)) };
     }
 
+    // ---- a deadline that is a day, not a clock reading ----
+    // "by Sunday" is not "on Sunday". On Sunday means it is a Sunday job and can wait in Sunday's list; by
+    // Sunday means do it now, and Sunday is when it stops being optional. So it goes on today's list, stays
+    // there every day until it is done, and only the days after Sunday are held against it.
+    // A bare number is left alone: "by 6" is six o'clock, and parseAt reads that.
+    const DUE_RE = /\b(?:by|before|due(?:\s+(?:on|by))?)\s+((?:this|next|coming)\s+)?((?:the\s+)?[A-Za-z]{3,9}(?:\s+\d{1,2})?|the\s+\d{1,2}(?:st|nd|rd|th)?|\d{1,2}(?:st|nd|rd|th))\b/i;
+    const takeDue = t => {
+      const m = DUE_RE.exec(t);
+      if (!m) return { text: t };
+      const w = m[2].replace(/^the\s+/i, '').trim();
+      if (/^(?:am|pm|noon|midnight|now|then)$/i.test(w)) return { text: t };
+      const due = resolveDay((m[1] || '').trim().toLowerCase(), w);
+      if (!due || due < TODAY) return { text: t };              // not a day we can act on: leave the words be
+      return { text: (t.slice(0, m.index) + ' ' + t.slice(m.index + m[0].length)).replace(/\s+/g, ' ').trim(), due };
+    };
+
     // ---- an appointment, told apart from a to-do by having a span or a day of its own. "Dentist 3–4 pm" and
     //      "Coffee Thursday at 10" are appointments; "Call the dentist by 3 pm" stays a to-do. ----
     function parseWhen(raw) {
-      if (/\bby\s+\d/i.test(raw)) return null;              // "by" names a deadline, which is a to-do however much else is in the line
+      // "by" names a deadline, and a deadline makes it a to-do however much else is in the line — whether it is
+      // a clock reading ("by 3 pm") or a day ("by Friday"). Only the first of those was declined here, so
+      // "file taxes by friday at 5" was read as an appointment called "file taxes by".
+      if (/\bby\s+\d/i.test(raw) || takeDue(raw).due) return null;
       let t = ' ' + raw.trim(), date = null, said = null;
       const dw = parseDayWord(raw);
       if (dw && dw.date) { date = dw.date; said = dw.said; t = ' ' + dw.text; }
@@ -332,11 +360,18 @@
         said(`“${p.text}” ${had ? 'now comes back' : 'will come back'} ${window.hqRecur.says(r.rep)}${g.target ? `, ${g.target.n} ${g.target.unit} a time` : ''}${u.until ? `, until ${C.dayMonth(C.fromISO(u.until))}` : ''}`);
         ctx.saveTodo(); ctx.redraw('todo'); return;
       }
-      const dw = parseDayWord(r.text);
-      const g0 = takeTarget(dw ? dw.text : r.text);
+      const d0 = takeDue(r.text);                           // read before the day, since "by Sunday" is not "on Sunday"
+      const dw = parseDayWord(d0.text);
+      const g0 = takeTarget(dw ? dw.text : d0.text);
       const p = parseAt(g0.text);
       p.text = tidy(p.text);
       if (g0.target) p.target = g0.target;
+      if (d0.due) {                                         // a deadline: today's list, every day, until it is done
+        p.due = d0.due;
+        T.items.push({ ...p, done: false });
+        said(`“${p.text}” — due ${d0.due === TODAY ? 'today' : C.short(C.fromISO(d0.due))}${p.at != null ? `, by ${h12(p.at)}` : ''}`);
+        ctx.saveTodo(); ctx.redraw('todo'); return;
+      }
       if (dw && dw.date !== TODAY) {                        // a day of its own: it waits in that day's list
         const key = 'today.' + dw.date;
         const doc = (await store.load(key)) || { items: [] };
@@ -346,7 +381,11 @@
         ctx.redraw('todo', { day: dw.date, doc });   // a page showing other days can take it from here
         return;
       }
+      // Every other meaning says what it made; a plain to-do said nothing at all, which made it the one case
+      // where the box had understood least and told you least. A sentence it only partly followed came back as
+      // a to-do with the leftover words in it, silently — so now it reads back what it took.
       T.items.push({ ...p, done: false });
+      said(`“${p.text}” — on today's list${p.at != null ? `, by ${h12(p.at)}` : ''}${p.target ? `, ${p.target.n} ${p.target.unit}` : ''}`);
       ctx.saveTodo(); ctx.redraw('todo');
     }
 

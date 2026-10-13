@@ -60,7 +60,10 @@
     if (todos && todos.length) {
       // Count askings, not mornings. An unticked to-do is copied into the next day while it stays unticked, so
       // counting the copies turns one load of laundry put off till Tuesday into five things you failed to do.
-      const things = window.hqRecur.tally(todos, days), asked = things.flatMap(g => g.asks);
+      // An asking still inside its deadline is not a thing you failed to do, so it is left out of the count
+      // rather than quietly lowering it. Said separately, because "two not yet due" is worth knowing.
+      const things = window.hqRecur.tally(todos, days), all = things.flatMap(g => g.asks);
+      const waiting = all.filter(a => a.pending), asked = all.filter(a => !a.pending);
       if (asked.length) {
         const done = asked.filter(a => a.done).length;
         let t = `You ticked <b>${done} of ${asked.length}</b> ${asked.length === 1 ? 'thing' : 'things'} off the list`;
@@ -76,6 +79,7 @@
           .sort((a, b) => b.asked - a.asked).slice(0, 2)
           .map(x => `${esc(x.text)} on <b>${x.met} of ${x.asked}</b> days${x.sum ? ` (${+x.sum.toFixed(1)} ${esc(x.unit)} in all)` : ''}`);
         if (hit.length) t += `. You hit ${hit.join(', and ')}`;
+        if (waiting.length) t += `, and ${waiting.length === 1 ? 'one more is' : `${waiting.length} more are`} still inside ${waiting.length === 1 ? 'its' : 'their'} deadline`;
         ps.push(t + '.');
       }
     }

@@ -29,14 +29,20 @@
     //   → [{ made, last, settled, done, did, waited }], one per asking
     askings: (days, standing) => {
       if (standing) return days.map(d => ({ made: d.day, last: d.day, settled: d.done ? d.day : null, done: !!d.done, did: +d.did || 0, waited: 0 }));
-      const C = window.clock, by = new Map();
+      const C = window.clock, today = C.today, by = new Map();
       for (const d of days) {
         const made = d.from || d.day;
-        const o = by.get(made) || { made, last: d.day, settled: null, done: false, did: 0, waited: 0 };
+        const o = by.get(made) || { made, last: d.day, settled: null, done: false, did: 0, waited: 0, due: null };
         o.last = d.day;                                   // the last morning this one was still there
+        if (d.due) o.due = d.due;
         if (d.done) { o.done = true; o.settled = d.day; }
         if (+d.did > o.did) o.did = +d.did;
         o.waited = C.daysBetween(made, o.settled || o.last);
+        // A deadline day changes what the waiting means. The days before it are days you still had, not days
+        // you missed, so until it passes the asking is pending — neither kept nor let go — and whatever counts
+        // askings leaves it out. After it passes, each day is overdue and counts.
+        o.over = o.due ? Math.max(0, C.daysBetween(o.due, o.settled || today)) : 0;
+        o.pending = !o.done && !!o.due && o.due >= today;
         by.set(made, o);
       }
       return [...by.values()].sort((a, b) => a.made < b.made ? -1 : 1);

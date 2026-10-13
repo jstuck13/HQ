@@ -521,11 +521,18 @@
   const waitedSays = from => { if(!from) return '';
     const n = C.daysBetween(from, TODAY); if(n <= 0) return '';
     return `<span class="w from${n >= 4 ? ' long' : ''}">${n === 1 ? 'since yesterday' : `waiting ${n} days`}</span>`; };
+  // A deadline day replaces the waiting line, because the two say contradictory things: something due on Friday
+  // has not been waiting four days, it has had four days. Only once the day is past is it held against you,
+  // and then it is said in the colour everything overdue is said in.
+  const dueSays = due => { if(!due) return '';
+    const n = C.daysBetween(due, TODAY);
+    if(n > 0) return `<span class="w from long">${n === 1 ? 'a day overdue' : `${n} days overdue`}</span>`;
+    return `<span class="w from">due ${n === 0 ? 'today' : C.short(C.fromISO(due))}</span>`; };
   function renderTodo(){
     F('reps').innerHTML = (RULES.rules||[]).map(r=>`<li class="${ruleOver(r)?'over':''}"><span>${esc(r.text)}<small>${[repSays(r.rep), r.target&&!r.text.toLowerCase().includes(r.target.unit)?`${r.target.n} ${esc(r.target.unit)}`:'', r.at!=null?`by ${h12(r.at)}`:'', r.until?(ruleOver(r)?`ended ${C.dayMonth(C.fromISO(r.until))}`:`until ${C.dayMonth(C.fromISO(r.until))}`):'', recordSays(r)].filter(Boolean).join(' · ')}</small></span><button class="textbtn" type="button" data-stop="${r.id}">${ruleOver(r)?'remove':'stop'}</button></li>`).join('');
     const done=T.items.filter(i=>i.done).length;
     F('todon').textContent = T.items.length ? `${done} of ${T.items.length}` : 'nothing yet';
-    F('todo').innerHTML = T.items.length ? T.items.map((i,k)=>`<li><input type="checkbox" id="t${k}" ${i.done?'checked':''} data-k="${k}"><label for="t${k}">${esc(i.text)}</label>${i.rule?'<span class="rp" title="comes back on its own">\u21bb</span>':''}${i.target?`<span class="tg"><input class="did" value="${i.did||0}" inputmode="decimal" data-did="${k}" aria-label="How much of ${esc(i.text)} so far"> of ${i.target.n}${i.text.toLowerCase().includes(i.target.unit)?'':' '+esc(i.target.unit)}</span>`:''}${i.at!=null?`<span class="w ${!i.done&&i.at<NOW?'due':''}">by ${h12(i.at)}</span>`:''}${waitedSays(i.from)}${i.rule?`<button class="w skip" type="button" data-skip="${k}">not today</button>`:''}<button class="w x" type="button" data-rm="${k}" aria-label="Remove">remove</button></li>`).join('') : '<li class="empty">Nothing on the list. Add the one thing today needs.</li>';
+    F('todo').innerHTML = T.items.length ? T.items.map((i,k)=>`<li><input type="checkbox" id="t${k}" ${i.done?'checked':''} data-k="${k}"><label for="t${k}">${esc(i.text)}</label>${i.rule?'<span class="rp" title="comes back on its own">\u21bb</span>':''}${i.target?`<span class="tg"><input class="did" value="${i.did||0}" inputmode="decimal" data-did="${k}" aria-label="How much of ${esc(i.text)} so far"> of ${i.target.n}${i.text.toLowerCase().includes(i.target.unit)?'':' '+esc(i.target.unit)}</span>`:''}${i.at!=null?`<span class="w ${!i.done&&i.at<NOW?'due':''}">by ${h12(i.at)}</span>`:''}${i.due ? dueSays(i.due) : waitedSays(i.from)}${i.rule?`<button class="w skip" type="button" data-skip="${k}">not today</button>`:''}<button class="w x" type="button" data-rm="${k}" aria-label="Remove">remove</button></li>`).join('') : '<li class="empty">Nothing on the list. Add the one thing today needs.</li>';
   }
   F('todo').addEventListener('change', e=>{
     if(e.target.matches('[data-did]')){ const i=T.items[+e.target.dataset.did]; if(!i) return;
@@ -630,7 +637,7 @@
       const word = g.text.trim().toLowerCase(), latest = g.days[g.days.length - 1];
       for(const a of g.asks){
         if(a.done || dropped.has(`${a.made}|${word}`) || here.has(word)) continue;
-        T.items.push({ text: g.text, at: latest.at, target: g.target, done: false, from: a.made });
+        T.items.push({ text: g.text, at: latest.at, target: g.target, due: latest.due, done: false, from: a.made });   // the deadline follows it, or tomorrow it has none
         here.add(word); n++;                             // one line per thing, however many times it was asked
       }
     }
