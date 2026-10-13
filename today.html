@@ -110,8 +110,7 @@
      it as a figure and takes the size of the words around it. */
   .todo .tg .did{width:3.6ch;font-family:var(--serif);font-size:inherit;text-align:right;border-bottom:1px dotted var(--ink-2);background:none;padding:0;color:var(--ink)}
   .todo .tg .did:focus{outline:none;border-bottom-color:var(--ink)}
-  .todo .skip{color:var(--ink-3);opacity:0;transition:opacity .15s}
-  .todo li:hover .skip,.todo li:focus-within .skip{opacity:1} .todo .skip:hover{color:var(--ox)}
+  .todo .skip{color:var(--ink-3)} .todo .skip:hover{color:var(--ox)}
   .reps li.over{opacity:.55}
   .reps{list-style:none;margin:10px 0 0;padding:0}
   .reps li{display:flex;align-items:baseline;gap:12px;padding:6px 0;border-top:1px dotted var(--rule);font-size:13.5px;color:var(--ink-2)}
@@ -133,8 +132,14 @@
   .todo .w.due{color:var(--ox)}
   .todo .w.from{font-style:italic;font-family:var(--serif)}
   .todo .w.from.long{color:var(--ox)}   /* past four days it stops being a note and starts being the point */
-  .todo li{position:relative} .todo .x{opacity:0;position:absolute;right:0;top:50%;transform:translateY(-50%);background:var(--paper);padding-left:10px}   /* out of the flow, so the time sits flush right */
-  .todo li:hover .x,.todo li:focus-within .x{opacity:1} .todo .x:hover{color:var(--ox)}
+  /* Both of these are revealed on hover, and both must stay out of the flow, or an invisible control takes
+     room from a visible one. "not today" was in the flow: it reserved 68px it never showed, and pushed the
+     time on a standing to-do that far left of every other modifier in the column. One group now, anchored
+     right, painted on the page's own colour so it covers what it sits over. */
+  .todo li{position:relative}
+  .todo .acts{position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:14px;background:var(--paper);padding-left:12px;opacity:0;transition:opacity .15s}
+  .todo li:hover .acts,.todo li:focus-within .acts{opacity:1}
+  .todo .x:hover{color:var(--ox)}
   .hr span{width:46px}
   .ev{left:64px} .now{left:50px}
   .ev.cal,.ev.fit,.ev.health,.ev.study{}
@@ -540,7 +545,7 @@
     F('reps').innerHTML = (RULES.rules||[]).map(r=>`<li class="${ruleOver(r)?'over':''}"><span>${esc(r.text)}<small>${[repSays(r.rep), r.target&&!r.text.toLowerCase().includes(r.target.unit)?`${r.target.n} ${esc(r.target.unit)}`:'', r.at!=null?`by ${h12(r.at)}`:'', r.until?(ruleOver(r)?`ended ${C.dayMonth(C.fromISO(r.until))}`:`until ${C.dayMonth(C.fromISO(r.until))}`):'', recordSays(r)].filter(Boolean).join(' · ')}</small></span><button class="textbtn" type="button" data-stop="${r.id}">${ruleOver(r)?'remove':'stop'}</button></li>`).join('');
     const done=T.items.filter(i=>i.done).length;
     F('todon').textContent = T.items.length ? `${done} of ${T.items.length}` : 'nothing yet';
-    F('todo').innerHTML = T.items.length ? T.items.map((i,k)=>`<li><input type="checkbox" id="t${k}" ${i.done?'checked':''} data-k="${k}"><label for="t${k}">${esc(i.text)}</label>${i.rule?'<span class="rp" title="comes back on its own">\u21bb</span>':''}${i.target?`<span class="tg"><input class="did" value="${i.did||0}" inputmode="decimal" data-did="${k}" aria-label="How much of ${esc(i.text)} so far"> of ${i.target.n}${i.text.toLowerCase().includes(i.target.unit)?'':' '+esc(i.target.unit)}</span>`:''}${i.at!=null?`<span class="w ${!i.done&&i.at<NOW?'due':''}">by ${h12(i.at)}</span>`:''}${i.due ? dueSays(i.due) : waitedSays(i.from)}${i.rule?`<button class="w skip" type="button" data-skip="${k}">not today</button>`:''}<button class="w x" type="button" data-rm="${k}" aria-label="Remove">remove</button></li>`).join('') : '<li class="empty">Nothing on the list. Add the one thing today needs.</li>';
+    F('todo').innerHTML = T.items.length ? T.items.map((i,k)=>`<li><input type="checkbox" id="t${k}" ${i.done?'checked':''} data-k="${k}"><label for="t${k}">${esc(i.text)}</label>${i.rule?'<span class="rp" title="comes back on its own">\u21bb</span>':''}${i.target?`<span class="tg"><input class="did" value="${i.did||0}" inputmode="decimal" data-did="${k}" aria-label="How much of ${esc(i.text)} so far"> of ${i.target.n}${i.text.toLowerCase().includes(i.target.unit)?'':' '+esc(i.target.unit)}</span>`:''}${i.at!=null?`<span class="w ${!i.done&&i.at<NOW?'due':''}">by ${h12(i.at)}</span>`:''}${i.due ? dueSays(i.due) : waitedSays(i.from)}<span class="acts">${i.rule?`<button class="w skip" type="button" data-skip="${k}">not today</button>`:''}<button class="w x" type="button" data-rm="${k}" aria-label="Remove">remove</button></span></li>`).join('') : '<li class="empty">Nothing on the list. Add the one thing today needs.</li>';
   }
   F('todo').addEventListener('change', e=>{
     if(e.target.matches('[data-did]')){ const i=T.items[+e.target.dataset.did]; if(!i) return;
