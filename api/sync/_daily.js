@@ -2,10 +2,38 @@
 // Word: one from the list below (rotating by day of year), with pronunciation, definition and an example from the
 // Free Dictionary API. Quote: one of the philosophers' lines in quotes.js, rotating by day of year.
 import { patterns } from './_patterns.js';
+import { sql } from '../_lib.js';
 import { getDocs } from './_run.js';
 import { syncRoute } from './_run.js';
 import QUOTES from './_quotes.js';
 // (maxDuration lives on the route file, api/sync/[name].js)
+
+// The day's word was written over every night. `daily` holds one day, so by morning yesterday's word was gone —
+// there was nothing to look back on, let alone quiz yourself from. They are kept now, one entry a day, in their
+// own document. The word already carries everything a card needs: the word, how it sounds, what part of speech
+// it is, what it means, and a sentence using it.
+export const keepWord = (words, day, word) => {
+  if (!word || !word.w || !day) return false;
+  const seen = (words.seen ||= []);
+  if (seen.some(x => x.d === day)) return false;            // one word to a day, and the day is what names it
+  seen.push({ d: day, w: word.w, pr: word.pr || undefined, pos: word.pos || undefined, def: word.def, ex: word.ex || undefined });
+  seen.sort((a, b) => (a.d < b.d ? -1 : 1));
+  if (seen.length > 1200) words.seen = seen.slice(-1200);   // the list itself is 931 words; this is years of room
+  return true;
+};
+
+// Thirty days of every document are kept by the nightly backup, so a month of words that were otherwise lost is
+// sitting in there. Folded in on every run rather than once: a night this sync did not happen is then caught up
+// later instead of falling off the end of the backups unnoticed.
+export const foldBackups = (words, rows) => {
+  let got = 0;
+  for (const r of rows || []) {
+    const d = r.daily;
+    // a day the dictionaries were down reused the day before's word; that is not a word of its own
+    if (d && d.word && !d.wordFrom && keepWord(words, d.date || r.day, d.word)) got++;
+  }
+  return got;
+};
 
 const WORDS = [
   'equanimity', 'assiduous', 'halcyon', 'lacuna', 'sanguine', 'perspicacious', 'vestige', 'ephemeral', 'sonorous', 'tenacity',
@@ -277,6 +305,16 @@ export default syncRoute('daily', async ({ getDoc, putDoc }) => {
 
   let pat = null; try { pat = await patterns(getDoc, putDoc, date, getDocs); } catch (e) { errors.push('patterns ' + e.message); }
 
+  // kept before `daily` is written over, which is the whole point
+  let kept = 0;
+  try {
+    const words = (await getDoc('words')) || { seen: [] };
+    if (!out.wordFrom && keepWord(words, date, out.word)) kept++;
+    try { kept += foldBackups(words, await sql`SELECT day, data->'daily' AS daily FROM backups ORDER BY day`); }
+    catch (e) { errors.push('words from backups ' + e.message); }
+    if (kept) await putDoc('words', words);
+  } catch (e) { errors.push('words ' + e.message); }
+
   await putDoc('daily', out);
-  return { patterns: pat ? `${pat.shown} of ${pat.tested}` : undefined, word: out.word ? out.word.w : null, quote: out.quote ? out.quote.a : null, bogos: ad ? ad.bogos : undefined, weather: wx ? wx.days : undefined, priced: px ? px.priced : undefined, worth: px ? px.worth : undefined, errors: errors.length ? errors.join('; ') : undefined };
+  return { patterns: pat ? `${pat.shown} of ${pat.tested}` : undefined, word: out.word ? out.word.w : null, kept: kept || undefined, quote: out.quote ? out.quote.a : null, bogos: ad ? ad.bogos : undefined, weather: wx ? wx.days : undefined, priced: px ? px.priced : undefined, worth: px ? px.worth : undefined, errors: errors.length ? errors.join('; ') : undefined };
 });
