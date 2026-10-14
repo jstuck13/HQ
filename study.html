@@ -64,6 +64,23 @@
   .lines ul{border-left:1px solid color-mix(in srgb, var(--ox) 32%, transparent);padding-left:14px}
   /* look back: the cards already read, each one openable again */
   .lookback{margin-top:10px}
+  /* The words drill borrows the card, not the path: the reading paths walk an ordered set three a day, and a
+     deck is a different shape — however many are due, each answered and then put further off. Same stage, own
+     machinery. */
+  .wordsh{margin-top:40px}
+  .stage.words{min-height:0;padding:28px 34px 24px;cursor:default}
+  .stage.words .w{font-family:var(--serif);font-size:32px;line-height:1.1}
+  .stage.words .pr{font-size:13.5px;color:var(--ink-3);margin:6px 0 0}
+  .stage.words .pr i{font-style:italic;margin-right:10px}
+  .stage.words .def{font-family:var(--serif);font-size:20px;line-height:1.5;margin:18px 0 0;max-width:56ch}
+  .stage.words .ex{font-family:var(--serif);font-style:italic;font-size:15.5px;color:var(--ink-2);margin:12px 0 0;max-width:56ch}
+  .stage.words textarea{width:100%;margin-top:18px;min-height:70px;font-family:var(--serif);font-size:15.5px;line-height:1.5;border:0;border-bottom:1px dotted var(--ink-2);background:none;resize:vertical;padding:4px 0;color:var(--ink)}
+  .stage.words textarea:focus{outline:none;border-bottom-color:var(--ink)}
+  .stage.words .wfoot{display:flex;align-items:center;gap:18px;margin-top:22px;padding-top:16px;border-top:1px solid var(--rule)}
+  .stage.words .wfoot .left{margin-right:auto;font-size:12.5px;color:var(--ink-3)}
+  .stage.words .again{color:var(--ox)}
+  .stage.words .rest{padding:8px 0;font-family:var(--serif);font-style:italic;font-size:17px;color:var(--ink-2)}
+  .stage.words .rest small{display:block;font-family:var(--sans);font-style:normal;font-size:12.5px;color:var(--ink-3);margin-top:6px}
   .lbtabs{display:flex;flex-wrap:wrap;gap:8px 18px;padding-bottom:10px}
   .lbtabs button{background:none;border:0;padding:0;font:inherit;font-size:13.5px;color:var(--ink-3);cursor:pointer;border-bottom:1px solid transparent}
   .lbtabs button.on{color:var(--ink);border-bottom-color:var(--ox)}
@@ -130,6 +147,9 @@
   <section>
     <h2 id="pathh">Today’s cards<small id="cardn"></small></h2>
     <div class="stage" id="stage"></div>
+
+    <h2 class="wordsh">Words<small id="wordn"></small></h2>
+    <div class="stage words" id="wstage"></div>
 
     <h3 id="lbh" hidden>Look back<small id="lbn"></small></h3>
     <div class="lookback" id="lookback" hidden>
@@ -277,10 +297,90 @@
   }
   F('paths').addEventListener('click', async e => { const b = e.target.closest('[data-path]'); if(!b) return; S.progress ??= {}; S.progress[S.path] = S.pos; S.path = b.dataset.path; S.pos = S.progress[S.path] || 0; if(S.days[TODAY] && !S.days[TODAY].done) delete S.days[TODAY]; save(); await loadPath(); render(); renderAside(); });
 
+
+  // ---- the words ----
+  // The deck is the words of the day, kept by the nightly sync in `words`; that document belongs to the server
+  // and is rewritten whole every night, so what you know about each word is kept here in `study` instead. The
+  // corpus is theirs, the progress is yours, and neither can write over the other.
+  //
+  // Leitner, five boxes. Got it moves a word along; not yet sends it back to the start. That is the whole of the
+  // scheduling — a word you know well is asked twice a year, one you keep missing comes back tomorrow, and there
+  // is one number per word to go wrong rather than a model of your memory.
+  const BOXES = [1, 3, 7, 21, 60], WORDS_A_SITTING = 10;
+  let DECK = [], wcard = null, wshown = false;
+  const vocab = () => (S.vocab ??= {});
+  const due = () => {
+    const v = vocab();
+    const ready = DECK.filter(x => { const m = v[x.w]; return !m || !m.due || m.due <= TODAY; });
+    // the ones already started come first, oldest due before the rest, then words never seen
+    return ready.sort((a, b) => {
+      const ma = v[a.w], mb = v[b.w];
+      if (!!ma !== !!mb) return ma ? -1 : 1;
+      if (ma && mb && ma.due !== mb.due) return ma.due < mb.due ? -1 : 1;
+      return a.d < b.d ? -1 : 1;
+    });
+  };
+  const nextDue = () => {
+    const v = vocab(), ds = DECK.map(x => (v[x.w] || {}).due).filter(Boolean).filter(d => d > TODAY).sort();
+    return ds[0] || null;
+  };
+
+  function answerWord(ok){
+    if (!wcard) return;
+    // a sitting is counted, so a day thirty words fall due at once does not become a chore
+    if (S.vocabDay !== TODAY) { S.vocabDay = TODAY; S.vocabDone = 0; }
+    S.vocabDone = (S.vocabDone || 0) + 1;
+    const v = vocab(), m = v[wcard.w] || { b: 0, n: 0, ok: 0 };
+    m.b = ok ? Math.min(BOXES.length - 1, (m.b || 0) + 1) : 0;
+    m.n = (m.n || 0) + 1; if (ok) m.ok = (m.ok || 0) + 1;
+    m.due = C.iso(C.addDays(C.now, ok ? BOXES[m.b] : 1));
+    m.last = TODAY;
+    v[wcard.w] = m; save();
+    wcard = null; wshown = false; renderWords();
+  }
+
+  function renderWords(){
+    const st = F('wstage'); if (!st) return;
+    if (!DECK.length) {
+      F('wordn').textContent = '';
+      st.innerHTML = '<p class="rest">No words yet.<small>One is kept each night with the day’s word. The deck fills itself.</small></p>';
+      return;
+    }
+    const v = vocab(), list = due(), known = DECK.filter(x => (v[x.w] || {}).b >= BOXES.length - 1).length;
+    F('wordn').textContent = `${DECK.length} kept${known ? ` · ${known} well known` : ''}`;
+    const sat = (S.vocabDay === TODAY ? S.vocabDone : 0) || 0;
+    if (!list.length || sat >= WORDS_A_SITTING) {
+      const nd = nextDue();
+      st.innerHTML = `<p class="rest">${!list.length ? 'Nothing due.' : 'That is a sitting.'}<small>${sat ? `${sat} answered today. ` : ''}${nd ? `Next on ${dmy(nd)}.` : 'Every word in the deck is put off beyond today.'}</small></p>`;
+      return;
+    }
+    if (!wcard) wcard = list[0];
+    const m = v[wcard.w] || {};
+    const seenBefore = m.n ? `asked ${m.n} ${m.n === 1 ? 'time' : 'times'}, right ${m.ok || 0}` : 'new';
+    st.innerHTML = wshown
+      ? `<p class="kind">${esc(wcard.pos || 'word')} · from ${dmy(wcard.d)}</p>
+         <p class="w">${esc(wcard.w)}</p>
+         <p class="def">${esc(wcard.def || '')}</p>
+         ${wcard.ex ? `<p class="ex">${esc(wcard.ex)}</p>` : ''}
+         <div class="wfoot"><span class="left">${list.length} due · ${esc(seenBefore)}</span>
+           <button class="textbtn again" type="button" id="wno">Not yet</button>
+           <button class="textbtn" type="button" id="wyes">Got it</button></div>`
+      : `<p class="kind">${esc(wcard.pos || 'word')} · from ${dmy(wcard.d)}</p>
+         <p class="w">${esc(wcard.w)}</p>
+         ${wcard.pr ? `<p class="pr"><i>${esc(wcard.pr)}</i></p>` : ''}
+         <textarea id="wsay" placeholder="What does it mean? Say it in your own words first…"></textarea>
+         <div class="wfoot"><span class="left">${list.length} due</span>
+           <button class="textbtn" type="button" id="wturn">Turn it over</button></div>`;
+    F('wturn')?.addEventListener('click', () => { wshown = true; renderWords(); });
+    F('wno')?.addEventListener('click', () => answerWord(false));
+    F('wyes')?.addEventListener('click', () => answerWord(true));
+  }
+
   async function loadPath(){ P = await (await fetch(`paths/${S.path}.json`)).json(); if(S.len !== P.cards.length){ S.len = P.cards.length; save(); } }   // len: so Today can say "card 7 of 42" without fetching the path
-  Promise.all([store.load(KEY), fetch('paths/index.json').then(r => r.json())]).then(async ([doc, idx]) => {
+  Promise.all([store.load(KEY), fetch('paths/index.json').then(r => r.json()), store.load('words')]).then(async ([doc, idx, words]) => {
     if(doc) S = { path: 'stoics', pos: 0, days: {}, notes: [], answers: {}, ...doc }; S.answers ??= {}; PATHS = idx;
-    await loadPath(); render(); renderAside();
+    DECK = ((words || {}).seen || []).filter(x => x && x.w && x.def);   // a word with no meaning is no card
+    await loadPath(); render(); renderAside(); renderWords();
   });
   // keep the aside in step with the stage
   const _render = render; render = function(){ _render(); renderAside(); };
