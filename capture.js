@@ -113,7 +113,8 @@
     // its own ("laundry Sunday") and a deadline ("laundry by Sunday") name the day identically and mean
     // entirely different things about it.
     const resolveDay = (q, raw) => {
-      const w = String(raw).toLowerCase().replace(/^the\s+/, '');
+      // "13th" is the same day as "13": the suffix is how it is said, not part of the date
+      const w = String(raw).toLowerCase().replace(/^the\s+/, '').replace(/\b(\d{1,2})(?:st|nd|rd|th)\b/g, '$1').trim();
       if (w === 'today' || w === 'tonight') return TODAY;
       if (w === 'tomorrow' || w === 'tmrw') return C.iso(C.addDays(C.now, 1));
       const i = DAYNAMES.findIndex(n => n.startsWith(w.slice(0, 3)));
@@ -125,15 +126,28 @@
         else if (!n && q !== 'this' && q !== 'coming') n = 7;
         return C.iso(C.addDays(C.now, n));
       }
+      // A month with a day beside it names that day. Only a month standing on its own means the end of it:
+      // "until December" is the end of December, but "on November 13" is the thirteenth — and it was being
+      // read as the thirtieth with nothing said, which is worse than refusing it outright.
+      if (/\d/.test(w) && /[a-z]{3}/.test(w)) {
+        const d = C.parseDay(w);
+        if (d && d !== TODAY) {
+          if (d >= TODAY) return d;
+          const was = C.fromISO(d);                              // that day is gone this year, so it is next year's
+          return C.iso(new Date(was.getFullYear() + 1, was.getMonth(), was.getDate(), 12));
+        }
+      }
       const by = untilDate(w);                                  // "the 15th", "December", "17 Oct"
       if (by) return by;
-      const guess = C.parseDay(raw); return guess && guess !== TODAY ? guess : null;
+      const guess = C.parseDay(w); return guess && guess !== TODAY ? guess : null;
     };
 
     function parseDayWord(raw) {
       const t = ' ' + String(raw).trim();
       const dm = /\s(?:(this|next|coming|on)\s+)?(today|tonight|tomorrow|tmrw|mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.exec(t)
-              || /\s(?:(this|next|coming|on)\s+)?(\d{1,2}\s+[A-Za-z]{3,9}|[A-Za-z]{3,9}\s+\d{1,2})(?:\b|$)/.exec(t);
+              // A `b` boundary after a digit is no boundary at all in "13th", so the whole phrase was
+              // missed and left sitting in the title. This asks what was meant: nothing more of the word follows.
+              || /\s(?:(this|next|coming|on)\s+)?((?:the\s+)?\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]{3,9}|[A-Za-z]{3,9}\s+\d{1,2}(?:st|nd|rd|th)?|(?:the\s+)?\d{1,2}(?:st|nd|rd|th))(?!\w)/i.exec(t);
       if (!dm) return null;
       const date = resolveDay((dm[1] || '').toLowerCase(), dm[2]);
       if (!date) return null;
@@ -145,7 +159,7 @@
     // Sunday means do it now, and Sunday is when it stops being optional. So it goes on today's list, stays
     // there every day until it is done, and only the days after Sunday are held against it.
     // A bare number is left alone: "by 6" is six o'clock, and parseAt reads that.
-    const DUE_RE = /\b(?:by|before|due(?:\s+(?:on|by))?)\s+((?:this|next|coming)\s+)?((?:the\s+)?[A-Za-z]{3,9}(?:\s+\d{1,2})?|the\s+\d{1,2}(?:st|nd|rd|th)?|\d{1,2}(?:st|nd|rd|th))\b/i;
+    const DUE_RE = /\b(?:by|before|due(?:\s+(?:on|by))?)\s+((?:this|next|coming)\s+)?((?:the\s+)?[A-Za-z]{3,9}(?:\s+\d{1,2}(?:st|nd|rd|th)?)?|(?:the\s+)?\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]{3,9}|(?:the\s+)?\d{1,2}(?:st|nd|rd|th))(?!\w)/i;
     const takeDue = t => {
       const m = DUE_RE.exec(t);
       if (!m) return { text: t };
