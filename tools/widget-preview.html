@@ -39,9 +39,11 @@
   /* ---- the tile itself: iOS point sizes on a 390pt screen ---- */
   .w{background:var(--band);color:var(--band-ink);border-radius:22px;padding:14px;overflow:hidden;
      display:flex;flex-direction:column;font-family:var(--sans);box-shadow:0 10px 24px -10px rgba(0,0,0,.6)}
-  .w.small{width:158px;height:158px}
-  .w.medium{width:338px;height:158px}
-  .w.large{width:338px;height:354px}
+  /* A Pro Max: iOS gives widgets different point sizes on different phones, and a layout written for the
+     smaller body leaves a third of this one empty. 390pt screens get 158 / 338x158 / 338x354 instead. */
+  .w.small{width:170px;height:170px}
+  .w.medium{width:364px;height:170px}
+  .w.large{width:364px;height:382px}
   .w.lock{width:160px;height:72px;background:rgba(242,236,223,.14);border-radius:14px;padding:8px 10px;
           backdrop-filter:blur(6px)}
 
@@ -70,7 +72,9 @@
      bottom, a long way from the figure they belong to. */
   .w .split.tall{align-items:stretch}
   .w .split.tall .id{display:flex;flex-direction:column}
-  .w .split.tall .id .lines{margin-top:auto}
+  /* the figure hangs off the bottom of the cover, so the column spreads over the cover's height rather than
+     bunching at the top of it */
+  .w .split.tall .id .fig2{margin-top:auto}
   .w .split .id{min-width:0;flex:1}
   .w .split .fig{text-align:right;flex:none}
   .w .sub{font-size:11.5px;color:var(--band-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -132,7 +136,7 @@
 <body class="hq-in">
 <div class="wrap">
   <h1>Widget preview</h1>
-  <p class="sub">iOS point sizes on a 390pt screen — what fits here fits there.</p>
+  <p class="sub">iOS point sizes on a 430pt screen (Pro Max) — what fits here fits there.</p>
 
   <div class="bar">
     <label>Face
@@ -150,7 +154,7 @@
   <div class="cols">
     <div>
       <div class="screen" id="screen"></div>
-      <p class="note">Tiles are <code>158×158</code>, <code>338×158</code>, <code>338×354</code> and a Lock Screen
+      <p class="note">Tiles are <code>170×170</code>, <code>364×170</code>, <code>364×382</code> and a Lock Screen
         rectangle. The states come from <code>tools/faces.mjs</code>, which runs the real face functions, so the
         awkward ones are real: a finished book, a week with no reading, a book with no page count.</p>
     </div>
@@ -207,17 +211,29 @@ function drawFace(g, size) {
     // The jacket takes the left and everything else stacks beside it — the statistics included. Below it they
     // began a long way under the name they belong to, because the column ran out before the cover did, and the
     // tile then had nothing left to fill its bottom third with.
+    // The cover is measured back from the tile's height, so it shrinks when there are more statistics to sit
+    // under it — the same shape of arithmetic hq-widget.js does, but NOT the same constants. CSS and Scriptable
+    // disagree about what a line of text costs, and calibrating one from the other is how the first version
+    // shipped looking nothing like this. What the two share is the layout; each is tuned against what it can
+    // actually measure, and the phone is the one that settles it.
+    const n = (g.lines || []).slice(0, 5).length, H = 354, WI = 328;
+    const HEAD = 21, GAP = 9, ROW = 22, FOOT = g.foot ? 28 : 0;
+    let coverH = H - HEAD - GAP - (n * ROW + FOOT) - 56;
+    let coverW = Math.round(coverH * 2 / 3);
+    if (coverW > WI - 12 - 146) { coverW = WI - 12 - 146; coverH = Math.round(coverW * 1.5); }
     const jacket = g.cover
-      ? `<div class="jacket"><img src="${esc(g.cover)}" alt="" onerror="this.dataset.missing=1"></div>` : '';
+      ? `<div class="jacket" style="width:${coverW}px"><img src="${esc(g.cover)}" alt="" onerror="this.dataset.missing=1"></div>` : '';
     return head + `<div class="rule"></div>` +
       `<div class="split tall">${jacket}<div class="id">` +
         `<div class="title">${esc(g.title)}</div>` +
         `${g.sub ? `<div class="sub">${esc(g.sub)}</div>` : ''}` +
-        `${g.big ? `<div class="big" style="font-size:28px;margin-top:9px">${esc(g.big.v)}</div>
-                    <div class="bigk">${esc(g.big.k)}</div>` : ''}` +
-        bar +
-        (lines ? `<div class="lines">${lines}</div>` : '') +
-      `</div></div>` + foot;
+        `<div class="fig2">` +
+          `${g.big ? `<div class="big" style="font-size:30px">${esc(g.big.v)}</div>
+                      <div class="bigk">${esc(g.big.k)}</div>` : ''}` +
+          bar +
+        `</div>` +
+      `</div></div>` +
+      (lines ? `<div class="lines">${lines}</div>` : '') + foot;
   }
   return `<div class="split">${ident}${fig}</div>` + bar +
          (lines ? `<div class="lines">${lines}</div>` : '') + foot;

@@ -91,10 +91,29 @@ async function glance() {
 
 const pad = (w, n) => { w.setPadding(n, n, n, n); return w; };
 
-// How wide the inside of a tile is, on a 390pt screen, after its own padding — with a few points held back.
-// Scriptable will not measure anything for you, and a stack given exactly the room available overflows on the
-// first rounding, widening its parent and shoving everything beside it out of place. Slack is not waste here.
-const inner = fam => (fam === 'small' ? 158 : 338) - 28 - 8;
+// How big a tile actually is. iOS gives widgets different point sizes on different phones — a large tile is
+// 338x354 on a 390pt screen and 364x382 on a Pro Max — and a layout written for the smaller one leaves a third
+// of the bigger one empty. Scriptable will not measure a widget for you, but it will tell you the screen, and
+// the sizes follow from that.
+const TILES = [
+  [428, { small: 170, medium: 364, large: 364, tall: 382 }],   // Pro Max and Plus
+  [414, { small: 169, medium: 360, large: 360, tall: 379 }],   // the older Plus bodies
+  [390, { small: 158, medium: 338, large: 338, tall: 354 }],   // most of them
+  [375, { small: 155, medium: 329, large: 329, tall: 345 }],
+  [0,   { small: 141, medium: 292, large: 292, tall: 311 }],   // the small bodies, and the fallback
+];
+function tile(fam) {
+  let width = 390;
+  try { width = Math.round(Device.screenSize().width); } catch (e) {}
+  const T = (TILES.find(([w]) => width >= w) || TILES[TILES.length - 1])[1];
+  if (fam === 'small') return { w: T.small, h: T.small };
+  if (fam === 'large') return { w: T.large, h: T.tall };
+  return { w: T.medium, h: T.small };            // a medium is exactly a small's height
+}
+// the usable room inside, after the padding, with a few points held back: a stack given exactly the space
+// available overflows on the first rounding, widening its parent and shoving everything beside it out of place
+const inner = fam => tile(fam).w - 28 - 8;
+const innerH = fam => tile(fam).h - 28;
 
 // width 0 means "automatic" in Scriptable, and a stack with no children is then no width at all — this hairline
 // was never drawing. It is given the measurement outright.
@@ -244,26 +263,39 @@ async function drawFace(w, g, fam) {
   if (fam === 'large') {
     heading(w, g); rule(w, W);
     const img = await jacket(g.cover);
-    // The jacket at 2:3, and the column beside it measured rather than left to work itself out. The two are set
-    // so their sum is inside W with room to spare: given exactly the space available, the bar overflowed the
-    // column, the column grew, and the cover was squeezed out of shape.
-    const JW = img ? 132 : 0, GAP = img ? 12 : 0, CW = W - JW - GAP;
+    const lines = (g.lines || []).slice(0, 5);
+
+    // Everything is measured back from the tile's real height, so the cover is as large as it can be and the
+    // statistics land on the bottom edge. A 2:3 cover cannot fill a nearly-square tile on its own without
+    // eating the column beside it, so what it leaves below is exactly the band the statistics sit in.
+    const H = innerH(fam);
+    const HEAD = 21, GAP = 9, ROW = 21, FOOT = g.foot ? 22 : 0;
+    const band = lines.length * ROW + FOOT;
+    let coverH = H - HEAD - GAP - band - 10;
+    let coverW = Math.round(coverH * 2 / 3);
+    const MINCOL = 146;                                  // "At this pace  15 days" needs about this much
+    if (coverW > W - 12 - MINCOL) { coverW = W - 12 - MINCOL; coverH = Math.round(coverW * 1.5); }
+    const colW = W - coverW - 12;
+
     const top = w.addStack();
-    top.size = new Size(W, img ? Math.round(JW * 1.5) : 0);   // bounded by the cover, so the column cannot run away
-    if (img) { const i = top.addImage(img); i.imageSize = new Size(JW, Math.round(JW * 1.5)); i.cornerRadius = 2; top.addSpacer(GAP); }
-    const col = top.addStack(); col.layoutVertically(); col.size = new Size(CW, 0);
-    const t = col.addText(g.title); t.font = SERIF(15); t.textColor = C.bandInk; t.lineLimit = 2;
-    if (g.sub) { const a = col.addText(g.sub); a.font = SANS(11.5); a.textColor = C.bandMuted; a.lineLimit = 1; }
+    top.size = new Size(W, img ? coverH : 0);
+    if (img) { const i = top.addImage(img); i.imageSize = new Size(coverW, coverH); i.cornerRadius = 2; top.addSpacer(12); }
+    const col = top.addStack(); col.layoutVertically(); col.size = new Size(img ? colW : W, 0);
+    const t = col.addText(g.title); t.font = SERIF(16); t.textColor = C.bandInk; t.lineLimit = 2;
+    if (g.sub) { const a = col.addText(g.sub); a.font = SANS(12); a.textColor = C.bandMuted; a.lineLimit = 1; }
+    // the figure hangs off the bottom of the cover rather than sitting straight under the name, so the column
+    // is spread across the cover's height instead of bunching at the top of it
+    col.addSpacer();
     if (g.big) {
-      col.addSpacer(10);
-      const b = col.addText(g.big.v); b.font = SERIF(28); b.textColor = C.bandInk;
-      const k = col.addText(g.big.k); k.font = SANS(11); k.textColor = C.bandMuted;
+      const b = col.addText(g.big.v); b.font = SERIF(30); b.textColor = C.bandInk;
+      const k = col.addText(g.big.k); k.font = SANS(11.5); k.textColor = C.bandMuted;
     }
-    if (g.bar != null) { col.addSpacer(9); progress(col, g.bar, CW); }
-    col.addSpacer();     // the statistics sit on the bottom of the cover's height, which top.size now fixes
-    (g.lines || []).slice(0, 5).forEach((l, i) => { if (i) col.addSpacer(5); statLine(col, l, CW); });
-    if (g.foot) { w.addSpacer(10); const f = w.addText(g.foot); f.font = SERIF(11.5); f.textColor = C.bandMuted; }
-    w.addSpacer();       // nothing pinned at the bottom means Scriptable centres the lot
+    if (g.bar != null) { col.addSpacer(8); progress(col, g.bar, img ? colW : W); }
+
+    // the statistics run the full width underneath, where there is room for them to be read as a ledger
+    w.addSpacer();
+    lines.forEach((l, i) => { if (i) w.addSpacer(4); statLine(w, l, W); });
+    if (g.foot) { w.addSpacer(7); const f = w.addText(g.foot); f.font = SERIF(12); f.textColor = C.bandMuted; }
     return;
   }
 
