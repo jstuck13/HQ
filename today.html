@@ -659,6 +659,25 @@
   }
 
   window.onTodoChange = doc => { T = doc; renderTodo(); d.day = renderDay(CAL); };   // a tick in the bell shows here at once
+
+  // Ticked from the Home Screen widget, which opens today.html?tick=<the item's text>. A to-do carries no id —
+  // rollover, skipping and removal all splice the day's list, so an index would not survive the gap between the
+  // widget drawing a row and your thumb landing on it. The text is the handle, matched only against what is
+  // still open, because a tick is only ever a tick of something open. The address is cleared first so a reload
+  // cannot tick the same thing twice, and the row changing under you is the confirmation; a widget tap has no
+  // way to ask for one.
+  function tickFromAddress(){
+    const want = new URLSearchParams(location.search).get('tick');
+    if(!want) return;
+    history.replaceState(null, '', location.pathname + location.hash);
+    const k = T.items.findIndex(i => !i.done && i.text === want);
+    if(k < 0){ CAP.said(`“${want}” is not open today.`); return; }
+    const it = T.items[k]; it.done = true;
+    if(it.rule) markRule(it.rule, true);
+    saveT(); renderTodo(); d.day = renderDay(CAL);
+    CAP.said(`Ticked “${it.text}”.`);
+  }
+
   // ---- load everything the other pages keep, then draw ----
   (async () => {
     const [cal, fin, H, lib, school, today, inv, study, pat, prefs] = await Promise.all([store.load('calendar'), store.load('finances.'+YM), store.load('health'), store.load('library'), store.load('school'), store.load(TKEY), store.load('investments'), store.load('study'), store.load('patterns'), store.load('prefs')]);
@@ -675,6 +694,7 @@
     renderReport(H);
     d.day = renderDay(cal);
     renderAffairs(d); renderGreeting(d); renderUpNext(d.day); renderTodo(); renderWeather();
+    tickFromAddress();   // after the day has settled, so the item the widget drew is on the list to find
     C.countIn('.affairs .v, .rep .big b, .rep .facts b');
     // the now line, "in 40 min" and the live event move with the clock
     setInterval(() => { const n=new Date(); if(C.iso(n)!==TODAY){ location.reload(); return; } NOW = n.getHours()+n.getMinutes()/60; d.day = renderDay(cal); renderAffairs(d); renderUpNext(d.day); }, 60000);

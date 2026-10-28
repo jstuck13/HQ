@@ -3,9 +3,8 @@
 // Nothing is sent when there is nothing to say. VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY / VAPID_SUBJECT in env.
 import webpush from 'web-push';
 import { syncRoute } from './_run.js';
+import { localNow } from '../_lib.js';
 
-const TZ = process.env.HQ_TZ || 'America/Chicago';
-const local = () => { const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).formatToParts(new Date()).map(x => [x.type, x.value])); return { date: `${p.year}-${p.month}-${p.day}`, h: (+p.hour % 24) + (+p.minute) / 60 }; };
 const h12 = h => { const hr = Math.floor(h), m = Math.round((h % 1) * 60); return `${hr % 12 || 12}.${String(m).padStart(2, '0')} ${hr < 12 ? 'am' : 'pm'}`; };
 const days = (a, b) => Math.round((new Date(b) - new Date(a)) / 864e5);
 const iso = d => d.toISOString().slice(0, 10);
@@ -14,6 +13,21 @@ const slotOf = h => h >= 6 && h < 10 ? 'morning' : h >= 11 && h < 15 ? 'midday' 
 const KINDS = [[/\b(final|midterm|exam)\b|^E\d\b/i, 5], [/\btest\b/i, 4], [/\bquiz\b/i, 3]];
 const heavy = it => { const k = KINDS.find(([re]) => re.test(it.title)); let w = k ? k[1] : it.type === 'test' ? 4 : 2; if (it.pts > 0) w = Math.max(w, Math.min(5, 1 + it.pts / 25)); return w >= 4; };
 
+
+// The sources, by the names you would recognise them under.
+const NAMED = { canvas: 'Canvas', google: 'Google Calendar', garmin: 'Garmin', daily: 'The daily word and the ad', bills: 'Scheduled expenses', backup: 'The nightly backup' };
+
+// What the sync ledger is worth saying out loud. A source that errored says so with its own message; one that has
+// simply not run for two days says that instead, because silence from Canvas looks identical to an empty Canvas.
+// A source that has never run at all is not news — there is nothing to have gone wrong yet.
+// Pure, and exported, so the tests can hand it a ledger; it used to be inline and read a variable declared
+// below it, which threw a ReferenceError on exactly the mornings a source was failing.
+export const staleLines = (ledger, now = Date.now()) => Object.entries(NAMED).map(([k, name]) => {
+  const e = ledger && ledger[k]; if (!e || !e.last) return null;
+  const age = Math.floor((now - new Date(e.last)) / 864e5);
+  if (!e.ok) return `${name} is failing: ${String(e.error || 'it would not run').slice(0, 60)}`;
+  return age >= 2 ? `${name} has not run in ${age} days.` : null;
+}).filter(Boolean);
 
 // Sunday evening, the week being over: what it came to, in three lines, with the rest of it on the week page.
 // Only what the documents say — a thin week reads thin rather than being talked up.
@@ -58,7 +72,7 @@ const weekLines = async (getDoc, today, health, school, lib) => {
 };
 
 export default syncRoute('notify', async ({ getDoc, putDoc }) => {
-  const { date: today, h } = local(), slot = slotOf(h);
+  const { date: today, h } = localNow(), slot = slotOf(h), now = Date.now();
   if (!slot) return { slot: 'none', sent: 0 };
   const push = (await getDoc('_push')) || { subs: [], sent: {} };
   if (!push.subs.length) return { slot, sent: 0, devices: 0 };
@@ -70,22 +84,16 @@ export default syncRoute('notify', async ({ getDoc, putDoc }) => {
   const L = health && health.days && health.days[today] || {}, meds = health && health.meds || [], items = todo && todo.items || [];
   const lines = []; let url = 'today.html';
 
-  // a source that has failed, or brought nothing in for two days, is worth knowing about before any nudge
-  const NAMED = { canvas: 'Canvas', google: 'Google Calendar', garmin: 'Garmin', daily: 'The daily word and the ad', bills: 'Scheduled expenses', backup: 'The nightly backup' };
-  if (slot === 'morning' && ledger) {
-    const stale = Object.entries(NAMED).map(([k, name]) => {
-      const e = ledger[k]; if (!e || !e.last) return null;
-      const age = Math.floor((Date.now() - new Date(e.last)) / 864e5);
-      if (!e.ok) return `${name} is failing: ${String(e.error || 'it would not run').slice(0, 60)}`;
-      return age >= 2 ? `${name} has not run in ${age} days.` : null;
-    }).filter(Boolean);
-    if (stale.length && !off.has('syncs')) { lines.push(...stale.slice(0, 2)); url = 'calendar.html'; }
-  }
-
   // What you have turned off. A nudge HQ learns later is on until it is named here.
   const prefs = (await getDoc('prefs')) || {};
   const off = new Set(((prefs.nudges || {}).off) || []);
   const nudge = (id, line) => { if (!off.has(id) && line) lines.push(line); };
+
+  // a source that has failed, or brought nothing in for two days, is worth knowing about before any nudge
+  if (slot === 'morning' && ledger) {
+    const stale = staleLines(ledger, now);
+    if (stale.length && !off.has('syncs')) { lines.push(...stale.slice(0, 2)); url = 'calendar.html'; }
+  }
 
   if (slot === 'morning') {
     if (L.weight == null) { nudge('weight', 'Step on the scale — weight is not logged yet.'); url = 'health.html'; }

@@ -31,3 +31,13 @@ export const checkPasscode = p => {
   const want = process.env.PASSCODE || '';
   return !!want && p.length === want.length && timingSafeEqual(Buffer.from(p), Buffer.from(want));
 };
+
+// What day it is where you are, and how far into it. The server runs in UTC, so every route that reasons about
+// "today" has to ask in HQ_TZ or it rolls over at the wrong hour. One definition, so the notifier and the
+// glance endpoint can never disagree about which day they are describing.
+export const HQ_TZ = process.env.HQ_TZ || 'America/Chicago';
+export const localNow = () => {
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: HQ_TZ, hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+    .formatToParts(new Date()).map(x => [x.type, x.value]));
+  return { date: `${p.year}-${p.month}-${p.day}`, h: (+p.hour % 24) + (+p.minute) / 60 };
+};
