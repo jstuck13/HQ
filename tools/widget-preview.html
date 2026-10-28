@@ -22,23 +22,23 @@
   body{background:#2A2622;color:var(--ink);padding:0;min-height:100vh}
   .wrap{max-width:1180px;margin:0 auto;padding:24px 28px 60px}
   h1{font-family:var(--serif);font-size:24px;color:#F2ECDF;margin:0 0 2px}
-  .sub{font-size:13px;color:#C8BFB1;margin:0 0 22px;font-family:var(--serif);font-style:italic}
+  .sub{font-size:13px;color:#B9C9BE;margin:0 0 22px;font-family:var(--serif);font-style:italic}
   .bar{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-bottom:26px;
-       background:rgba(242,236,223,.06);border:1px solid rgba(242,236,223,.14);border-radius:12px;padding:12px 16px}
-  .bar label{font-size:12px;color:#C8BFB1;letter-spacing:.04em;display:flex;gap:8px;align-items:center}
-  .bar select{background:#1F3A2E;color:#F2ECDF;border:1px solid rgba(242,236,223,.28);border-radius:8px;padding:6px 10px;font-size:13px}
+       background:rgba(242,236,223,.06);border:1px solid rgba(242,236,223,.14);border-radius:10px;padding:12px 16px}
+  .bar label{font-size:12px;color:#B9C9BE;letter-spacing:.04em;display:flex;gap:8px;align-items:center}
+  .bar select{background:#1F3A2E;color:#F2ECDF;border:1px solid rgba(242,236,223,.28);border-radius:6px;padding:6px 10px;font-size:13px}
   .cols{display:grid;grid-template-columns:auto 390px;gap:40px;align-items:start}
   @media (max-width:1000px){.cols{grid-template-columns:1fr}}
 
   /* the home screen behind the tiles: a plain warm ground, so contrast is judged against something, not white */
-  .screen{background:linear-gradient(160deg,#4A4036,#241F1A 70%);border-radius:28px;padding:26px 22px;
+  .screen{background:linear-gradient(160deg,#4A4036,#241F1A 70%);border-radius:16px;padding:26px 22px;
           display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
   .slot{display:flex;flex-direction:column;gap:7px}
-  .slot .cap{font-size:11px;letter-spacing:.06em;color:#C8BFB1;text-transform:uppercase}
+  .slot .cap{font-size:11px;letter-spacing:.06em;color:#B9C9BE;text-transform:uppercase}
 
   /* ---- the tile itself: iOS point sizes on a 390pt screen ---- */
   .w{background:var(--band);color:var(--band-ink);border-radius:22px;padding:14px;overflow:hidden;
-     display:flex;flex-direction:column;font-family:var(--sans);box-shadow:0 10px 24px -10px rgba(0,0,0,.6)}
+     display:flex;flex-direction:column;font-family:var(--sans);box-shadow:0 10px 24px -10px rgba(30,27,22,.6)}
   /* A Pro Max: iOS gives widgets different point sizes on different phones, and a layout written for the
      smaller body leaves a third of this one empty. 390pt screens get 158 / 338x158 / 338x354 instead. */
   .w.small{width:170px;height:170px}
@@ -84,7 +84,7 @@
   /* the jacket, where there is room for it. 2:3 is what Open Library serves and what a hardback is; the straw
      ground stands in while it loads, and stays if the cover 404s, so the tile never shows a hole. */
   .w .jacket{width:132px;flex:none;aspect-ratio:2/3;background:var(--straw);border-radius:2px;overflow:hidden;
-             box-shadow:0 6px 10px -6px rgba(0,0,0,.6);position:relative}
+             box-shadow:0 6px 10px -6px rgba(30,27,22,.6);position:relative}
   .w .jacket img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
   .w .jacket img[data-missing]{display:none}
   /* HQ's mark for a page with nothing on it yet: a lozenge between two rules. The widget says it the same way,
@@ -92,18 +92,47 @@
   .w .nowt{margin:auto 0;text-align:center;display:flex;flex-direction:column;align-items:center;gap:9px}
   .w .nowt .orn{display:flex;align-items:center;gap:8px;color:var(--band-muted);opacity:.75;width:100%;max-width:150px}
   .w .nowt .orn::before,.w .nowt .orn::after{content:"";height:1px;background:currentColor;opacity:.55;flex:1}
-  .w .nowt .orn i{font-style:normal;font-size:8px;line-height:1}
+  .w .nowt .orn i{width:6px;height:6px;flex:none;background:currentColor;transform:rotate(45deg)}
   .w .nowt span{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--band-muted)}
   .w.overflows{outline:2px solid #E8C1BD;outline-offset:2px}
   .flag{color:#E8C1BD;font-size:11px;margin-top:4px;display:none}
   .slot.bad .flag{display:block}
-  .report{font-size:12.5px;line-height:1.6;margin:0 0 18px;color:#C8BFB1}
+  .report{font-size:12.5px;line-height:1.6;margin:0 0 18px;color:#B9C9BE}
   .report b{color:#E8C1BD;font-weight:400}
   .report.clean b{color:#C9D6CE}
   .states{display:flex;flex-direction:column;gap:18px}
   .states .st{border-top:1px solid rgba(242,236,223,.14);padding-top:12px}
-  .states .st > b{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#C8BFB1;margin-bottom:9px;font-weight:400}
+  .states .st > b{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#B9C9BE;margin-bottom:9px;font-weight:400}
   .states .row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+  /* ---- the day, as a dial ----
+     The same geometry hq-widget.js draws with DrawContext, in SVG because a browser can. The day starts at
+     twelve o'clock and runs once round; each entry is an arc at its own hours; bare track is time still yours.
+     Arc colours are the dark-ground ramp from DESIGN.md, not the paper tints the calendar page uses — those
+     are mixed for ivory and glare on the band. */
+  .dial{position:relative;flex:none}
+  .dial > svg{display:block;width:100%;height:100%;overflow:visible}   /* the ring only: the marks inside it carry their own size */
+  .dial circle{fill:none;stroke-linecap:butt}
+  .dial .track{stroke:rgba(242,236,223,.14)}
+  .dial .now{stroke:#C29B99;stroke-width:2}
+  .dial .mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+  .dial .mid b{font-family:var(--serif);font-weight:400;color:#C9D6CE;line-height:1}
+  /* what the day is made of: one mark per entry, tinted to its own arc. HQ's own icons, not emoji — one
+     drawn set at one stroke weight. The widget takes the same four from SF Symbols, which is the platform's. */
+  .dial .marks{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px;max-width:62%}
+  .dial .marks svg{display:block;flex:none}
+  /* one labelled fact: the label is read once, the thing every time */
+  /* Two lines, not three: the hour rides on the label line. At three lines of inherited 1.5 line-height a row
+     cost 52px and the column overran a medium tile by 40. Line-heights are set here rather than inherited. */
+  .keyed{display:flex;flex-direction:column;gap:1px}
+  .keyed .k{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--band-muted);line-height:1.2;
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .keyed .k em{font-style:normal;font-weight:400;letter-spacing:.02em}
+  .keyed .k em.late{color:#C29B99}
+  .keyed .t{font-family:var(--serif);font-size:14.5px;line-height:1.25;color:var(--band-ink);
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .keyed .t.off{color:var(--band-muted)}
+  .daytop{display:flex;align-items:center;gap:16px}
+  .daytop .col{display:flex;flex-direction:column;gap:9px;min-width:0;flex:1}
   .w .lines{display:flex;flex-direction:column;gap:5px;margin-top:9px}
   /* 4px, not 8: "180 of 476" is one phrase and wants a word space between the figure and its note. The
      label is still pushed clear by the auto margin on the value, so only this join tightens. */
@@ -116,18 +145,21 @@
 
   /* the day face keeps its own rows, because they are tappable and carry their own text */
   .w .row{display:flex;align-items:center;gap:7px;font-size:13px}
-  .w .row .box{color:var(--band-muted);font-size:12px}
+  /* the pages draw a square checkbox and the widget draws one too; a borrowed glyph is not an icon */
+  .w .row .box{width:11px;height:11px;flex:none;border:1px solid var(--band-muted);border-radius:2px}
+  .w .row.late .box{border-color:#C29B99}
   .w .row .tx{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .w .row .at{margin-left:auto;font-size:11px;color:var(--band-muted)}
   .w .row.late .box,.w .row.late .at{color:#C29B99}
   .w .ev{display:flex;align-items:center;gap:7px;font-size:12.5px;font-family:var(--serif)}
-  .w .ev .dot{font-size:9px;color:var(--band-muted)} .w .ev.live .dot{color:#9DB4A4}
+  .w .ev .dot{width:5px;height:5px;flex:none;border-radius:50%;background:var(--band-muted)}
+  .w .ev.live .dot{width:7px;height:7px;background:#C9D6CE}
   .w .ev .at{margin-left:auto;font-family:var(--sans);font-size:11px;color:var(--band-muted)}
   .w .empty{font-family:var(--serif);font-size:14px;color:var(--band-muted)}
 
-  .phone{border:1px solid rgba(242,236,223,.2);border-radius:18px;overflow:hidden;background:var(--paper);height:844px}
+  .phone{border:1px solid rgba(242,236,223,.2);border-radius:16px;overflow:hidden;background:var(--paper);height:844px}
   .phone iframe{width:390px;height:844px;border:0;display:block}
-  .note{font-size:12px;color:#C8BFB1;margin:10px 0 0;line-height:1.5;max-width:390px}
+  .note{font-size:12px;color:#B9C9BE;margin:10px 0 0;line-height:1.5;max-width:390px}
   code{font-family:ui-monospace,monospace;font-size:11.5px;color:#C9D6CE}
 </style>
 </head>
@@ -183,7 +215,7 @@ function drawFace(g, size) {
 
   // nothing to show: the mark, and the one sentence saying so
   if (!g.big && !(g.lines || []).length) {
-    const nowt = `<div class="nowt"><span class="orn"><i>&#9670;</i></span><span>${esc(g.foot || 'Nothing yet.')}</span></div>`;
+    const nowt = `<div class="nowt"><span class="orn"><i></i></span><span>${esc(g.foot || 'Nothing yet.')}</span></div>`;
     return (size === 'large' ? head + `<div class="rule"></div>` : '') +
            (size === 'lock' ? `<div class="title" style="font-size:12.5px">${esc(g.foot || g.title)}</div>` : nowt);
   }
@@ -239,33 +271,77 @@ function drawFace(g, size) {
          (lines ? `<div class="lines">${lines}</div>` : '') + foot;
 }
 
-// ---- the day face: its own rows, because they are tappable ----
+// ---- the day face: the dial, and the three things worth knowing ----
+const ARC = { cal: '#A9BBC9', study: '#C9B8DB', fit: '#D9C79A', health: '#C9A9AE' };
+const ICON = { cal: 'calendar', study: 'book', fit: 'dumbbell', health: 'heart' };
+
+function dial(g, size) {
+  const stroke = Math.max(6, Math.round(size * 0.105));
+  const R = (size - stroke) / 2 - 1, C0 = 2 * Math.PI * R;
+  const span = g.span || { from: 8, to: 20 }, reach = Math.max(1, span.to - span.from);
+  const frac = h => (Math.min(span.to, Math.max(span.from, h)) - span.from) / reach;
+  const arc = (a, b, colour) => {
+    const len = Math.max(0.6, (frac(b) - frac(a)) * C0);
+    return `<circle r="${R}" cx="${size / 2}" cy="${size / 2}" stroke="${colour}" stroke-width="${stroke}"` +
+           ` stroke-dasharray="${len.toFixed(2)} ${(C0 - len).toFixed(2)}"` +
+           ` stroke-dashoffset="${(-frac(a) * C0).toFixed(2)}" transform="rotate(-90 ${size / 2} ${size / 2})"/>`;
+  };
+  // drawn in the order they begin, so where two overlap the later lies over the earlier
+  const arcs = (g.events || []).filter(e => e.end > span.from && e.start < span.to)
+    .map(e => arc(e.start, e.end, ARC[e.cat] || '#9DB4A4')).join('');
+  let now = '';
+  if (g.h != null && g.h >= span.from && g.h <= span.to) {
+    const a = frac(g.h) * 2 * Math.PI - Math.PI / 2, m = size / 2;
+    const i0 = R - stroke / 2 - 3, o0 = R + stroke / 2 + 3;
+    now = `<line class="now" x1="${(m + Math.cos(a) * i0).toFixed(1)}" y1="${(m + Math.sin(a) * i0).toFixed(1)}"` +
+          ` x2="${(m + Math.cos(a) * o0).toFixed(1)}" y2="${(m + Math.sin(a) * o0).toFixed(1)}"/>`;
+  }
+  const evs = (g.events || []).slice(0, 6);
+  const sz = Math.max(12, Math.min(21, Math.round(size * 0.15)));   // a 1.75 stroke at 24px needs the room to read
+  const mid = evs.length
+    ? `<div class="mid"><div class="marks">` + evs.map(e =>
+        `<svg viewBox="0 0 24 24" width="${sz}" height="${sz}" style="color:${ARC[e.cat] || '#9DB4A4'}" aria-hidden="true">` +
+        `<use href="/icons.svg#${ICON[e.cat] || 'calendar'}"/></svg>`).join('') + `</div></div>`
+    : `<div class="mid"><b style="font-size:${Math.round(size * 0.17)}px">clear</b></div>`;
+  return `<div class="dial" style="width:${size}px;height:${size}px">` +
+         `<svg viewBox="0 0 ${size} ${size}"><circle class="track" r="${R}" cx="${size / 2}" cy="${size / 2}" stroke-width="${stroke}"/>${arcs}${now}</svg>${mid}</div>`;
+}
+
+function keyed(label, text, when, present, late) {
+  return `<div class="keyed"><span class="k">${esc(label)}` +
+         `${when ? ` <em class="${late ? 'late' : ''}">· ${esc(when)}</em>` : ''}</span>` +
+         `<span class="t ${present ? '' : 'off'}">${esc(text)}</span></div>`;
+}
+
 function drawDay(g, size) {
   const open = (g.todos || []).filter(i => !i.done);
-  const head = `<div class="head"><span class="mark">HQ</span><span class="n">${open.length ? open.length + ' open' : 'clear'}</span></div>`;
-  if (size === 'lock') return `<div class="big" style="font-size:15px">${open.length || 'Nothing'} open</div>
-    <div class="bigk" style="font-size:10.5px">${esc(open[0] ? open[0].text : '')}</div>`;
-  const next = g.now || g.next;
-  if (size === 'small') {
-    const it = open[0];
-    if (it) return head + `<div class="rule"></div><div class="title" style="font-size:15px">${esc(it.text)}</div>` +
-      (it.at != null ? `<div class="bigk" ${it.late ? 'style="color:#C29B99"' : ''}>${h12(it.at)}</div>` : '');
-    if (next) return head + `<div class="rule"></div><div class="title" style="font-size:15px">${esc(next.title)}</div>
-      <div class="bigk">${next.live ? 'now' : h12(next.start)}</div>`;
-    return head + `<div class="rule"></div><div class="empty">A clear day.</div>`;
+  const nx = g.now || g.next;
+  if (size === 'lock') {
+    return `<div class="title" style="font-size:12.5px">${open.length ? open.length + ' open' : 'Nothing open'}</div>` +
+           `${nx ? `<div class="sub">${nx.live ? 'now' : h12(nx.start)} · ${esc(nx.title)}</div>` : ''}`;
   }
-  const n = size === 'large' ? 8 : 3;
-  const rows = open.length
-    ? open.slice(0, n).map(i => `<div class="row ${i.late ? 'late' : ''}"><span class="box">○</span>` +
-        `<span class="tx">${esc(i.text)}</span>${i.at != null ? `<span class="at">${h12(i.at)}</span>` : ''}</div>`).join('')
-    : `<div class="empty">${g.done ? 'All ' + g.done + ' ticked.' : 'Nothing on the list.'}</div>`;
-  const more = open.length > n ? `<div class="ln"><span class="t">and ${open.length - n} more</span></div>` : '';
-  const ev = next ? `<div class="rule"></div><div class="ev ${next.live ? 'live' : ''}"><span class="dot">${next.live ? '●' : '○'}</span>` +
-    `<span class="tx">${esc(next.title)}</span><span class="at">${next.live ? 'now' : h12(next.start)}</span></div>` : '';
-  const word = size === 'large' && g.word
-    ? `<div class="rule"></div><div class="title" style="font-size:14px">${esc(g.word.w)}</div>
-       <div class="bigk" style="line-height:1.35">${esc(g.word.def)}</div>` : '';
-  return head + `<div class="rule"></div><div class="lines" style="gap:6px">${rows}${more}</div>` + ev + word;
+  if (size === 'small') {
+    return `<div style="display:flex;justify-content:center">${dial(g, 92)}</div>` +
+      `<div style="margin-top:8px;text-align:center">` +
+      (nx ? `<div class="title" style="font-size:13.5px">${esc(nx.title)}</div>
+             <div class="bigk">${nx.live ? 'now' : h12(nx.start)}</div>`
+          : `<div class="empty" style="font-size:13px">A clear day.</div>`) + `</div>`;
+  }
+  const D = size === 'large' ? 150 : 116;
+  const head = size === 'large' ? `<div class="head"><span class="mark">HQ</span>` +
+    `<span class="n">${open.length ? open.length + ' open' : 'clear'}</span></div><div class="rule"></div>` : '';
+  const col = `<div class="col">` +
+    keyed('NOW', g.now ? g.now.title : 'nothing on', g.now ? `until ${h12(g.now.end)}` : null, !!g.now) +
+    keyed('NEXT', g.next ? g.next.title : 'nothing more today', g.next ? h12(g.next.start) : null, !!g.next) +
+    keyed('TO DO', g.todo ? g.todo.text : 'all ticked', g.todo && g.todo.at != null ? `by ${h12(g.todo.at)}` : null, !!g.todo, g.todo && g.todo.late) +
+    `</div>`;
+  const rows = size === 'large' && open.length
+    ? `<div class="rule" style="margin-top:12px"></div><div class="lines" style="gap:6px">` +
+      open.slice(0, 6).map(i => `<div class="row ${i.late ? 'late' : ''}"><span class="box"></span>` +
+        `<span class="tx">${esc(i.text)}</span>${i.at != null ? `<span class="at">${h12(i.at)}</span>` : ''}</div>`).join('') +
+      (open.length > 6 ? `<div class="ln"><span class="t">and ${open.length - 6} more</span></div>` : '') + `</div>`
+    : '';
+  return head + `<div class="daytop">${dial(g, D)}${col}</div>` + rows;
 }
 
 function tiles(g, draw, state) {
@@ -334,13 +410,15 @@ document.getElementById('evening').addEventListener('change', e => {
   f.contentDocument && f.contentDocument.documentElement.setAttribute('data-light', e.target.checked ? 'evening' : '');
 });
 
-// #all in the address turns on every state, so a check can be driven rather than clicked
-if (location.hash === '#all') document.getElementById('all').checked = true;
+// #all in the address turns on every state, and #all=day picks the face too, so a check can be driven
+// rather than clicked
+const HASH = /^#all(?:=(\w+))?$/.exec(location.hash);
+if (HASH) document.getElementById('all').checked = true;
 
 fetch('./widget-faces.json', { cache: 'no-store' }).then(r => r.json()).then(d => {
   DATA = d;
   document.getElementById('face').innerHTML = Object.keys(DATA).map(k => `<option>${esc(k)}</option>`).join('');
-  document.getElementById('face').value = 'reading';
+  document.getElementById('face').value = (HASH && HASH[1]) || 'reading';
   fillStates();
 });
 </script>

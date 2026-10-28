@@ -194,7 +194,11 @@
   "a working morning": {
    "face": "day",
    "day": "2026-09-15",
-   "h": 10.45,
+   "h": 10.3,
+   "span": {
+    "from": 7,
+    "to": 20
+   },
    "open": 5,
    "done": 1,
    "todos": [
@@ -245,27 +249,50 @@
     {
      "title": "Study — Networking, chapter seven",
      "start": 9,
-     "end": 10.5,
+     "end": 11,
+     "cat": "study",
+     "tint": "#ECE6F3",
      "live": true
     },
     {
      "title": "Call with advisor",
-     "start": 11,
-     "end": 11.5,
+     "start": 11.5,
+     "end": 12,
+     "cat": "cal",
+     "tint": "#E9EEF3",
+     "live": false
+    },
+    {
+     "title": "Gym — pull day",
+     "start": 17,
+     "end": 18,
+     "cat": "fit",
+     "tint": "#F6E6DC",
      "live": false
     }
    ],
    "now": {
     "title": "Study — Networking, chapter seven",
     "start": 9,
-    "end": 10.5,
+    "end": 11,
+    "cat": "study",
+    "tint": "#ECE6F3",
     "live": true
    },
    "next": {
     "title": "Call with advisor",
-    "start": 11,
-    "end": 11.5,
+    "start": 11.5,
+    "end": 12,
+    "cat": "cal",
+    "tint": "#E9EEF3",
     "live": false
+   },
+   "todo": {
+    "text": "Cadence practice",
+    "at": 7.5,
+    "done": false,
+    "late": true,
+    "due": null
    },
    "word": {
     "w": "obdurate",
@@ -273,16 +300,225 @@
     "def": "Stubbornly refusing to change one’s opinion."
    }
   },
+  "a packed day": {
+   "face": "day",
+   "day": "2026-09-15",
+   "h": 13.75,
+   "span": {
+    "from": 8,
+    "to": 20
+   },
+   "open": 2,
+   "done": 0,
+   "todos": [
+    {
+     "text": "Submit the lab report",
+     "at": 13,
+     "done": false,
+     "late": true,
+     "due": null
+    },
+    {
+     "text": "Pick up prescription",
+     "at": null,
+     "done": false,
+     "late": false,
+     "due": null
+    }
+   ],
+   "events": [
+    {
+     "title": "Standup",
+     "start": 8.5,
+     "end": 9,
+     "cat": "cal",
+     "tint": "#E9EEF3",
+     "live": false
+    },
+    {
+     "title": "Deep work — RPL value engine",
+     "start": 9,
+     "end": 11.5,
+     "cat": "study",
+     "tint": "#ECE6F3",
+     "live": false
+    },
+    {
+     "title": "Lunch with Sam",
+     "start": 12,
+     "end": 13,
+     "cat": "cal",
+     "tint": "#E9EEF3",
+     "live": false
+    },
+    {
+     "title": "Seminar",
+     "start": 13.5,
+     "end": 15,
+     "cat": "study",
+     "tint": "#ECE6F3",
+     "live": true
+    },
+    {
+     "title": "Physio",
+     "start": 15.5,
+     "end": 16.25,
+     "cat": "health",
+     "tint": "#F5E4E6",
+     "live": false
+    },
+    {
+     "title": "Gym — push day",
+     "start": 17,
+     "end": 18.5,
+     "cat": "fit",
+     "tint": "#F6E6DC",
+     "live": false
+    }
+   ],
+   "now": {
+    "title": "Seminar",
+    "start": 13.5,
+    "end": 15,
+    "cat": "study",
+    "tint": "#ECE6F3",
+    "live": true
+   },
+   "next": {
+    "title": "Physio",
+    "start": 15.5,
+    "end": 16.25,
+    "cat": "health",
+    "tint": "#F5E4E6",
+    "live": false
+   },
+   "todo": {
+    "text": "Submit the lab report",
+    "at": 13,
+    "done": false,
+    "late": true,
+    "due": null
+   },
+   "word": null
+  },
+  "an early start, a late finish": {
+   "face": "day",
+   "day": "2026-09-15",
+   "h": 7,
+   "span": {
+    "from": 6,
+    "to": 22
+   },
+   "open": 1,
+   "done": 0,
+   "todos": [
+    {
+     "text": "Pack",
+     "at": 21.5,
+     "done": false,
+     "late": false,
+     "due": null
+    }
+   ],
+   "events": [
+    {
+     "title": "Airport run",
+     "start": 6,
+     "end": 7.5,
+     "cat": "cal",
+     "tint": "#E9EEF3",
+     "live": true
+    },
+    {
+     "title": "Evening lecture",
+     "start": 19,
+     "end": 21,
+     "cat": "study",
+     "tint": "#ECE6F3",
+     "live": false
+    }
+   ],
+   "now": {
+    "title": "Airport run",
+    "start": 6,
+    "end": 7.5,
+    "cat": "cal",
+    "tint": "#E9EEF3",
+    "live": true
+   },
+   "next": {
+    "title": "Evening lecture",
+    "start": 19,
+    "end": 21,
+    "cat": "study",
+    "tint": "#ECE6F3",
+    "live": false
+   },
+   "todo": {
+    "text": "Pack",
+    "at": 21.5,
+    "done": false,
+    "late": false,
+    "due": null
+   },
+   "word": null
+  },
+  "everything ticked": {
+   "face": "day",
+   "day": "2026-09-15",
+   "h": 16,
+   "span": {
+    "from": 8,
+    "to": 20
+   },
+   "open": 0,
+   "done": 2,
+   "todos": [
+    {
+     "text": "Laundry",
+     "at": null,
+     "done": true,
+     "late": false,
+     "due": null
+    },
+    {
+     "text": "Read",
+     "at": null,
+     "done": true,
+     "late": false,
+     "due": null
+    }
+   ],
+   "events": [
+    {
+     "title": "Dentist",
+     "start": 14,
+     "end": 14.75,
+     "cat": "health",
+     "tint": "#F5E4E6",
+     "live": false
+    }
+   ],
+   "now": null,
+   "next": null,
+   "todo": null,
+   "word": null
+  },
   "a clear day": {
    "face": "day",
    "day": "2026-09-15",
    "h": 10.45,
+   "span": {
+    "from": 8,
+    "to": 20
+   },
    "open": 0,
    "done": 0,
    "todos": [],
    "events": [],
    "now": null,
    "next": null,
+   "todo": null,
    "word": null
   }
  }

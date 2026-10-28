@@ -171,3 +171,63 @@ test('a page count that ran past the end does not report more than all of it', (
   const g = faceReading(shelf({ page: 500 }), TODAY);
   assert.equal(g.bar, 1, 'the bar cannot overrun its track');
 });
+
+// ---- the dial's own data ----
+// The ring is drawn from these three things and nothing else: where the day begins and ends, what each entry's
+// area is, and which to-do is the one still on you. A widget cannot work any of it out for itself.
+const dayCal = {
+  cats: [{ id: 'study', tint: '#ECE6F3' }, { id: 'cal', tint: '#E9EEF3' }, { id: 'fit', tint: '#F6E6DC' }],
+  series: [
+    { title: 'Deep work', date: WED, start: 9, end: 11, cat: 'study' },
+    { title: 'Advisor', date: WED, start: 11.5, end: 12, cat: 'cal' },
+    { title: 'Gym', date: WED, start: 17, end: 18, cat: 'fit' },
+  ],
+};
+
+test('an ordinary day runs eight to eight', () => {
+  const g = glanceFrom({ cal: dayCal }, WED, 10);
+  assert.deepEqual(g.span, { from: 8, to: 20 });
+});
+
+test('an entry before eight or after eight stretches the dial to hold it', () => {
+  const early = glanceFrom({ cal: { series: [{ title: 'Airport', date: WED, start: 6, end: 7.5 }] } }, WED, 7);
+  assert.equal(early.span.from, 6, 'the day starts when the first thing does');
+  const late = glanceFrom({ cal: { series: [{ title: 'Lecture', date: WED, start: 19, end: 21.5 }] } }, WED, 20);
+  assert.equal(late.span.to, 22, 'and ends when the last thing does, rounded up to the hour');
+});
+
+test('a to-do with an hour stretches the day too, because it is drawn on the same dial', () => {
+  const g = glanceFrom({ todo: { items: [{ text: 'Pack', at: 21.5 }] } }, WED, 10);
+  assert.equal(g.span.to, 22);
+});
+
+test('a ticked to-do does not stretch the day', () => {
+  const g = glanceFrom({ todo: { items: [{ text: 'Pack', at: 21.5, done: true }] } }, WED, 10);
+  assert.deepEqual(g.span, { from: 8, to: 20 }, 'a thing already done is not still on the day');
+});
+
+test('every arc carries its area, so the ring can colour it', () => {
+  const g = glanceFrom({ cal: dayCal }, WED, 10);
+  assert.deepEqual(g.events.map(e => e.cat), ['study', 'cal', 'fit']);
+  assert.deepEqual(g.events.map(e => e.tint), ['#ECE6F3', '#E9EEF3', '#F6E6DC']);
+});
+
+test('an entry in a category with no colour still draws', () => {
+  const g = glanceFrom({ cal: { cats: [], series: [{ title: 'Something', date: WED, start: 9, end: 10, cat: 'mine' }] } }, WED, 10);
+  assert.equal(g.events[0].cat, 'mine');
+  assert.ok(g.events[0].tint, 'a tint is always sent, even a default one');
+});
+
+test('the one still on you is the next timed thing, then anything untimed', () => {
+  const timed = glanceFrom({ todo: { items: [{ text: 'Laundry' }, { text: 'Call', at: 9.5 }] } }, WED, 10);
+  assert.equal(timed.todo.text, 'Call', 'an hour makes it the one that is pressing');
+  const untimed = glanceFrom({ todo: { items: [{ text: 'Laundry' }] } }, WED, 10);
+  assert.equal(untimed.todo.text, 'Laundry');
+  const done = glanceFrom({ todo: { items: [{ text: 'Laundry', done: true }] } }, WED, 10);
+  assert.equal(done.todo, null, 'nothing open means nothing to name');
+});
+
+test('the thing still on you knows it is late', () => {
+  const g = glanceFrom({ todo: { items: [{ text: 'Call', at: 7.5 }] } }, WED, 10);
+  assert.equal(g.todo.late, true);
+});

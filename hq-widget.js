@@ -136,9 +136,9 @@ function todoRow(w, it) {
   const row = w.addStack();
   row.centerAlignContent();
   row.url = `${SITE}/today.html?tick=${encodeURIComponent(it.text)}`;
-  const box = row.addText('○');
-  box.font = SANS(12); box.textColor = it.late ? C.ox : C.bandMuted;
-  row.addSpacer(6);
+  const box = row.addImage(tickbox(12, it.late ? C.ox : C.bandMuted));
+  box.imageSize = new Size(12, 12);
+  row.addSpacer(7);
   const t = row.addText(it.text);
   t.font = SANS(13); t.textColor = C.bandInk; t.lineLimit = 1;
   row.addSpacer();
@@ -151,9 +151,9 @@ function todoRow(w, it) {
 function eventLine(w, e, label) {
   const row = w.addStack();
   row.centerAlignContent();
-  const dot = row.addText(e.live ? '●' : '○');
-  dot.font = SANS(9); dot.textColor = e.live ? C.sage : C.bandMuted;
-  row.addSpacer(6);
+  const d = row.addImage(dot(e.live ? 7 : 5, e.live ? C.sage : C.bandMuted));
+  d.imageSize = new Size(e.live ? 7 : 5, e.live ? 7 : 5);
+  row.addSpacer(7);
   const t = row.addText(`${e.title}`);
   t.font = SERIF(13); t.textColor = C.bandInk; t.lineLimit = 1;
   row.addSpacer();
@@ -188,7 +188,7 @@ function ornament(w, width) {
   const arm = () => { const a = row.addStack(); a.size = new Size(Math.round(width / 3), 1); a.backgroundColor = C.bandMuted; };
   row.addSpacer();
   arm(); row.addSpacer(8);
-  const d = row.addText('◆'); d.font = SANS(7); d.textColor = C.bandMuted;
+  const d = row.addImage(lozenge(7, C.bandMuted)); d.imageSize = new Size(7, 7);
   row.addSpacer(8); arm();
   row.addSpacer();
 }
@@ -321,6 +321,150 @@ async function drawFace(w, g, fam) {
 // everything else answers in one envelope and is drawn by drawFace.
 const OPENS = { day: '/today.html', reading: '/library.html' };
 
+// ---- drawn marks, not typed ones ----
+// A glyph borrowed from the font is not an icon: ○ is the wrong shape for a to-do (the pages draw a square box)
+// and ◆ is whatever the system face happens to have. Both are drawn here, at the stroke weight the rest of HQ
+// uses, so the tile and the page carry the same marks.
+
+function tickbox(side, color) {
+  const dc = new DrawContext();
+  dc.size = new Size(side, side);
+  dc.opaque = false; dc.respectScreenScale = true;
+  dc.setStrokeColor(color); dc.setLineWidth(1);
+  dc.strokeRect(new Rect(0.5, 0.5, side - 1, side - 1));
+  return dc.getImage();
+}
+
+function lozenge(side, color) {
+  const dc = new DrawContext();
+  dc.size = new Size(side, side);
+  dc.opaque = false; dc.respectScreenScale = true;
+  const m = side / 2, p = new Path();
+  p.move(new Point(m, 0)); p.addLine(new Point(side, m));
+  p.addLine(new Point(m, side)); p.addLine(new Point(0, m)); p.closeSubpath();
+  dc.setFillColor(color); dc.addPath(p); dc.fillPath();
+  return dc.getImage();
+}
+
+function dot(side, color) {
+  const dc = new DrawContext();
+  dc.size = new Size(side, side);
+  dc.opaque = false; dc.respectScreenScale = true;
+  dc.setFillColor(color); dc.fillEllipse(new Rect(0, 0, side, side));
+  return dc.getImage();
+}
+
+// ---- the day, as a dial ----
+// The ring is the day itself, not a score: it runs from the hour the day starts to the hour it ends, each
+// calendar entry is an arc at its own hours, and what is left bare is time that is still yours. Scriptable
+// cannot draw SVG and its Path has no arc, so an arc is a polyline of short segments stroked at the ring's
+// width — at these sizes the joins are invisible and the result is a true circle, not a rounded polygon.
+
+// The area tints on calendar.html are paper-adjacent and would glare on the band. DESIGN.md keeps a second
+// ramp for exactly this: the same hues with the lightness pushed down far enough to sit on a dark ground.
+const ARC = {
+  cal:    new Color('#A9BBC9'),   // slate
+  study:  new Color('#C9B8DB'),   // lilac
+  fit:    new Color('#D9C79A'),   // wheat
+  health: new Color('#C9A9AE'),   // rose
+};
+const ARC_FALLBACK = new Color('#9DB4A4');   // sage-mid, for a category you made yourself
+
+// What kind of thing each entry is. HQ's own icons.svg carries calendar / dumbbell / book / heart for exactly
+// these four areas; on the phone the same four come from SF Symbols, which is the drawn, weight-consistent set
+// the platform already ships. Emoji would be neither consistent nor ours.
+const ICON = { cal: 'calendar', study: 'book', fit: 'dumbbell', health: 'heart' };
+const ICON_FALLBACK = 'circle.fill';
+
+function arcPath(dc, cx, cy, r, a0, a1, width, color) {
+  const sweep = a1 - a0;
+  const steps = Math.max(2, Math.ceil(Math.abs(sweep) / 0.045));
+  const p = new Path();
+  for (let i = 0; i <= steps; i++) {
+    const a = a0 + sweep * (i / steps);
+    const pt = new Point(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+    if (i === 0) p.move(pt); else p.addLine(pt);
+  }
+  dc.setStrokeColor(color);
+  dc.setLineWidth(width);
+  dc.addPath(p);
+  dc.strokePath();
+}
+
+function dial(g, size) {
+  const dc = new DrawContext();
+  dc.size = new Size(size, size);
+  dc.opaque = false;
+  dc.respectScreenScale = true;
+
+  const stroke = Math.max(6, Math.round(size * 0.105));
+  const r = (size - stroke) / 2 - 1, cx = size / 2, cy = size / 2;
+  const span = g.span || { from: 8, to: 20 };
+  const reach = Math.max(1, span.to - span.from);
+  // noon at the top would put the working day on its side; the day starts at twelve o'clock and runs round
+  const at = h => (-Math.PI / 2) + ((Math.min(span.to, Math.max(span.from, h)) - span.from) / reach) * Math.PI * 2;
+
+  arcPath(dc, cx, cy, r, at(span.from), at(span.to), stroke, new Color('#F2ECDF', 0.14));
+
+  // drawn in the order they begin, so where two entries overlap the later one lies over the earlier
+  for (const e of g.events || []) {
+    if (e.end <= span.from || e.start >= span.to) continue;
+    arcPath(dc, cx, cy, r, at(e.start), at(e.end), stroke, (e.cat && ARC[e.cat]) || ARC_FALLBACK);
+  }
+
+  // now: a tick across the ring, in the colour the page draws its now-line with
+  if (g.h != null && g.h >= span.from && g.h <= span.to) {
+    const a = at(g.h), inner = r - stroke / 2 - 3, outer = r + stroke / 2 + 3;
+    const p = new Path();
+    p.move(new Point(cx + Math.cos(a) * inner, cy + Math.sin(a) * inner));
+    p.addLine(new Point(cx + Math.cos(a) * outer, cy + Math.sin(a) * outer));
+    dc.setStrokeColor(new Color('#C29B99'));
+    dc.setLineWidth(2);
+    dc.addPath(p);
+    dc.strokePath();
+  }
+  return dc.getImage();
+}
+
+// The dial, with what the day is made of standing in the middle: one mark per entry, each tinted to its own
+// arc, so the centre says what kind of day it is and the ring says when and how long. The count of open to-dos
+// used to sit here; the column names the actual thing, which is more use than its number.
+function dialStack(into, g, size) {
+  const box = into.addStack();
+  box.size = new Size(size, size);
+  box.backgroundImage = dial(g, size);
+  box.layoutVertically();
+  box.addSpacer();
+
+  const evs = (g.events || []).slice(0, 6);
+  if (!evs.length) {
+    const n = box.addText('clear');
+    n.font = SERIF(Math.round(size * 0.17));
+    n.textColor = C.sage;
+    n.centerAlignText();
+  } else {
+    const sz = Math.max(12, Math.min(21, Math.round(size * 0.15)));
+    for (let i = 0; i < evs.length; i += 3) {
+      if (i) box.addSpacer(5);
+      const row = box.addStack();
+      row.centerAlignContent();
+      row.addSpacer();
+      evs.slice(i, i + 3).forEach((e, k) => {
+        if (k) row.addSpacer(6);
+        const sym = SFSymbol.named((e.cat && ICON[e.cat]) || ICON_FALLBACK) || SFSymbol.named(ICON_FALLBACK);
+        sym.applyFont(Font.systemFont(sz));
+        const im = row.addImage(sym.image);
+        im.imageSize = new Size(sz, sz);
+        im.tintColor = (e.cat && ARC[e.cat]) || ARC_FALLBACK;
+        im.resizable = true;
+      });
+      row.addSpacer();
+    }
+  }
+  box.addSpacer();
+  return box;
+}
+
 async function build(g) {
   const w = new ListWidget();
   w.backgroundColor = C.band;
@@ -339,76 +483,92 @@ async function build(g) {
   if (g.face && g.face !== 'day') { await drawFace(w, g, fam); return w; }
 
   const open = (g.todos || []).filter(i => !i.done);
+  const W = inner(fam);
 
-  // The Lock Screen gets one line, because one line is all it has.
+  // The Lock Screen circle is the dial and nothing else — it is the one place the shape needs no explaining.
+  if (fam === 'accessoryCircular') {
+    w.backgroundColor = new Color('#1F3A2E', 0);
+    dialStack(w, g, 52);
+    return w;
+  }
   if (fam === 'accessoryRect' || fam === 'accessoryInline') {
-    w.backgroundColor = new Color('#1F3A2E', 0);   // the Lock Screen draws its own backdrop; alpha 0, so only the palette matters
-    const first = open[0];
+    w.backgroundColor = new Color('#1F3A2E', 0);
     const t = w.addText(open.length === 0 ? 'Nothing open' : `${open.length} open`);
     t.font = SANS_B(13);
-    if (first) { const s = w.addText(first.text); s.font = SANS(12); s.lineLimit = 1; }
+    const nx = g.now || g.next;
+    if (nx) { const s2 = w.addText(`${nx.live ? 'now' : h12(nx.start)} · ${nx.title}`); s2.font = SANS(12); s2.lineLimit = 1; }
     return w;
   }
 
-  heading(w, g);
-  w.addSpacer(8);
-
   if (fam === 'small') {
-    // room for the one thing that matters next, and nothing else
-    const next = g.now || g.next;
-    if (open.length) {
-      const it = open[0];
-      const t = w.addText(it.text);
-      t.font = SERIF(16); t.textColor = C.bandInk; t.lineLimit = 3;
-      if (it.at != null) { w.addSpacer(4); const at = w.addText(h12(it.at)); at.font = SANS(11); at.textColor = it.late ? C.ox : C.bandMuted; }
-      // The small tile opens Today and does not tick. It is one undivided target, so a tap meant for the phone's
-      // home screen lands on it as easily as one meant for the to-do — and a tick has no undo on Today. The
-      // medium and large sizes tick, because there you are aiming at a named row.
-    } else if (next) {
-      const t = w.addText(next.title);
-      t.font = SERIF(16); t.textColor = C.bandInk; t.lineLimit = 3;
-      w.addSpacer(4);
-      const at = w.addText(next.live ? 'now' : h12(next.start));
-      at.font = SANS(11); at.textColor = C.bandMuted;
+    // the dial, and under it the one thing that is actually next
+    const row = w.addStack(); row.size = new Size(W, 0); row.addSpacer();
+    dialStack(row, g, Math.min(W, 92));
+    row.addSpacer();
+    const nx = g.now || g.next;
+    w.addSpacer(8);
+    if (nx) {
+      const t = w.addText(nx.title); t.font = SERIF(13.5); t.textColor = C.bandInk; t.lineLimit = 1; t.centerAlignText();
+      const a = w.addText(nx.live ? 'now' : h12(nx.start)); a.font = SANS(11); a.textColor = C.bandMuted; a.centerAlignText();
     } else {
-      empty(w, 'A clear day.');
+      const t = w.addText('A clear day.'); t.font = SERIF(13); t.textColor = C.bandMuted; t.centerAlignText();
     }
     w.addSpacer();
     return w;
   }
 
-  const rows = fam === 'large' ? 8 : 3;
-  if (open.length) {
-    open.slice(0, rows).forEach((it, i) => { if (i) w.addSpacer(5); todoRow(w, it); });
-    if (open.length > rows) { w.addSpacer(5); const m = w.addText(`and ${open.length - rows} more`); m.font = SANS(11); m.textColor = C.bandMuted; }
-  } else {
-    empty(w, g.done ? `All ${g.done} ticked.` : 'Nothing on the list.');
-  }
+  // ---- medium and large: the dial, and beside it the three things worth knowing ----
+  if (fam === 'large') { heading(w, g); rule(w, W); w.addSpacer(10); }
 
-  const next = g.now || g.next;
-  if (next) {
-    w.addSpacer(9);
-    rule(w, inner(fam));
-    w.addSpacer(8);
-    eventLine(w, next, next.live ? 'now' : h12(next.start));
-  }
+  const D = fam === 'large' ? Math.min(150, W - 170) : Math.min(116, W - 180);
+  const top = w.addStack();
+  top.size = new Size(W, D);
+  top.centerAlignContent();
+  dialStack(top, g, D);
+  top.addSpacer(16);
 
-  if (fam === 'large') {
-    const later = (g.events || []).filter(e => !e.live && e !== next);
-    later.slice(0, 4).forEach(e => { w.addSpacer(5); eventLine(w, e); });
-    if (g.word) {
-      w.addSpacer();
-      rule(w, inner(fam));
-      w.addSpacer(8);
-      const word = w.addText(g.word.w);
-      word.font = SERIF(14); word.textColor = C.bandInk;
-      const def = w.addText(g.word.def || '');
-      def.font = SANS(11); def.textColor = C.bandMuted; def.lineLimit = 2;
+  const col = top.addStack(); col.layoutVertically(); col.size = new Size(W - D - 16, 0);
+  col.addSpacer();
+  const nowE = g.now, nextE = g.next, todo = g.todo;
+  keyed(col, 'NOW', nowE ? nowE.title : 'nothing on', nowE ? `until ${h12(nowE.end)}` : null, !!nowE);
+  col.addSpacer(9);
+  keyed(col, 'NEXT', nextE ? nextE.title : 'nothing more today', nextE ? h12(nextE.start) : null, !!nextE);
+  col.addSpacer(9);
+  keyed(col, 'TO DO', todo ? todo.text : 'all ticked', todo && todo.at != null ? `by ${h12(todo.at)}` : null, !!todo, todo && todo.late);
+  col.addSpacer();
+
+  // Large keeps the tappable rows: a thumb aiming at a named line can tick it without opening anything.
+  if (fam === 'large' && open.length) {
+    w.addSpacer(12);
+    rule(w, W);
+    w.addSpacer(10);
+    // a large tile has room for six; a quiet day simply stays quiet rather than being padded out
+    open.slice(0, 6).forEach((it, i) => { if (i) w.addSpacer(6); todoRow(w, it); });
+    if (open.length > 6) {
+      w.addSpacer(6);
+      const m = w.addText(`and ${open.length - 6} more`); m.font = SANS(11); m.textColor = C.bandMuted;
     }
   }
-
   w.addSpacer();
   return w;
+}
+
+// One labelled fact: the label with the hour riding on it, then the thing itself. The label is the smallest
+// type on the tile and the thing the largest, because a label is read once and the thing every time. Two lines
+// rather than three — at three the column overran a medium tile.
+function keyed(col, label, text, when, present, late) {
+  const head = col.addStack();
+  head.centerAlignContent();
+  const k = head.addText(label);
+  k.font = SANS_B(10); k.textColor = C.bandMuted;
+  if (when) {
+    head.addSpacer(5);
+    const a = head.addText('· ' + when);
+    a.font = SANS(10); a.textColor = late ? C.ox : C.bandMuted; a.lineLimit = 1;
+  }
+  head.addSpacer();
+  const t = col.addText(text);
+  t.font = SERIF(14.5); t.textColor = present ? C.bandInk : C.bandMuted; t.lineLimit = 1;
 }
 
 const g = await glance();

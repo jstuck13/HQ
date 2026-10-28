@@ -164,6 +164,33 @@
         ],
         "createdAt": "2026-09-15T18:36:26.749Z",
         "reason": "designer: DESIGN.md paper token is the world's ground (index.html renamed to today.html)"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "tools/widget-preview.html"
+        ],
+        "createdAt": "2026-10-28T18:27:03.652Z",
+        "reason": "detector resolves the ground as #ffffff; this page sets body{background:#2A2622}, where #B9C9BE measures 7.6:1 and #F2ECDF 12:1"
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "22px",
+        "files": [
+          "tools/widget-preview.html"
+        ],
+        "createdAt": "2026-10-28T18:27:03.840Z",
+        "reason": "iOS widget corner radius, a platform measurement rather than an HQ shape"
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "14px",
+        "files": [
+          "tools/widget-preview.html"
+        ],
+        "createdAt": "2026-10-28T18:27:04.032Z",
+        "reason": "iOS Lock Screen widget corner radius"
       }
     ]
   }

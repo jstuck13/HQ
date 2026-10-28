@@ -39,20 +39,37 @@ export const glanceFrom = ({ todo = {}, cal = {}, daily = {} }, day, h) => {
     due: i.due || null,
   }));
 
+  // The arcs carry the areas the calendar page already uses rather than inventing a second legend. Both the
+  // paper tint and the category travel: the tint is what the page draws with, and the widget needs the category
+  // because those tints are paper-adjacent and would glare on the band — it has its own ramp for a dark ground.
+  const cats = cal.cats || [];
+  const tintOf = id => (cats.find(c => c.id === id) || {}).tint || '#E9EEF3';
   const events = (cal.series || [])
     .filter(s => s.date && occursOn(s, day) && !(cal.hidden || []).includes(s.cat))
     .sort((a, b) => a.start - b.start)
-    .map(s => ({ title: s.title, start: s.start, end: s.end, live: s.start <= h && s.end > h }));
+    .map(s => ({ title: s.title, start: s.start, end: s.end, cat: s.cat || null, tint: tintOf(s.cat), live: s.start <= h && s.end > h }));
+
+  // Where the day begins and ends on the dial. Eight to eight, stretched by anything earlier or later — the
+  // identical rule today.html draws its timeline with, so the widget and the page never disagree about the
+  // shape of a day.
+  const ats = todos.filter(i => i.at != null && !i.done).map(i => i.at);
+  const span = {
+    from: Math.min(8, ...events.map(e => Math.floor(e.start)), ...ats.map(Math.floor)),
+    to: Math.max(20, ...events.map(e => Math.ceil(e.end)), ...ats.map(a => Math.ceil(a + 0.5))),
+  };
 
   const w = daily.word;
+  const next = events.find(e => e.start > h) || null;
   return {
-    face: 'day', day, h: Math.round(h * 100) / 100,
+    face: 'day', day, h: Math.round(h * 100) / 100, span,
     open: todos.filter(i => !i.done).length,
     done: todos.filter(i => i.done).length,
     todos,
     events,
     now: events.find(e => e.live) || null,
-    next: events.find(e => e.start > h) || null,
+    next,
+    // the specific thing still on you, which is not the same question as how many there are
+    todo: todos.find(i => !i.done && i.at != null) || todos.find(i => !i.done) || null,
     word: w && w.w ? { w: w.w, pos: w.pos || null, def: w.def } : null,
   };
 };
