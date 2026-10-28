@@ -231,3 +231,46 @@ test('the thing still on you knows it is late', () => {
   const g = glanceFrom({ todo: { items: [{ text: 'Call', at: 7.5 }] } }, WED, 10);
   assert.equal(g.todo.late, true);
 });
+
+// ---- when the tile asks to be redrawn ----
+// hq-widget.js cannot be imported: it builds Colors and reads `args` at load, both of which only exist inside
+// Scriptable. staleAt is pure, so it is sliced out and evaluated — the same trick week.test.mjs uses on the
+// notifier. iOS treats the answer as a hint, but a wrong hint is worse than a cautious one.
+import { readFileSync } from 'node:fs';
+const widgetSrc = readFileSync('hq-widget.js', 'utf8');
+const staleAt = new Function(
+  widgetSrc.slice(widgetSrc.indexOf('function staleAt(g) {'), widgetSrc.indexOf('\n}', widgetSrc.indexOf('function staleAt(g) {')) + 2)
+  + '\nreturn staleAt;')();
+const minutes = g => Math.round((staleAt(g) - Date.now()) / 60000);
+
+test('a day with nothing ahead waits the full hour', () => {
+  assert.equal(minutes({ h: 10, events: [], todos: [] }), 60);
+});
+
+test('the next thing to begin sets the time', () => {
+  assert.equal(minutes({ h: 10, events: [{ start: 10.5, end: 11 }], todos: [] }), 30);
+});
+
+test('a thing ending counts as much as a thing beginning', () => {
+  // mid-meeting: the tile stops being true when it ends, not when the next one starts
+  assert.equal(minutes({ h: 10, events: [{ start: 9, end: 10.25 }, { start: 14, end: 15 }], todos: [] }), 15);
+});
+
+test('a boundary closer than ten minutes still waits ten', () => {
+  assert.equal(minutes({ h: 10, events: [{ start: 9, end: 10.05 }], todos: [] }), 10, 'never nag the budget');
+});
+
+test('a boundary further off than an hour still waits only an hour', () => {
+  assert.equal(minutes({ h: 10, events: [{ start: 17, end: 18 }], todos: [] }), 60, 'the now-tick drifts meanwhile');
+});
+
+test('a to-do falling due is a boundary too, and a ticked one is not', () => {
+  assert.equal(minutes({ h: 10, events: [], todos: [{ at: 10.5 }] }), 30);
+  assert.equal(minutes({ h: 10, events: [], todos: [{ at: 10.5, done: true }] }), 60);
+  assert.equal(minutes({ h: 10, events: [], todos: [{ at: 9 }] }), 60, 'already late changes nothing further');
+});
+
+test('a payload that failed asks again within the hour rather than never', () => {
+  assert.equal(minutes({ error: 'HQ did not answer.' }), 60);
+  assert.equal(minutes(null), 60);
+});

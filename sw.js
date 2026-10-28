@@ -1,7 +1,7 @@
 // HQ's service worker: it receives pushes, and it keeps the shell — the pages themselves — so the app opens
 // at once and still opens with no signal. Data is never cached here: /api goes to the network, and store.js
 // already keeps a localStorage copy of every document for when the network is not there.
-const V = 'hq-shell-4.44.1';   // the version this shell was built from. A new name empties the old one on
+const V = 'hq-shell-4.45.0';   // the version this shell was built from. A new name empties the old one on
 // activate, and bump.mjs writes this line, so every release invalidates the kept copy by construction —
 // a change to hq.css or a shared script can no longer sit unseen behind yesterday's cache.
 const SHELL = [

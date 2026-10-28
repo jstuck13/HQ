@@ -24,6 +24,7 @@
 
 const SITE = 'https://hq-six-puce.vercel.app';
 const KEY = 'hq.passcode';
+const COOKIE = 'hq.cookie';
 // which widget this one is. Scriptable gives each placed instance its own parameter, so one script serves all.
 const FACE = String((typeof args !== 'undefined' && args.widgetParameter) || 'day').trim().toLowerCase() || 'day';
 
@@ -62,29 +63,62 @@ async function passcode() {
   return p;
 }
 
+// The session cookie is an HMAC of a fixed label under the passcode — it does not expire and it is not a
+// secret the server stores, so it can be kept beside the passcode and reused. A refresh then costs one request
+// instead of two, and a tile is likelier to come back at all on a thin connection. A 401 means PASSCODE itself
+// changed on the server, which is the one case worth signing in again for.
+async function signIn(pass) {
+  const login = new Request(SITE + '/api/login');
+  login.method = 'POST';
+  login.headers = { 'Content-Type': 'application/json' };
+  login.body = JSON.stringify({ passcode: pass });
+  await login.loadString();
+  const set = login.response.headers['set-cookie'] || login.response.headers['Set-Cookie'] || '';
+  const m = String(set).match(/hq=([a-f0-9]+)/);
+  return m ? m[1] : null;
+}
+
+async function read(cookie) {
+  const r = new Request(`${SITE}/api/glance?of=${encodeURIComponent(FACE)}`);
+  r.headers = { Cookie: 'hq=' + cookie };
+  const body = await r.loadString();
+  return { status: r.response.statusCode, body };
+}
+
 async function glance() {
   const p = await passcode();
   if (!p) return { error: 'Run the HQ script once to sign in.' };
-  // POST the passcode for a cookie, then read the glance with it. Two short requests beats keeping a derived
-  // token here: change PASSCODE on the server and this stops working, which is the behaviour you want.
   try {
-    const login = new Request(SITE + '/api/login');
-    login.method = 'POST';
-    login.headers = { 'Content-Type': 'application/json' };
-    login.body = JSON.stringify({ passcode: p });
-    await login.loadJSON();
-    const set = login.response.headers['set-cookie'] || login.response.headers['Set-Cookie'] || '';
-    const hq = String(set).match(/hq=([a-f0-9]+)/);
-    if (!hq) return { error: 'Wrong passcode. Run the HQ script to set it again.' };
-
-    const r = new Request(`${SITE}/api/glance?of=${encodeURIComponent(FACE)}`);
-    r.headers = { Cookie: 'hq=' + hq[1] };
-    const data = await r.loadJSON();
-    if (data && data.error) return { error: data.error };
-    return data;
+    let cookie = Keychain.contains(COOKIE) ? Keychain.get(COOKIE) : null;
+    if (cookie) {
+      const kept = await read(cookie);
+      if (kept.status === 200) return JSON.parse(kept.body);
+    }
+    cookie = await signIn(p);
+    if (!cookie) return { error: 'Wrong passcode. Run the HQ script to set it again.' };
+    Keychain.set(COOKIE, cookie);
+    const fresh = await read(cookie);
+    if (fresh.status !== 200) return { error: 'HQ would not answer.' };
+    return JSON.parse(fresh.body);
   } catch (e) {
     return { error: 'HQ did not answer.' };
   }
+}
+
+// When this tile stops being true. iOS budgets widget refreshes and spends them on its own judgement — this is
+// a hint, not a promise — but a hint beats silence: the day dial is made of the current time, and left to guess
+// the system can leave a finished meeting sitting in the middle of the ring for the best part of an hour.
+// The next boundary is whichever comes first: an entry starting, an entry ending, or a to-do falling due.
+function staleAt(g) {
+  const MIN = 10 / 60, MAX = 1;                      // hours: never nag, never drift more than one
+  let gap = MAX;
+  if (g && !g.error && g.h != null) {
+    const marks = [];
+    for (const e of g.events || []) { if (e.start > g.h) marks.push(e.start); if (e.end > g.h) marks.push(e.end); }
+    for (const t of g.todos || []) if (!t.done && t.at != null && t.at > g.h) marks.push(t.at);
+    if (marks.length) gap = Math.min(...marks) - g.h;
+  }
+  return new Date(Date.now() + Math.max(MIN, Math.min(MAX, gap)) * 3600 * 1000);
 }
 
 // ---- drawing ----
@@ -569,6 +603,7 @@ function keyed(col, label, text, when, present, late) {
 
 const g = await glance();
 const widget = await build(g);
+widget.refreshAfterDate = staleAt(g);
 if (config.runsInWidget) Script.setWidget(widget);
 else await widget.presentMedium();
 Script.complete();
