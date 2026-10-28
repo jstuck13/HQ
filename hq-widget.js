@@ -91,7 +91,14 @@ async function glance() {
 
 const pad = (w, n) => { w.setPadding(n, n, n, n); return w; };
 
-function rule(w) { const r = w.addStack(); r.size = new Size(0, 1); r.backgroundColor = C.rule; }
+// How wide the inside of a tile is, on a 390pt screen, after its own padding — with a few points held back.
+// Scriptable will not measure anything for you, and a stack given exactly the room available overflows on the
+// first rounding, widening its parent and shoving everything beside it out of place. Slack is not waste here.
+const inner = fam => (fam === 'small' ? 158 : 338) - 28 - 8;
+
+// width 0 means "automatic" in Scriptable, and a stack with no children is then no width at all — this hairline
+// was never drawing. It is given the measurement outright.
+function rule(w, width) { const r = w.addStack(); r.size = new Size(width, 1); r.backgroundColor = C.rule; }
 
 function heading(w, g) {
   const row = w.addStack();
@@ -149,7 +156,7 @@ function progress(w, frac, width) {
   track.backgroundColor = new Color('#F2ECDF', 0.18);
   track.cornerRadius = 2;
   const fill = track.addStack();
-  fill.size = new Size(Math.max(2, Math.round(width * Math.min(1, Math.max(0, frac)))), 3);
+  fill.size = new Size(Math.min(width, Math.max(2, Math.round(width * Math.min(1, Math.max(0, frac))))), 3);
   fill.backgroundColor = C.bandMuted;
   fill.cornerRadius = 2;
 }
@@ -183,9 +190,10 @@ async function jacket(url) {
   } catch (e) { return null; }
 }
 
-function statLine(w, l) {
+function statLine(w, l, width) {
   const row = w.addStack();
   row.centerAlignContent();
+  if (width) row.size = new Size(width, 0);   // a row left to size itself can push its container wider
   const t = row.addText(l.t);
   t.font = SANS(12.5); t.textColor = C.bandMuted; t.lineLimit = 1;
   row.addSpacer();
@@ -197,16 +205,15 @@ function statLine(w, l) {
 
 // ---- any face but the day: title, a figure, some lines, a closing sentence ----
 async function drawFace(w, g, fam) {
-  const WIDE = fam === 'small' ? 130 : 310;
+  const lock = fam === 'accessoryRect' || fam === 'accessoryInline';
+  const W = inner(fam);
 
   // nothing to show: the mark, and the one sentence saying so
   if (!g.big && !(g.lines || []).length) {
-    if (fam === 'accessoryRect' || fam === 'accessoryInline') {
-      const t = w.addText(g.foot || g.title); t.font = SANS_B(13); t.lineLimit = 2; return;
-    }
-    if (fam === 'large') { heading(w, g); rule(w); }
+    if (lock) { const t = w.addText(g.foot || g.title); t.font = SANS_B(13); t.lineLimit = 2; return; }
+    if (fam === 'large') { heading(w, g); rule(w, W); }
     w.addSpacer();
-    ornament(w, WIDE);
+    ornament(w, W);
     w.addSpacer(9);
     const t = w.addText(g.foot || 'Nothing yet.');
     t.font = SERIF(13); t.textColor = C.bandMuted; t.centerAlignText();
@@ -214,17 +221,17 @@ async function drawFace(w, g, fam) {
     return;
   }
 
-  if (fam === 'accessoryRect' || fam === 'accessoryInline') {
+  if (lock) {
     w.backgroundColor = new Color('#1F3A2E', 0);
     const t = w.addText(g.title); t.font = SANS_B(12.5); t.lineLimit = 1;
-    if (g.big) { const s = w.addText(`${g.big.v} ${g.big.k}`); s.font = SANS(11); s.lineLimit = 1; }
+    if (g.big) { const s2 = w.addText(`${g.big.v} ${g.big.k}`); s2.font = SANS(11); s2.lineLimit = 1; }
     return;
   }
 
   if (fam === 'small') {
     const t = w.addText(g.title); t.font = SERIF(13.5); t.textColor = C.bandInk; t.lineLimit = 1;
     if (g.sub) { const a = w.addText(g.sub); a.font = SANS(11.5); a.textColor = C.bandMuted; a.lineLimit = 1; }
-    if (g.bar != null) { w.addSpacer(9); progress(w, g.bar, WIDE); }
+    if (g.bar != null) { w.addSpacer(9); progress(w, g.bar, W); }
     if (g.big) {
       w.addSpacer(8);
       const b = w.addText(g.big.v); b.font = SERIF(26); b.textColor = C.bandInk;
@@ -235,13 +242,16 @@ async function drawFace(w, g, fam) {
   }
 
   if (fam === 'large') {
-    heading(w, g); rule(w);
-    const top = w.addStack();
+    heading(w, g); rule(w, W);
     const img = await jacket(g.cover);
-    // 150 wide is as large as the jacket goes before a tile with a closing sentence runs over; 2:3 is what Open
-    // Library serves and what a hardback is.
-    if (img) { const i = top.addImage(img); i.imageSize = new Size(150, 225); i.cornerRadius = 2; top.addSpacer(14); }
-    const col = top.addStack(); col.layoutVertically();
+    // The jacket at 2:3, and the column beside it measured rather than left to work itself out. The two are set
+    // so their sum is inside W with room to spare: given exactly the space available, the bar overflowed the
+    // column, the column grew, and the cover was squeezed out of shape.
+    const JW = img ? 132 : 0, GAP = img ? 12 : 0, CW = W - JW - GAP;
+    const top = w.addStack();
+    top.size = new Size(W, img ? Math.round(JW * 1.5) : 0);   // bounded by the cover, so the column cannot run away
+    if (img) { const i = top.addImage(img); i.imageSize = new Size(JW, Math.round(JW * 1.5)); i.cornerRadius = 2; top.addSpacer(GAP); }
+    const col = top.addStack(); col.layoutVertically(); col.size = new Size(CW, 0);
     const t = col.addText(g.title); t.font = SERIF(15); t.textColor = C.bandInk; t.lineLimit = 2;
     if (g.sub) { const a = col.addText(g.sub); a.font = SANS(11.5); a.textColor = C.bandMuted; a.lineLimit = 1; }
     if (g.big) {
@@ -249,31 +259,30 @@ async function drawFace(w, g, fam) {
       const b = col.addText(g.big.v); b.font = SERIF(28); b.textColor = C.bandInk;
       const k = col.addText(g.big.k); k.font = SANS(11); k.textColor = C.bandMuted;
     }
-    if (g.bar != null) { col.addSpacer(9); progress(col, g.bar, img ? 146 : WIDE); }
-    // in the column, not under the cover: below the jacket they began a long way from the name they belong to,
-    // and left the tile with nothing to fill its bottom third
-    col.addSpacer();     // the statistics sit on the bottom of the block, not straight under the bar
-    (g.lines || []).slice(0, 5).forEach((l, i) => { if (i) col.addSpacer(5); statLine(col, l); });
-    if (g.foot) { w.addSpacer(); const f = w.addText(g.foot); f.font = SERIF(11.5); f.textColor = C.bandMuted; }
+    if (g.bar != null) { col.addSpacer(9); progress(col, g.bar, CW); }
+    col.addSpacer();     // the statistics sit on the bottom of the cover's height, which top.size now fixes
+    (g.lines || []).slice(0, 5).forEach((l, i) => { if (i) col.addSpacer(5); statLine(col, l, CW); });
+    if (g.foot) { w.addSpacer(10); const f = w.addText(g.foot); f.font = SERIF(11.5); f.textColor = C.bandMuted; }
+    w.addSpacer();       // nothing pinned at the bottom means Scriptable centres the lot
     return;
   }
 
-  // medium. It holds two statistics, or the closing sentence — not both; one line and a foot still overran.
-  // The sentence wins: it is the line that changes what you do.
-  const top = w.addStack();
-  const col = top.addStack(); col.layoutVertically();
+  // medium. It holds two statistics, or the closing sentence — not both.
+  const FIG = 96, CW = W - FIG - 10;
+  const top = w.addStack(); top.size = new Size(W, 0);
+  const col = top.addStack(); col.layoutVertically(); col.size = new Size(CW, 0);
   const t = col.addText(g.title); t.font = SERIF(15); t.textColor = C.bandInk; t.lineLimit = 1;
   if (g.sub) { const a = col.addText(g.sub); a.font = SANS(11.5); a.textColor = C.bandMuted; a.lineLimit = 1; }
   top.addSpacer();
   if (g.big) {
-    const fig = top.addStack(); fig.layoutVertically();
+    const fig = top.addStack(); fig.layoutVertically(); fig.size = new Size(FIG, 0);
     const b = fig.addText(g.big.v); b.font = SERIF(30); b.textColor = C.bandInk; b.rightAlignText();
     const k = fig.addText(g.big.k); k.font = SANS(11); k.textColor = C.bandMuted; k.rightAlignText();
   }
-  if (g.bar != null) { w.addSpacer(9); progress(w, g.bar, WIDE); }
-  const room = g.foot ? 0 : 2;
-  if (room) { w.addSpacer(9); (g.lines || []).slice(0, room).forEach((l, i) => { if (i) w.addSpacer(5); statLine(w, l); }); }
-  if (g.foot) { w.addSpacer(); const f = w.addText(g.foot); f.font = SERIF(11.5); f.textColor = C.bandMuted; f.centerAlignText(); }
+  if (g.bar != null) { w.addSpacer(9); progress(w, g.bar, W); }
+  if (!g.foot) { w.addSpacer(9); (g.lines || []).slice(0, 2).forEach((l, i) => { if (i) w.addSpacer(5); statLine(w, l, W); }); }
+  else { w.addSpacer(10); const f = w.addText(g.foot); f.font = SERIF(11.5); f.textColor = C.bandMuted; f.centerAlignText(); }
+  w.addSpacer();
 }
 
 // Where a face is sent. The day has its own drawing because its rows are tappable and carry their own text;
@@ -347,7 +356,7 @@ async function build(g) {
   const next = g.now || g.next;
   if (next) {
     w.addSpacer(9);
-    const rule = w.addStack(); rule.size = new Size(0, 1); rule.backgroundColor = C.rule;
+    rule(w, inner(fam));
     w.addSpacer(8);
     eventLine(w, next, next.live ? 'now' : h12(next.start));
   }
@@ -357,7 +366,7 @@ async function build(g) {
     later.slice(0, 4).forEach(e => { w.addSpacer(5); eventLine(w, e); });
     if (g.word) {
       w.addSpacer();
-      const rule = w.addStack(); rule.size = new Size(0, 1); rule.backgroundColor = C.rule;
+      rule(w, inner(fam));
       w.addSpacer(8);
       const word = w.addText(g.word.w);
       word.font = SERIF(14); word.textColor = C.bandInk;
