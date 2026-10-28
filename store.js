@@ -133,6 +133,9 @@
   // One quiet line at the foot of the page, for the two things the pages cannot show on their own: that what
   // you are reading is a kept copy, and that what you have written has not left yet. The second matters more,
   // so it is the one said — an edit you cannot tell apart from a lost one is the worst state to leave someone in.
+  // --hq-foot is how far up from the bottom of the screen anything floating has to sit. On a desk that is
+  // nothing much; on a phone the tabs and the all-in-one box are down there, and hq.css raises it to clear
+  // them. The fallback keeps this working if the stylesheet never arrives.
   let note, noteText = null;
   function pill(text) {
     if (text === noteText) return;
@@ -141,7 +144,7 @@
     if (!note) {
       note = document.createElement('div');
       note.setAttribute('role', 'status');   // it appears without focus moving, so it must say itself
-      note.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);max-width:calc(100vw - 40px);text-align:center;background:var(--band,#1F3A2E);color:var(--band-ink,#F2ECDF);font:13px/1.4 var(--sans,system-ui);padding:9px 16px;border-radius:999px;opacity:.92;z-index:50;pointer-events:none';
+      note.style.cssText = 'position:fixed;left:50%;bottom:var(--hq-foot,24px);transform:translateX(-50%);max-width:calc(100vw - 40px);text-align:center;background:var(--band,#1F3A2E);color:var(--band-ink,#F2ECDF);font:13px/1.4 var(--sans,system-ui);padding:9px 16px;border-radius:999px;opacity:.92;z-index:50;pointer-events:none';
       document.body.appendChild(note);
     }
     note.textContent = text;

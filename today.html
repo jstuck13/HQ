@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1F3A2E">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -145,6 +145,23 @@
   .ev.cal,.ev.fit,.ev.health,.ev.study{}
 
   @media (prefers-reduced-motion:reduce){.ev{transition:none}}
+  /* The phone: a to-do is something you tick with a thumb, so the row becomes a 44px target and the label
+     fills it — the whole line is the thing you press, not the 15px square at its left. hq.css cannot say this,
+     because it loads first and a page's own rules outrank it. */
+  @media (max-width:760px){
+    /* the greeting keeps its two lines but stops taking a third of the screen before anything is read */
+    .band h1{font-size:22px;line-height:1.25}
+    .mast{margin-top:12px;padding-top:12px}
+    .upnext{margin:8px 0 0;font-size:13px;gap:4px 16px}
+    .mast .arr{margin-top:8px}
+    .todo li{align-items:center;min-height:44px;padding:4px 0;gap:12px}
+    .todo label{display:flex;align-items:center;min-height:44px;flex:1}
+    .todo input[type=checkbox]{width:20px;height:20px}
+    .todo input[type=checkbox]:checked::after{width:9px;height:5px;border-width:2px;border-top:0;border-right:0}
+    /* .acts stays hidden here on purpose. It is anchored right and painted on the page's colour, so showing it
+       on a phone would cover the time and the deadline note — the controls would eat the facts. Removing and
+       skipping a to-do live on The List, which is built for it and reachable in one tap from the heading. */
+  }
   @media (max-width:900px){
     main{grid-template-columns:1fr;gap:36px;padding:24px 20px 36px} .card{padding:12px 10px 14px} .card.rep,.card.clear{padding:18px 16px 20px} .rep{grid-template-columns:1fr} .rep .big{grid-row:auto} .rep .stages{margin-top:2px} .rep .facts{grid-template-columns:repeat(2,1fr)} .foot{padding:0 20px 28px}
   }
@@ -193,9 +210,11 @@
     <section class="todo" data-block="todo">
       <h2>To do<small id="todon"></small><a class="otherday" href="list.html">The list</a></h2>
       <ul id="todo"></ul>
-      <form class="addt" id="addt"><input id="t-text" placeholder="Anything: a to-do, 12.40 lunch, 173.2, or Dentist Thursday 3–4 pm" required><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
-      <div class="propose" id="propose" role="status" aria-live="polite" hidden></div>
-      <p class="saidt" id="saidt" role="status" aria-live="polite" hidden></p>
+      <div class="capbar">
+        <form class="addt" id="addt"><input id="t-text" placeholder="Anything: a to-do, 12.40 lunch, 173.2, or Dentist Thursday 3–4 pm" required><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
+        <div class="propose" id="propose" role="status" aria-live="polite" hidden></div>
+        <p class="saidt" id="saidt" role="status" aria-live="polite" hidden></p>
+      </div>
       <ul class="reps" id="reps"></ul>
     </section>
   </div>

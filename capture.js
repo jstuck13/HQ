@@ -407,6 +407,13 @@
     if (form) form.addEventListener('submit', e => { e.preventDefault();
       const i = el(ids.input), t = i.value.trim(); if (!t) return; form.reset(); capture(t); });
 
+    // The long placeholder teaches what the box will take, which is worth the room on a desk. On a phone the box
+    // is pinned to the foot of the screen and that sentence truncates mid-example — "12.40 lunch, 173.2, (" —
+    // which teaches nothing. The short one names the three kinds in the room it actually has.
+    { const i = el(ids.input);
+      if (i && typeof matchMedia !== 'undefined' && matchMedia('(max-width:760px)').matches)
+        i.placeholder = 'A to-do, a cost, a weight'; }
+
     // Shared from somewhere else on the phone. manifest.json names this page as a share target, so the share
     // sheet can hand over a selection, a note or a link; it arrives as a query and is put in the box rather
     // than read straight away, because what the box made of it should be seen and corrected before it is kept.

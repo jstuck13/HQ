@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1F3A2E">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -100,9 +100,11 @@
 
 <main>
   <h2>Every to-do<small id="count"></small></h2>
-  <form class="addt" id="addt"><input id="t-text" placeholder="Anything: a to-do, 12.40 lunch, 173.2, or Dentist Thursday 3–4 pm" required disabled><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
-  <div class="propose" id="propose" role="status" aria-live="polite" hidden></div>
-  <p class="saidt" id="saidt" role="status" aria-live="polite" hidden></p>
+  <div class="capbar">
+    <form class="addt" id="addt"><input id="t-text" placeholder="Anything: a to-do, 12.40 lunch, 173.2, or Dentist Thursday 3–4 pm" required disabled><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
+    <div class="propose" id="propose" role="status" aria-live="polite" hidden></div>
+    <p class="saidt" id="saidt" role="status" aria-live="polite" hidden></p>
+  </div>
   <div class="sift">
     <input type="search" id="q" placeholder="Find a to-do…" aria-label="Find a to-do">
     <label><input type="checkbox" id="openonly">only what is still open</label>

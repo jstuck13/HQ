@@ -197,6 +197,75 @@ ul{list-style:none;margin:0;padding:0}
    actually waiting on documents is veiled, and the held band is then something you can see rather than a
    snapshot under a green sheet. */
 
+/* ---------------------------------------------------------------------------
+   The phone. A thumb holding a phone reaches the bottom of the screen easily and the top of it barely at all,
+   so on a narrow screen the two things you do constantly move down there: going somewhere, and adding something.
+   The band keeps the mark, the title and the day — the things you read — and gives up its navigation.
+
+   viewport-fit=cover is set on every page, which is what makes env(safe-area-inset-bottom) report the home
+   indicator's height rather than zero. Every fixed thing at the foot of the screen adds it to its own padding,
+   so nothing sits under the bar the system draws over the top.
+   --------------------------------------------------------------------------- */
+@media (max-width:760px){
+  /* the band is the first third of a phone screen if it keeps a desk's proportions */
+  .band .in{padding:12px 16px 14px}
+  /* no hamburger to press: the areas are on screen the whole time now */
+  .menu{display:none}
+  .band nav[aria-label="Areas"], .band.nav-open nav[aria-label="Areas"]{
+    display:flex; position:fixed; left:0; right:0; bottom:0; z-index:40;
+    margin:0; padding:4px 4px calc(4px + env(safe-area-inset-bottom));
+    gap:0; align-items:center; justify-content:space-between;
+    /* every tab is given the same height outright. Stretch cannot do it: a <button> ignores align-self for its
+       own height, so "More" stayed at the minimum while the links grew with the bar, and centring each one in
+       its own box then dropped that one word six pixels below the rest of them. */
+    background:var(--band); border-top:1px solid rgba(242,236,223,.28);
+    box-shadow:0 -8px 20px -14px rgba(0,0,0,.5);
+    view-transition-name:hq-tabs;   /* held still across a navigation, the way the band is */
+  }
+  /* Four areas and the way to the rest. Five targets is what fits across a phone without becoming a row of
+     slivers, and nothing is lost: the More list has always held every page, pinned or not. */
+  .band nav a:nth-of-type(n+5){display:none}
+  .band nav a, .band nav .more{
+    flex:1 1 0; min-width:0; height:44px;           /* 44px is the smallest square a finger reliably hits */
+    margin:0;                                      /* .more is a tempting name for a page to reuse, and a
+                                                      page's own rule for it would otherwise land on the
+                                                      band's button: groceries.html had a dead .more with a
+                                                      top margin, which pushed this one word out of line */
+    display:grid; place-items:center; text-align:center;
+    padding:0 3px; font-size:11.5px; letter-spacing:.01em;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  /* the mark for where you are goes above the word, pointing at the page rather than hanging under it */
+  .band nav a[aria-current]{color:var(--band-ink); border-bottom:0; padding-bottom:0; box-shadow:inset 0 2px 0 var(--band-ink)}
+  /* there is nothing below the tabs, so the list of everything opens upward */
+  .band nav .morepop{top:auto; bottom:calc(100% + 8px); left:6px; right:6px; min-width:0}
+  /* and no page ends underneath them */
+  body{padding-bottom:calc(52px + env(safe-area-inset-bottom))}
+
+  /* The all-in-one box, pinned just above the areas. It takes its message and its proposal with it: what the
+     box made of a sentence has to be readable in the same glance as the sentence, or correcting it means
+     scrolling to find out what went wrong. */
+  .capbar{
+    position:fixed; left:0; right:0; z-index:39;
+    bottom:calc(52px + env(safe-area-inset-bottom));
+    background:var(--card); border-top:1px solid var(--rule);
+    padding:0 16px 4px; box-shadow:0 -10px 22px -16px rgba(30,27,22,.55);
+  }
+  .capbar .addt{padding:8px 0}
+  .capbar .addt input{font-size:16px}       /* under 16px iOS zooms the whole page on focus */
+  .capbar .saidt{margin:0 0 6px}
+  .capbar .propose{margin:0 0 8px; max-height:50vh; overflow:auto; overscroll-behavior:contain}
+  body:has(.capbar){padding-bottom:calc(116px + env(safe-area-inset-bottom))}
+
+  /* How far up anything floating has to sit to clear what is pinned down there. store.js reads it too, for the
+     "not sent yet" pill — which is the one notice you would actually see on a phone, and which was landing
+     squarely across the tabs. */
+  :root{--hq-foot:calc(62px + env(safe-area-inset-bottom))}
+  body:has(.capbar){--hq-foot:calc(126px + env(safe-area-inset-bottom))}
+  .hq-undo, .hq-newer{bottom:var(--hq-foot)}
+  .hq-ver{display:none}                     /* the version is not worth a line of a phone screen */
+}
+
 /* ───────────────────────────────────────────────────────────────────────────────
    On paper. The app's whole thesis is a well-kept agenda, so it should be able to
    become one: the band gives up its colour and becomes a ruled masthead, the one
@@ -220,7 +289,7 @@ ul{list-style:none;margin:0;padding:0}
 
   /* nothing that exists only to be pressed, hovered or dismissed. Named, not every button: a few
      buttons are the data (a book on the shelf, a logged value, a rating), and those stay. */
-  .morepop, .bellpop, .hq-ver, .hq-undo, .ib, .addt, .textbtn, .x, .mv, .rm, .rmb,
+  .morepop, .bellpop, .hq-ver, .hq-undo, .ib, .addt, .capbar, .textbtn, .x, .mv, .rm, .rmb,
   .skip, .turn, .next, .back, .pin, dialog { display:none !important; }
   /* a button that is really a value prints as the value */
   .tickbox, .book { border:0 !important; cursor:default; }
