@@ -96,3 +96,78 @@ test('the word comes through only when it has one', () => {
   const g = glanceFrom({ daily: { word: { w: 'obdurate', pos: 'adj.', def: 'Stubbornly refusing.' } } }, WED, 10);
   assert.deepEqual(g.word, { w: 'obdurate', pos: 'adj.', def: 'Stubbornly refusing.' });
 });
+
+// ---- the reading face ----
+// A widget redraws on the system's schedule with no chance to ask anything, so the pace, the percentage and the
+// jacket have to be right the first time. These are the cases the tile cannot work out for itself.
+const { faceReading } = await import('../api/glance.js');
+
+const shelf = (o = {}) => ({ books: [Object.assign({
+  shelf: 'reading', title: 'Project Hail Mary', author: 'Andy Weir', pages: 476, page: 180,
+  log: { '2026-10-22': 90, '2026-10-25': 140, '2026-10-28': 180 },
+}, o)] });
+const TODAY = '2026-10-28';
+
+test('nothing on the reading shelf says so, and draws nothing', () => {
+  const g = faceReading({ books: [{ shelf: 'read', title: 'Done' }] }, TODAY);
+  assert.equal(g.big, null);
+  assert.deepEqual(g.lines, []);
+  assert.equal(g.foot, 'Nothing on the go.');
+});
+
+test('the book is the name and the author the second line, never a caption for the figure', () => {
+  const g = faceReading(shelf(), TODAY);
+  assert.equal(g.title, 'Project Hail Mary');
+  assert.equal(g.sub, 'Andy Weir');
+  assert.equal(g.big.k, 'through');
+});
+
+test('the figure and the bar agree', () => {
+  const g = faceReading(shelf(), TODAY);
+  assert.equal(g.big.v, '38%');
+  assert.ok(Math.abs(g.bar - 180 / 476) < 1e-9);
+});
+
+test('the week counts only the last seven days of the log', () => {
+  // 90 is older than a week from the 28th; the gains inside it are 90->140 and 140->180
+  const g = faceReading(shelf(), TODAY);
+  assert.deepEqual(g.lines.find(l => l.t === 'This week'), { t: 'This week', v: '90 pages' });
+});
+
+test('a week with no reading offers no pace, because there is none', () => {
+  const g = faceReading(shelf({ log: { '2026-09-01': 40, '2026-09-04': 180 } }), TODAY);
+  assert.equal(g.lines.find(l => l.t === 'This week').v, '0 pages');
+  assert.equal(g.lines.find(l => l.t === 'At this pace'), undefined, 'no reading cannot predict a finish');
+});
+
+test('a finished book says so rather than counting down', () => {
+  const g = faceReading(shelf({ page: 476 }), TODAY);
+  assert.equal(g.big.v, '100%');
+  assert.equal(g.lines.find(l => l.t === 'At this pace'), undefined);
+  assert.deepEqual(g.lines.find(l => l.t === 'Finished'), { t: 'Finished', v: 'the last page', tone: 'good' });
+});
+
+test('a book with no page count still draws, without a figure or a bar', () => {
+  const g = faceReading(shelf({ pages: 0, page: 0, log: {} }), TODAY);
+  assert.equal(g.big, null);
+  assert.equal(g.bar, null);
+  assert.equal(g.lines.find(l => l.t === 'Page'), undefined);
+});
+
+test('the nudge appears only on a day with nothing logged', () => {
+  assert.equal(faceReading(shelf(), TODAY).foot, null, 'logged today: nothing to say');
+  assert.equal(faceReading(shelf({ log: { '2026-10-25': 140 }, page: 140 }), TODAY).foot, 'Nothing logged today.');
+});
+
+test('the jacket comes from the cover id first, the ISBN second, and is null without either', () => {
+  assert.match(faceReading(shelf({ coverId: 1234 }), TODAY).cover, /\/b\/id\/1234-L\.jpg\?default=false$/);
+  assert.match(faceReading(shelf({ isbn: '9780593135204' }), TODAY).cover, /\/b\/isbn\/9780593135204-L\.jpg/);
+  assert.equal(faceReading(shelf(), TODAY).cover, null);
+  // default=false matters: without it Open Library answers a grey placeholder and the tile cannot tell
+  assert.match(faceReading(shelf({ coverId: 7 }), TODAY).cover, /default=false/);
+});
+
+test('a page count that ran past the end does not report more than all of it', () => {
+  const g = faceReading(shelf({ page: 500 }), TODAY);
+  assert.equal(g.bar, 1, 'the bar cannot overrun its track');
+});

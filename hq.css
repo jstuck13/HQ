@@ -248,9 +248,17 @@ ul{list-style:none;margin:0;padding:0}
   .capbar{
     position:fixed; left:0; right:0; z-index:39;
     bottom:calc(52px + env(safe-area-inset-bottom));
-    background:var(--card); border-top:1px solid var(--rule);
-    padding:0 16px 4px; box-shadow:0 -10px 22px -16px rgba(30,27,22,.55);
+    background:var(--paper);          /* the page's own colour, so what scrolls under it is not a second surface */
+    padding:2px 16px 4px;
   }
+  /* What passes behind the box fades out instead of being cut in half. A hard rule across the page guillotines
+     whatever line happens to be there — a to-do, the sentence at the foot — and reads as a collision rather than
+     one thing in front of another. The same fade the scrollboxes use, turned the other way up. */
+  .capbar::before{
+    content:""; position:absolute; left:0; right:0; bottom:100%; height:26px; pointer-events:none;
+    background:linear-gradient(to bottom, rgba(245,240,230,0), var(--paper));
+  }
+  :root[data-light=evening] .capbar::before{background:linear-gradient(to bottom, rgba(235,225,205,0), var(--paper))}
   .capbar .addt{padding:8px 0}
   .capbar .addt input{font-size:16px}       /* under 16px iOS zooms the whole page on focus */
   .capbar .saidt{margin:0 0 6px}

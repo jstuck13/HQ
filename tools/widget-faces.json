@@ -1,0 +1,289 @@
+{
+ "reading": {
+  "mid-book, logged today": {
+   "face": "reading",
+   "day": "2026-09-15",
+   "title": "Project Hail Mary",
+   "sub": "Andy Weir",
+   "cover": "https://covers.openlibrary.org/b/isbn/9780593135204-L.jpg?default=false",
+   "big": {
+    "v": "38%",
+    "k": "through"
+   },
+   "bar": 0.37815126050420167,
+   "lines": [
+    {
+     "t": "Page",
+     "v": "180",
+     "note": "of 476"
+    },
+    {
+     "t": "This week",
+     "v": "140 pages"
+    },
+    {
+     "t": "At this pace",
+     "v": "15 days"
+    }
+   ],
+   "foot": null
+  },
+  "nothing logged today": {
+   "face": "reading",
+   "day": "2026-09-15",
+   "title": "Project Hail Mary",
+   "sub": "Andy Weir",
+   "cover": "https://covers.openlibrary.org/b/isbn/9780593135204-L.jpg?default=false",
+   "big": {
+    "v": "29%",
+    "k": "through"
+   },
+   "bar": 0.29411764705882354,
+   "lines": [
+    {
+     "t": "Page",
+     "v": "140",
+     "note": "of 476"
+    },
+    {
+     "t": "This week",
+     "v": "100 pages"
+    },
+    {
+     "t": "At this pace",
+     "v": "24 days"
+    }
+   ],
+   "foot": "Nothing logged today."
+  },
+  "no reading this week": {
+   "face": "reading",
+   "day": "2026-09-15",
+   "title": "Project Hail Mary",
+   "sub": "Andy Weir",
+   "cover": "https://covers.openlibrary.org/b/isbn/9780593135204-L.jpg?default=false",
+   "big": {
+    "v": "38%",
+    "k": "through"
+   },
+   "bar": 0.37815126050420167,
+   "lines": [
+    {
+     "t": "Page",
+     "v": "180",
+     "note": "of 476"
+    },
+    {
+     "t": "This week",
+     "v": "0 pages"
+    }
+   ],
+   "foot": "Nothing logged today."
+  },
+  "nearly finished": {
+   "face": "reading",
+   "day": "2026-09-15",
+   "title": "Project Hail Mary",
+   "sub": "Andy Weir",
+   "cover": "https://covers.openlibrary.org/b/isbn/9780593135204-L.jpg?default=false",
+   "big": {
+    "v": "99%",
+    "k": "through"
+   },
+   "bar": 0.9873949579831933,
+   "lines": [
+    {
+     "t": "Page",
+     "v": "470",
+     "note": "of 476"
+    },
+    {
+     "t": "This week",
+     "v": "140 pages"
+    },
+    {
+     "t": "At this pace",
+     "v": "1 days"
+    }
+   ],
+   "foot": null
+  },
+  "finished": {
+   "face": "reading",
+   "day": "2026-09-15",
+   "title": "Project Hail Mary",
+   "sub": "Andy Weir",
+   "cover": "https://covers.openlibrary.org/b/isbn/9780593135204-L.jpg?default=false",
+   "big": {
+    "v": "100%",
+    "k": "through"
+   },
+   "bar": 1,
+   "lines": [
+    {
+     "t": "Page",
+     "v": "476",
+     "note": "of 476"
+    },
+    {
+     "t": "This week",
+     "v": "140 pages"
+    },
+    {
+     "t": "Finished",
+     "v": "the last page",
+     "tone": "good"
+    }
+   ],
+   "foot": null
+  },
+  "a long title": {
+   "face": "reading",
+   "day": "2026-09-15",
+   "title": "The Making of the Atomic Bomb",
+   "sub": "Richard Rhodes",
+   "cover": "https://covers.openlibrary.org/b/isbn/9781451677614-L.jpg?default=false",
+   "big": {
+    "v": "66%",
+    "k": "through"
+   },
+   "bar": 0.6554621848739496,
+   "lines": [
+    {
+     "t": "Page",
+     "v": "312",
+     "note": "of 476"
+    },
+    {
+     "t": "This week",
+     "v": "140 pages"
+    },
+    {
+     "t": "At this pace",
+     "v": "9 days"
+    }
+   ],
+   "foot": null
+  },
+  "no page count": {
+   "face": "reading",
+   "day": "2026-09-15",
+   "title": "Meditations",
+   "sub": "Marcus Aurelius",
+   "cover": null,
+   "big": null,
+   "bar": null,
+   "lines": [
+    {
+     "t": "This week",
+     "v": "0 pages"
+    }
+   ],
+   "foot": "Nothing logged today."
+  },
+  "nothing on the go": {
+   "face": "reading",
+   "day": "2026-09-15",
+   "title": "Library",
+   "big": null,
+   "lines": [],
+   "foot": "Nothing on the go."
+  }
+ },
+ "day": {
+  "a working morning": {
+   "face": "day",
+   "day": "2026-09-15",
+   "h": 10.45,
+   "open": 5,
+   "done": 1,
+   "todos": [
+    {
+     "text": "Cadence practice",
+     "at": 7.5,
+     "done": false,
+     "late": true,
+     "due": null
+    },
+    {
+     "text": "Call the dentist",
+     "at": 9.5,
+     "done": false,
+     "late": true,
+     "due": null
+    },
+    {
+     "text": "Load of laundry",
+     "at": null,
+     "done": false,
+     "late": false,
+     "due": null
+    },
+    {
+     "text": "Declare SCM minor",
+     "at": null,
+     "done": false,
+     "late": false,
+     "due": "2026-09-18"
+    },
+    {
+     "text": "Read twenty pages",
+     "at": null,
+     "done": true,
+     "late": false,
+     "due": null
+    },
+    {
+     "text": "Review the PR",
+     "at": 16,
+     "done": false,
+     "late": false,
+     "due": null
+    }
+   ],
+   "events": [
+    {
+     "title": "Study — Networking, chapter seven",
+     "start": 9,
+     "end": 10.5,
+     "live": true
+    },
+    {
+     "title": "Call with advisor",
+     "start": 11,
+     "end": 11.5,
+     "live": false
+    }
+   ],
+   "now": {
+    "title": "Study — Networking, chapter seven",
+    "start": 9,
+    "end": 10.5,
+    "live": true
+   },
+   "next": {
+    "title": "Call with advisor",
+    "start": 11,
+    "end": 11.5,
+    "live": false
+   },
+   "word": {
+    "w": "obdurate",
+    "pos": "adjective",
+    "def": "Stubbornly refusing to change one’s opinion."
+   }
+  },
+  "a clear day": {
+   "face": "day",
+   "day": "2026-09-15",
+   "h": 10.45,
+   "open": 0,
+   "done": 0,
+   "todos": [],
+   "events": [],
+   "now": null,
+   "next": null,
+   "word": null
+  }
+ }
+}
