@@ -12,7 +12,8 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
 
-const R = '.impeccable/review';
+const R = '.impeccable/review';   // the browser harness: probes and their fixtures, scratch by nature
+const T = 'test';                 // the unit tests, tracked, so a failure can be told from a pre-existing one
 // colophon and restore are missing their .impeccable/review/dbg-*.html fixture, and alignrun.py exits non-zero
 // on a page without one, so they stay out of this list until a fixture exists for them.
 const PAGES = 'today,calendar,finances,library,school,health,review,groceries,investments,study,patterns,span,day,list';
@@ -26,7 +27,8 @@ const step = (name, blocking, fn) => {
   let r;
   try { r = fn(); } catch (e) { r = { ok: false, note: String(e.message).slice(0, 80) }; }
   results.push({ name, blocking, ...r });
-  console.log(r.skipped ? `skipped — ${r.note}` : r.ok ? `ok${r.note ? ' — ' + r.note : ''}` : `FOUND — ${r.note}`);
+  const miss = r.skipped && blocking && !process.argv.includes('--allow-skips');
+  console.log(r.skipped ? `${miss ? 'DID NOT RUN' : 'skipped'} - ${r.note}` : r.ok ? `ok${r.note ? ' - ' + r.note : ''}` : `FOUND - ${r.note}`);
 };
 
 const serverUp = () => {
@@ -38,20 +40,16 @@ console.log('\nHQ · checks\n');
 
 // 1 · the unit tests: the sync logic, the shell, the nightly search, the digest
 step('tests', true, () => {
-  const files = readdirSync(R).filter(f => f.endsWith('.test.mjs')).map(f => `${R}/${f}`);
+  const files = readdirSync(T).filter(f => f.endsWith('.test.mjs')).map(f => `${T}/${f}`);
   if (!files.length) return { skipped: true, note: 'none found' };
   const r = run('node', ['--test', ...files]);
   const out = (r.stdout || '') + (r.stderr || '');
   const pass = /^. pass (\d+)/m.exec(out), fail = /^. fail (\d+)/m.exec(out);
   const failed = fail ? +fail[1] : (r.status === 0 ? 0 : 1);
-  // two of these talk to Neon and cannot run without DATABASE_URL; they are named rather than counted as faults
-  const noDb = /Database connection string|No database connection/.test(out);
   const passed = pass ? +pass[1] : 0;
-  if (failed === 0) return { ok: true, note: `${passed} passing` };
-  // two suites talk to Neon and cannot run from here; that is a missing environment, not a broken test
-  return noDb && failed <= 2
-    ? { ok: true, note: `${passed} passing · ${failed} need DATABASE_URL, not run` }
-    : { ok: false, note: `${failed} failing` };
+  // A suite that could not start used to be forgiven here by name, so two of them never ran and the line still
+  // said ok. Each sets the environment it needs now, so a suite that will not start is simply broken.
+  return failed === 0 ? { ok: true, note: `${passed} passing` } : { ok: false, note: `${failed} failing` };
 });
 
 // 2 · the design linter the repo carries: the type scale, the palette, motion
@@ -89,9 +87,16 @@ if (!quick) {
   });
 }
 
-const blocked = results.filter(r => r.blocking && !r.ok && !r.skipped);
+// A step that should block and did not run is not a step that passed. The click sweep skipped itself whenever
+// Chrome or the local server was missing and the gate still said nothing was blocking a deploy -- the same
+// shape of lie as a probe measuring the wrong page. --allow-skips waives it on purpose, for a machine with no
+// Chrome; nothing waives it by accident.
+const allowSkips = process.argv.includes('--allow-skips');
+const blocked = results.filter(r => r.blocking && !r.ok && (!r.skipped || !allowSkips));
 const soft = results.filter(r => !r.blocking && !r.ok && !r.skipped);
+const waived = results.filter(r => r.skipped && (allowSkips || !r.blocking));
 console.log('');
 if (soft.length) console.log(`  ${soft.length} worth a look, not blocking: ${soft.map(r => r.name).join(', ')}`);
+if (waived.length) console.log(`  ${waived.length} did not run: ${waived.map(r => r.name).join(', ')}`);
 console.log(blocked.length ? `  ✗ ${blocked.map(r => r.name).join(', ')} — do not deploy\n` : '  ✓ nothing blocking a deploy\n');
 process.exit(blocked.length ? 1 : 0);
