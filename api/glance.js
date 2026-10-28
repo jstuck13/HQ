@@ -91,9 +91,10 @@ export const faceReading = (lib, day) => {
   return {
     face: 'reading', day,
     title: book.title,
+    // the identity is the book; the author is the second line of it, never a caption for a number —
+    // "38% / Andy Weir" reads as if he were the figure
     sub: book.author || null,
-    cover: coverURL(book),             // the jacket, where there is room for it          // the identity is the book; the author is the second line of it, never a
-                                       // caption for a number — "38% / Andy Weir" reads as if he were the figure
+    cover: coverURL(book),             // the jacket, where there is room for it
     big: pages ? { v: Math.round(page / pages * 100) + '%', k: 'through' } : null,
     bar: pages ? Math.min(1, page / pages) : null,   // a glance wants a length, not a number to interpret
     lines,
