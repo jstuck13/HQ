@@ -426,9 +426,9 @@ function dial(g, size) {
   return dc.getImage();
 }
 
-// The dial, with what the day is made of standing in the middle: one mark per entry, each tinted to its own
-// arc, so the centre says what kind of day it is and the ring says when and how long. The count of open to-dos
-// used to sit here; the column names the actual thing, which is more use than its number.
+// The dial, with the thing you are currently inside standing in the middle of it: the ring says when and how
+// long, the middle says what you are in. The count of open to-dos used to sit here; the column names the
+// actual thing, which is more use than its number.
 function dialStack(into, g, size) {
   const box = into.addStack();
   box.size = new Size(size, size);
@@ -436,30 +436,26 @@ function dialStack(into, g, size) {
   box.layoutVertically();
   box.addSpacer();
 
-  const evs = (g.events || []).slice(0, 6);
-  if (!evs.length) {
+  // One mark, for the thing you are inside — not an inventory of the day, which the ring already is. Between
+  // engagements the middle is bare on purpose: the column says "nothing on", and an icon there would be
+  // claiming something is running when nothing is.
+  const live = (g.events || []).find(e => e.live) || null;
+  if (live) {
+    const sz = Math.max(18, Math.min(34, Math.round(size * 0.26)));
+    const sym = SFSymbol.named((live.cat && ICON[live.cat]) || ICON_FALLBACK) || SFSymbol.named(ICON_FALLBACK);
+    sym.applyFont(Font.systemFont(sz));
+    const row = box.addStack();
+    row.addSpacer();
+    const im = row.addImage(sym.image);
+    im.imageSize = new Size(sz, sz);
+    im.tintColor = (live.cat && ARC[live.cat]) || ARC_FALLBACK;
+    im.resizable = true;
+    row.addSpacer();
+  } else if (!(g.events || []).length) {
     const n = box.addText('clear');
     n.font = SERIF(Math.round(size * 0.17));
     n.textColor = C.sage;
     n.centerAlignText();
-  } else {
-    const sz = Math.max(12, Math.min(21, Math.round(size * 0.15)));
-    for (let i = 0; i < evs.length; i += 3) {
-      if (i) box.addSpacer(5);
-      const row = box.addStack();
-      row.centerAlignContent();
-      row.addSpacer();
-      evs.slice(i, i + 3).forEach((e, k) => {
-        if (k) row.addSpacer(6);
-        const sym = SFSymbol.named((e.cat && ICON[e.cat]) || ICON_FALLBACK) || SFSymbol.named(ICON_FALLBACK);
-        sym.applyFont(Font.systemFont(sz));
-        const im = row.addImage(sym.image);
-        im.imageSize = new Size(sz, sz);
-        im.tintColor = (e.cat && ARC[e.cat]) || ARC_FALLBACK;
-        im.resizable = true;
-      });
-      row.addSpacer();
-    }
   }
   box.addSpacer();
   return box;
