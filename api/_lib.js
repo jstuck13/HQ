@@ -36,8 +36,11 @@ export const checkPasscode = p => {
 // "today" has to ask in HQ_TZ or it rolls over at the wrong hour. One definition, so the notifier and the
 // glance endpoint can never disagree about which day they are describing.
 export const HQ_TZ = process.env.HQ_TZ || 'America/Chicago';
-export const localNow = () => {
+// Any instant, read where you are. toISOString() is UTC, so an assignment due at 11.59 pm Central is
+// 04.59 the next day in UTC, and slicing the date off it moves the deadline to the wrong night.
+export const localParts = (when = new Date()) => {
   const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: HQ_TZ, hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
-    .formatToParts(new Date()).map(x => [x.type, x.value]));
+    .formatToParts(when).map(x => [x.type, x.value]));
   return { date: `${p.year}-${p.month}-${p.day}`, h: (+p.hour % 24) + (+p.minute) / 60 };
 };
+export const localNow = () => localParts(new Date());

@@ -1,7 +1,10 @@
 // Canvas → School. Courses become course tiles; planner items (assignments, quizzes, discussions) become due items.
 // Needs CANVAS_URL (https://yourschool.instructure.com) and CANVAS_TOKEN (Account → Settings → New Access Token).
+import { localParts } from '../_lib.js';
 import { syncRoute, fetchAll } from './_run.js';
 
+// ponytail: iso() reads a date in UTC, which is right for a backup key and wrong for a deadline. Anything a
+// person reads as "the night of the 13th" goes through localParts instead.
 const iso = d => d.toISOString().slice(0, 10);
 
 export default syncRoute('canvas', async ({ getDoc, putDoc }) => {
@@ -63,7 +66,14 @@ export default syncRoute('canvas', async ({ getDoc, putDoc }) => {
     const submitted = !!(p.submissions && (p.submissions.submitted || p.submissions.graded));
     const existing = byId(school.items, id);
     const pts = p.plannable && p.plannable.points_possible != null ? +p.plannable.points_possible : undefined;
-    const record = { id, course: `canvas:${p.course_id}`, title, type, due: iso(new Date(due)), source: 'canvas', url: p.html_url ? `${base}${p.html_url}` : undefined, pts };
+    // The deadline as you would say it out loud: the day it falls on where you are, and the hour of it. Canvas
+    // sends an instant in UTC, so 11.59 pm on the 13th arrives as 04.59 on the 14th; taken as a UTC date that
+    // moved every late-night deadline to the following night. A midnight-exact time carries no hour, because
+    // Canvas uses it for items that never had one.
+    const when = localParts(new Date(due));
+    const record = { id, course: `canvas:${p.course_id}`, title, type, due: when.date,
+      at: when.h > 0 ? Math.round(when.h * 100) / 100 : undefined,
+      source: 'canvas', url: p.html_url ? `${base}${p.html_url}` : undefined, pts };
     if (existing) { Object.assign(existing, record, { done: existing.done || submitted }); nu++; }
     else { school.items.push({ ...record, done: submitted }); ni++; }
   }

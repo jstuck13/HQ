@@ -10,6 +10,7 @@ import assert from 'node:assert';
 process.env.DATABASE_URL ||= 'postgres://nobody@localhost/none';   // _lib.js builds a client at import; it is never used
 process.env.GOOGLE_CLIENT_ID = 'id'; process.env.GOOGLE_CLIENT_SECRET = 'secret';
 process.env.CANVAS_URL = 'https://canvas.test'; process.env.CANVAS_TOKEN = 'tok';
+process.env.HQ_TZ = 'America/Chicago';   // the deadlines below are read where Jacob is, not in UTC
 
 const google = (await import('../api/sync/_google.js')).default;
 const canvas = (await import('../api/sync/_canvas.js')).default;
@@ -276,4 +277,53 @@ test('an unknown key in the ledger is ignored, not announced', () => {
 test('a long error is cut rather than filling the notice', () => {
   const said = staleLines({ canvas: { last: ago(0), ok: false, error: 'x'.repeat(200) } }, NOW);
   assert.ok(said[0].length < 90, said[0].length + ' characters is too long for a push');
+});
+
+// ---- a deadline is the night you would say it is ----
+// Canvas sends an instant in UTC. Almost every assignment is due at 11.59 pm, which in Central time is 04.59
+// the NEXT day in UTC — so taking the date off the UTC string moved every late-night deadline to the following
+// night. It read as a day of grace that did not exist, and the midday "due today" nudge fired a day late with
+// it, because that compares against the local date.
+const planner = (dueUtc, extra = {}) => ([
+  ['/api/v1/courses?', { body: [course({ enrollments: [{ type: 'student', computed_current_score: 91.5 }] })] }],
+  ['planner/items', { body: [{
+    plannable_type: 'assignment', plannable_id: 55, course_id: 7, plannable_date: dueUtc,
+    plannable: { title: 'Lab 3', points_possible: 20, ...extra }, submissions: {},
+  }] }],
+  ['submissions', { body: [] }],
+]);
+
+test('11.59 pm stays on the night it is due, not the morning after', async () => {
+  const d = docs(schoolSeed());
+  web(planner('2026-11-14T05:59:00Z'));          // 11.59 pm on the 13th, Central
+  await canvas.run(d);
+  const it = d.m.get('school').items[0];
+  assert.equal(it.due, '2026-11-13', 'the 13th, which is the night you would say it is');
+  assert.ok(Math.abs(it.at - 23.983) < 0.01, 'and it carries the hour: ' + it.at);
+});
+
+test('the same holds through daylight saving, where the offset is different', async () => {
+  const d = docs(schoolSeed());
+  web(planner('2026-09-14T04:59:00Z'));          // 11.59 pm on the 13th, Central, but CDT not CST
+  await canvas.run(d);
+  assert.equal(d.m.get('school').items[0].due, '2026-09-13');
+});
+
+test('a daytime deadline keeps its own day and its own hour', async () => {
+  const d = docs(schoolSeed());
+  web(planner('2026-11-13T15:00:00Z'));          // 9 am Central, same date in UTC
+  await canvas.run(d);
+  const it = d.m.get('school').items[0];
+  assert.equal(it.due, '2026-11-13');
+  assert.equal(it.at, 9);
+});
+
+test('a deadline Canvas set to exact midnight carries no hour', async () => {
+  // Canvas uses midnight for items that never had a time of day; "12.00 am" would be an invention
+  const d = docs(schoolSeed());
+  web(planner('2026-11-14T06:00:00Z'));
+  await canvas.run(d);
+  const it = d.m.get('school').items[0];
+  assert.equal(it.due, '2026-11-14');
+  assert.equal(it.at, undefined);
 });
