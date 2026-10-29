@@ -110,9 +110,24 @@
     try { return await new Promise(resolve => { (queue[key] ||= []).push(resolve); flushing ||= setTimeout(flush, 0); }); }
     finally { loaded[key] = true; if (!bg && --inflight === 0) settle = setTimeout(() => window.hqReveal && window.hqReveal(), 80); }
   }
+  // Signed out, with nothing kept here either: every card would draw its empty state and the page would look
+  // like an app with no data in it rather than one you are not signed in to. A widget tap lands exactly here,
+  // because an installed web app and Safari keep separate cookies — you are signed in to one and not the other.
+  // The front door is the only useful page in that state, and it comes back afterwards.
+  let sentHome = false;
+  function askToSignIn(keys) {
+    if (sentHome || !window.store.signedOut) return;
+    const page = (location.pathname.split('/').pop() || 'index.html');
+    if (page === 'index.html' || page === '') return;          // the front door never sends itself anywhere
+    if (keys.some(k => ls.get(k) != null)) return;             // something is kept here; show that instead
+    sentHome = true;
+    location.replace('index.html?next=' + encodeURIComponent(page + location.search + location.hash));
+  }
+
   async function flush() {
     const q = queue; queue = {}; flushing = null;
     const keys = Object.keys(q), docs = await fetchDocs(keys);
+    askToSignIn(keys);
     for (const key of keys) {
       const cached = ls.get(key), doc = docs && docs[key]; let out = cached;
       if (doc && doc.data !== undefined) { ls.set(key, doc.data); seen[key] = doc.updated_at; dirty.drop(key); out = doc.data; }
