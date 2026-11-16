@@ -112,7 +112,6 @@
   .dial{position:relative;flex:none}
   .dial > svg{display:block;width:100%;height:100%;overflow:visible}   /* the ring only: the marks inside it carry their own size */
   .dial circle{fill:none;stroke-linecap:butt}
-  .dial .track{stroke:rgba(242,236,223,.14)}
   .dial .now{stroke:#C29B99;stroke-width:2}
   .dial .mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
   .dial .mid b{font-family:var(--serif);font-weight:400;color:#C9D6CE;line-height:1}
@@ -279,19 +278,24 @@ function dial(g, size) {
   const stroke = Math.max(6, Math.round(size * 0.105));
   const R = (size - stroke) / 2 - 1, C0 = 2 * Math.PI * R;
   const span = g.span || { from: 8, to: 20 }, reach = Math.max(1, span.to - span.from);
-  const frac = h => (Math.min(span.to, Math.max(span.from, h)) - span.from) / reach;
+  // A closed circle has no beginning, so an arc's position says nothing — a block at ten o'clock could be
+  // morning or evening and you cannot tell which. The ring is broken at the top: the day starts just clockwise
+  // of twelve, runs round, and ends just before it. The gap is the seam between one day and the next.
+  const SEAM = 0.30 / (Math.PI * 2);                 // as a fraction of the circle, about 17 degrees
+  const SPIN = -90 + (SEAM / 2) * 360;
+  const frac = h => ((Math.min(span.to, Math.max(span.from, h)) - span.from) / reach) * (1 - SEAM);
   const arc = (a, b, colour) => {
     const len = Math.max(0.6, (frac(b) - frac(a)) * C0);
     return `<circle r="${R}" cx="${size / 2}" cy="${size / 2}" stroke="${colour}" stroke-width="${stroke}"` +
            ` stroke-dasharray="${len.toFixed(2)} ${(C0 - len).toFixed(2)}"` +
-           ` stroke-dashoffset="${(-frac(a) * C0).toFixed(2)}" transform="rotate(-90 ${size / 2} ${size / 2})"/>`;
+           ` stroke-dashoffset="${(-frac(a) * C0).toFixed(2)}" transform="rotate(${SPIN} ${size / 2} ${size / 2})"/>`;
   };
   // drawn in the order they begin, so where two overlap the later lies over the earlier
   const arcs = (g.events || []).filter(e => e.end > span.from && e.start < span.to)
     .map(e => arc(e.start, e.end, ARC[e.cat] || '#9DB4A4')).join('');
   let now = '';
   if (g.h != null && g.h >= span.from && g.h <= span.to) {
-    const a = frac(g.h) * 2 * Math.PI - Math.PI / 2, m = size / 2;
+    const a = frac(g.h) * 2 * Math.PI + (SPIN * Math.PI / 180), m = size / 2;
     const i0 = R - stroke / 2 - 3, o0 = R + stroke / 2 + 3;
     now = `<line class="now" x1="${(m + Math.cos(a) * i0).toFixed(1)}" y1="${(m + Math.sin(a) * i0).toFixed(1)}"` +
           ` x2="${(m + Math.cos(a) * o0).toFixed(1)}" y2="${(m + Math.sin(a) * o0).toFixed(1)}"/>`;
@@ -305,8 +309,9 @@ function dial(g, size) {
     : (g.events || []).length
       ? `<div class="mid"></div>`
       : `<div class="mid"><b style="font-size:${Math.round(size * 0.17)}px">clear</b></div>`;
+  const track = arc(span.from, span.to, 'rgba(242,236,223,.2)');
   return `<div class="dial" style="width:${size}px;height:${size}px">` +
-         `<svg viewBox="0 0 ${size} ${size}"><circle class="track" r="${R}" cx="${size / 2}" cy="${size / 2}" stroke-width="${stroke}"/>${arcs}${now}</svg>${mid}</div>`;
+         `<svg viewBox="0 0 ${size} ${size}">${track}${arcs}${now}</svg>${mid}</div>`;
 }
 
 function keyed(label, text, when, present, late) {
@@ -332,10 +337,12 @@ function drawDay(g, size) {
   const D = size === 'large' ? 150 : 116;
   const head = size === 'large' ? `<div class="head"><span class="mark">HQ</span>` +
     `<span class="n">${open.length ? open.length + ' open' : 'clear'}</span></div><div class="rule"></div>` : '';
+  // On large the open to-dos are listed in full below, so naming one here said the same thing twice.
+  const namesOne = size !== 'large' || !open.length;
   const col = `<div class="col">` +
     keyed('NOW', g.now ? g.now.title : 'nothing on', g.now ? `until ${h12(g.now.end)}` : null, !!g.now) +
     keyed('NEXT', g.next ? g.next.title : 'nothing more today', g.next ? h12(g.next.start) : null, !!g.next) +
-    keyed('TO DO', g.todo ? g.todo.text : 'all ticked', g.todo && g.todo.at != null ? `by ${h12(g.todo.at)}` : null, !!g.todo, g.todo && g.todo.late) +
+    (namesOne ? keyed('TO DO', g.todo ? g.todo.text : 'all ticked', g.todo && g.todo.at != null ? `by ${h12(g.todo.at)}` : null, !!g.todo, g.todo && g.todo.late) : '') +
     `</div>`;
   const rows = size === 'large' && open.length
     ? `<div class="rule" style="margin-top:12px"></div><div class="lines" style="gap:6px">` +

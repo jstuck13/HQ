@@ -265,12 +265,25 @@ test('a boundary further off than an hour still waits only an hour', () => {
 });
 
 test('a to-do falling due is a boundary too, and a ticked one is not', () => {
-  assert.equal(minutes({ h: 10, events: [], todos: [{ at: 10.5 }] }), 30);
-  assert.equal(minutes({ h: 10, events: [], todos: [{ at: 10.5, done: true }] }), 60);
-  assert.equal(minutes({ h: 10, events: [], todos: [{ at: 9 }] }), 60, 'already late changes nothing further');
+  assert.equal(minutes({ h: 10, events: [], todos: [{ at: 10.25 }] }), 15, 'its hour is the boundary');
+  assert.equal(minutes({ h: 10, events: [], todos: [{ at: 10.25, done: true }] }), 60, 'a ticked one is no boundary, and nothing is open');
+  assert.equal(minutes({ h: 10, events: [], todos: [{ at: 9 }] }), 30,
+    'an hour already past is no boundary; the wait is the open-to-do cap, not the hour');
 });
 
 test('a payload that failed asks again within the hour rather than never', () => {
   assert.equal(minutes({ error: 'HQ did not answer.' }), 60);
   assert.equal(minutes(null), 60);
+});
+
+test('an open to-do halves the longest wait, because a tick cannot be scheduled for', () => {
+  // ticking happens in the app, and nothing can tell the widget — so the only lever is asking more often
+  assert.equal(minutes({ h: 10, events: [], todos: [{ text: 'Laundry' }] }), 30);
+  assert.equal(minutes({ h: 10, events: [], todos: [{ text: 'Laundry', done: true }] }), 60,
+    'nothing open: no point asking to redraw the same empty list');
+  assert.equal(minutes({ h: 10, events: [], todos: [] }), 60);
+});
+
+test('a real boundary still wins over the cap', () => {
+  assert.equal(minutes({ h: 10, events: [{ start: 10.25, end: 11 }], todos: [{ text: 'Laundry' }] }), 15);
 });

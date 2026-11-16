@@ -110,7 +110,12 @@ async function glance() {
 // the system can leave a finished meeting sitting in the middle of the ring for the best part of an hour.
 // The next boundary is whichever comes first: an entry starting, an entry ending, or a to-do falling due.
 function staleAt(g) {
-  const MIN = 10 / 60, MAX = 1;                      // hours: never nag, never drift more than one
+  const MIN = 10 / 60;
+  // Ticking a to-do in the app is the one change nothing can schedule against: it is an action, not an hour, and
+  // a web page cannot reach WidgetKit to ask for a redraw. So a tile showing open to-dos could sit there listing
+  // something finished for the best part of an hour. Half an hour while any are open halves that, and a day with
+  // none goes back to the full hour — there is no point asking for refreshes to redraw the same empty list.
+  const MAX = (g && !g.error && (g.todos || []).some(t => !t.done)) ? 0.5 : 1;
   let gap = MAX;
   if (g && !g.error && g.h != null) {
     const marks = [];
@@ -435,10 +440,14 @@ function dial(g, size) {
   const r = (size - stroke) / 2 - 1, cx = size / 2, cy = size / 2;
   const span = g.span || { from: 8, to: 20 };
   const reach = Math.max(1, span.to - span.from);
-  // noon at the top would put the working day on its side; the day starts at twelve o'clock and runs round
-  const at = h => (-Math.PI / 2) + ((Math.min(span.to, Math.max(span.from, h)) - span.from) / reach) * Math.PI * 2;
+  // A closed circle has no beginning, so an arc's position says nothing — a block at ten o'clock could be
+  // morning or evening and you cannot tell which. The ring is broken at the top instead: the day starts just
+  // clockwise of twelve, runs round, and ends just before it. The gap is the seam between one day and the next.
+  const SEAM = 0.30;                                 // radians, about 17 degrees
+  const A0 = -Math.PI / 2 + SEAM / 2, SWEEP = Math.PI * 2 - SEAM;
+  const at = h => A0 + ((Math.min(span.to, Math.max(span.from, h)) - span.from) / reach) * SWEEP;
 
-  arcPath(dc, cx, cy, r, at(span.from), at(span.to), stroke, new Color('#F2ECDF', 0.14));
+  arcPath(dc, cx, cy, r, A0, A0 + SWEEP, stroke, new Color('#F2ECDF', 0.2));
 
   // drawn in the order they begin, so where two entries overlap the later one lies over the earlier
   for (const e of g.events || []) {
@@ -563,8 +572,12 @@ async function build(g) {
   keyed(col, 'NOW', nowE ? nowE.title : 'nothing on', nowE ? `until ${h12(nowE.end)}` : null, !!nowE);
   col.addSpacer(9);
   keyed(col, 'NEXT', nextE ? nextE.title : 'nothing more today', nextE ? h12(nextE.start) : null, !!nextE);
-  col.addSpacer(9);
-  keyed(col, 'TO DO', todo ? todo.text : 'all ticked', todo && todo.at != null ? `by ${h12(todo.at)}` : null, !!todo, todo && todo.late);
+  // On large the open to-dos are listed in full below, so naming one here said the same thing twice. Medium has
+  // no room for the list and the named one is the only thing standing in for it.
+  if (fam !== 'large' || !open.length) {
+    col.addSpacer(9);
+    keyed(col, 'TO DO', todo ? todo.text : 'all ticked', todo && todo.at != null ? `by ${h12(todo.at)}` : null, !!todo, todo && todo.late);
+  }
   col.addSpacer();
 
   // Large keeps the tappable rows: a thumb aiming at a named line can tick it without opening anything.
