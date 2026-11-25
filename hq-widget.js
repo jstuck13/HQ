@@ -28,6 +28,23 @@ const COOKIE = 'hq.cookie';
 // which widget this one is. Scriptable gives each placed instance its own parameter, so one script serves all.
 const FACE = String((typeof args !== 'undefined' && args.widgetParameter) || 'day').trim().toLowerCase() || 'day';
 
+// ---- SPEC: shared with the other renderer, pinned by test/widget-spec.test.mjs ----
+// The Scriptable widget and the browser preview draw the same tiles in two languages and neither can import
+// the other — the widget has to stay one file you can paste into Scriptable. So the numbers they must agree
+// about live in this block, written identically in both, and a test compares the two copies character for
+// character. They had already drifted twice: the jacket width, and the seam, which one of them held in
+// radians and the other as a fraction of the circle.
+const SPEC = {
+  tile:   { small: 170, medium: [364, 170], large: [364, 382] },   // a 430pt screen; the widget scales the rest
+  dial:   { stroke: 0.105, seamRadians: 0.30, nowTick: 2, iconOfSize: 0.26, iconMin: 18, iconMax: 34 },
+  jacket: { width: 132, ratio: 1.5, gap: 12 },
+  arc:    { cal: '#A9BBC9', study: '#C9B8DB', fit: '#D9C79A', health: '#C9A9AE', other: '#9DB4A4' },
+  type:   { label: 10, note: 11, stat: 12.5, row: 13, title: 15, big: 30, bigSmall: 26 },
+  track:  'rgba(242,236,223,0.2)',
+  nowInk: '#C29B99',
+};
+// ---- end SPEC ----
+
 // HQ's own palette, from hq.css. The widget is a piece of the same object as the pages.
 const C = {
   band: new Color('#1F3A2E'), bandInk: new Color('#F2ECDF'), bandMuted: new Color('#B9C9BE'),

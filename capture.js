@@ -433,6 +433,9 @@
       }
     }
 
-    return { capture, said, fold, planCapture, parseAt, takeRep, takeTarget, takeUntil, parseWhen, parseDayWord, money, whatOf, catFor, tidy, uid };
+    // What the box offers its page. It used to hand back all fifteen of its internals, of which ten were
+    // called by nobody — the parser read as an API with a wide surface when it is one feature with four doors.
+    // money is here because the tests reach for it; the rest stay inside.
+    return { capture, said, fold, parseAt, money };
   };
 })();
