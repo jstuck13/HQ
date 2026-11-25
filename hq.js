@@ -21,7 +21,7 @@ const num = v => { const n = parseFloat(String(v ?? '').replace(/[^0-9.-]/g, '')
 const dmy = iso => { const d = window.clock.fromISO(iso); return `${window.clock.monthShort(d)} ${d.getDate()}`; };
 // The version this copy of the app was built with. version.json holds the same number and is never cached,
 // so a page that has been open — or served from the offline shell — can tell when a newer one has been deployed.
-const HQ_VERSION = '4.51.0';
+const HQ_VERSION = '4.52.0';
 
 // a newer version is not forced on you mid-sentence: it says so, and waits to be asked
 async function watchVersion(){

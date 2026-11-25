@@ -174,9 +174,7 @@
 
   async function build(){
     const days=week(ws), prev=week(C.iso(C.addDays(C.fromISO(ws),-7))), we=days[6], future = ws>TODAY;
-    const months=[...new Set([...days,...prev].map(d=>d.slice(0,7)))];
-    const [H, school, lib, cal, ...rest] = await Promise.all([store.load('health'), store.load('school'), store.load('library'), store.load('calendar'), ...months.map(m=>store.load('finances.'+m)), ...days.map(d=>store.load('today.'+d))]);
-    const fin = Object.fromEntries(months.map((m,i)=>[m, rest[i]])), todos = rest.slice(months.length);
+    const { H, school, lib, calendar: cal, fin, todos, months } = await hqLookback(days, { prev, also: ['calendar'] });
     const rows=[];
     F('title').textContent = ws===thisMon ? 'This week.' : `The week of ${C.dayMonthLong(C.fromISO(ws))}.`;
     F('rangen').textContent = `${C.dayMonth(C.fromISO(ws))} – ${C.dayMonth(C.fromISO(we))}`;

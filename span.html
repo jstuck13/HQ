@@ -111,12 +111,8 @@
 
   async function build(){
     const days = daysOf(mode, at), prev = daysOf(mode, stepKey(mode, at, -1));
-    const months = [...new Set([...days, ...prev].map(d => d.slice(0, 7)))];
-    const wanted = mode === 'month' ? days.filter(d => d <= TODAY) : [];   // a year is 365 documents; the month is worth fetching
-    const [H, school, lib, ...rest] = await Promise.all([store.load('health'), store.load('school'), store.load('library'),
-      ...months.map(m => store.load('finances.' + m)), ...wanted.map(d => store.load('today.' + d))]);
-    const fin = Object.fromEntries(months.map((m, i) => [m, rest[i]]));
-    const todos = rest.slice(months.length);
+    const fetchDays = mode === 'month' ? days.filter(d => d <= TODAY) : [];   // a year is 365 documents; the month is worth fetching
+    const { H, school, lib, fin, todos, months } = await hqLookback(days, { prev, fetchDays });
 
     const label = mode === 'year' ? at : C.monthName(C.fromISO(days[0])) + ' ' + at.slice(0, 4);
     const now = mode === 'year' ? String(C.now.getFullYear()) : TODAY.slice(0, 7);

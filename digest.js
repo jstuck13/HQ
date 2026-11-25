@@ -11,6 +11,31 @@
   const hrs = m => m >= 60 ? (m % 60 ? `${Math.floor(m / 60)} h ${m % 60}` : `${m / 60} h`) : `${m} min`;
   const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
 
+  // What a look-back needs, fetched in one round trip. The week page and the longer view had written this out
+  // separately — the standing documents, one finances document per month the span touches, one today document
+  // per day worth fetching — then reshaped the results by index, which is the kind of code that stays correct
+  // only until someone adds a key in the middle of the list.
+  //
+  // `days` is the span and `prev` the one before it; finances are fetched for every month either touches,
+  // because a comparison needs both. `fetchDays` says which days are worth a document of their own — the week
+  // wants all seven, a month wants the ones that have happened, and a year wants none of three hundred and
+  // sixty-five. `also` names extra standing documents: the week reads the calendar too.
+  window.hqLookback = async function (days, { prev = [], also = [], fetchDays = days } = {}) {
+    const months = [...new Set([...days, ...prev].map(d => d.slice(0, 7)))];
+    const standing = ['health', 'school', 'library', ...also];
+    const all = await Promise.all([
+      ...standing.map(k => window.store.load(k)),
+      ...months.map(m => window.store.load('finances.' + m)),
+      ...fetchDays.map(d => window.store.load('today.' + d)),
+    ]);
+    const out = { months };
+    standing.forEach((k, i) => { out[k] = all[i]; });
+    out.H = out.health; out.lib = out.library;
+    out.fin = Object.fromEntries(months.map((m, i) => [m, all[standing.length + i]]));
+    out.todos = all.slice(standing.length + months.length);
+    return out;
+  };
+
   window.hqDigest = function ({ H, school, lib, fin, days, prev, months, todos, span = 'week', today }) {
     const C = window.clock, TODAY = today || C.today;
     const inSpan = (d, ds) => d >= ds[0] && d <= ds[ds.length - 1];
