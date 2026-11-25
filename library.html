@@ -75,8 +75,8 @@
   .notes ul{border-left:1px solid color-mix(in srgb, var(--ox) 32%, transparent);padding-left:14px}
   .notes li{display:grid;grid-template-columns:96px 1fr auto;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
   .notes .d{font-family:var(--serif);color:var(--ink-3);font-size:13.5px;white-space:nowrap}
-  .notes .n{font-family:var(--serif);font-size:15.5px;line-height:1.55;white-space:pre-wrap;max-width:70ch}
-  .notes .x{color:var(--ink-3);font-size:12px;opacity:0}
+  .notes .n{font-family:var(--serif);font-size:15px;line-height:1.55;white-space:pre-wrap;max-width:70ch}
+  .notes .x{color:var(--ink-3);font-size:12.5px;opacity:0}
   .notes li:hover .x,.notes li:focus-within .x{opacity:1}
   .notes .empty{padding:10px 0}
   .open > .empty,.wall > .empty{margin:0}
@@ -84,7 +84,7 @@
   .notes .empty::before,.open > .empty::before,.wall > .empty::before{content:"";display:block;width:min(160px,100%);height:12px;margin:0 auto 10px;background:var(--ornament)}
   .write{margin-top:8px;display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:start;padding-top:10px}
   .write .d{font-family:var(--serif);color:var(--ink-3);font-size:13.5px;padding-top:4px}
-  .write textarea{width:100%;min-height:72px;font-family:var(--serif);font-size:15.5px;line-height:1.55;color:var(--ink);border-bottom:1px dotted var(--ink-2);resize:vertical;padding:2px 0}
+  .write textarea{width:100%;min-height:72px;font-family:var(--serif);font-size:15px;line-height:1.55;color:var(--ink);border-bottom:1px dotted var(--ink-2);resize:vertical;padding:2px 0}
   .write textarea:focus{outline:none;border-bottom-color:var(--ink)}
   .write textarea::placeholder{color:var(--ink-3);font-style:italic}
   .write .textbtn{grid-column:2;justify-self:start;margin-top:8px;font-size:13.5px}
@@ -99,15 +99,15 @@
   .book:hover .cover{transform:translateY(-3px);box-shadow:var(--shadow)}
   .book.cur .cover{outline:2px solid var(--ox);outline-offset:3px}
   .book .cap{display:block;margin-top:14px}   /* clear of the selected outline (2px + 3px offset) and the hover lift */
-  .book .cap b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.5em;font-family:var(--serif);font-weight:400;font-size:14px;line-height:1.25}   /* two lines, always: a long title no longer drops its author below the row */
-  .book .cap i{display:block;font-family:var(--serif);font-size:13px;color:var(--ink-2);margin-top:2px}
+  .book .cap b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.5em;font-family:var(--serif);font-weight:400;font-size:15px;line-height:1.25}   /* two lines, always: a long title no longer drops its author below the row */
+  .book .cap i{display:block;font-family:var(--serif);font-size:13.5px;color:var(--ink-2);margin-top:2px}
   .book .cap .dots{margin-top:6px}
   .book .cap .dots i{width:8px;height:8px;border-width:1px}
   .slot{position:relative;display:block}
   .slot .rmb{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:var(--card);color:var(--ink-2);display:grid;place-items:center;box-shadow:var(--shadow);opacity:0;transition:opacity .15s}
   .slot:hover .rmb,.slot:focus-within .rmb{opacity:1} .slot .rmb:hover{color:var(--ox)}
   .add{width:100%;text-align:left}
-  .add .cover{background:transparent;border:1px dashed var(--rule);display:grid;place-items:center;color:var(--ink-3);font-size:13px}
+  .add .cover{background:transparent;border:1px dashed var(--rule);display:grid;place-items:center;color:var(--ink-3);font-size:13.5px}
   .add .cover span{display:flex;flex-direction:column;align-items:center;gap:6px}
   .add:hover .cover{border-color:var(--ink-2);color:var(--ink)}
   /* find a book */
@@ -121,8 +121,8 @@
   .find .res li{display:grid;grid-template-columns:32px 1fr auto;gap:14px;padding:8px 0;border-bottom:1px dotted var(--rule);align-items:center}
   .find .res .cover{width:32px}
   .find .res b{font-family:var(--serif);font-weight:400;font-size:15px;display:block}
-  .find .res i{font-family:var(--serif);font-size:13px;color:var(--ink-2)}
-  .find .res .textbtn{font-size:13px}
+  .find .res i{font-family:var(--serif);font-size:13.5px;color:var(--ink-2)}
+  .find .res .textbtn{font-size:13.5px}
   .find .msg{padding:8px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif)}
   .foot .textbtn{font-style:normal;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:8px} .foot .textbtn.ox{color:var(--ox)} .foot .textbtn:hover{color:var(--ink)}
 

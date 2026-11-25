@@ -24,14 +24,14 @@
   .sift input[type=search]{flex:1 1 240px;min-width:0;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:3px 0;background:none}
   .sift input:focus{outline:none;border-bottom-color:var(--ink)}
   .sift input::placeholder{color:var(--ink-3);font-style:italic}
-  .sift label{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2);cursor:pointer;white-space:nowrap}
+  .sift label{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink-2);cursor:pointer;white-space:nowrap}
   .sift input[type=checkbox]{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px}
   .sift input:checked{background:var(--band);border-color:var(--band)}
   .sift input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
 
   /* the sheet: one line per to-do, whatever days it fell on */
   .sheet{list-style:none;margin:16px 0 0;padding:0}
-  .sheet .head{display:grid;grid-template-columns:15px 1fr 158px 212px 112px 62px;gap:0 14px;padding:0 0 8px;border-bottom:1px solid var(--ink);font-size:12px;color:var(--ink-3);letter-spacing:.04em}
+  .sheet .head{display:grid;grid-template-columns:15px 1fr 158px 212px 112px 62px;gap:0 14px;padding:0 0 8px;border-bottom:1px solid var(--ink);font-size:12.5px;color:var(--ink-3);letter-spacing:.04em}
   .sheet li.row{display:grid;grid-template-columns:15px 1fr 158px 212px 112px 62px;gap:0 14px;padding:9px 0;border-bottom:1px solid var(--rule);align-items:baseline;cursor:pointer}
   /* only what is on today's list can be ticked; the rest of the page is record, not work */
   .sheet li.row>input[type=checkbox]{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px;align-self:center}
@@ -39,10 +39,10 @@
   .sheet li.row>input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
   .sheet li.done .t{color:var(--ink-3);background:linear-gradient(currentColor,currentColor) left 58%/100% 1px no-repeat}
   /* always there rather than revealed on hover, because a phone has no hover to reveal it with */
-  .sheet .x{font:inherit;font-size:12px;color:var(--ink-3);background:none;border:0;padding:0;text-align:right;cursor:pointer;opacity:.5}
+  .sheet .x{font:inherit;font-size:12.5px;color:var(--ink-3);background:none;border:0;padding:0;text-align:right;cursor:pointer;opacity:.5}
   .sheet .x:hover,.sheet .x:focus-visible{opacity:1;color:var(--ox)}
   .sheet li.row:hover{background:var(--paper-2)}
-  .sheet .t{font-family:var(--serif);font-size:15.5px;min-width:0;overflow-wrap:anywhere}
+  .sheet .t{font-family:var(--serif);font-size:15px;min-width:0;overflow-wrap:anywhere}
   .sheet li.over .t{color:var(--ink-3)}
   .sheet .f{font-family:var(--serif);font-size:13.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .sheet .m{font-size:12.5px;color:var(--ink-3);display:flex;flex-wrap:wrap;gap:3px 10px}
@@ -55,10 +55,10 @@
   .sheet .card{background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:16px 18px;margin-top:2px}
   .sheet .card .big{font-family:var(--serif);font-size:26px;line-height:1.1}
   .sheet .card .big small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-top:3px}
-  .sheet .card .facts{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:12px;font-size:13px;color:var(--ink-3)}
+  .sheet .card .facts{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:12px;font-size:13.5px;color:var(--ink-3)}
   .sheet .card .facts b{font-weight:400;color:var(--ink-2)}
   /* every day it was on the list, ticked or let go — a long run of these is the point, so they are kept small */
-  .sheet .card .when{margin-top:12px;font-size:11.5px;color:var(--ink-3);display:flex;flex-wrap:wrap;gap:4px 6px}
+  .sheet .card .when{margin-top:12px;font-size:11px;color:var(--ink-3);display:flex;flex-wrap:wrap;gap:4px 6px}
   .sheet .card .when i{font-style:normal;padding:1px 7px;border:1px solid var(--rule);border-radius:999px;white-space:nowrap}
   .sheet .card .when i.yes{border-color:var(--band);color:var(--band)}
   .sheet .card .when i.no{border-color:var(--ox);color:var(--ox)}

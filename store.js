@@ -46,7 +46,7 @@
     const m = document.createElement('span'); m.className = 'm'; m.textContent = what;
     const x = document.createElement('button');
     x.type = 'button'; x.textContent = '×'; x.setAttribute('aria-label', 'Dismiss');
-    x.style.cssText = 'font:inherit;font-size:16px;line-height:1;color:inherit;background:none;border:0;padding:0 2px;cursor:pointer;opacity:.8';
+    x.style.cssText = 'font:inherit;font-size:17px;line-height:1;color:inherit;background:none;border:0;padding:0 2px;cursor:pointer;opacity:.8';
     x.addEventListener('click', () => { bar.remove(); bar = null; extra = 0; });   // dismissed: the next fault starts fresh
     bar.append(m, x);
     (document.body || document.documentElement).appendChild(bar);

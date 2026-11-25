@@ -42,13 +42,13 @@
   @keyframes splash-rule{from{transform:scaleX(0);opacity:0}to{transform:none;opacity:1}}
   @media (prefers-reduced-motion:reduce){.splash .m,.splash .o{animation:none} .splash{transition:none}}
   .row{display:flex;align-items:baseline;gap:26px;padding-bottom:16px;border-bottom:1px solid var(--band-rule)}
-  .mark{font-family:var(--serif);font-size:20px;letter-spacing:.14em;font-weight:700;view-transition-name:hq-mark}
+  .mark{font-family:var(--serif);font-size:22px;letter-spacing:.14em;font-weight:700;view-transition-name:hq-mark}
   .date{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted);white-space:nowrap}
 
   .cover{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:80px;align-items:center;padding:48px 0 40px}
   .greet{font-family:var(--serif);font-style:italic;font-size:22px;color:var(--band-muted);margin:0 0 22px}
   blockquote{margin:0;font-family:var(--serif);font-size:40px;line-height:1.3;letter-spacing:-.005em;text-wrap:balance;max-width:26ch}
-  blockquote.long{font-size:30px;max-width:32ch}
+  blockquote.long{font-size:32px;max-width:32ch}
   blockquote::before{content:"“";position:absolute;margin-left:-.5em;color:var(--band-muted)}
   blockquote::after{content:"”";color:var(--band-muted)}
   .quote{position:relative;padding-left:.5em}
@@ -76,12 +76,12 @@
   .open svg{width:18px;height:18px;transition:transform .15s}
   .open:hover svg{transform:translateX(3px)}
   .gate{display:flex;align-items:baseline;gap:28px;flex-wrap:wrap}
-  .gate label{display:inline-flex;align-items:baseline;gap:12px;font-size:14px;color:var(--band-muted)}
+  .gate label{display:inline-flex;align-items:baseline;gap:12px;font-size:15px;color:var(--band-muted)}
   .gate input{font-family:var(--serif);font-size:22px;line-height:1.2;color:var(--band-ink);border-bottom:1px solid var(--band-rule);padding:0 0 3px;width:11ch;letter-spacing:.28em;transition:border-color .15s}
   .gate input:focus{outline:none;border-bottom-color:var(--band-ink)}
   .gate input::placeholder{font-style:italic;letter-spacing:0;font-size:17px;color:var(--band-muted)}
   .gate label[hidden]{display:none}
-  .foot .hint{font-size:14px;color:var(--band-muted)}
+  .foot .hint{font-size:15px;color:var(--band-muted)}
   .foot .hint.no{color:var(--band-ink)}
   .foot .hint kbd{font:inherit;padding:1px 6px;border:1px solid var(--band-rule);border-radius:6px}
 
@@ -185,7 +185,7 @@
   // The front door. With the API present, the passcode sets the session cookie; on a plain static server it just opens.
   // The number THIS copy was built with. version.json carries the same number and is never cached, so when the
   // two disagree the page you are looking at came from the kept copy and a newer one is on the server.
-  const PAGE_VERSION = '4.50.0';
+  const PAGE_VERSION = '4.51.0';
   const ver = document.getElementById('ver');
   ver.textContent = 'Version ' + PAGE_VERSION;
   // asked at load, on returning to the tab, and every ten minutes while it is open, so a door left ajar

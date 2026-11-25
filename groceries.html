@@ -26,20 +26,20 @@
   .find{display:flex;gap:12px;align-items:baseline;padding:10px 0 6px}
   .find input{flex:1;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0} .find input:focus{outline:none;border-bottom-color:var(--ink)}
   .find input::placeholder{color:var(--ink-3);font-style:italic}
-  .find .seg{display:inline-flex;gap:8px;align-items:baseline;font-size:13px;color:var(--ink-3);white-space:nowrap}
+  .find .seg{display:inline-flex;gap:8px;align-items:baseline;font-size:13.5px;color:var(--ink-3);white-space:nowrap}
   .find .seg button{color:var(--ink-3);border-bottom:1px solid transparent;letter-spacing:.04em} .find .seg button[aria-pressed="true"]{color:var(--ink);border-color:var(--ink)} .find .seg button:hover{color:var(--ink)}
   .adwrap{max-height:560px;overflow:auto;margin-top:10px;padding:4px 6px 8px 2px;border-bottom:1px solid var(--rule);scrollbar-width:thin;scrollbar-color:var(--rule) transparent}   /* the ad scrolls inside its box, not the page */
   .bogos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px 12px}
   .bogo .price{font-family:var(--serif);font-size:15px}
   .bogo.spotted{background:var(--paper-2)} .bogo.spotted .tag{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
   .bogo .rm{position:absolute;bottom:8px;right:8px;font-size:11px;color:var(--ink-3);opacity:0} .bogo:hover .rm{opacity:1} .bogo .rm:hover{color:var(--ox)}
-  .spot{display:grid;grid-template-columns:1fr 100px 120px auto;gap:12px;padding:12px 0;align-items:baseline;font-size:13px}
-  .spot input{width:100%;font-family:var(--serif);font-size:14px;border-bottom:1px dotted var(--ink-2);padding:2px 0} .spot input:focus{outline:none;border-bottom-color:var(--ink)} .spot input::placeholder{color:var(--ink-3);font-style:italic}
+  .spot{display:grid;grid-template-columns:1fr 100px 120px auto;gap:12px;padding:12px 0;align-items:baseline;font-size:13.5px}
+  .spot input{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0} .spot input:focus{outline:none;border-bottom-color:var(--ink)} .spot input::placeholder{color:var(--ink-3);font-style:italic}
   .bogo{background:var(--card);border-radius:10px;box-shadow:var(--shadow);padding:10px 10px 12px;display:flex;flex-direction:column;gap:6px;position:relative}
   .bogo img{width:100%;aspect-ratio:1;object-fit:contain;background:var(--photo);border-radius:6px}
   .bogo b{font-family:var(--serif);font-weight:400;font-size:13.5px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  .bogo small{color:var(--ink-3);font-size:12px}
-  .bogo .cyc{color:var(--band);font-size:12px}
+  .bogo small{color:var(--ink-3);font-size:12.5px}
+  .bogo .cyc{color:var(--band);font-size:12.5px}
   .bogo .add{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;background:var(--paper);display:grid;place-items:center;color:var(--ink-2);opacity:0;transition:opacity .15s}
   .bogo:hover .add,.bogo:focus-within .add{opacity:1} .bogo .add:hover{background:var(--band);color:var(--band-ink)}
   .bogo .add.on{opacity:1;background:var(--band);color:var(--band-ink)}
@@ -53,10 +53,10 @@
     .book{display:grid;grid-template-columns:1fr auto auto}
     .book li{grid-column:1/-1;grid-template-columns:subgrid}
   }
-  .book .n{font-family:var(--serif);font-size:15.5px}
+  .book .n{font-family:var(--serif);font-size:15px}
   .book .n small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
   .book .p{font-family:var(--serif);font-size:17px;text-align:right;white-space:nowrap}
-  .book .p small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3)}
+  .book .p small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
   .book .best{color:var(--band)}
 
   /* the list and the trip */
@@ -75,7 +75,7 @@
   .textbtn{font-size:13.5px}
   .fromlist{margin:4px 0 0}
   .trip .items li{grid-template-columns:1fr 64px 36px auto 60px auto}
-  .trip .items input{width:100%;font-family:var(--serif);font-size:14px;border-bottom:1px dotted var(--ink-2);padding:0;text-align:right} .trip .items input:focus{outline:none;border-bottom-color:var(--ink)}
+  .trip .items input{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:0;text-align:right} .trip .items input:focus{outline:none;border-bottom-color:var(--ink)}
   .trip .items input.nm{text-align:left} .trip .items .p{min-width:5ch;text-align:right}
 
   .trip{margin-top:34px}
@@ -84,25 +84,25 @@
   .trip input,.trip select{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0} .trip input:focus,.trip select:focus{outline:none;border-bottom-color:var(--ink)}
   .trip input::placeholder{color:var(--ink-3);font-style:italic}
   .trip .amt{text-align:right}
-  .trip .bg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-3);cursor:pointer;white-space:nowrap;align-self:center}   /* centred in its cell, not on the baseline, so the tick cannot nudge it */
+  .trip .bg{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-3);cursor:pointer;white-space:nowrap;align-self:center}   /* centred in its cell, not on the baseline, so the tick cannot nudge it */
   .trip .bg input{width:13px;height:13px;appearance:none;border:1px solid var(--ink-2);border-radius:2px;display:grid;place-items:center;padding:0}
   .trip .bg input:checked{background:var(--band);border-color:var(--band)}
   .trip .bg input:checked::after{content:"";width:6px;height:3px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
-  .trip .hint{font-size:12px;color:var(--ink-3);font-style:italic;font-family:var(--serif);padding:4px 0 0}
-  .trip .items li{display:grid;grid-template-columns:1fr auto auto;gap:12px;padding:6px 0;border-bottom:1px dotted var(--rule);font-size:14px;align-items:baseline}
-  .trip .items .p{font-family:var(--serif);white-space:nowrap} .trip .items .x{color:var(--ink-3);font-size:12px} .trip .items .x:hover{color:var(--ox)}
+  .trip .hint{font-size:12.5px;color:var(--ink-3);font-style:italic;font-family:var(--serif);padding:4px 0 0}
+  .trip .items li{display:grid;grid-template-columns:1fr auto auto;gap:12px;padding:6px 0;border-bottom:1px dotted var(--rule);font-size:15px;align-items:baseline}
+  .trip .items .p{font-family:var(--serif);white-space:nowrap} .trip .items .x{color:var(--ink-3);font-size:12.5px} .trip .items .x:hover{color:var(--ox)}
   .trip .tot{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0 0;font-family:var(--serif)}
-  .trip .tot b{font-weight:400;font-size:20px}
+  .trip .tot b{font-weight:400;font-size:22px}
   .trip .save{margin-top:14px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap}
   .trip .save select{width:auto}
 
   /* past trips */
   .trips li{padding:10px 0;border-bottom:1px solid var(--rule)}
   .trips .top{display:grid;grid-template-columns:64px 1fr auto;gap:14px;align-items:baseline;cursor:pointer}
-  .trips .d{font-family:var(--serif);color:var(--ink-2);font-size:14px} .trips .s{font-family:var(--serif);font-size:15.5px} .trips .s small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
+  .trips .d{font-family:var(--serif);color:var(--ink-2);font-size:15px} .trips .s{font-family:var(--serif);font-size:15px} .trips .s small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
   .trips .a{font-family:var(--serif);font-size:17px}
-  .trips .items{margin:8px 0 0 78px;font-size:13px;color:var(--ink-2)} .trips .items span{display:inline-block;margin:0 14px 4px 0} .trips .items i{font-style:normal;color:var(--band);font-size:11px;letter-spacing:.06em;margin-left:4px}
-  .trips .rm{font-size:12px;color:var(--ink-3);margin-left:78px} .trips .rm:hover{color:var(--ox)}
+  .trips .items{margin:8px 0 0 78px;font-size:13.5px;color:var(--ink-2)} .trips .items span{display:inline-block;margin:0 14px 4px 0} .trips .items i{font-style:normal;color:var(--band);font-size:11px;letter-spacing:.06em;margin-left:4px}
+  .trips .rm{font-size:12.5px;color:var(--ink-3);margin-left:78px} .trips .rm:hover{color:var(--ox)}
 
   .empty{display:block;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
   .empty::before{content:"";display:block;width:min(160px,100%);height:12px;margin:0 auto 10px;background:var(--ornament)}
@@ -111,7 +111,7 @@
   @media (max-width:1100px){
     .mast{gap:10px 18px} .mast .back{margin-left:0}
     main{grid-template-columns:1fr;gap:36px;padding:24px 20px 36px} .foot{padding:0 20px 28px}
-    .bogos{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))} .bogo .add{opacity:1} .find{flex-wrap:wrap} .book li{grid-template-columns:1fr auto} .book .p:last-child{grid-column:1/-1;text-align:left;font-size:14px} .book .p:last-child small{display:inline;margin-left:6px}
+    .bogos{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))} .bogo .add{opacity:1} .find{flex-wrap:wrap} .book li{grid-template-columns:1fr auto} .book .p:last-child{grid-column:1/-1;text-align:left;font-size:15px} .book .p:last-child small{display:inline;margin-left:6px}
     .trip .row{grid-template-columns:1fr 64px 40px} .trip .row .bg{grid-column:1/-1} .spot{grid-template-columns:1fr 1fr} .spot .textbtn{grid-column:1/-1;justify-self:start}
   }
 </style>

@@ -68,7 +68,7 @@
     .srch .t mark{background:none;color:var(--ox)}
     .srch .s{grid-column:1;color:var(--ink-3);font-size:12.5px}
     .srch .a{grid-column:2;grid-row:1/3;align-self:center;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
-    .srch .none{padding:12px 0 6px;color:var(--ink-3);font-style:italic;font-family:var(--serif);font-size:14px}`;
+    .srch .none{padding:12px 0 6px;color:var(--ink-3);font-style:italic;font-family:var(--serif);font-size:15px}`;
   document.head.appendChild(style);
 
   addEventListener('DOMContentLoaded', () => {

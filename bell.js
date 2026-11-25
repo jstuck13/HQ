@@ -188,7 +188,7 @@
     .bellpop .go:hover{border-color:currentColor;color:var(--ink)}
     .bellpop .go.dl{grid-column:2;grid-row:3;margin-top:2px}
     .bellpop .go.dl ~ .go.dl{grid-row:4}
-    .bellpop .empty{padding:8px 0 2px;color:var(--ink-3);font-style:italic;font-family:var(--serif);font-size:14px}
+    .bellpop .empty{padding:8px 0 2px;color:var(--ink-3);font-style:italic;font-family:var(--serif);font-size:15px}
     .bellpop ul.notices li{display:grid;grid-template-columns:1fr auto;gap:12px;padding:8px 0;border-bottom:1px dotted var(--rule);align-items:baseline}
     .bellpop ul.notices li:has(input){grid-template-columns:auto 1fr auto}
     .bellpop .notices input{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px;align-self:center}
@@ -200,7 +200,7 @@
     .bellpop .notices .late .w{color:var(--ox)}
     .bellpop .notices .late .t::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ox);margin:0 8px 2px 0}
     .bellpop li.oops .n{color:var(--ox)}
-    .bellpop li.oops .s{font-family:var(--mono,ui-monospace,monospace);font-size:11.5px;overflow-wrap:anywhere}
+    .bellpop li.oops .s{font-family:var(--mono,ui-monospace,monospace);font-size:11px;overflow-wrap:anywhere}
     .bellpop h4 ~ h4{margin-top:16px}
     .bellpop h4.fold{display:flex;align-items:baseline;gap:10px;cursor:pointer;padding-bottom:0;border-bottom:0}
     .bellpop h4.fold .tw{font-family:var(--sans);font-size:11px;color:var(--ink-3);transition:transform .15s}
@@ -211,17 +211,17 @@
     .bellpop h4.fold[aria-expanded=false] + ul{display:none}
     .bellpop h4.fold:hover{color:var(--ox)}
     .bellpop h4.watch{display:flex;align-items:baseline;gap:10px}
-    .bellpop h4.watch .tune{margin-left:auto;font-family:var(--sans);font-size:11.5px;color:var(--ink-3);background:none;border:0;padding:0;cursor:pointer;letter-spacing:.03em}
+    .bellpop h4.watch .tune{margin-left:auto;font-family:var(--sans);font-size:11px;color:var(--ink-3);background:none;border:0;padding:0;cursor:pointer;letter-spacing:.03em}
     .bellpop h4.watch .tune:hover{color:var(--ox)}
     .bellpop .watchbox{padding:4px 0 2px}
-    .bellpop .watchbox li{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dotted var(--rule);font-size:13px}
+    .bellpop .watchbox li{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dotted var(--rule);font-size:13.5px}
     .bellpop .watchbox input[type=checkbox]{appearance:none;width:14px;height:14px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px;flex:none}
     .bellpop .watchbox input:checked{background:var(--band);border-color:var(--band)}
     .bellpop .watchbox input:checked::after{content:"";width:6px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
-    .bellpop .watchbox label{flex:1;cursor:pointer;font-family:var(--serif);font-size:14px}
-    .bellpop .watchbox .n{width:3.2ch;font-family:var(--serif);font-size:14px;text-align:right;border-bottom:1px dotted var(--ink-2);background:none;padding:0}
+    .bellpop .watchbox label{flex:1;cursor:pointer;font-family:var(--serif);font-size:15px}
+    .bellpop .watchbox .n{width:3.2ch;font-family:var(--serif);font-size:15px;text-align:right;border-bottom:1px dotted var(--ink-2);background:none;padding:0}
     .bellpop .watchbox .n:focus{outline:none;border-bottom-color:var(--ink)}
-    .bellpop .watchbox .u{color:var(--ink-3);font-size:11.5px;white-space:nowrap}
+    .bellpop .watchbox .u{color:var(--ink-3);font-size:11px;white-space:nowrap}
     .row .right{position:relative}`;
   document.head.appendChild(style);
 

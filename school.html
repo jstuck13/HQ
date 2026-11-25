@@ -34,7 +34,7 @@
   .next .sess{grid-column:2;grid-row:1/4;align-self:start;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
   .next .clock{font-family:var(--serif);font-size:32px;line-height:1;min-height:34px}
   .next .clock small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:6px}
-  .next .sess .textbtn{color:var(--ink);font-size:14px}
+  .next .sess .textbtn{color:var(--ink);font-size:15px}
   .next .sess .stop{color:var(--ox)}
   .empty{display:block;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
   .empty::before{content:"";display:block;width:min(160px,100%);height:12px;margin:0 auto 10px;background:var(--ornament)}
@@ -50,7 +50,7 @@
   .tile .hrs small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
   .tile .gr{grid-column:2;grid-row:2;justify-self:end;text-align:right;font-family:var(--serif);font-size:24px;line-height:1.1}
   .tile .gr i{font-style:normal;font-size:15px;color:var(--ink-3);margin-left:4px}
-  .tile .gr small{display:block;font-family:var(--sans);font-size:11.5px;color:var(--ink-3);margin-top:2px}
+  .tile .gr small{display:block;font-family:var(--sans);font-size:11px;color:var(--ink-3);margin-top:2px}
   .tile .gr .mkln{display:block;width:74px;height:18px;margin:3px 0 0 auto;overflow:visible}
   .tile .gr .mkln path{fill:none;stroke:var(--ink-2);stroke-width:1.4;stroke-linejoin:round;stroke-linecap:round}
   .tile .gr .mkln circle{fill:var(--ox)}
@@ -67,11 +67,11 @@
   .tile .lk li{display:flex;align-items:baseline;gap:10px;padding:4px 0;font-size:13.5px}
   .tile .lk a{border-bottom:1px solid var(--rule);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .tile .lk a:hover{border-color:var(--ink)}
-  .tile .lk .h{color:var(--ink-3);font-size:12px;white-space:nowrap}
-  .tile .lk .rm{margin-left:auto;color:var(--ink-3);font-size:12px;opacity:0}
+  .tile .lk .h{color:var(--ink-3);font-size:12.5px;white-space:nowrap}
+  .tile .lk .rm{margin-left:auto;color:var(--ink-3);font-size:12.5px;opacity:0}
   .tile .lk li:hover .rm,.tile .lk li:focus-within .rm{opacity:1}
   .tile .addlk{display:grid;grid-template-columns:1fr 1.2fr auto;gap:10px;padding-top:6px;align-items:baseline}
-  .tile .addlk input{width:100%;font-family:var(--serif);font-size:14px;border-bottom:1px dotted var(--ink-2);padding:2px 0}
+  .tile .addlk input{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0}
   .tile .addlk input:focus{outline:none;border-bottom-color:var(--ink)}
   .tile .addlk input::placeholder{color:var(--ink-3);font-style:italic}
   .tile .addlk .textbtn{font-size:12.5px;color:var(--ink-2)}
@@ -87,7 +87,7 @@
   .ledger input[type=checkbox]{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px;align-self:center}
   .ledger input:checked{background:var(--band);border-color:var(--band)}
   .ledger input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
-  .ledger .w{font-family:var(--serif);font-size:15.5px;min-width:0}
+  .ledger .w{font-family:var(--serif);font-size:15px;min-width:0}
   .ledger .w small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
   .ledger li.done .w{color:var(--ink-3);text-decoration:line-through}
   .ledger li.done .w small{text-decoration:none}
@@ -95,10 +95,10 @@
   .ledger .turn{font:inherit;color:inherit;border-bottom:1px dotted transparent}
   .ledger li:hover .turn,.ledger .turn:focus-visible{border-bottom-color:var(--ink-3)}
   .ledger li.noturn .d small{color:var(--ink-3);font-style:italic}
-  .ledger .d{font-family:var(--serif);color:var(--ink-2);font-size:14px;white-space:nowrap;text-align:right}
+  .ledger .d{font-family:var(--serif);color:var(--ink-2);font-size:15px;white-space:nowrap;text-align:right}
   .ledger .d.ox{color:var(--ox)}
-  .ledger .d small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3)}
-  .ledger .x{color:var(--ink-3);font-size:12px;opacity:0;grid-column:4;grid-row:1;justify-self:end;align-self:center}
+  .ledger .d small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
+  .ledger .x{color:var(--ink-3);font-size:12.5px;opacity:0;grid-column:4;grid-row:1;justify-self:end;align-self:center}
   .ledger .x .w-{display:none} .ledger .x .m-{display:block}
   .ledger li:hover .x,.ledger li:focus-within .x{opacity:1}
   .ledger.sess li{grid-template-columns:64px 1fr auto}

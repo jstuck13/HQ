@@ -23,14 +23,14 @@
 
   .found{list-style:none;margin:0;padding:0}
   .found li{padding:20px 0;border-bottom:1px solid var(--rule)}
-  .found .said{font-family:var(--serif);font-size:20px;line-height:1.45;margin:0;text-wrap:pretty}
+  .found .said{font-family:var(--serif);font-size:22px;line-height:1.45;margin:0;text-wrap:pretty}
   .found .said b{font-weight:400;color:var(--ox)}
   .found .facts{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:12.5px;color:var(--ink-3)}
   .found .facts b{font-weight:500;color:var(--ink-2)}
   .found .plot{margin-top:14px}
   /* a scatter needs height: at four-to-one a lean flattens into a smear and the picture says nothing */
   .plot svg{width:100%;height:auto;aspect-ratio:320/200;display:block;overflow:visible}
-  .plot .cap{margin:6px 0 0;font-size:11.5px;color:var(--ink-3);line-height:1.5}
+  .plot .cap{margin:6px 0 0;font-size:11px;color:var(--ink-3);line-height:1.5}
   .plot .dot{fill:var(--band);opacity:.7;stroke:var(--paper);stroke-width:1}   /* a day that lands on another still reads as two */
   .plot .ax{stroke:var(--rule);stroke-width:1}
   .plot .fit{stroke:var(--ink);stroke-width:1.5;opacity:.55}                   /* the lean the sentence claims, drawn */
@@ -39,13 +39,13 @@
   .empty{line-height:1.6;max-width:56ch;margin:18px 0}
   .empty b{font-style:normal;font-weight:400;color:var(--ink-2)}
   .bars{list-style:none;margin:0;padding:0}
-  .bars li{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:baseline;padding:5px 0;font-size:13px;color:var(--ink-2)}
+  .bars li{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:baseline;padding:5px 0;font-size:13.5px;color:var(--ink-2)}
   .bars .track{grid-column:1/-1;height:4px;background:var(--paper-2);border-radius:2px;overflow:hidden}
   .bars .track i{display:block;height:100%;background:var(--band)}
   .bars .n{text-align:right;font-family:var(--serif);color:var(--ink-3);white-space:nowrap}
-  .bars .n small{font-family:var(--sans);font-size:10.5px}
+  .bars .n small{font-family:var(--sans);font-size:11px}
   .bars .short .n{color:var(--ox)}
-  .note{font-size:13px;color:var(--ink-3);line-height:1.6;max-width:44ch}
+  .note{font-size:13.5px;color:var(--ink-3);line-height:1.6;max-width:44ch}
   .note + .note{margin-top:12px}
 
   @media (max-width:1100px){ main{grid-template-columns:1fr;gap:36px;padding:26px 20px 40px} .band .in{padding:14px 20px 18px} .band h1{font-size:26px} }

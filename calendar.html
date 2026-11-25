@@ -26,7 +26,7 @@
   main > *{min-width:0}
 
   /* left rail: mini month + filters */
-  .mini{width:100%;table-layout:fixed;border-collapse:collapse;margin-top:12px;font-size:13px}
+  .mini{width:100%;table-layout:fixed;border-collapse:collapse;margin-top:12px;font-size:13.5px}
   .mini th{font-family:var(--sans);font-weight:400;color:var(--ink-3);font-size:12.5px;padding:0 0 8px;text-align:center}
   .mini td{text-align:center;padding:0}
   .mini td button{width:100%;height:30px;font-family:var(--serif);color:var(--ink-2);border-radius:2px}
@@ -53,7 +53,7 @@
   /* week card */
   .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:14px 16px 18px;margin-top:14px}
   .days{display:grid;grid-template-columns:50px repeat(7,1fr);gap:0 4px;margin-bottom:6px}
-  .days button{font-family:var(--serif);font-size:13px;color:var(--ink-2);text-align:left;padding:4px 6px;border-radius:6px;line-height:1.2}
+  .days button{font-family:var(--serif);font-size:13.5px;color:var(--ink-2);text-align:left;padding:4px 6px;border-radius:6px;line-height:1.2}
   .days button b{display:block;font-weight:400;font-size:17px;color:var(--ink)}
   .days button:hover{background:var(--paper)}
   .days button[aria-pressed="true"]{background:var(--band);color:var(--band-muted)} .days button[aria-pressed="true"] b{color:var(--band-ink)}
@@ -66,7 +66,7 @@
   .col{position:relative;border-left:1px solid var(--rule);border-radius:0 0 6px 6px}
   .hl{position:absolute;left:50px;right:0;border-top:1px solid var(--rule);pointer-events:none}
   .col.today{background-color:var(--today)}
-  .ev{position:absolute;left:3px;right:2px;border-radius:6px;padding:4px 7px;font-size:12px;line-height:1.25;background:var(--c);overflow:hidden;transition:transform .15s,box-shadow .15s}
+  .ev{position:absolute;left:3px;right:2px;border-radius:6px;padding:4px 7px;font-size:12.5px;line-height:1.25;background:var(--c);overflow:hidden;transition:transform .15s,box-shadow .15s}
   .ev:hover{transform:translateX(1px);box-shadow:var(--shadow);z-index:2}
   .ev.short{padding:2px 7px;line-height:1.1} .ev.short b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .ev b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-family:var(--serif);font-weight:400;font-size:12.5px;overflow:hidden}
@@ -82,7 +82,7 @@
   .col:has(.pin) .gap{padding-top:26px} .col:has(.pin + .pin) .gap{padding-top:46px}   /* the free-time label steps below the pins */
   .now{position:absolute;left:50px;right:0;height:1.5px;background:var(--ox);z-index:3;pointer-events:none}
   .now::before{content:"";position:absolute;left:-1px;top:50%;margin-top:-3.5px;width:7px;height:7px;border-radius:50%;background:var(--ox)}
-  .now::after{content:attr(data-t);position:absolute;right:calc(100% + 8px);top:-9px;font-family:var(--serif);font-size:11.5px;color:var(--ox);white-space:nowrap;background:var(--card);padding:0 2px}
+  .now::after{content:attr(data-t);position:absolute;right:calc(100% + 8px);top:-9px;font-family:var(--serif);font-size:11px;color:var(--ox);white-space:nowrap;background:var(--card);padding:0 2px}
   h1 button{font:inherit;color:inherit;display:inline-flex;align-items:center;gap:8px;border-bottom:1px solid transparent}
   h1 button:hover{border-color:var(--band-muted)}
   h1 button .ic{width:14px;height:14px;color:var(--band-muted);transition:transform .15s}
@@ -90,7 +90,7 @@
 
   /* the month: six rows of seven, entries as chips */
   .mgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-  .mgrid .dh{font-family:var(--serif);font-size:13px;color:var(--ink-3);padding:2px 6px 6px}
+  .mgrid .dh{font-family:var(--serif);font-size:13.5px;color:var(--ink-3);padding:2px 6px 6px}
   @media (prefers-reduced-motion:no-preference){
     @keyframes mday-in{from{opacity:0;transform:translateY(5px)}to{opacity:var(--o,1);transform:none}}
     .mgrid.arrive .mday{animation:mday-in .32s ease-out both;animation-delay:calc(var(--i) * 11ms)}
@@ -102,17 +102,17 @@
   .mday.sel{box-shadow:inset 0 0 0 1.5px var(--band);border-radius:6px}
   .mday .dn{font-family:var(--serif);font-size:15px;display:block;margin-bottom:4px;color:var(--ink)}
   .mday.today .dn{color:var(--ox)}
-  .mday i{display:block;font-style:normal;font-family:var(--serif);font-size:11.5px;line-height:1.35;background:var(--c);border-radius:4px;padding:1px 6px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mday i{display:block;font-style:normal;font-family:var(--serif);font-size:11px;line-height:1.35;background:var(--c);border-radius:4px;padding:1px 6px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .mday i.open{outline:1.5px solid var(--ox);outline-offset:-1.5px}
   .mday .more{font-size:11px;color:var(--ink-3);margin-top:3px;padding-left:6px}
-  #addopen{margin-top:18px;font-size:14px}
+  #addopen{margin-top:18px;font-size:15px}
 
   /* right: selected day ledger + add form */
   .ledger li{display:grid;grid-template-columns:66px 1fr auto;gap:12px;padding:11px 0;border-bottom:1px solid var(--rule);align-items:baseline;cursor:pointer}
   .ledger li:hover{background:var(--card)}
   .ledger li.open .n{color:var(--ox)}
-  .ledger .t{font-family:var(--serif);color:var(--ink-2);font-size:14px;white-space:nowrap}
-  .ledger .n{font-family:var(--serif);font-size:15.5px}
+  .ledger .t{font-family:var(--serif);color:var(--ink-2);font-size:15px;white-space:nowrap}
+  .ledger .n{font-family:var(--serif);font-size:15px}
   .ledger .n small{display:block;font-family:var(--sans);color:var(--ink-3);font-size:12.5px}
   .ledger .n .rep{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:6px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
   .rep .ic,.meta .ic{width:12px;height:12px}
@@ -120,7 +120,7 @@
   .ledger .d{color:var(--ink-3);font-size:12.5px;white-space:nowrap}
   .ledger .empty{padding:14px 0;cursor:default;display:block;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
   .ledger .empty::before{content:"";display:block;width:min(160px,100%);height:12px;margin:0 auto 10px;background:var(--ornament)}
-  .right h2{font-size:20px} .right h2 small{white-space:nowrap}
+  .right h2{font-size:22px} .right h2 small{white-space:nowrap}
   .syncline{margin:0 0 14px;font-size:12.5px;color:var(--ink-3)}
   .syncline .textbtn{font-size:12.5px;color:var(--ink-2);margin-left:8px} .syncline .textbtn:hover{color:var(--ink)}
   .syncline .bad{color:var(--ox)}
@@ -131,7 +131,7 @@
   .dows label{cursor:pointer}
   .field .dows input{position:absolute;opacity:0;width:0;height:0;margin:0}   /* said from inside .field, or .field input wins and stretches it across the page */
   .dows label{flex:1 1 0;min-width:0}
-  .dows span{display:grid;place-items:center;width:100%;min-width:18px;aspect-ratio:1;max-height:26px;border:1px solid var(--rule);border-radius:2px;font-family:var(--serif);font-size:13px;color:var(--ink-2)}
+  .dows span{display:grid;place-items:center;width:100%;min-width:18px;aspect-ratio:1;max-height:26px;border:1px solid var(--rule);border-radius:2px;font-family:var(--serif);font-size:13.5px;color:var(--ink-2)}
   .dows input:checked + span{background:var(--band);border-color:var(--band);color:var(--band-ink)}
   .dows input:focus-visible + span{outline:2px solid var(--ox);outline-offset:2px}
   .field input,.field select,.field textarea{width:100%;font-family:var(--serif);font-size:15px;color:var(--ink);padding:2px 0;resize:vertical}
@@ -139,7 +139,7 @@
   .field input::placeholder,.field textarea::placeholder{color:var(--ink-3);font-style:italic}
   .field .pair{display:flex;gap:12px;align-items:baseline}
   .field .pair span{color:var(--ink-3);font-size:12.5px}
-  .add .textbtn{margin-top:16px;margin-right:18px;color:var(--ink);font-size:14px}
+  .add .textbtn{margin-top:16px;margin-right:18px;color:var(--ink);font-size:15px}
   .scope{margin:14px 0 0;font-size:13.5px;color:var(--ink-2)} .scope .textbtn{margin:0;font-size:13.5px} .scope b{font-weight:400;color:var(--ink)}
   .scope[hidden]{display:none} .add.asking #submit,.add.asking #remove,.add.asking #cancel{display:none}
   .add #remove{color:var(--ox)}
@@ -161,7 +161,7 @@
   .entry textarea::placeholder{color:var(--ink-3);font-style:italic}
   .entry .saved{font-size:12.5px;color:var(--ink-3);font-style:italic;font-family:var(--serif);min-height:1.5em;margin:4px 0 0}
   .entry .acts{margin-top:10px;display:flex;gap:18px}
-  .entry .acts .textbtn{color:var(--ink);font-size:14px}
+  .entry .acts .textbtn{color:var(--ink);font-size:15px}
   .entry .empty{padding:14px 0 0;margin:0;display:block;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
   .entry .empty::before{content:"";display:block;width:min(160px,100%);height:12px;margin:0 auto 10px;background:var(--ornament)}
 

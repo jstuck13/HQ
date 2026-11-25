@@ -12,9 +12,11 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import assert from 'node:assert';
 
-// The scale from DESIGN.md, plus the four tiers the build proved it needed: prose 16.5, sub-caption 11.5,
-// the version stamp 10.5/10, display-tight 30, and the splash mark 44.
-const SCALE = new Set([10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5, 14, 14.5, 15, 15.5, 16, 16.5, 17, 20, 22, 24, 26, 30, 32, 40, 44]);
+// Eleven sizes. DESIGN.md names the display end — 22 headline, 24 numeral, 26 display-mobile, 32 display,
+// 40 cover, 44 the splash mark — and the small end is five steps of roughly a tenth. It was twenty-three,
+// fourteen of them between 10 and 16.5 in half-pixel steps no reader could tell apart, and the linter had
+// been enforcing the list without anyone asking whether the list was sane.
+const SCALE = new Set([11, 12.5, 13.5, 15, 17, 22, 24, 26, 32, 40, 44]);
 // Motion has tiers because it does different jobs. A duration is fine if it is one of them; anything else is drift.
 const MOTION = { '0s': 'none', '.12s': 'track', '.15s': 'nudge', '.45s': 'curtain', '.6s': 'draw', '2s': 'lamp' };
 // hq.css *is* the palette: every colour the system sanctions already appears in it, so there is no second list to keep.

@@ -35,7 +35,7 @@
   .ledger .v .fig,.ledger .v .tickbox{width:var(--vw);text-align:right;padding:0 2px}   /* the width of a typed reading, so every unit lands on one line */
   .ledger.own{margin-top:0}
   .ledger.own .n{position:relative;padding-right:52px}
-  .ledger.own .n .x{position:absolute;right:0;top:2px;font-size:12px;color:var(--ink-3);opacity:0;transition:opacity .15s}
+  .ledger.own .n .x{position:absolute;right:0;top:2px;font-size:12.5px;color:var(--ink-3);opacity:0;transition:opacity .15s}
   .ledger.own li:hover .x,.ledger.own li:focus-within .x{opacity:1} .ledger.own .x:hover{color:var(--ox)}
   .ledger .tickbox{font-family:var(--serif);font-size:17px;color:var(--ink-3);border-bottom:1px dotted var(--ink-2);background:none;border-top:0;border-left:0;border-right:0;padding:0 2px;cursor:pointer}
   .ledger .tickbox.on{color:var(--ink)}
@@ -53,9 +53,9 @@
   .ledger .feel .dots:hover button{background:var(--band);border-color:var(--band)}
   .ledger .feel button:hover~button{background:var(--paper);border-color:var(--ink-2)}
   .ledger .v .aux{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);width:100%}
-  .ledger .v .aux input{font-size:13px;width:8ch;text-align:left;font-family:var(--serif)}
+  .ledger .v .aux input{font-size:13.5px;width:8ch;text-align:left;font-family:var(--serif)}
   .ledger .l,.ledger .a{font-size:13.5px;color:var(--ink-2);text-align:right}
-  .ledger .l small,.ledger .a small{display:block;font-size:12px;color:var(--ink-3)}
+  .ledger .l small,.ledger .a small{display:block;font-size:12.5px;color:var(--ink-3)}
   /* a filled-in row settles back: everything but the value fades */
   .ledger li.logged .n,.ledger li.logged .l,.ledger li.logged .a,.ledger li.logged .u{color:var(--ink-3)}
   .ledger li.logged .n small,.ledger li.logged .l small,.ledger li.logged .a small{color:var(--rule)}
@@ -81,16 +81,16 @@
   .range button{font-family:var(--serif);font-size:22px;color:var(--ink-3);border-bottom:1px solid transparent;line-height:1}
   .range button[aria-pressed="true"]{color:var(--ink);border-color:var(--ink)}
   .range button:hover{color:var(--ink)}
-  .range span{color:var(--ink-3);font-size:16px}
+  .range span{color:var(--ink-3);font-size:17px}
   .syncline{margin:8px 0 2px;font-size:12.5px;color:var(--ink-3)}
   .syncline .textbtn{font-size:12.5px;color:var(--ink-2);margin-left:8px} .syncline .textbtn:hover{color:var(--ink)}
   .syncline .bad{color:var(--ox)}
-  .pills .x,.next .x{color:var(--ink-3);font-size:12px;opacity:0;margin-left:10px} .pills li:hover .x,.next li:hover .x,.pills li:focus-within .x,.next li:focus-within .x{opacity:1}
+  .pills .x,.next .x{color:var(--ink-3);font-size:12.5px;opacity:0;margin-left:10px} .pills li:hover .x,.next li:hover .x,.pills li:focus-within .x,.next li:focus-within .x{opacity:1}
   .next .x{grid-column:1;grid-row:2;justify-self:start;margin:0}
   .pills .empty,.next .empty{padding:12px 0;border:0;display:block;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
   .pills .empty::before,.next .empty::before{content:"";display:block;width:min(160px,100%);height:12px;margin:0 auto 10px;background:var(--ornament)}
   .next li{display:grid;grid-template-columns:1fr auto;gap:2px 16px;padding:11px 0;border-bottom:1px solid var(--rule)}
-  .next .n{grid-column:1;grid-row:1;font-family:var(--serif);font-size:15.5px}
+  .next .n{grid-column:1;grid-row:1;font-family:var(--serif);font-size:15px}
   .next .d{color:var(--ink-3);font-size:12.5px;grid-column:1;grid-row:2}
   .next .t{grid-column:2;grid-row:1/3;font-family:var(--serif);color:var(--ink-2);text-align:right}
   .next .t.flag{color:var(--ox)}
@@ -110,18 +110,18 @@
   .chart .dot{fill:var(--ox);stroke:var(--paper);stroke-width:2} .chart .dot.past{fill:var(--ink)}
   .chart .pt{fill:var(--ink);stroke:var(--paper);stroke-width:1.5}
   .chart .tk{font:12px var(--sans);fill:var(--ink-3)}
-  .chart .tk.val{font-family:var(--serif);font-size:13px;fill:var(--ink-2);stroke:var(--paper);stroke-width:3.5;paint-order:stroke fill}   /* on the expanded chart every reading says what it is, and stays legible where the line runs behind it */
+  .chart .tk.val{font-family:var(--serif);font-size:13.5px;fill:var(--ink-2);stroke:var(--paper);stroke-width:3.5;paint-order:stroke fill}   /* on the expanded chart every reading says what it is, and stays legible where the line runs behind it */
   .chart .xh{stroke:var(--ink-3);stroke-width:1;opacity:0}
   .chart .hv{fill:var(--ink);stroke:var(--paper);stroke-width:2;opacity:0}
   .chart .tip{position:absolute;pointer-events:none;background:var(--card);box-shadow:var(--shadow);border-radius:6px;padding:4px 8px;font-size:12.5px;white-space:nowrap;opacity:0;transition:opacity var(--t-track);transform:translate(-50%,-100%)}
-  .chart .tip b{font-family:var(--serif);font-weight:400;font-size:14px}
+  .chart .tip b{font-family:var(--serif);font-weight:400;font-size:15px}
   .chart{position:relative}
   .chart svg{touch-action:pan-y}   /* a drag across reads the trend; up and down still scrolls the page */
   .chart .rng{font-size:12.5px;color:var(--ink-3);margin:6px 0 0}
 
   /* under a finger: the marks and the ticks a size up */
   @media (max-width:760px){
-    .chart .pt{r:3.5px} .chart .dot{r:5.5px} .chart .hv{r:6px} .chart .tk{font-size:13px}
+    .chart .pt{r:3.5px} .chart .dot{r:5.5px} .chart .hv{r:6px} .chart .tk{font-size:13.5px}
     .chart .tip{font-size:13.5px;padding:5px 9px}
   }
   @media (prefers-reduced-motion:reduce){.textbtn,.chart .tip{transition:none}}

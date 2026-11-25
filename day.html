@@ -28,16 +28,16 @@
 
   .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:16px 18px 18px;margin-top:14px}
   .tl{position:relative;--hour:44px}
-  .hr{position:absolute;left:0;right:0;border-top:1px solid var(--rule);color:var(--ink-3);font-family:var(--serif);font-size:12px}
+  .hr{position:absolute;left:0;right:0;border-top:1px solid var(--rule);color:var(--ink-3);font-family:var(--serif);font-size:12.5px}
   .hr span{position:absolute;left:0;top:-8px;width:42px;text-align:right}
   .ev{position:absolute;left:56px;right:4px;border-radius:6px;padding:4px 10px;background:var(--c,var(--paper-2));overflow:hidden}
-  .ev b{font-family:var(--serif);font-weight:400;font-size:14.5px;display:block;line-height:1.25}
-  .ev small{font-size:11.5px;color:var(--ink-2)}
-  .td{position:absolute;left:56px;right:4px;border-top:1px dashed var(--ox);color:var(--ox);font-size:11.5px}
+  .ev b{font-family:var(--serif);font-weight:400;font-size:15px;display:block;line-height:1.25}
+  .ev small{font-size:11px;color:var(--ink-2)}
+  .td{position:absolute;left:56px;right:4px;border-top:1px dashed var(--ox);color:var(--ox);font-size:11px}
   .td span{position:absolute;right:0;top:-15px;background:var(--paper);padding-left:6px}
   .now{position:absolute;left:48px;right:4px;height:1.5px;background:var(--ox);z-index:3;pointer-events:none}
   .now::before{content:"";position:absolute;left:-1px;top:50%;margin-top:-3.5px;width:7px;height:7px;border-radius:50%;background:var(--ox)}
-  .now::after{content:attr(data-t);position:absolute;right:0;top:-21px;font-family:var(--serif);font-size:12px;color:var(--band-ink);background:var(--ox);padding:2px 8px;border-radius:6px}
+  .now::after{content:attr(data-t);position:absolute;right:0;top:-21px;font-family:var(--serif);font-size:12.5px;color:var(--band-ink);background:var(--ox);padding:2px 8px;border-radius:6px}
 
   .todo{margin-top:34px}
   .todo ul{list-style:none;margin:0;padding:0;border-left:1px solid color-mix(in srgb, var(--ox) 32%, transparent);padding-left:14px}
@@ -45,23 +45,23 @@
   .todo input{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px;flex:none}
   .todo input:checked{background:var(--band);border-color:var(--band)}
   .todo input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
-  .todo label{font-family:var(--serif);font-size:15.5px;cursor:pointer;flex:1;min-width:0}
+  .todo label{font-family:var(--serif);font-size:15px;cursor:pointer;flex:1;min-width:0}
   .todo input:checked+label{color:var(--ink-3);text-decoration:line-through}
-  .todo .w{font-size:12px;color:var(--ink-3);white-space:nowrap}
+  .todo .w{font-size:12.5px;color:var(--ink-3);white-space:nowrap}
   .todo .w.due{color:var(--ox)}
 
   .held{list-style:none;margin:0;padding:0}
   .held li{display:grid;grid-template-columns:1fr auto;gap:4px 16px;padding:11px 0;border-bottom:1px solid var(--rule);align-items:baseline}
-  .held .k{font-family:var(--serif);font-size:15.5px}
+  .held .k{font-family:var(--serif);font-size:15px}
   .held .k small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-top:2px}
-  .held .v{font-family:var(--serif);font-size:20px;text-align:right;white-space:nowrap}
+  .held .v{font-family:var(--serif);font-size:22px;text-align:right;white-space:nowrap}
   .held .v i{font-style:normal;font-size:12.5px;color:var(--ink-3);margin-left:3px}
-  .held .v small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3)}
+  .held .v small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
 
   .spent{list-style:none;margin:0;padding:0}
-  .spent li{display:grid;grid-template-columns:1fr auto;gap:12px;padding:7px 0;border-bottom:1px dotted var(--rule);font-size:14px;align-items:baseline}
+  .spent li{display:grid;grid-template-columns:1fr auto;gap:12px;padding:7px 0;border-bottom:1px dotted var(--rule);font-size:15px;align-items:baseline}
   .spent .w{font-family:var(--serif);font-size:15px}
-  .spent .w small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3)}
+  .spent .w small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
   .spent .a{font-family:var(--serif);text-align:right;white-space:nowrap}
   .spent .tot{border-bottom:0;padding-top:10px} .spent .tot .w{color:var(--ink-3)}
 

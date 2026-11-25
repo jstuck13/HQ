@@ -45,8 +45,8 @@
   .ledger{--x:42px}
   .ledger li{display:grid;grid-template-columns:64px 1fr var(--x) auto;gap:14px;padding:10px 0;border-bottom:1px solid var(--rule);align-items:baseline}
   .ledger .x{width:var(--x)}
-  .ledger .d{font-family:var(--serif);color:var(--ink-2);font-size:14px;white-space:nowrap}
-  .ledger .w{font-family:var(--serif);font-size:15.5px;min-width:0}
+  .ledger .d{font-family:var(--serif);color:var(--ink-2);font-size:15px;white-space:nowrap}
+  .ledger .w{font-family:var(--serif);font-size:15px;min-width:0}
   .ledger .w small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
   .ledger .a{font-family:var(--serif);font-size:17px;text-align:right;white-space:nowrap}
   .ledger .x{color:var(--ink-3);font-size:12.5px;opacity:0;transition:opacity .15s}
@@ -64,7 +64,7 @@
   .addl.in{grid-template-columns:1fr 84px 72px auto}
   .addl.out{grid-template-columns:1fr 84px 120px 72px auto}
   .addl.rule{grid-template-columns:1fr 84px 120px auto}
-  .addl.rule .freq{grid-column:1/-2;display:flex;gap:8px;align-items:baseline;font-size:13px;color:var(--ink-3)}
+  .addl.rule .freq{grid-column:1/-2;display:flex;gap:8px;align-items:baseline;font-size:13.5px;color:var(--ink-3)}
   .addl.rule .freq input{width:3ch;text-align:center} .addl.rule .freq select{width:auto} .addl.rule .freq #r-day{width:9ch}
   .addl.rule .textbtn{grid-column:-2/-1;grid-row:2}
   .ledger .w .rule{display:inline-block;margin-left:8px;font-family:var(--sans);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
@@ -76,7 +76,7 @@
 
   /* categories */
   .cats li{display:grid;grid-template-columns:1fr 210px;gap:2px 16px;padding:11px 0;border-bottom:1px solid var(--rule);align-items:baseline}
-  .cats .n{font-family:var(--serif);font-size:15.5px;grid-column:1;grid-row:1}
+  .cats .n{font-family:var(--serif);font-size:15px;grid-column:1;grid-row:1}
   .cats .bar{grid-column:1;grid-row:2;height:6px;background:var(--rule);border-radius:0 2px 2px 0;margin-top:6px;position:relative;overflow:hidden}
   .cats .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--ink);border-radius:0 2px 2px 0}
   .cats .bar i.over{background:var(--ox)}
@@ -130,13 +130,13 @@
   .fig svg,.chart svg,#cash svg,#ive svg{touch-action:pan-y}
   .tk.on{fill:var(--paper)}   /* written inside a bar that has run nearly the whole way */
   .tip{position:absolute;pointer-events:none;background:var(--card);box-shadow:var(--shadow);border-radius:6px;padding:4px 8px;font-size:12.5px;white-space:nowrap;opacity:0;transition:opacity var(--t-track);transform:translate(-50%,-100%)}
-  .tip b{font-family:var(--serif);font-weight:400;font-size:14px}
+  .tip b{font-family:var(--serif);font-weight:400;font-size:15px}
   .foot .textbtn{font-style:normal;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:8px} .foot .textbtn.ox{color:var(--ox)} .foot .textbtn:hover{color:var(--ink)}
 
   @media (prefers-reduced-motion:reduce){.textbtn,.ledger .x,.tip{transition:none}}
   /* under a finger: the marks and the ticks a size up */
   @media (max-width:760px){
-    .dot{r:5.5px} .hv{r:6px} .tk{font-size:13px} .lbl{font-size:13px}
+    .dot{r:5.5px} .hv{r:6px} .tk{font-size:13.5px} .lbl{font-size:13.5px}
     .tip{font-size:13.5px;padding:5px 9px}
   }
   @media (max-width:1100px){
