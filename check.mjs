@@ -12,8 +12,8 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
 
-const R = '.impeccable/review';   // the browser harness: probes and their fixtures, scratch by nature
-const T = 'test';                 // the unit tests, tracked, so a failure can be told from a pre-existing one
+const R = 'test/browser';        // the browser harness: probes and their seed fixtures, tracked
+const T = 'test';                // the unit tests
 // colophon and restore are missing their .impeccable/review/dbg-*.html fixture, and alignrun.py exits non-zero
 // on a page without one, so they stay out of this list until a fixture exists for them.
 const PAGES = 'today,calendar,finances,library,school,health,review,groceries,investments,study,patterns,span,day,list';

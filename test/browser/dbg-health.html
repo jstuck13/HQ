@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><base href="/">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1F3A2E">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>HQ — Health</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="hq.css">
+<style>
+
+  h1{font-size:32px;line-height:1.3}
+  .mast .sub{font-family:var(--serif);font-style:italic;color:var(--band-muted)}
+  .mast .sub b{font-weight:400;color:var(--band-ink)}
+
+  main{max-width:1180px;margin:0 auto;padding:34px 40px 44px}
+
+  /* today ledger */
+  .log{display:grid;grid-template-columns:1.6fr 1fr;gap:0 64px}
+  .ledger li{display:grid;grid-template-columns:150px 1fr 96px 96px;gap:16px;padding:12px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+  .ledger .head{padding:14px 0 6px;font-size:12.5px;color:var(--ink-3);border-bottom:1px solid var(--rule)}
+  .ledger .head span:first-child{font-family:var(--sans)}
+  .ledger .n{font-family:var(--serif);font-size:17px}
+  .ledger .n small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
+  .ledger .v{--vw:80px;font-family:var(--serif);font-size:24px;line-height:1.1;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .ledger .v input{font-family:var(--serif);font-size:24px;width:var(--vw);border-bottom:1px dotted var(--ink-2);text-align:right;padding:0 2px}
+  .ledger .v input:focus{border-bottom-color:var(--ink);outline:none}
+  .ledger .v input::placeholder{color:var(--ink-3)}
+  .ledger .v .u{font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
+  .ledger .v .fig,.ledger .v .tickbox{width:var(--vw);text-align:right;padding:0 2px}   /* the width of a typed reading, so every unit lands on one line */
+  .ledger.own{margin-top:0}
+  .ledger.own .n{position:relative;padding-right:52px}
+  .ledger.own .n .x{position:absolute;right:0;top:2px;font-size:12px;color:var(--ink-3);opacity:0;transition:opacity .15s}
+  .ledger.own li:hover .x,.ledger.own li:focus-within .x{opacity:1} .ledger.own .x:hover{color:var(--ox)}
+  .ledger .tickbox{font-family:var(--serif);font-size:17px;color:var(--ink-3);border-bottom:1px dotted var(--ink-2);background:none;border-top:0;border-left:0;border-right:0;padding:0 2px;cursor:pointer}
+  .ledger .tickbox.on{color:var(--ink)}
+  .addr{display:flex;flex-wrap:wrap;gap:12px 20px;padding:14px 0 2px;align-items:baseline;border-top:1px dotted var(--rule)}
+  .addr input,.addr select{font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0;background:none}
+  .addr #r-name{flex:1 1 200px;min-width:0} .addr #r-unit{width:110px} .addr #r-kind{width:124px}
+  .addr input:focus,.addr select:focus{outline:none;border-bottom-color:var(--ink)}
+  .addr input::placeholder{color:var(--ink-3);font-style:italic}
+  .addr .textbtn{font-size:13.5px;white-space:nowrap}
+  .ledger .feel{display:flex;align-items:center;gap:8px;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);width:100%}
+  .ledger .feel .dots{display:inline-flex;gap:6px}
+  .ledger .feel i{font-style:normal}
+  .ledger .feel button{width:15px;height:15px;border-radius:50%;border:1px solid var(--ink-2);background:var(--paper);padding:0;cursor:pointer}
+  .ledger .feel button.on{background:var(--band);border-color:var(--band)}
+  .ledger .feel .dots:hover button{background:var(--band);border-color:var(--band)}
+  .ledger .feel button:hover~button{background:var(--paper);border-color:var(--ink-2)}
+  .ledger .v .aux{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);width:100%}
+  .ledger .v .aux input{font-size:13px;width:8ch;text-align:left;font-family:var(--serif)}
+  .ledger .l,.ledger .a{font-size:13.5px;color:var(--ink-2);text-align:right}
+  .ledger .l small,.ledger .a small{display:block;font-size:12px;color:var(--ink-3)}
+  /* a filled-in row settles back: everything but the value fades */
+  .ledger li.logged .n,.ledger li.logged .l,.ledger li.logged .a,.ledger li.logged .u{color:var(--ink-3)}
+  .ledger li.logged .n small,.ledger li.logged .l small,.ledger li.logged .a small{color:var(--rule)}
+  .ledger li.logged .v input{border-bottom-color:transparent}
+  .ledger li{transition:color var(--t)}
+
+  .pills{margin-top:0}
+  .pills li{display:flex;align-items:center;gap:14px;padding:9px 0;border-bottom:1px dotted var(--rule)}
+  .pills input{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px}
+  .pills input:checked{background:var(--band);border-color:var(--band)}
+  .pills input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+  .pills label{cursor:pointer;margin-right:auto}
+  .pills input:checked + label{color:var(--ink-3);background:linear-gradient(currentColor,currentColor) left 58%/100% 1px no-repeat}
+  .pills .w{font-size:12.5px;color:var(--ink-3)}
+  .next{margin-top:34px}
+  .addl{display:grid;grid-template-columns:1fr 110px auto;gap:12px;padding:12px 0;border-bottom:1px dotted var(--rule);align-items:baseline}
+  .addl .full{grid-column:1/-1}
+  .addl input{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0}
+  .addl input:focus{outline:none;border-bottom-color:var(--ink)}
+  .addl input::placeholder{color:var(--ink-3);font-style:italic}
+  .addl .textbtn{font-size:13.5px}
+  .range{display:inline-flex;gap:8px;align-items:baseline;margin:0 2px}
+  .range button{font-family:var(--serif);font-size:22px;color:var(--ink-3);border-bottom:1px solid transparent;line-height:1}
+  .range button[aria-pressed="true"]{color:var(--ink);border-color:var(--ink)}
+  .range button:hover{color:var(--ink)}
+  .range span{color:var(--ink-3);font-size:16px}
+  .syncline{margin:8px 0 2px;font-size:12.5px;color:var(--ink-3)}
+  .syncline .textbtn{font-size:12.5px;color:var(--ink-2);margin-left:8px} .syncline .textbtn:hover{color:var(--ink)}
+  .syncline .bad{color:var(--ox)}
+  .pills .x,.next .x{color:var(--ink-3);font-size:12px;opacity:0;margin-left:10px} .pills li:hover .x,.next li:hover .x,.pills li:focus-within .x,.next li:focus-within .x{opacity:1}
+  .next .x{grid-column:1;grid-row:2;justify-self:start;margin:0}
+  .pills .empty,.next .empty{padding:12px 0;border:0;display:block;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
+  .pills .empty::before,.next .empty::before{content:"";display:block;width:min(160px,100%);height:12px;margin:0 auto 10px;background:var(--ornament)}
+  .next li{display:grid;grid-template-columns:1fr auto;gap:2px 16px;padding:11px 0;border-bottom:1px solid var(--rule)}
+  .next .n{grid-column:1;grid-row:1;font-family:var(--serif);font-size:15.5px}
+  .next .d{color:var(--ink-3);font-size:12.5px;grid-column:1;grid-row:2}
+  .next .t{grid-column:2;grid-row:1/3;font-family:var(--serif);color:var(--ink-2);text-align:right}
+  .next .t.flag{color:var(--ox)}
+
+  /* four trends on paper */
+  .trends{margin-top:44px}
+  .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:32px 30px;margin-top:14px}   /* the trends fit themselves to however many there are */
+  .chart h3{font-family:var(--serif);font-weight:400;font-size:17px;margin:0 0 2px;display:flex;align-items:baseline;gap:8px}
+  .chart h3 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
+  .chart .fig{font-family:var(--serif);font-size:24px;line-height:1.1;margin:0}
+  .chart .fig small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:6px}
+  .chart svg{display:block;width:100%;height:auto;overflow:visible;margin-top:8px}
+  .chart .ax{stroke:var(--rule);stroke-width:1}
+  .chart .avg{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:1 3;stroke-linecap:round}
+  .chart .roll{fill:none;stroke:var(--ox);stroke-width:1.6;stroke-opacity:.55;stroke-linejoin:round}
+  .chart .ln{fill:none;stroke:var(--ink);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+  .chart .dot{fill:var(--ox);stroke:var(--paper);stroke-width:2} .chart .dot.past{fill:var(--ink)}
+  .chart .pt{fill:var(--ink);stroke:var(--paper);stroke-width:1.5}
+  .chart .tk{font:12px var(--sans);fill:var(--ink-3)}
+  .chart .tk.val{font-family:var(--serif);font-size:13px;fill:var(--ink-2);stroke:var(--paper);stroke-width:3.5;paint-order:stroke fill}   /* on the expanded chart every reading says what it is, and stays legible where the line runs behind it */
+  .chart .xh{stroke:var(--ink-3);stroke-width:1;opacity:0}
+  .chart .hv{fill:var(--ink);stroke:var(--paper);stroke-width:2;opacity:0}
+  .chart .tip{position:absolute;pointer-events:none;background:var(--card);box-shadow:var(--shadow);border-radius:6px;padding:4px 8px;font-size:12.5px;white-space:nowrap;opacity:0;transition:opacity var(--t-track);transform:translate(-50%,-100%)}
+  .chart .tip b{font-family:var(--serif);font-weight:400;font-size:14px}
+  .chart{position:relative}
+  .chart svg{touch-action:pan-y}   /* a drag across reads the trend; up and down still scrolls the page */
+  .chart .rng{font-size:12.5px;color:var(--ink-3);margin:6px 0 0}
+
+  /* under a finger: the marks and the ticks a size up */
+  @media (max-width:760px){
+    .chart .pt{r:3.5px} .chart .dot{r:5.5px} .chart .hv{r:6px} .chart .tk{font-size:13px}
+    .chart .tip{font-size:13.5px;padding:5px 9px}
+  }
+  @media (prefers-reduced-motion:reduce){.textbtn,.chart .tip{transition:none}}
+  @media (max-width:1100px){.log{grid-template-columns:1fr;gap:34px}.strip{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:760px){
+    main{padding:24px 20px 36px} .foot{padding:0 20px 28px}
+    .ledger li{grid-template-columns:1fr auto;gap:6px 12px} .ledger .head{display:none} .ledger .l,.ledger .a{grid-column:1/-1;text-align:left;display:inline}
+    .ledger .l,.ledger .a{grid-column:auto;display:block;font-size:12.5px} .ledger .l small,.ledger .a small{display:inline;margin-left:4px}
+    .ledger .l::before{content:"last "} .ledger .a::before{content:"avg "} .ledger .a{margin-left:0} .ledger .l,.ledger .a{white-space:nowrap}
+    .addl{grid-template-columns:1fr 1fr} .addl .textbtn{grid-column:1/-1;justify-self:start}
+    .addr #r-name{flex:1 1 100%}
+    .ledger li{grid-template-columns:1fr auto} .ledger .n{grid-column:1} .ledger .v{grid-column:2;grid-row:1} .ledger .l{grid-column:1;grid-row:2} .ledger .a{grid-column:2;grid-row:2;text-align:right}
+    .next li{grid-template-columns:1fr auto} .next .t{grid-column:2;grid-row:1}
+    .strip{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<header class="band">
+  <div class="in">
+    <div class="row">
+      <a class="mark" href="today.html">HQ</a>
+      <span class="date"></span>
+      <nav aria-label="Areas"><a href="today.html">Today</a><a href="calendar.html">Calendar</a><a href="finances.html">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="health.html" aria-current="page">Health</a></nav>
+      <div class="right">
+        <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
+        <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
+        <button class="ib menu" type="button" aria-label="Menu" aria-expanded="false" id="menubtn"><svg class="ic"><use href="icons.svg#menu"/></svg></button>
+      </div>
+    </div>
+    <div class="mast">
+      <h1>Health</h1>
+      <span class="sub" id="sub">Logged <b>0 of 5</b> today.</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="log">
+    <section>
+      <h2>Today<small id="todayn"></small></h2>
+      <p class="syncline" id="syncline" hidden></p>
+      <ul class="ledger" id="ledger">
+        <li class="head"><span>Reading</span><span>Today</span><span class="l">Last</span><span class="a" id="avgh">30-day avg</span></li>
+        <li data-k="sleep"><span class="n">Sleep<small>Hours, and when</small></span>
+          <span class="v"><input id="sleep" inputmode="decimal" placeholder="—"><span class="u">hours</span><span class="aux">bed <input id="bed" placeholder="11.40 pm"> · woke <input id="woke" placeholder="6.52 am"></span></span>
+          <span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>
+        <li data-k="weight"><span class="n">Weight<small>Mornings, before breakfast</small></span>
+          <span class="v"><input id="weight" inputmode="decimal" placeholder="—"><span class="u">lb</span></span>
+          <span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>
+        <li data-k="hr"><span class="n">Resting heart rate<small>From the watch, on waking</small></span>
+          <span class="v"><input id="hr" inputmode="numeric" placeholder="—"><span class="u">bpm</span></span>
+          <span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>
+        <li data-k="steps"><span class="n">Steps<small>So far today, from the watch</small></span>
+          <span class="v"><input id="steps" inputmode="numeric" placeholder="—"></span>
+          <span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>
+        <li data-k="feel"><span class="n">How it feels<small>Your own reading, not the watch's</small></span>
+          <span class="v"><span class="feel"><span class="dots" data-feel="energy"></span><i>energy</i></span><span class="feel"><span class="dots" data-feel="mood"></span><i>mood</i></span></span>
+          <span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>
+        <li data-k="opens"><span class="n">Screen<small id="opensh">Times you reached for the phone</small></span>
+          <span class="v"><span class="fig" id="opensv">—</span><span class="u">opens</span><span class="aux"><input id="screen" inputmode="numeric" placeholder="—"> min of screen time</span></span>
+          <span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>
+      </ul>
+      <ul class="ledger own" id="own"></ul>
+      <form class="addr" id="addreading">
+        <input id="r-name" placeholder="Caffeine, water, time outdoors…" aria-label="What to call it" required>
+        <input id="r-unit" placeholder="mg, cups, min" aria-label="Its unit">
+        <select id="r-kind" aria-label="What kind of reading">
+          <option value="number">a number</option>
+          <option value="count">a count</option>
+          <option value="scale">1 to 5</option>
+          <option value="tick">yes or no</option>
+        </select>
+        <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add a reading</button>
+      </form>
+    </section>
+
+    <aside>
+      <h2>Supplements<small id="pillsn"></small></h2>
+      <ul class="pills" id="pills"></ul>
+      <form class="addl" id="addpill"><input id="pl-name" placeholder="Vitamin D" aria-label="Supplement name" required><input id="pl-when" placeholder="morning" aria-label="When"><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
+
+      <div class="next">
+        <h2>Next<small>Appointments and refills</small></h2>
+        <ul id="next"></ul>
+        <form class="addl" id="addnext"><input id="nx-name" placeholder="Dentist, refill, bloods…" aria-label="What" required><input id="nx-date" placeholder="" aria-label="Day"><input id="nx-note" placeholder="where, who, time" aria-label="Note" class="full"><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
+      </div>
+    </aside>
+  </div>
+
+  <section class="trends">
+    <h2>Last <span class="range" id="range"><button type="button" data-n="30" aria-pressed="true">30</button><span aria-hidden="true">·</span><button type="button" data-n="90" aria-pressed="false">90</button></span> days<small id="rangen"></small></h2>
+    <div class="strip" id="strip"></div>
+  </section>
+</main>
+<p class="foot">What you log is saved to your HQ account (and cached in this browser). The trends are drawn only from days you have logged.</p>
+
+<script>
+  const _D=Date, FIXED=new _D(2026,8,15,10,27); Date=class extends _D{ constructor(...a){ super(...(a.length?a:[FIXED.getTime()])); } static now(){ return FIXED.getTime(); } };
+  localStorage.clear();
+  localStorage.setItem('hq.calendar', JSON.stringify({cats:[{id:'cal',name:'Appointments',tint:'#E9EEF3'},{id:'fit',name:'Training',tint:'#F6E6DC'},{id:'study',name:'Study',tint:'#ECE6F3'}],hidden:[],notes:{},series:[{id:1,date:'2026-09-15',start:9,end:10.5,title:'Study — Networking, chapter seven',cat:'study',sub:'Routing',rep:[]},{id:2,date:'2026-09-15',start:11,end:11.5,title:'Call with advisor',cat:'cal',sub:'',rep:[]},{id:3,date:'2026-09-15',start:17,end:18,title:'Gym — pull day',cat:'fit',sub:'Rows, pull-ups, curls',rep:[]}]}));
+  localStorage.setItem('hq.health', JSON.stringify({meds:[{id:'m1',name:'Vitamin D',when:'morning'}],next:[],days:{'2026-09-13':{pills:['m1'],sleep:'7.5'},'2026-09-14':{pills:['m1'],sleep:'7.8',weight:'172.9',hr:'55',garmin:{steps:8412}},'2026-09-15':{pills:[],sleep:'6.4',bed:'11.40 pm',woke:'6.52 am',weight:'172.4',hr:'52',garmin:{score:81,deep:6000,light:13800,rem:5400,awake:720,hrv:48,hrvStatus:'BALANCED',bb:74,bbChange:58,hr7:54,resp:14.2,steps:312}}}}));
+  localStorage.setItem('hq.library', JSON.stringify({open:1,books:[{id:1,shelf:'reading',title:'Project Hail Mary',author:'Andy Weir',pages:476,page:180,started:'2026-09-10',log:{'2026-09-12':90,'2026-09-14':140,'2026-09-15':180},notes:[]}]}));
+  localStorage.setItem('hq.school', JSON.stringify({courses:[{id:'c1',name:'PHYS-1610'},{id:'c2',name:'MATH-2650'}],items:[{id:1,course:'c1',title:'Exam 1',type:'test',due:'2026-09-15',done:true},{id:2,course:'c2',title:'Quiz 4',type:'assignment',due:'2026-09-18',done:false}],sessions:[{id:1,date:'2026-09-14',course:'c1',min:50}]}));
+  localStorage.setItem('hq.finances.2026-09', JSON.stringify({expected:4200,income:[{id:1,src:'Paycheck',amt:1450,date:'2026-09-11'}],plan:[],cats:[{id:'g',name:'Groceries',limit:420},{id:'e',name:'Eating out',limit:150},{id:'r',name:'Rent',limit:1450,due:17}],tx:[{id:1,date:'2026-09-14',what:'Weekly groceries',cat:'g',amt:56.3},{id:2,date:'2026-09-15',what:'Lunch',cat:'e',amt:18.2}],history:[]}));
+  localStorage.setItem('hq.today.2026-09-15', JSON.stringify({items:[{text:'Call the dentist',at:9.5,done:false},{text:'Laundry',done:true,from:'2026-09-14'}]}));
+  localStorage.setItem('hq.investments', JSON.stringify({holdings:[{id:1,ticker:'SPAXX',shares:573.7,account:'Brokerage',yield:3.36},{id:2,ticker:'VOO',shares:0.31,account:'Brokerage'}],balances:[],prices:{SPAXX:{price:1,chg:0,name:'Fidelity Government Money Market',at:'2026-09-15T04:00:00Z'},VOO:{price:709.16,chg:1.05,name:'Vanguard S&P 500 ETF',at:'2026-09-15T04:00:00Z'}},history:{'2026-09-10':780,'2026-09-12':790},contribCats:['roth ira'],baseline:1000}));
+  localStorage.setItem('hq.study', JSON.stringify({path:'stoics',pos:6,days:{'2026-09-13':{path:'stoics',cards:['s01','s02','s03'],done:true,at:3},'2026-09-14':{path:'stoics',cards:['s04','s05','s06'],done:true,at:3}},notes:[{date:'2026-09-14',path:'stoics',card:'s06',text:'Take care of it; do not view it as your own.'}],answers:{s05:{date:'2026-09-14',text:'It crosses when I stop trying.'}}}));
+</script>
+<script src="clock.js"></script>
+<script src="hq.js"></script>
+<script src="store.js"></script>
+<script src="bell.js"></script>
+<script src="search.js"></script>
+<script>
+  // ---- state: one document, a log per day ----
+  // H.days[ISO] = { sleep, bed, woke, weight, hr, pills:[] } — only what you typed, nothing invented.
+  const C = clock, KEY = 'health', TODAY = C.today;
+  let H = { days: {}, meds: [], next: [] };
+  let L = { pills: [] };
+  const save = () => { H.days[TODAY] = L; store.save(KEY, H); };
+
+  // readings
+  const applyLog = () => { ['sleep','bed','woke','weight','hr','steps','screen'].forEach(k=>{ F(k).value = L[k]!=null ? L[k] : ''; }); renderAll(); };
+  ['sleep','bed','woke','weight','hr','steps','screen'].forEach(k=>{
+    F(k).addEventListener('change', ()=>{ const v=F(k).value.trim(); if(v) L[k]=v; else delete L[k]; if(k==='steps') L.stepsFrom = v ? 'hand' : undefined; save(); renderAll(); });
+  });
+  // Five dots twice: how the day went, in the one place on this page the watch cannot answer for you.
+  // Clicking the dot already set clears it, so a day you would rather not rate stays unrated.
+  function renderFeel(){
+    document.querySelectorAll('.ledger .feel .dots').forEach(d=>{
+      const k=d.dataset.feel, v=+L[k]||0;
+      d.innerHTML=[1,2,3,4,5].map(n=>`<button type="button" class="${n<=v?'on':''}" data-n="${n}" aria-label="${k} ${n} of 5" aria-pressed="${n===v}"></button>`).join('');
+    });
+    const li=document.querySelector('#ledger li[data-k="feel"]');
+    const past=isoDays.filter(d=>d!==TODAY).map(d=>H.days[d]||{}).filter(r=>r.energy!=null||r.mood!=null);
+    const last=past[past.length-1];
+    const mean=k=>{ const xs=past.map(r=>+r[k]).filter(v=>v>0); return xs.length?xs.reduce((a,b)=>a+b,0)/xs.length:null; };
+    const e=mean('energy'), m=mean('mood');
+    li.querySelector('.l').innerHTML = last ? `${last.energy||'—'} / ${last.mood||'—'}<small>energy, mood</small>` : '<small>no earlier reading</small>';
+    li.querySelector('.a').innerHTML = e!=null||m!=null ? `${e!=null?e.toFixed(1):'—'} / ${m!=null?m.toFixed(1):'—'}<small>${past.length} ${past.length===1?'day':'days'}</small>` : '<small>not yet</small>';
+  }
+  document.querySelector('#ledger').addEventListener('click', e=>{
+    const b=e.target.closest('.feel .dots button'); if(!b) return;
+    const k=b.closest('.dots').dataset.feel, n=+b.dataset.n;
+    if(+L[k]===n) delete L[k]; else L[k]=n;
+    save(); renderAll();
+  });
+
+  // the rows for your own readings, and the little form that adds one
+  function renderOwn(){
+    const rows = mine().map(r => {
+      const k = r.kind || 'number', v = L[r.id];
+      const cell = k === 'scale' ? `<span class="feel"><span class="dots" data-feel="${esc(r.id)}"></span><i>${esc(r.unit || 'of 5')}</i></span>`
+        : k === 'tick' ? `<button class="tickbox ${+v ? 'on' : ''}" type="button" data-tick="${esc(r.id)}" aria-pressed="${!!+v}">${+v ? 'yes' : 'not yet'}</button>`
+        : `<input id="own-${esc(r.id)}" data-own="${esc(r.id)}" inputmode="${KINDS[k].input}" placeholder="—" value="${v != null ? esc(v) : ''}"><span class="u">${esc(r.unit || '')}</span>`;
+      return `<li data-k="${esc(r.id)}"><span class="n">${esc(r.name)}<small>${esc(r.note || 'yours')}</small><button class="x" type="button" data-rmr="${esc(r.id)}" aria-label="Remove ${esc(r.name)}">remove</button></span>
+        <span class="v">${cell}</span><span class="l"><small>no earlier reading</small></span><span class="a"><small>not yet</small></span></li>`;
+    }).join('');
+    F('own').innerHTML = rows;
+    mine().forEach(r => { if ((r.kind || 'number') === 'scale') paintDots(F('own').querySelector(`.dots[data-feel="${CSS.escape(r.id)}"]`), r.id); });
+  }
+  function paintDots(d, key){
+    if(!d) return; const v = +L[key] || 0;
+    d.innerHTML = [1,2,3,4,5].map(n=>`<button type="button" class="${n<=v?'on':''}" data-n="${n}" aria-label="${n} of 5" aria-pressed="${n===v}"></button>`).join('');
+  }
+  F('own').addEventListener('click', e => {
+    const rm = e.target.closest('[data-rmr]');
+    if(rm){ const id = rm.dataset.rmr, was = hqCopy(H.readings || []), gone = (H.readings||[]).find(r=>r.id===id);
+      H.readings = (H.readings || []).filter(r => r.id !== id); save(); renderAll();
+      hqUndo(gone ? gone.name : 'the reading', () => { H.readings = was; save(); renderAll(); }); return; }
+    const t = e.target.closest('[data-tick]');
+    if(t){ const id = t.dataset.tick; if(+L[id]) delete L[id]; else L[id] = 1; save(); renderAll(); return; }
+    const b = e.target.closest('.dots button');
+    if(b){ const id = b.closest('.dots').dataset.feel, n = +b.dataset.n;
+      if(+L[id] === n) delete L[id]; else L[id] = n; save(); renderAll(); }
+  });
+  F('own').addEventListener('change', e => {
+    const i = e.target.closest('[data-own]'); if(!i) return;
+    const id = i.dataset.own, v = i.value.trim();
+    if(v) L[id] = v; else delete L[id];
+    save(); renderAll();
+  });
+  F('addreading').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = F('r-name').value.trim(); if(!name) return F('r-name').focus();
+    // a key of its own, derived from the name but never colliding with a reading HQ already keeps
+    const taken = new Set([...series.map(s=>s.key), ...mine().map(r=>r.id), 'pills','bed','woke','apps','wx','garmin','stepsFrom']);
+    let id = 'r-' + name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,24) || 'r-reading';
+    while(taken.has(id)) id += '1';
+    H.readings = [...(H.readings || []), { id, name, unit: F('r-unit').value.trim() || undefined, kind: F('r-kind').value, note: 'yours' }];
+    F('addreading').reset(); save(); renderAll();
+  });
+
+  function renderPills(){
+    const meds=H.meds||[];
+    const ps=pillStreak(); F('pillsn').textContent = meds.length ? `${L.pills.filter(p=>meds.some(m=>m.id===p)).length} of ${meds.length}${ps>=2?` · ${ps}-day streak`:''}` : 'none yet';
+    F('pills').innerHTML = meds.length ? meds.map(m=>`<li><input type="checkbox" id="p-${m.id}" data-p="${m.id}" ${L.pills.includes(m.id)?'checked':''}><label for="p-${m.id}">${esc(m.name)}</label><span class="w">${esc(m.when||'')}</span><button class="x" type="button" data-rm="${m.id}" aria-label="Remove ${esc(m.name)}">remove</button></li>`).join('') : '<li class="empty">Add the pills and vitamins you take; they become a daily checklist.</li>';
+  }
+  function renderNext(){
+    const nx=[...(H.next||[])].sort((a,b)=>(a.date||'9')<(b.date||'9')?-1:1);
+    F('next').innerHTML = nx.length ? nx.map(n=>{ const d=n.date?C.daysBetween(TODAY,n.date):null; const t=d==null?'To book':d<0?'Overdue':d===0?'Today':d===1?'Tomorrow':`In ${d} days`;
+      return `<li data-id="${n.id}"><span class="n">${esc(n.name)}</span><span class="d">${n.date?C.weekdayDayMonth(C.fromISO(n.date)):''}${n.date&&n.note?' · ':''}${esc(n.note||'')}</span><span class="t ${d!=null&&d<=0?'flag':''}">${t}</span><button class="x" type="button" data-rm="${n.id}" aria-label="Remove ${esc(n.name)}">remove</button></li>`; }).join('')
+      : '<li class="empty">Nothing booked. Add an appointment or a refill to keep it in view.</li>';
+  }
+  F('pills').addEventListener('change', e=>{ if(e.target.type==='checkbox'){ const id=e.target.dataset.p; L.pills = e.target.checked ? [...new Set([...L.pills,id])] : L.pills.filter(p=>p!==id); save(); renderAll(); } });
+  F('pills').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ const was=hqCopy(H.meds), gone=H.meds.find(m=>m.id===b.dataset.rm);
+    H.meds=H.meds.filter(m=>m.id!==b.dataset.rm); save(); renderAll();
+    hqUndo(gone?gone.name:'the supplement', ()=>{ H.meds=was; save(); renderAll(); }); } });
+  F('addpill').addEventListener('submit', e=>{ e.preventDefault(); H.meds=H.meds||[]; H.meds.push({id:'m'+Date.now(), name:F('pl-name').value.trim(), when:F('pl-when').value.trim()}); F('addpill').reset(); save(); renderAll(); });
+  F('next').addEventListener('click', e=>{ const b=e.target.closest('[data-rm]'); if(b){ const was=hqCopy(H.next), gone=H.next.find(n=>n.id===b.dataset.rm);
+    H.next=H.next.filter(n=>n.id!==b.dataset.rm); save(); renderAll();
+    hqUndo(gone?gone.what:'the appointment', ()=>{ H.next=was; save(); renderAll(); }); } });
+  F('addnext').addEventListener('submit', e=>{ e.preventDefault(); H.next=H.next||[]; const d=F('nx-date').value.trim(); H.next.push({id:'n'+Date.now(), name:F('nx-name').value.trim(), date:d?C.parseDay(d):null, note:F('nx-note').value.trim()}); F('addnext').reset(); save(); renderAll(); });
+
+  // ---- history: the last 30 days from the document ----
+  let N = +localStorage.getItem('hq.health.range') || 30, days, isoDays;   // 30 or 90 days, remembered in this browser
+  const setRange = n => { N=n; days=Array.from({length:N},(_,i)=>C.addDays(C.now, i-N+1)); isoDays=days.map(d=>C.iso(d)); try{ localStorage.setItem('hq.health.range', n); }catch{}
+    F('rangen').textContent = `${C.dayMonthLong(C.addDays(C.now,1-N))} – ${C.dayMonthLong(C.now)}`; F('avgh').textContent = `${N}-day avg`;
+    document.querySelectorAll('#range button').forEach(b=>b.setAttribute('aria-pressed', +b.dataset.n===N)); };
+  setRange(N);
+  const fmtDay = d => C.dayMonth(d);
+  // A reading you add is stored on the day like any other, under its own key, so everything downstream — the
+  // ledger, the trends, the week, the nightly search — finds it without being told it is yours rather than ours.
+  const KINDS = {
+    number: { fmt: (v, u) => `${+v.toFixed(2)}${u ? ' ' + u : ''}`, level: 0.5, input: 'decimal' },
+    count:  { fmt: (v, u) => `${Math.round(v).toLocaleString('en-US')}${u ? ' ' + u : ''}`, level: 1, input: 'numeric' },
+    scale:  { fmt: v => `${v.toFixed(1)} of 5`, level: 0.3, input: null },
+    tick:   { fmt: v => v >= 1 ? 'yes' : 'no', level: 0.3, input: null },
+  };
+  const mine = () => (H.readings || []).filter(r => r && r.id && r.name);
+  const asSeries = r => { const k = KINDS[r.kind] || KINDS.number;
+    return { name: r.name, key: r.id, own: r, kind: r.kind || 'number',
+             fmt: v => k.fmt(v, r.unit), level: k.level, delta: v => k.fmt(v, r.unit) }; };
+
+  const series = [
+    {name:'Sleep', key:'sleep', fmt:v=>{ const m=Math.round(v*60); return `${Math.floor(m/60)} h ${String(m%60).padStart(2,'0')}`; }, level:.1, delta:v=>`${Math.round(v*60)} min`},
+    {name:'Weight', key:'weight', fmt:v=>`${v.toFixed(1)} lb`, level:.5, delta:v=>`${v.toFixed(1)} lb`},
+    {name:'Resting HR', key:'hr', fmt:v=>`${Math.round(v)} bpm`, level:.5, delta:v=>`${Math.round(v)}`},
+    {name:'Steps', key:'steps', fmt:v=>Math.round(v).toLocaleString('en-US'), level:300, delta:v=>Math.round(v).toLocaleString('en-US'), partial:true},
+    {name:'Screen', key:'opens', fmt:v=>`${Math.round(v)} opens`, level:2, delta:v=>`${Math.round(v)}`, partial:true},
+    {name:'Energy', key:'energy', fmt:v=>`${v.toFixed(1)} of 5`, level:.3, delta:v=>v.toFixed(1)},
+    {name:'Mood', key:'mood', fmt:v=>`${v.toFixed(1)} of 5`, level:.3, delta:v=>v.toFixed(1)},
+  ];
+  const allSeries = () => [...series, ...mine().map(asSeries)];
+  const pointsFor = s => isoDays.map((d,i)=>({i, d, v: (s.partial && d===TODAY) ? null : num((d===TODAY ? L : H.days[d]||{})[s.key])})).filter(p=>p.v!=null);   // a day still being counted is not a point
+  const trendOf = (s, pts) => {
+    if(pts.length<4) return null;
+    const avg = a => a.reduce((x,p)=>x+p.v,0)/a.length, half=Math.floor(pts.length/2), diff=avg(pts.slice(half))-avg(pts.slice(0,half));
+    return Math.abs(diff)<s.level ? 'level' : `${diff>0?'up':'down'} ${s.delta(Math.abs(diff))}`;
+  };
+  const W=340, H_=130, P={t:10,r:8,b:22,l:8};
+  const x = i => P.l+(W-P.l-P.r)*i/(N-1);
+
+  function renderCells(){
+    allSeries().forEach(s=>{
+      const li=document.querySelector(`#ledger li[data-k="${s.key}"], #own li[data-k="${s.key}"]`); if(!li) return;
+      const pts=pointsFor(s).filter(p=>p.d!==TODAY);
+      const last=pts[pts.length-1], avg=pts.length?pts.reduce((x,p)=>x+p.v,0)/pts.length:null, t=trendOf(s, pointsFor(s));
+      li.querySelector('.l').innerHTML = last ? `${s.fmt(last.v)}<small>${last.d===isoDays[N-2]?'yesterday':fmtDay(C.fromISO(last.d))}</small>` : `<small>no earlier reading</small>`;
+      li.querySelector('.a').innerHTML = avg!=null ? `${s.fmt(avg)}<small>${t||`${pts.length} ${pts.length===1?'reading':'readings'}`}</small>` : `<small>not yet</small>`;
+    });
+  }
+
+  // One trend, drawn to whatever box it is given: the strip's cell, or the whole screen. Everything that
+  // depends on the size is worked out here, so the small chart and the expanded one are the same drawing.
+  function trendHTML(s, si, w, h){
+    const p={t:10,r:8,b:22,l:8}, X = i => p.l+(w-p.l-p.r)*i/(N-1);
+    const pts=pointsFor(s);
+    if(pts.length<2) return `<div class="chart" data-i="${si}"><h3>${s.name}</h3><p class="fig"><small>${pts.length===1?'one reading; the line starts at two':'nothing logged yet'}</small></p><p class="rng">Log ${s.name.toLowerCase()} on a few days and the last 30 days draw themselves.</p></div>`;
+    const vals=pts.map(q=>q.v), lo=Math.min(...vals), hi=Math.max(...vals), pad=(hi-lo)*.15||1;
+    const Y=v=>p.t+(h-p.t-p.b)*(1-(v-lo+pad)/(hi-lo+2*pad));
+    const avg=vals.reduce((a,b)=>a+b,0)/vals.length, last=pts[pts.length-1];
+    const path=pts.map((q,k)=>`${k?'L':'M'}${X(q.i).toFixed(1)},${Y(q.v).toFixed(1)}`).join(' ');
+    // the seven-day mean at each reading: a day of water weight or a short night should not read as a direction
+    const roll = pts.map(q => { const win = pts.filter(r => q.i - r.i >= 0 && q.i - r.i < 7); return { i: q.i, v: win.reduce((n, r) => n + r.v, 0) / win.length }; }).filter((q, k) => k >= 2);
+    const rollPath = roll.length > 1 ? roll.map((q,k)=>`${k?'L':'M'}${X(q.i).toFixed(1)},${Y(q.v).toFixed(1)}`).join(' ') : '';
+    const big = h > 200;   // room enough to name every reading rather than wait to be asked
+    return `<div class="chart" data-i="${si}">
+      ${big ? '' : `<h3>${s.name}</h3>`}
+      <p class="fig">${s.fmt(avg)}<small>average of ${pts.length} readings${roll.length>1?` · with its seven-day mean`:''}</small></p>
+      <svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${s.name}, last ${N} days, ${s.fmt(lo)} to ${s.fmt(hi)}, average ${s.fmt(avg)}">
+        <line class="ax" x1="${p.l}" x2="${w-p.r}" y1="${h-p.b}" y2="${h-p.b}"/>
+        <line class="avg" x1="${X(pts[0].i).toFixed(1)}" x2="${X(last.i).toFixed(1)}" y1="${Y(avg).toFixed(1)}" y2="${Y(avg).toFixed(1)}"/>
+        ${rollPath ? `<path class="roll" d="${rollPath}"/>` : ''}
+        <path class="ln" pathLength="1" d="${path}"/>
+        ${pts.map(q=>`<circle class="pt" r="3" cx="${X(q.i).toFixed(1)}" cy="${Y(q.v).toFixed(1)}"/>`).join('')}
+        <circle class="dot ${last.d===TODAY?'':'past'}" r="4.5" cx="${X(last.i).toFixed(1)}" cy="${Y(last.v).toFixed(1)}"/>
+        ${big ? valueLabels(pts, X, Y, v=>s.fmt(v), w) : ''}
+        <text class="tk" x="${p.l}" y="${h-6}">${fmtDay(days[0])}</text><text class="tk" x="${w-p.r}" y="${h-6}" text-anchor="end">today</text>
+        <line class="xh" y1="${p.t}" y2="${h-p.b}"/><circle class="hv" r="4.5"/>
+        <rect x="0" y="0" width="${w}" height="${h}" fill="transparent" class="hit"/>
+      </svg>
+      <div class="tip"></div>
+      <p class="rng">Low ${s.fmt(lo)} · high ${s.fmt(hi)} · latest ${s.fmt(last.v)}</p>
+    </div>`;
+  }
+
+  // reading a point: the nearest logged day to the pointer, by press or by drag
+  // Names for the readings on an expanded chart. A label sits on the side of its point the line is not on —
+  // below a dip, above a peak — so the line never has to run through the words; and it steps aside entirely
+  // rather than land on a label already written.
+  function valueLabels(pts, X, Y, fmt, w){
+    // A few readings can all be named. Many cannot: at a reading every fifty pixels the words collide with each
+    // other, with the average and with the seven-day mean. Then only the three worth naming are — the highest,
+    // the lowest and the latest — and the rest are read by pressing the chart.
+    let show = pts;
+    if(pts.length > 6){
+      const hi = pts.reduce((a,b)=>b.v>a.v?b:a), lo = pts.reduce((a,b)=>b.v<a.v?b:a), newest = pts[pts.length-1];
+      const keep = new Set([hi.i, lo.i, newest.i]);
+      show = pts.filter(q=>keep.has(q.i));
+    }
+    const out = []; let last = null;
+    show.forEach(q=>{
+      const k = pts.indexOf(q);
+      const prev = pts[k-1], next = pts[k+1];
+      const around = [prev, next].filter(Boolean).map(n=>Y(n.v));
+      const below = around.length && around.every(v => v < Y(q.v) - 1);   // both neighbours higher up: this is a dip
+      const y = below ? Y(q.v) + 17 : Y(q.v) - 13, x = X(q.i);
+      if(last && Math.abs(x - last.x) < 52 && Math.abs(y - last.y) < 16) return;
+      last = { x, y };
+      // a label on either edge turns to face inward rather than hang half outside the drawing
+      const anchor = w && x > w - 44 ? 'end' : w && x < 44 ? 'start' : 'middle';
+      const tx = anchor === 'end' ? Math.min(x + 6, w - 1) : anchor === 'start' ? Math.max(x - 6, 1) : x;
+      out.push(`<text class="tk val" x="${tx.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${anchor}">${fmt(q.v)}</text>`);
+    });
+    return out.join('');
+  }
+
+  function wire(ch, s, w, h){
+    const svg=ch.querySelector('svg'); if(!svg) return;
+    const p={t:10,r:8,b:22,l:8}, X = i => p.l+(w-p.l-p.r)*i/(N-1);
+    const pts=pointsFor(s), vals=pts.map(q=>q.v), lo=Math.min(...vals), hi=Math.max(...vals), pad=(hi-lo)*.15||1;
+    const Y=v=>p.t+(h-p.t-p.b)*(1-(v-lo+pad)/(hi-lo+2*pad));
+    const xh=svg.querySelector('.xh'), hv=svg.querySelector('.hv'), tip=ch.querySelector('.tip');
+    const show = e => {
+      const r=svg.getBoundingClientRect(), i=((e.clientX-r.left)/r.width*w-p.l)/(w-p.l-p.r)*(N-1);
+      const q=pts.reduce((a,b)=>Math.abs(b.i-i)<Math.abs(a.i-i)?b:a);
+      xh.setAttribute('x1',X(q.i)); xh.setAttribute('x2',X(q.i)); xh.style.opacity=1; hv.setAttribute('cx',X(q.i)); hv.setAttribute('cy',Y(q.v)); hv.style.opacity=1;
+      tip.innerHTML=`<b>${s.fmt(q.v)}</b> · ${fmtDay(C.fromISO(q.d))}`; tip.style.top=`${Y(q.v)/h*r.height-8+svg.offsetTop}px`; tip.style.opacity=1;
+      const half=tip.offsetWidth/2, cw=ch.clientWidth;   // never off the edge of the chart, which on a phone is the screen
+      tip.style.left=`${Math.round(Math.min(Math.max(X(q.i)/w*r.width, half), Math.max(half, cw-half)))}px`;
+    };
+    const hide = () => { xh.style.opacity=0; hv.style.opacity=0; tip.style.opacity=0; };
+    chartReading(svg, show, hide);
+  }
+
+  function renderCharts(){
+    const all = allSeries();
+    F('strip').innerHTML = all.map((s,si)=>trendHTML(s, si, W, H_)).join('');
+    document.querySelectorAll('#strip .chart').forEach(ch=>{ const s=all[+ch.dataset.i]; wire(ch, s, W, H_);
+      if(!ch.querySelector('svg')) return;                                   // nothing drawn yet: nothing to expand
+      zoomable(ch, `trend-${s.key}`, `${s.name} — last ${N} days`, box=>{
+        const w=zoomWidth(box, N), h=zoomHeight(w, box.clientHeight-96);   // a slot a day across; the figure above and the range below want their share
+        box.innerHTML = trendHTML(s, +ch.dataset.i, w, h);
+        wire(box.querySelector('.chart'), s, w, h);
+      });
+    });
+  }
+
+  // a streak: days in a row ending today that pass the test; today is skipped, not broken, while it is still open
+  const streak = (days, ok, open = () => false) => { let n=0; for(let i=0;i<400;i++){ const d=days[C.iso(C.addDays(C.fromISO(TODAY),-i))]||{}; if(!ok(d)){ if(i===0 && open(d)) continue; break; } n++; } return n; };
+  const pillStreak = () => { const meds=H.meds||[]; return meds.length ? streak(H.days, d=>meds.every(m=>(d.pills||[]).includes(m.id)), ()=>true) : 0; };
+  const sleepStreak = () => streak(H.days, d=>+d.sleep>=7, d=>d.sleep==null);
+  function renderLogged(){
+    renderFeel(); renderOwn();
+    const ss=sleepStreak(); document.querySelector('#ledger li[data-k="sleep"] .n small').textContent = ss>=2 ? `Hours, and when · ${ss} days of 7 h+` : 'Hours, and when';
+    // what the phone has counted today, and which apps it was
+    F('opensv').textContent = L.opens != null ? L.opens : '—';
+    const apps = Object.entries(L.apps || {}).sort((a,b)=>b[1]-a[1]);
+    F('opensh').textContent = apps.length ? apps.map(([n,c])=>`${n} ${c}`).join(' · ') : 'Times you reached for the phone';
+    document.querySelectorAll('#ledger li[data-k]').forEach(li=>{ const k=li.dataset.k; li.classList.toggle('logged', L[k]!=null && k!=='steps'); });
+    const meds=(H.meds||[]).length, taken=L.pills.filter(p=>(H.meds||[]).some(m=>m.id===p)).length;
+    const n = ['sleep','weight','hr'].filter(k=>L[k]!=null).length + (meds && taken===meds ? 1 : 0);
+    const st=trendOf(series[0], pointsFor(series[0])), wt=trendOf(series[1], pointsFor(series[1]));
+    const tail = st||wt ? `; on the month${st?' sleep is '+st:''}${st&&wt?',':''}${wt?' weight is '+wt:''}.` : '.';
+    F('sub').innerHTML = `Logged <b>${n} of ${meds?4:3}</b> ${C.now.getHours()<12?'this morning':'today'}${tail}`;
+  }
+  function renderAll(){ renderLogged(); renderCells(); renderCharts(); renderPills(); renderNext(); }
+
+  F('todayn').textContent = `${C.dayName(C.now)} ${C.dayMonthLong(C.now)}`;
+  F('range').addEventListener('click', e=>{ const b=e.target.closest('button[data-n]'); if(b){ setRange(+b.dataset.n); renderAll(); } });
+  F('nx-date').placeholder = C.dayMonth(C.addDays(C.now, 2));
+  renderAll();
+  const adopt = doc => { H = doc; H.meds ??= []; H.next ??= []; Object.values(H.days).forEach(d=>{ if(d.steps==null && d.garmin && d.garmin.steps!=null){ d.steps=String(d.garmin.steps); d.stepsFrom='garmin'; } });   /* days the watch counted before Steps had a row */ L = H.days[TODAY] || { pills: [] }; L.pills ??= []; applyLog(); };
+  async function renderSync(){
+    const led = await store.ledger(), g = led.garmin; const el=F('syncline'); if(!g && !navigator.onLine){ el.hidden=true; return; }
+    el.hidden=false; const ago = g ? Math.round((Date.now()-new Date(g.last))/60000) : 0;
+    el.innerHTML = (g ? (g.ok ? `Garmin synced ${ago<1?'just now':ago<60?ago+' min ago':Math.round(ago/60)+' h ago'} · ${g.days} days${(g.errors||'').includes(TODAY.slice(5))?' · <span class="bad">nothing for today yet — sync the watch to Garmin Connect</span>':''}` : `<span class="bad">Garmin sync failed: ${esc(g.error||'')}</span>`) : 'Garmin not synced yet') + ` <button class="textbtn" type="button" id="syncnow">Sync now</button>`;
+    F('syncnow').addEventListener('click', async ()=>{ F('syncnow').textContent='Syncing…'; const r = await store.sync('garmin'); if(r && r.ok){ const doc = await store.load(KEY); if(doc && doc.days) adopt(doc); } renderSync(); });
+  }
+  store.load(KEY).then(doc => { if (doc && doc.days) adopt(doc); renderSync(); C.countIn('.chart .fig'); });
+</script>
+</body>
+</html>

@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><base href="/">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1F3A2E">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>HQ — Today</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="hq.css">
+<style>
+
+  h1{font-size:32px;line-height:1.3;text-wrap:balance;max-width:40ch}
+  h1 em{font-style:italic}
+
+  main{max-width:1180px;margin:0 auto;padding:34px 40px 44px;display:grid;grid-template-columns:1.1fr 1fr;gap:64px}
+  h2 small a{border-bottom:1px solid var(--rule)} h2 small a:hover{color:var(--ink);border-color:var(--ink)}
+  /* the two columns, and the blocks stacked down each. The gap lives here rather than on the blocks, so a
+     block reads the same whether it ended up first in its column or last. */
+  .col{display:flex;flex-direction:column;gap:34px;min-width:0}
+  .pgedit{grid-column:1/-1;margin:0 0 6px;padding:14px 16px;background:var(--card);border-radius:12px;box-shadow:var(--shadow)}
+  .mast .arr{display:block;margin-top:10px;font-family:var(--sans);font-size:12.5px;color:var(--band-muted);background:none;border:0;padding:0;cursor:pointer;border-bottom:1px solid transparent}
+  .mast .arr:hover{color:var(--band-ink);border-bottom-color:rgba(242,236,223,.4)}
+
+  /* hour-ruled timeline (clean's donation, in ink and paper) */
+  .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:18px 20px 20px;margin-top:14px}
+  .tl{position:relative;height:calc(var(--hour) * 12)}
+  .hr{position:absolute;left:0;right:0;display:flex;gap:14px;align-items:flex-start;font-family:var(--serif);font-size:13px;color:var(--ink-3)}
+  .hr::after{content:"";flex:1;border-top:1px solid var(--rule);transform:translateY(9px)}
+  .hr span{width:42px;text-align:right}
+  .ev{position:absolute;left:60px;right:0;min-height:30px;background:var(--c);border-radius:10px;padding:6px 12px;font-size:14.5px;line-height:1.3;transition:transform .15s,box-shadow .15s}
+  .ev:hover{transform:translateX(2px);box-shadow:var(--shadow)}
+  .ev.cal{--c:var(--a-cal)} .ev.fit{--c:var(--a-fit)} .ev.health{--c:var(--a-health)} .ev.study{--c:var(--a-study)}
+  .ev b{display:block;font-family:var(--serif);font-weight:400}
+  .ev small{color:var(--ink-3);font-size:12.5px}
+  .now{position:absolute;left:46px;right:0;height:1.5px;background:var(--ox);z-index:2;pointer-events:none}
+  .now::before{content:"";position:absolute;left:-1px;top:50%;margin-top:-3.5px;width:7px;height:7px;border-radius:50%;background:var(--ox)}
+  .now::after{content:attr(data-t);position:absolute;right:0;top:-21px;font-family:var(--serif);font-size:12px;color:var(--band-ink);background:var(--ox);padding:2px 8px;border-radius:6px}
+  .ev.live b{color:var(--ox)}
+  .td{position:absolute;left:64px;right:0;display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2);border-top:1px dashed var(--ink-3);padding-top:3px;transform:translateY(-1px);pointer-events:none}
+  .td span{display:inline-flex;align-items:center;gap:8px;background:var(--card);padding:0 6px 0 0;border-radius:4px;position:relative;z-index:1} .td small{background:var(--card);padding:0 0 0 6px;position:relative;z-index:1}
+  .td .ic{width:12px;height:12px;color:var(--ink-3)} .td small{color:var(--ink-3);margin-left:auto} .td.late,.td.late small,.td.late .ic{color:var(--ox)} .td.late{border-color:var(--ox)}
+  .card.clear{padding:34px 28px 32px;text-align:center}
+  .card.clear b{display:block;font-family:var(--serif);font-weight:400;font-style:italic;font-size:22px;margin-bottom:6px}
+  .card.clear small{color:var(--ink-3);font-size:13px}
+  .card.clear a{border-bottom:1px solid var(--rule)} .card.clear a:hover{border-color:var(--ink)}
+  .card.clear::before,.rep.empty::before{content:"";display:block;width:160px;height:12px;margin:0 auto 12px;background:var(--ornament)}
+  .todo .empty{text-align:center;padding:18px 0;max-width:34ch;margin:0 auto;border:0;display:block}
+  .todo .empty::before{content:"";display:block;width:min(160px,100%);height:12px;margin:0 auto 10px;background:var(--ornament)}
+  .upnext{margin:10px 0 0;font-size:14px;color:var(--band-muted);display:flex;flex-wrap:wrap;gap:6px 22px}
+  .upnext .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--band-ink);margin-right:8px}
+  .upnext b{font-family:var(--serif);font-weight:400;color:var(--band-ink)}
+  .upnext .t{white-space:nowrap}
+  #wx{margin-top:6px}
+
+  /* morning report: last night and the body, read from Health */
+  .rep{display:grid;grid-template-columns:auto 1fr;gap:6px 28px;align-items:start}
+  .rep .big{grid-row:1/3}
+  .rep .big b{display:block;font-family:var(--serif);font-weight:400;font-size:44px;line-height:1;letter-spacing:-.01em}
+  .rep .big b i{font-style:normal;font-size:17px;color:var(--ink-3);margin-left:4px}
+  .rep .big span{display:block;font-size:13px;color:var(--ink-2);margin-top:6px}
+  .rep .big small{display:block;font-size:12.5px;color:var(--ink-3);margin-top:2px}
+  .rep .stages{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--paper-2);margin-top:8px}
+  .rep .stages i{display:block;height:100%}
+  .rep .stages .deep{background:var(--band)} .rep .stages .light{background:var(--sage)} .rep .stages .rem{background:var(--lilac)} .rep .stages .awake{background:var(--rule)}
+  .rep .legend{font-size:12px;color:var(--ink-3);margin-top:6px}
+  .rep .legend b{font-weight:500;color:var(--ink-2)}
+  .rep .facts{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:12px 18px;margin-top:12px;padding-top:14px;border-top:1px dotted var(--rule)}
+  .rep .facts li b{font-family:var(--serif);font-weight:400;font-size:22px;line-height:1.1;display:block}
+  .rep .facts li b i{font-style:normal;font-size:13px;color:var(--ink-3);margin-left:3px}
+  .rep .facts li span{display:block;font-size:12.5px;color:var(--ink-2)}
+  .rep .facts li small{display:block;font-size:12px;color:var(--ink-3)}
+  .rep.empty{display:block;text-align:center;padding:28px 24px}
+  .rep.empty b{display:block;font-family:var(--serif);font-weight:400;font-style:italic;font-size:20px;margin-bottom:4px}
+  .rep.empty small{color:var(--ink-3);font-size:13px}
+  .rep.empty a{border-bottom:1px solid var(--rule)} .rep.empty a:hover{border-color:var(--ink)}
+
+  .affedit{margin:10px 0 4px;padding:14px 16px;background:var(--card);border-radius:12px;box-shadow:var(--shadow)}
+  .arrange{list-style:none;margin:0;padding:0}
+  .arrange li{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dotted var(--rule)}
+  .arrange li:last-child{border-bottom:0}
+  .arrange input{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px}
+  .arrange input:checked{background:var(--band);border-color:var(--band)}
+  .arrange input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+  .arrange label{font-family:var(--serif);font-size:15.5px;cursor:pointer;margin-right:auto}
+  .arrange .mv{font-size:13px;color:var(--ink-3);padding:2px 6px;border-radius:4px;background:none;border:0;cursor:pointer}
+  .arrange .mv:hover:not([disabled]){color:var(--ink);background:var(--paper-2)}
+  .arrange .mv[disabled]{opacity:.25;cursor:default}
+  .arrn{margin:12px 0 0;font-size:12.5px;color:var(--ink-3)}
+  .arrn .textbtn{margin-left:10px}
+  .affairs li.empty{display:block;padding:14px 0;border:0}
+  .affairs li{display:grid;grid-template-columns:1fr auto;gap:2px 20px;padding:13px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+  .affairs .n{grid-column:1;grid-row:1;font-family:var(--serif);font-size:17px;border-bottom:1px solid transparent}
+  .affairs .n:hover{border-bottom-color:var(--ink)}
+  .affairs .over{font-weight:500;color:var(--ox)}
+  .affairs .d{grid-column:1;grid-row:2;color:var(--ink-2);font-size:13.5px}
+  .affairs .v{grid-column:2;grid-row:1/3;font-family:var(--serif);font-size:24px;text-align:right;line-height:1.1}
+  .affairs .v small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3);margin-top:2px}
+  .affairs .v.flag small{color:var(--ox)}
+  h2 .otherday{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto;border-bottom:1px solid var(--rule)}
+  h2 .otherday:hover{color:var(--ox);border-bottom-color:var(--ox)}
+  .todo .tg{font-size:12.5px;color:var(--ink-3);white-space:nowrap}
+  /* The figure sets this chip's baseline, being the first thing in it, so at 14px inside 12.5px text it put
+     the whole chip 3px out of line with every other chip in the column. It keeps the serif face that marks
+     it as a figure and takes the size of the words around it. */
+  .todo .tg .did{width:3.6ch;font-family:var(--serif);font-size:inherit;text-align:right;border-bottom:1px dotted var(--ink-2);background:none;padding:0;color:var(--ink)}
+  .todo .tg .did:focus{outline:none;border-bottom-color:var(--ink)}
+  .todo .skip{color:var(--ink-3)} .todo .skip:hover{color:var(--ox)}
+  .reps li.over{opacity:.55}
+  .reps{list-style:none;margin:10px 0 0;padding:0}
+  .reps li{display:flex;align-items:baseline;gap:12px;padding:6px 0;border-top:1px dotted var(--rule);font-size:13.5px;color:var(--ink-2)}
+  .reps li span{font-family:var(--serif);font-size:14.5px}
+  .reps li small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3)}
+  .reps li .textbtn{margin-left:auto;font-size:12.5px;color:var(--ink-3)}
+  .todo .rp{color:var(--ink-3);font-size:13px;margin-left:6px}
+  .todo ul{border-left:1px solid color-mix(in srgb, var(--ox) 32%, transparent);padding-left:14px}
+  /* The row aligns on the words, not on the boxes. Centring each item centred it on its own height, so the
+     target chip — which holds a 14px input inside 12.5px text — sat its words 2px above everything beside
+     them. The box is the one thing that wants centring, and it asks for that itself. */
+  .todo li{display:flex;align-items:baseline;gap:14px;padding:8px 0;border-bottom:1px solid var(--rule)}
+  .todo input[type=checkbox]{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px;align-self:center}
+  .todo input[type=checkbox]:checked{background:var(--band);border-color:var(--band)}
+  .todo input[type=checkbox]:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+  .todo label{cursor:pointer;margin-right:auto}
+  .todo input[type=checkbox]:checked + label{color:var(--ink-3);background:linear-gradient(currentColor,currentColor) left 58%/100% 1px no-repeat}
+  .todo .w{font-size:12.5px;color:var(--ink-3)}
+  .todo .w.due{color:var(--ox)}
+  .todo .w.from{font-style:italic;font-family:var(--serif)}
+  .todo .w.from.long{color:var(--ox)}   /* past four days it stops being a note and starts being the point */
+  /* Both of these are revealed on hover, and both must stay out of the flow, or an invisible control takes
+     room from a visible one. "not today" was in the flow: it reserved 68px it never showed, and pushed the
+     time on a standing to-do that far left of every other modifier in the column. One group now, anchored
+     right, painted on the page's own colour so it covers what it sits over. */
+  .todo li{position:relative}
+  .todo .acts{position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:14px;background:var(--paper);padding-left:12px;opacity:0;transition:opacity .15s}
+  .todo li:hover .acts,.todo li:focus-within .acts{opacity:1}
+  .todo .x:hover{color:var(--ox)}
+  .hr span{width:46px}
+  .ev{left:64px} .now{left:50px}
+  .ev.cal,.ev.fit,.ev.health,.ev.study{}
+
+  @media (prefers-reduced-motion:reduce){.ev{transition:none}}
+  /* The phone: a to-do is something you tick with a thumb, so the row becomes a 44px target and the label
+     fills it — the whole line is the thing you press, not the 15px square at its left. hq.css cannot say this,
+     because it loads first and a page's own rules outrank it. */
+  @media (max-width:760px){
+    /* the greeting keeps its two lines but stops taking a third of the screen before anything is read */
+    .band h1{font-size:22px;line-height:1.25}
+    .mast{margin-top:12px;padding-top:12px}
+    .upnext{margin:8px 0 0;font-size:13px;gap:4px 16px}
+    .mast .arr{margin-top:8px}
+    .todo li{align-items:center;min-height:44px;padding:4px 0;gap:12px}
+    .todo label{display:flex;align-items:center;min-height:44px;flex:1}
+    .todo input[type=checkbox]{width:20px;height:20px}
+    .todo input[type=checkbox]:checked::after{width:9px;height:5px;border-width:2px;border-top:0;border-right:0}
+    /* .acts stays hidden here on purpose. It is anchored right and painted on the page's colour, so showing it
+       on a phone would cover the time and the deadline note — the controls would eat the facts. Removing and
+       skipping a to-do live on The List, which is built for it and reachable in one tap from the heading. */
+  }
+  @media (max-width:1100px){
+    main{grid-template-columns:1fr;gap:36px;padding:24px 20px 36px} .card{padding:12px 10px 14px} .card.rep,.card.clear{padding:18px 16px 20px} .rep{grid-template-columns:1fr} .rep .big{grid-row:auto} .rep .stages{margin-top:2px} .rep .facts{grid-template-columns:repeat(2,1fr)} .foot{padding:0 20px 28px}
+  }
+</style>
+</head>
+<body>
+<header class="band">
+  <div class="in">
+    <div class="row">
+      <a class="mark" href="today.html">HQ</a>
+      <span class="date"></span>
+      <nav aria-label="Areas"><a href="today.html" aria-current="page">Today</a><a href="calendar.html">Calendar</a><a href="finances.html">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="health.html">Health</a></nav>
+      <div class="right">
+        <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
+        <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
+        <button class="ib menu" type="button" aria-label="Menu" aria-expanded="false" id="menubtn"><svg class="ic"><use href="icons.svg#menu"/></svg></button>
+      </div>
+    </div>
+    <div class="mast"><h1 id="greet">Good morning, Jacob.</h1><p class="upnext" id="upnext" hidden></p><p class="upnext" id="wx" hidden></p><button class="arr" type="button" id="arrpage">Arrange this page</button></div>
+  </div>
+</header>
+
+<main>
+  <!-- Each block is moved whole into whichever column it has been put in; nothing inside them is rebuilt, so
+       every id, listener and render function below goes on working wherever the block ends up. -->
+  <div class="pgedit" id="pgedit" hidden></div>
+  <div class="col" id="cola">
+    <section data-block="day">
+      <h2>The day<small id="dayn"></small><a class="otherday" href="day.html?d=">Another day</a></h2>
+      <div class="card"><div class="tl" id="tl"></div></div>
+    </section>
+
+    <section class="report" data-block="report">
+      <h2>Morning report<small id="repn"></small></h2>
+      <div class="card rep" id="rep"></div>
+    </section>
+  </div>
+
+  <div class="col" id="colb">
+    <section data-block="affairs">
+      <h2>State of affairs<small id="affn"></small></h2>
+      <div class="affedit" id="affedit" hidden></div>
+      <ul class="affairs" id="affairs"></ul>
+    </section>
+
+    <section class="todo" data-block="todo">
+      <h2>To do<small id="todon"></small><a class="otherday" href="list.html">The list</a></h2>
+      <ul id="todo"></ul>
+      <div class="capbar">
+        <form class="addt" id="addt"><input id="t-text" placeholder="Anything: a to-do, 12.40 lunch, 173.2, or Dentist Thursday 3–4 pm" required><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
+        <div class="propose" id="propose" role="status" aria-live="polite" hidden></div>
+        <p class="saidt" id="saidt" role="status" aria-live="polite" hidden></p>
+      </div>
+      <ul class="reps" id="reps"></ul>
+    </section>
+  </div>
+</main>
+<p class="foot" id="foot"></p>
+
+<script>
+  const _D=Date, FIXED=new _D(2026,8,15,10,27); Date=class extends _D{ constructor(...a){ super(...(a.length?a:[FIXED.getTime()])); } static now(){ return FIXED.getTime(); } };
+  localStorage.clear();
+  localStorage.setItem('hq.calendar', JSON.stringify({cats:[{id:'cal',name:'Appointments',tint:'#E9EEF3'},{id:'fit',name:'Training',tint:'#F6E6DC'},{id:'study',name:'Study',tint:'#ECE6F3'}],hidden:[],notes:{},series:[{id:1,date:'2026-09-15',start:9,end:10.5,title:'Study — Networking, chapter seven',cat:'study',sub:'Routing',rep:[]},{id:2,date:'2026-09-15',start:11,end:11.5,title:'Call with advisor',cat:'cal',sub:'',rep:[]},{id:3,date:'2026-09-15',start:17,end:18,title:'Gym — pull day',cat:'fit',sub:'Rows, pull-ups, curls',rep:[]}]}));
+  localStorage.setItem('hq.health', JSON.stringify({meds:[{id:'m1',name:'Vitamin D',when:'morning'}],next:[],days:{'2026-09-13':{pills:['m1'],sleep:'7.5'},'2026-09-14':{pills:['m1'],sleep:'7.8',weight:'172.9',hr:'55',garmin:{steps:8412}},'2026-09-15':{pills:[],sleep:'6.4',bed:'11.40 pm',woke:'6.52 am',weight:'172.4',hr:'52',garmin:{score:81,deep:6000,light:13800,rem:5400,awake:720,hrv:48,hrvStatus:'BALANCED',bb:74,bbChange:58,hr7:54,resp:14.2,steps:312}}}}));
+  localStorage.setItem('hq.library', JSON.stringify({open:1,books:[{id:1,shelf:'reading',title:'Project Hail Mary',author:'Andy Weir',pages:476,page:180,started:'2026-09-10',log:{'2026-09-12':90,'2026-09-14':140,'2026-09-15':180},notes:[]}]}));
+  localStorage.setItem('hq.school', JSON.stringify({courses:[{id:'c1',name:'PHYS-1610'},{id:'c2',name:'MATH-2650'}],items:[{id:1,course:'c1',title:'Exam 1',type:'test',due:'2026-09-15',done:true},{id:2,course:'c2',title:'Quiz 4',type:'assignment',due:'2026-09-18',done:false}],sessions:[{id:1,date:'2026-09-14',course:'c1',min:50}]}));
+  localStorage.setItem('hq.finances.2026-09', JSON.stringify({expected:4200,income:[{id:1,src:'Paycheck',amt:1450,date:'2026-09-11'}],plan:[],cats:[{id:'g',name:'Groceries',limit:420},{id:'e',name:'Eating out',limit:150},{id:'r',name:'Rent',limit:1450,due:17}],tx:[{id:1,date:'2026-09-14',what:'Weekly groceries',cat:'g',amt:56.3},{id:2,date:'2026-09-15',what:'Lunch',cat:'e',amt:18.2}],history:[]}));
+  localStorage.setItem('hq.today.2026-09-15', JSON.stringify({items:[{text:'Call the dentist',at:9.5,done:false},{text:'Laundry',done:true,from:'2026-09-14'}]}));
+  localStorage.setItem('hq.investments', JSON.stringify({holdings:[{id:1,ticker:'SPAXX',shares:573.7,account:'Brokerage',yield:3.36},{id:2,ticker:'VOO',shares:0.31,account:'Brokerage'}],balances:[],prices:{SPAXX:{price:1,chg:0,name:'Fidelity Government Money Market',at:'2026-09-15T04:00:00Z'},VOO:{price:709.16,chg:1.05,name:'Vanguard S&P 500 ETF',at:'2026-09-15T04:00:00Z'}},history:{'2026-09-10':780,'2026-09-12':790},contribCats:['roth ira'],baseline:1000}));
+  localStorage.setItem('hq.study', JSON.stringify({path:'stoics',pos:6,days:{'2026-09-13':{path:'stoics',cards:['s01','s02','s03'],done:true,at:3},'2026-09-14':{path:'stoics',cards:['s04','s05','s06'],done:true,at:3}},notes:[{date:'2026-09-14',path:'stoics',card:'s06',text:'Take care of it; do not view it as your own.'}],answers:{s05:{date:'2026-09-14',text:'It crosses when I stop trying.'}}}));
+</script>
+<script src="clock.js"></script>
+<script src="hq.js"></script>
+<script type="module" src="occurs.mjs"></script>
+<script src="store.js"></script>
+<script src="recur.js"></script>
+<script src="capture.js"></script>
+<script src="bell.js"></script>
+<script src="search.js"></script>
+<script>
+  // Today is a summary: it reads the other pages' documents and derives everything. Only the to-do list is its own.
+  const C = clock, TODAY = C.today;
+  let NOW = C.now.getHours() + C.now.getMinutes()/60;
+  const wd = d => (C.fromISO(d).getDay()+6)%7;
+  const YM = TODAY.slice(0,7);
+
+  // ---- the day: from the calendar document ----
+  function renderDay(cal){
+    const tl = F('tl'); let html='', list=[];
+    if(cal && cal.series){
+      const occurs = s => hqOccurs.occursOn(s, TODAY);
+      list = cal.series.filter(s=>s.date && occurs(s) && !(cal.hidden||[]).includes(s.cat)).sort((a,b)=>a.start-b.start);
+    }
+    // 8 to 8, stretched when the day has something earlier or later
+    const ats=T.items.filter(i=>i.at!=null && !i.done).map(i=>i.at);
+    const H0=Math.min(8, ...list.map(s=>Math.floor(s.start)), ...ats.map(Math.floor)), H1=Math.max(20, ...list.map(s=>Math.ceil(s.end)), ...ats.map(a=>Math.ceil(a+0.5)));
+    tl.style.height=`calc(var(--hour) * ${H1-H0})`;
+    for(let h=H0; h<H1; h++) html += `<div class="hr" style="top:calc(var(--hour)*${h-H0})"><span>${C.hourLabel(h)}</span></div>`;
+    if(cal && cal.series){
+      const cats = cal.cats||[], cat = id => cats.find(c=>c.id===id) || {tint:'#E9EEF3'};
+      html += list.map(s=>`<a href="calendar.html" class="ev ${s.start<=NOW&&s.end>NOW?'live':''}" style="--c:${cat(s.cat).tint};top:calc(var(--hour)*${s.start-H0} + 9px);height:calc(var(--hour)*${s.end-s.start} - 4px)"><b>${esc(s.title)}</b>${s.end-s.start>=0.75&&s.sub?`<small>${esc(s.sub)}</small>`:''}</a>`).join('');
+    }
+    T.items.filter(i=>i.at!=null && !i.done && i.at>=H0 && i.at<=H1).forEach(i=>{ html += `<div class="td ${i.at<NOW?'late':''}" style="top:calc(var(--hour)*${i.at-H0} + 9px)"><span><svg class="ic"><use href="icons.svg#check"/></svg>${esc(i.text)}</span><small>by ${h12(i.at)}</small></div>`; });
+    if(NOW>=H0 && NOW<=H1) html += `<div class="now" style="top:calc(var(--hour)*${NOW-H0} + 9px)" data-t="${C.time(new Date())}"></div>`;
+    const card = tl.parentElement; card.classList.toggle('clear', !list.length); card.querySelector('.clearmsg')?.remove();
+    tl.hidden = !list.length; tl.innerHTML = html;
+    if(!list.length) card.insertAdjacentHTML('beforeend', `<div class="clearmsg"><b>A clear day.</b><small>Nothing on the calendar · <a href="calendar.html">plan it</a></small></div>`);
+    F('dayn').textContent = cal ? (list.length ? `${list.length} ${list.length===1?'item':'items'} · ${C.hourLabel(H0)} to ${C.hourLabel(H1)}` : C.time(new Date())) : 'open Calendar to plan the day';
+    return list;
+  }
+
+  // ---- morning report: last night and the body, from the Health document ----
+  // a streak: days in a row ending today that pass the test; today is skipped, not broken, while it is still open
+  const streak = (days, ok, open = () => false) => { let n=0; for(let i=0;i<400;i++){ const d=days[C.iso(C.addDays(C.fromISO(TODAY),-i))]||{}; if(!ok(d)){ if(i===0 && open(d)) continue; break; } n++; } return n; };
+  const hm = sec => { const m=Math.round(sec/60); return m>=60 ? `${Math.floor(m/60)} h${m%60?' '+(m%60):''}` : `${m} min`; };
+  const commas = n => Number(n).toLocaleString('en-US');   // a formatter, not the shared parser that shares its old name
+  function renderReport(H){
+    const el=F('rep'), L=H && H.days && H.days[TODAY] || {}, G=L.garmin||{}, Y=H && H.days && H.days[C.iso(C.addDays(C.fromISO(TODAY),-1))] || {};
+    const had = L.sleep!=null || L.hr!=null || L.weight!=null;
+    if(!had){ el.className='card rep empty'; el.innerHTML = `<b>Nothing from last night yet.</b><small>${H ? 'Sync Garmin or log it on <a href="health.html">Health</a>.' : 'Open <a href="health.html">Health</a> to start logging.'}</small>`; F('repn').textContent=''; return; }
+    el.className='card rep'; let html='';
+    if(L.sleep!=null){
+      const sum=(G.deep||0)+(G.light||0)+(G.rem||0)+(G.awake||0);
+      const ss=streak(H.days, d=>+d.sleep>=7, d=>d.sleep==null);
+      html += `<div class="big"><b>${L.sleep}<i>h</i></b><span>asleep${G.nap?` · ${hm(G.nap)} nap`:''}${ss>=3?` · ${ss} days of 7 h+`:''}</span><small>${[L.bed&&L.woke?`${L.bed} to ${L.woke}`:'', G.score!=null?`score ${G.score}`:''].filter(Boolean).join(' · ')}</small></div>`;
+      if(sum){ const seg=(k,v)=>v?`<i class="${k}" style="flex:${v}"></i>`:''; html += `<div><div class="stages">${seg('deep',G.deep)}${seg('light',G.light)}${seg('rem',G.rem)}${seg('awake',G.awake)}</div><p class="legend">${[G.deep&&`<b>${hm(G.deep)}</b> deep`,G.light&&`<b>${hm(G.light)}</b> light`,G.rem&&`<b>${hm(G.rem)}</b> REM`,G.awake&&`<b>${hm(G.awake)}</b> awake`].filter(Boolean).join(' · ')}</p></div>`; }
+      else html += `<div><p class="legend" style="margin-top:14px">${G.feedback ? esc(String(G.feedback).replace(/_/g,' ').toLowerCase()) : 'Logged by hand'}</p></div>`;
+    } else html += `<div class="big"><b>—</b><span>no sleep logged</span></div><div></div>`;
+    const facts=[];
+    if(L.hr!=null) facts.push(`<li><b>${L.hr}<i>bpm</i></b><span>resting</span>${G.hr7?`<small>7-day ${Math.round(G.hr7)}</small>`:''}</li>`);
+    if(L.weight!=null){ const prev=Object.keys(H.days).filter(d=>d<TODAY && H.days[d].weight!=null).sort().pop(); facts.push(`<li><b>${L.weight}<i>lb</i></b><span>this morning</span>${prev?`<small>last ${H.days[prev].weight}</small>`:''}</li>`); }
+    if(G.bb!=null) facts.push(`<li><b>${G.bb}</b><span>body battery</span>${G.bbChange!=null?`<small>${G.bbChange>=0?'+':''}${G.bbChange} overnight</small>`:''}</li>`);
+    if(G.hrv!=null) facts.push(`<li><b>${Math.round(G.hrv)}<i>ms</i></b><span>HRV</span>${G.hrvStatus?`<small>${esc(String(G.hrvStatus).toLowerCase())}</small>`:''}</li>`);
+    if(Y.garmin && Y.garmin.steps!=null) facts.push(`<li><b>${commas(Y.garmin.steps)}</b><span>steps yesterday</span></li>`);
+    if(G.resp!=null) facts.push(`<li><b>${Math.round(G.resp)}</b><span>breaths / min</span><small>overnight</small></li>`);
+    if(facts.length) html += `<ul class="facts">${facts.join('')}</ul>`;
+    el.innerHTML = html;
+    F('repn').textContent = Object.keys(G).length ? 'last night · from Garmin' : 'last night · from Health';
+  }
+
+  // ---- the weather, from Open-Meteo, for wherever the browser says you are (asked once, remembered) ----
+  const SKY = c => c===0?'clear':c<=2?'partly cloudy':c===3?'overcast':c<=48?'foggy':c<=57?'drizzling':c<=67?'raining':c<=77?'snowing':c<=82?'showers':c<=86?'snow showers':'thunderstorms';
+  async function renderWeather(){
+    let geo=null; try{ geo=JSON.parse(localStorage.getItem('hq.geo')); }catch{}
+    if(!geo){ if(!navigator.geolocation) return; geo = await new Promise(res=>navigator.geolocation.getCurrentPosition(p=>res({lat:+p.coords.latitude.toFixed(2), lon:+p.coords.longitude.toFixed(2)}), ()=>res(null), {maximumAge:864e5, timeout:8000})); if(!geo) return; try{ localStorage.setItem('hq.geo', JSON.stringify(geo)); }catch{} }
+    try{
+      const u=`https://api.open-meteo.com/v1/forecast?latitude=${geo.lat}&longitude=${geo.lon}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&timezone=auto&forecast_days=1`;
+      const w=await (await fetch(u)).json(); const t=Math.round(w.current.temperature_2m), hi=Math.round(w.daily.temperature_2m_max[0]), lo=Math.round(w.daily.temperature_2m_min[0]), rain=w.daily.precipitation_probability_max[0];
+      rememberWhere(geo);   // so the nightly sync can keep what the weather actually was, on the days you never opened this
+      F('wx').innerHTML = `<span><span class="k">Out</span><b>${t}°</b> <span class="t">and ${SKY(w.current.weather_code)} · ${lo}° to ${hi}°${rain>=30?` · ${rain}% chance of rain`:''}</span></span>`; F('wx').hidden=false;
+    }catch{}
+  }
+
+  // Where the weather is being asked about, kept once beside the readings it will annotate. Two decimals is
+  // about a kilometre — enough for a forecast, not enough to find a house.
+  async function rememberWhere(geo){
+    if(!geo) return;
+    const H = await store.load('health', true).catch(()=>null); if(!H) return;
+    const was = H.geo || {};
+    if(was.lat === geo.lat && was.lon === geo.lon) return;
+    H.geo = { lat: geo.lat, lon: geo.lon };
+    store.save('health', H);
+  }
+
+  // ---- state of affairs ----
+  // One builder per area, each handed the day's documents and returning a row or nothing. Keeping them in a
+  // list rather than one long function is what makes the list arrangeable: what shows, and in what order, is
+  // a saved choice, and an area added later is on until it is turned off.
+  function row(name, href, note, value, unit, flag){
+    return `<li><a class="n" href="${href}">${name}</a><span class="d">${note}</span><span class="v ${flag?'flag':''}">${value}<small>${unit}</small></span></li>`;
+  }
+
+  const AREAS = [
+    { id:'finances', name:'Finances', build(d){
+      if(d.fin && !(d.fin.cats||[]).length && !(d.fin.tx||[]).length && !(d.fin.income||[]).length) d.fin = null;   // a month nobody has touched reads as not started
+      if(!d.fin) return row('Finances','finances.html','Open Finances to set this month’s budget','','not started');
+      const spent=d.fin.tx.reduce((n,t)=>n+t.amt,0), limits=d.fin.cats.reduce((n,c)=>n+c.limit,0), left=limits-spent;
+      const landed=(d.fin.income||[]).reduce((n,i)=>n+i.amt,0), cash=landed-spent;   // what is actually left, as the Finances page counts it
+      const due=d.fin.cats.find(c=>c.due && (c.bill || !d.fin.tx.some(t=>t.cat===c.id)) && c.due>=C.now.getDate()), next=(d.fin.plan||[]).filter(p=>p.date>=TODAY).sort()[0];
+      // one pool hides an overspend: a category can be over while the total still looks healthy
+      const over = d.fin.cats.filter(c=>c.limit>0 && d.fin.tx.filter(t=>t.cat===c.id).reduce((n,t)=>n+t.amt,0) > c.limit);
+      const overNote = over.length ? `<b class="over">${over.length} over</b> · ${over.map(c=>esc(c.name)).slice(0,2).join(', ')}${over.length>2?'…':''}` : '';
+      const note = overNote || (due ? `${esc(due.bill||due.name)} ${due.due===C.now.getDate()?'due today':'due on the '+due.due+ordinal(due.due)}` : next ? `Next paycheck ${C.short(C.fromISO(next.date))}, ${$0(next.amt)}` : `${$0(left)} left of ${$0(limits)} in limits`);
+      return row('Finances','finances.html',note,$0(cash),`${$0(landed)} in, ${$0(spent)} out`, due && due.due===C.now.getDate());
+    } },
+
+    { id:'investments', name:'Investments', build(d){
+      if(!(d.inv && ((d.inv.holdings||[]).length || (d.inv.balances||[]).length))) return null;   // nothing held: nothing to say
+      const P=d.inv.prices||{}, px=t=>P[String(t).toUpperCase()];
+      const latest={}; [...(d.inv.balances||[])].sort((a,b)=>a.date<b.date?-1:1).forEach(b=>{ latest[b.account]=b.value; });
+      const worth=(d.inv.holdings||[]).reduce((n,h)=>n+(px(h.ticker)?h.shares*px(h.ticker).price:0),0)+Object.values(latest).reduce((n,v)=>n+v,0);
+      const move=(d.inv.holdings||[]).reduce((n,h)=>{ const p=px(h.ticker); if(!p||p.chg==null) return n; const v=h.shares*p.price; return n+(v-v/(1+p.chg/100)); },0);
+      const earn=(d.inv.holdings||[]).reduce((n,h)=>n+(h.yield&&px(h.ticker)?h.shares*px(h.ticker).price*h.yield/100/52:0),0);
+      const priced=(d.inv.holdings||[]).some(h=>px(h.ticker));
+      return row('Investments','investments.html', priced ? `${move>=0?'Up':'Down'} ${$0(Math.abs(move))} today${earn?` · cash earns ${'$'+earn.toFixed(2)} a week`:''}` : 'No prices yet — Sync now in the bell', $0(worth), 'portfolio', false);
+    } },
+
+    { id:'health', name:'Health', build(d){
+      if(!d.health) return row('Health','health.html','Nothing logged yet today','0 of 3','logged today');
+      const L=d.health, meds=L.meds||0, pills=(L.pills||[]).length, total=meds?4:3, n=['sleep','weight','hr'].filter(k=>L[k]!=null).length+(meds&&pills>=meds?1:0);
+      const note = L.sleep ? `Slept ${L.sleep} h${L.hr?' · resting pulse '+L.hr:''}` : 'Nothing logged yet today';
+      return row('Health','health.html',note,`${n} of ${total}`,`logged today${meds&&pills<meds?' · '+(meds-pills)+(meds-pills===1?' supplement':' supplements')+' to take':''}`, false);
+    } },
+
+    { id:'library', name:'Library', build(d){
+      if(!d.lib) return row('Library','library.html','Open Library to shelve your books','','no books yet');
+      const b=(d.lib.books||[]).find(x=>x.shelf==='reading'), toread=(d.lib.books||[]).filter(x=>x.shelf==='toread').length;
+      return b ? row('Library','library.html',`${esc(b.title)}, ${esc(b.author)}`, b.pages?`p. ${b.page||0}`:'reading', b.pages?`of ${b.pages} · ${Math.round((b.page||0)/b.pages*100)}%`:'', false)
+               : row('Library','library.html',`${toread} waiting on the shelf`,'','nothing open');
+    } },
+
+    { id:'school', name:'School', build(d){
+      if(!d.school) return row('School','school.html','Open School to add your courses','','no courses yet');
+      const items=(d.school.items||[]).filter(toDo).sort((a,b)=>a.due<b.due?-1:1), nx=items[0], cn=id=>(d.school.courses||[]).find(c=>c.id===id);
+      const dd = nx ? C.daysBetween(TODAY, nx.due) : null;
+      const note = nx ? `${esc(cn(nx.course)?.name||'')} — ${esc(nx.title)}, ${dd<0?'overdue':dd===0?'due today':dd===1?'due tomorrow':'due '+C.monthShort(C.fromISO(nx.due))+' '+C.fromISO(nx.due).getDate()}` : 'Nothing due';
+      return row('School','school.html',note,`${items.length}`,`open ${items.length===1?'item':'items'}`, dd!==null && dd<=0);
+    } },
+
+    { id:'patterns', name:'Patterns', build(d){
+      // always here, even before the first finding, or the page it links to cannot be reached at all
+      const n=(d.pat && d.pat.shown || []).length, tested=d.pat && d.pat.tested;
+      return row('Patterns','patterns.html', n ? 'Things that moved together, worked out overnight' : tested ? 'Nothing has held yet; it looks again every night' : 'Starts once there are thirty days of something',
+        n ? String(n) : '—', n ? 'worth a look' : 'nothing yet', false);
+    } },
+
+    { id:'study', name:'The Study', build(d){
+      const st=d.study, day=st && st.days && st.days[TODAY], titles={stoics:'The Stoics', socrates:'Socrates', sermon:'The Sermon on the Mount'};
+      if(!(st && (st.pos>0 || day))) return row('The Study','study.html','Three cards a day, from the Stoics to start','','not begun');
+      const done=day && day.done, n=day ? (day.recall?1:0)+day.cards.length : 3, at=day ? Math.min(day.at, n) : 0;
+      let run=0; for(let i=0;i<400;i++){ const k=C.iso(C.addDays(C.fromISO(TODAY),-i)); if(st.days[k] && st.days[k].done) run++; else if(i===0) continue; else break; }
+      return row('The Study','study.html', `${titles[st.path]||st.path} · card ${Math.min(st.pos+1, st.len||42)} of ${st.len||42}${run>=2?` · ${run} days running`:''}`, done ? 'done' : `${at} of ${n}`, done ? 'today’s cards' : 'cards read today', false);
+    } },
+
+    { id:'calendar', name:'Calendar', build(d){
+      const list=d.day||[], lastEnd = list.length ? Math.max(...list.map(s=>s.end)) : null;
+      const note = !list.length ? 'A clear day' : lastEnd<=NOW ? 'Nothing more today' : `Free after ${h12(lastEnd)}`;
+      return row('Calendar','calendar.html',note, `${list.length}`, `${list.length===1?'item':'items'} today`, false);
+    } },
+  ];
+
+  // what shows and in what order. Kept with the other documents so the arrangement follows you between
+  // devices; an area HQ learns later is on until it is turned off, which is why only the hidden ones are named.
+  let PREFS = { hidden: [], order: [] };
+  const arranged = () => {
+    const seen = new Set();
+    const first = (PREFS.order || []).map(id => AREAS.find(a => a.id === id)).filter(a => a && !seen.has(a.id) && seen.add(a.id));
+    return [...first, ...AREAS.filter(a => !seen.has(a.id))];
+  };
+  const shown = () => arranged().filter(a => !(PREFS.hidden || []).includes(a.id));
+
+  let LAST = null;
+  function renderAffairs(d){
+    LAST = d;
+    const rows = shown().map(a => { try { return a.build(d); } catch { return null; } }).filter(Boolean);
+    F('affairs').innerHTML = rows.join('') || '<li class="empty">Every area is turned off. Arrange the list to bring some back.</li>';
+    F('affn').innerHTML = `${C.now.getHours()<12 ? 'this morning' : C.now.getHours()<18 ? 'this afternoon' : 'this evening'} · <a href="review.html">the week</a> · <button class="textbtn" type="button" id="arrange">Arrange</button>`;
+    F('arrange').addEventListener('click', openArrange);
+  }
+
+  // the arranging itself: what to show, and the order, with the list underneath redrawing as you go
+  function openArrange(){
+    const box = F('affedit');
+    if(!box.hidden){ box.hidden = true; return; }
+    box.hidden = false;
+    paintArrange();
+  }
+  function paintArrange(){
+    const hidden = new Set(PREFS.hidden || []);
+    F('affedit').innerHTML = `<ul class="arrange">${arranged().map((a,i,all)=>`
+      <li data-id="${a.id}">
+        <input type="checkbox" id="ar-${a.id}" ${hidden.has(a.id)?'':'checked'}>
+        <label for="ar-${a.id}">${a.name}</label>
+        <button class="mv" type="button" data-up ${i===0?'disabled':''} aria-label="Move ${a.name} up">↑</button>
+        <button class="mv" type="button" data-down ${i===all.length-1?'disabled':''} aria-label="Move ${a.name} down">↓</button>
+      </li>`).join('')}</ul>
+      <p class="arrn">Turned-off areas keep their data; only this list changes. <button class="textbtn" type="button" id="arrdone">Done</button></p>`;
+    F('arrdone').addEventListener('click', ()=>{ F('affedit').hidden = true; });
+  }
+  F('affedit').addEventListener('change', e=>{
+    if(e.target.type !== 'checkbox') return;
+    const id = e.target.closest('li').dataset.id, hidden = new Set(PREFS.hidden || []);
+    e.target.checked ? hidden.delete(id) : hidden.add(id);
+    PREFS.hidden = [...hidden]; savePrefs(); renderAffairs(LAST); paintArrange();
+  });
+  F('affedit').addEventListener('click', e=>{
+    const b = e.target.closest('.mv'); if(!b) return;
+    const id = b.closest('li').dataset.id, order = arranged().map(a=>a.id), i = order.indexOf(id);
+    const j = b.hasAttribute('data-up') ? i-1 : i+1;
+    if(j < 0 || j >= order.length) return;
+    order.splice(j, 0, order.splice(i, 1)[0]);
+    PREFS.order = order; savePrefs(); renderAffairs(LAST); paintArrange();
+  });
+  const savePrefs = () => { PREFS.doc = hqPrefs.save({ affairs: { hidden: PREFS.hidden, order: PREFS.order } }); };
+
+  // ---- the page's own shape ----
+  // The same bargain the State of Affairs list makes, one level up: which blocks the page shows, which column
+  // each sits in, and in what order down it. The blocks are the ones already in the markup — they are moved
+  // whole, never rebuilt, so every id and listener inside them survives being put somewhere else.
+  const BLOCKS = [
+    { id: 'day', name: 'The day', col: 'a' },
+    { id: 'report', name: 'Morning report', col: 'a' },
+    { id: 'affairs', name: 'State of affairs', col: 'b' },
+    { id: 'todo', name: 'To do', col: 'b' },
+  ];
+  let PAGE = { hidden: [], order: [], col: {} };
+  const blockEl = id => document.querySelector(`[data-block="${id}"]`);
+  const blockCol = b => PAGE.col[b.id] || b.col;
+  const pageOrder = () => {                              // saved order first, then anything HQ learned later
+    const seen = new Set();
+    const first = (PAGE.order || []).map(id => BLOCKS.find(b => b.id === id)).filter(b => b && !seen.has(b.id) && seen.add(b.id));
+    return [...first, ...BLOCKS.filter(b => !seen.has(b.id))];
+  };
+  function paintPage(){
+    for(const b of pageOrder()){
+      const el = blockEl(b.id); if(!el) continue;
+      const off = (PAGE.hidden || []).includes(b.id);
+      el.hidden = off;
+      if(!off) F(blockCol(b) === 'a' ? 'cola' : 'colb').appendChild(el);   // appending in order is the ordering
+    }
+  }
+  function openPageEdit(){
+    const box = F('pgedit');
+    if(!box.hidden){ box.hidden = true; return; }
+    box.hidden = false; paintPageEdit();
+  }
+  function paintPageEdit(){
+    const hidden = new Set(PAGE.hidden || []), all = pageOrder();
+    F('pgedit').innerHTML = `<ul class="arrange">${all.map((b,i)=>`
+      <li data-id="${b.id}">
+        <input type="checkbox" id="pg-${b.id}" ${hidden.has(b.id)?'':'checked'}>
+        <label for="pg-${b.id}">${b.name}</label>
+        <button class="mv" type="button" data-side aria-label="Move ${b.name} to the other column">${blockCol(b)==='a'?'left':'right'}</button>
+        <button class="mv" type="button" data-up ${i===0?'disabled':''} aria-label="Move ${b.name} up">↑</button>
+        <button class="mv" type="button" data-down ${i===all.length-1?'disabled':''} aria-label="Move ${b.name} down">↓</button>
+      </li>`).join('')}</ul>
+      <p class="arrn">A block turned off keeps everything in it; only this page changes. On a narrow screen the columns become one, in this order. <button class="textbtn" type="button" id="pgdone">Done</button></p>`;
+    F('pgdone').addEventListener('click', ()=>{ F('pgedit').hidden = true; });
+  }
+  const savePage = () => { PREFS.doc = hqPrefs.save({ today: { hidden: PAGE.hidden, order: PAGE.order, col: PAGE.col } }); };
+  F('pgedit').addEventListener('change', e=>{
+    if(e.target.type !== 'checkbox') return;
+    const id = e.target.closest('li').dataset.id, hidden = new Set(PAGE.hidden || []);
+    e.target.checked ? hidden.delete(id) : hidden.add(id);
+    PAGE.hidden = [...hidden]; savePage(); paintPage(); paintPageEdit();
+  });
+  F('pgedit').addEventListener('click', e=>{
+    const b = e.target.closest('.mv'); if(!b) return;
+    const id = b.closest('li').dataset.id;
+    if(b.hasAttribute('data-side')){
+      const was = BLOCKS.find(x => x.id === id);
+      PAGE.col = { ...PAGE.col, [id]: blockCol(was) === 'a' ? 'b' : 'a' };
+    } else {
+      const order = pageOrder().map(x => x.id), i = order.indexOf(id);
+      const j = b.hasAttribute('data-up') ? i-1 : i+1;
+      if(j < 0 || j >= order.length) return;
+      order.splice(j, 0, order.splice(i, 1)[0]);
+      PAGE.order = order;
+    }
+    savePage(); paintPage(); paintPageEdit();
+  });
+  F('arrpage').addEventListener('click', openPageEdit);
+
+  const ordinal = n => (n%10===1&&n!==11)?'st':(n%10===2&&n!==12)?'nd':(n%10===3&&n!==13)?'rd':'th';
+
+  // ---- greeting with the insight sentence ----
+  function renderUpNext(list){
+    const cur=list.find(s=>s.start<=NOW&&s.end>NOW), next=list.filter(s=>s.start>NOW)[0], el=F('upnext'), bits=[];
+    if(cur) bits.push(`<span><span class="k">Now</span><b>${esc(cur.title)}</b> <span class="t">· until ${h12(cur.end)}</span></span>`);
+    if(next){ const mins=Math.round((next.start-NOW)*60); bits.push(`<span><span class="k">Next</span><b>${esc(next.title)}</b> <span class="t">· ${h12(next.start)}, ${mins<60?'in '+mins+' min':'in '+Math.round(mins/60)+' h'}</span></span>`); }
+    else if(cur) bits.push(`<span><span class="k">Then</span>free for the rest of the day</span>`);
+    else if(list.length) bits.push(`<span><span class="k">Done</span>nothing more today</span>`);
+    el.hidden = !bits.length; el.innerHTML = bits.join('');
+  }
+  function renderGreeting(d){
+    const parts=[];
+    // an exam today comes first, with how much studying went into it this week
+    const items=d.school ? (d.school.items||[]).filter(toDo) : [];
+    const exam=items.find(i=>i.due===TODAY && /exam|test|quiz|midterm|final/i.test(i.title+' '+(i.type||'')));
+    if(exam){ const min=(d.school.sessions||[]).filter(s=>s.course===exam.course && C.daysBetween(s.date,TODAY)>=0 && C.daysBetween(s.date,TODAY)<7).reduce((n,s)=>n+s.min,0); parts.push(`${esc(exam.title)} is today${min?` and you have put in ${hrs(min)} this week`:' and you have not studied for it this week'}`); }
+    else { const nx=items.sort((a,b)=>a.due<b.due?-1:1)[0]; if(nx){ const dd=C.daysBetween(TODAY,nx.due); if(dd<=2) parts.push(`${esc(nx.title)} is due ${dd<=0?'today':dd===1?'tomorrow':'in two days'}`); } }
+    if(d.fin){ const due=d.fin.cats.find(c=>c.due===C.now.getDate()); if(due) parts.push(`${esc((due.bill||due.name).toLowerCase())} wants paying today`); }
+    // last night against the week
+    if(d.H && d.H.days && d.H.days[TODAY] && d.H.days[TODAY].sleep!=null){ const s=+d.H.days[TODAY].sleep, prev=Object.keys(d.H.days).filter(k=>k<TODAY && +d.H.days[k].sleep>0).sort().slice(-7).map(k=>+d.H.days[k].sleep), avg=prev.length>=3?prev.reduce((a,b)=>a+b)/prev.length:null;
+      if(avg && s<avg-0.5) parts.push(`you slept ${s} h, under your week’s ${avg.toFixed(1)}`); else if(s>=7.5) parts.push(`a good ${s} h of sleep`); }
+    // supplements, once the evening is here
+    if(d.health && d.health.meds && C.now.getHours()>=18){ const left=d.health.meds-(d.health.pills||[]).length; if(left>0) parts.push(`${left} ${left===1?'supplement':'supplements'} still to take`); }
+    const s = parts.length ? parts.slice(0,3).join('; ') : 'nothing pressing';
+    F('greet').innerHTML = `${C.greeting(C.now)}, Jacob. <em>${s[0].toUpperCase()+s.slice(1)}.</em>`;
+  }
+
+  // ---- to do: the home's own document, one per day ----
+  const TKEY = 'today.' + TODAY; let T = {items:[]}, CAL = null, d = {};
+  const YDAY = C.iso(C.addDays(C.fromISO(TODAY),-1));
+  const saveT = () => store.save(TKEY, T);
+  // How long this one has been following you. "from Tue 29" left you to work that out for yourself, which is
+  // the whole of the thing worth knowing: four days of the same line is not four to-dos, it is one you keep
+  // walking past. After four it is said in the colour the overdue times use.
+  const waitedSays = from => { if(!from) return '';
+    const n = C.daysBetween(from, TODAY); if(n <= 0) return '';
+    return `<span class="w from${n >= 4 ? ' long' : ''}">${n === 1 ? 'since yesterday' : `waiting ${n} days`}</span>`; };
+  // A deadline day replaces the waiting line, because the two say contradictory things: something due on Friday
+  // has not been waiting four days, it has had four days. Only once the day is past is it held against you,
+  // and then it is said in the colour everything overdue is said in.
+  // Said the way a deadline time is said — the same face, and the same colour once it is past. It wore the
+  // italic serif of the "since yesterday" note for a while, which put two spellings of a deadline in one column.
+  const dueSays = due => { if(!due) return '';
+    const n = C.daysBetween(due, TODAY);
+    if(n > 0) return `<span class="w due">${n === 1 ? 'a day overdue' : `${n} days overdue`}</span>`;
+    return `<span class="w">due ${n === 0 ? 'today' : C.short(C.fromISO(due))}</span>`; };
+  function renderTodo(){
+    F('reps').innerHTML = (RULES.rules||[]).map(r=>`<li class="${ruleOver(r)?'over':''}"><span>${esc(r.text)}<small>${[repSays(r.rep), r.target&&!r.text.toLowerCase().includes(r.target.unit)?`${r.target.n} ${esc(r.target.unit)}`:'', r.at!=null?`by ${h12(r.at)}`:'', r.until?(ruleOver(r)?`ended ${C.dayMonth(C.fromISO(r.until))}`:`until ${C.dayMonth(C.fromISO(r.until))}`):'', recordSays(r)].filter(Boolean).join(' · ')}</small></span><button class="textbtn" type="button" data-stop="${r.id}">${ruleOver(r)?'remove':'stop'}</button></li>`).join('');
+    const done=T.items.filter(i=>i.done).length;
+    F('todon').textContent = T.items.length ? `${done} of ${T.items.length}` : 'nothing yet';
+    F('todo').innerHTML = T.items.length ? T.items.map((i,k)=>`<li><input type="checkbox" id="t${k}" ${i.done?'checked':''} data-k="${k}"><label for="t${k}">${esc(i.text)}</label>${i.rule?'<span class="rp" title="comes back on its own">\u21bb</span>':''}${i.target?`<span class="tg"><input class="did" value="${i.did||0}" inputmode="decimal" data-did="${k}" aria-label="How much of ${esc(i.text)} so far"> of ${i.target.n}${i.text.toLowerCase().includes(i.target.unit)?'':' '+esc(i.target.unit)}</span>`:''}${i.at!=null?`<span class="w ${!i.done&&i.at<NOW?'due':''}">by ${h12(i.at)}</span>`:''}${i.due ? dueSays(i.due) : waitedSays(i.from)}<span class="acts">${i.rule?`<button class="w skip" type="button" data-skip="${k}">not today</button>`:''}<button class="w x" type="button" data-rm="${k}" aria-label="Remove">remove</button></span></li>`).join('') : '<li class="empty">Nothing on the list. Add the one thing today needs.</li>';
+  }
+  F('todo').addEventListener('change', e=>{
+    if(e.target.matches('[data-did]')){ const i=T.items[+e.target.dataset.did]; if(!i) return;
+      const v=parseFloat(e.target.value); i.did = isNaN(v)||v<=0 ? undefined : v;
+      if(i.target && i.did >= i.target.n) i.done = true;    // the target met is the thing done
+      saveT(); renderTodo(); d.day=renderDay(CAL); return; }
+    if(e.target.type==='checkbox'){ const it=T.items[+e.target.dataset.k]; it.done=e.target.checked;
+      if(it.rule) markRule(it.rule, it.done);
+      saveT(); renderTodo(); d.day=renderDay(CAL); } });
+  // Skipping one day: the instance goes and is remembered as skipped, so posting it again does not undo that.
+  // The rule itself is untouched — it comes back tomorrow.
+  F('todo').addEventListener('click', e=>{ const sk=e.target.closest('[data-skip]'); if(sk){
+      const k=+sk.dataset.skip, it=T.items[k]; if(!it||!it.rule) return;
+      const was=hqCopy(T.items), wasSkip=hqCopy(T.skipped||[]);
+      T.items.splice(k,1); T.skipped=[...(T.skipped||[]), it.rule]; markRule(it.rule, false); saveT(); renderTodo(); d.day=renderDay(CAL);
+      hqUndo(`${it.text} for today`, ()=>{ T.items=was; T.skipped=wasSkip; saveT(); renderTodo(); d.day=renderDay(CAL); });
+      return; }
+    const b=e.target.closest('[data-rm]'); if(b){ const was=hqCopy(T.items), wasDrop=hqCopy(T.dropped||[]), gone=T.items[+b.dataset.rm];
+    T.items.splice(+b.dataset.rm,1);
+    // Removing a to-do is deciding against it, so it is remembered as dropped. Without that, work that follows
+    // you from day to day would simply come back tomorrow and removing it would never mean anything.
+    if(gone && !gone.rule) T.dropped=[...new Set([...(T.dropped||[]), askOf(gone, TODAY)])];
+    saveT(); renderTodo();
+    hqUndo(gone?gone.text:'the to-do', ()=>{ T.items=was; T.dropped=wasDrop; saveT(); renderTodo(); }); } });
+  const migrateAt = () => { let n=0; T.items.forEach(i=>{ if(i.at==null){ const p=parseAt(i.text); if(p.at!=null){ Object.assign(i,p); n++; } } }); return n; };
+  // ---- standing to-dos: the rules, and what each one's record adds up to ----
+  let RULES = { rules: [] };
+  const saveRules = () => store.save('todo.rules', RULES);
+  const repSays = r => hqRecur.says(r);            // the wording lives in recur.js, which The List reads too
+  const repToday = r => hqRecur.on(r, TODAY);
+  // what the record adds up to, said plainly and only about days you answered
+  const recordSays = r => { const k = ruleRecord(r); if(!k) return '';
+    if(k.run >= 3) return `let go ${k.run} days running`;
+    return `kept ${k.kept} of ${k.of} answered`; };
+
+  // a standing item joins the day it belongs to, once — unless it has run out, or you skipped today
+  const ruleOver = r => r.until && TODAY > r.until;
+  // A rule keeps what happened, a day at a time: 1 kept, 0 let go. Only days you answered are recorded —
+  // a day you never looked at HQ is not held against you, and that is why the figure says "of the days you
+  // answered" rather than pretending to know about the rest.
+  const ruleFor = id => (RULES.rules || []).find(r => r.id === id);
+  const markRule = (id, kept) => { if(hqRecur.mark(ruleFor(id), TODAY, kept)) saveRules(); };   // The List writes this too
+  const ruleRecord = r => { const e = Object.entries(r.log || {}).sort();
+    if(!e.length) return null;
+    const kept = e.filter(([, v]) => v).length;
+    let run = 0; for(let i = e.length - 1; i >= 0 && !e[i][1]; i--) run++;   // days let go, ending now
+    return { kept, of: e.length, run }; };
+  const postRules = () => { let n = 0;
+    for(const r of RULES.rules || []){
+      if(!repToday(r.rep) || ruleOver(r)) continue;
+      if((T.skipped || []).includes(r.id)) continue;
+      if(T.items.some(i => i.rule === r.id)) continue;
+      T.items.push({ text: r.text, at: r.at, done: false, rule: r.id, target: r.target }); n++;
+    }
+    return n; };
+
+  // The box itself is in capture.js, which The List shares. This page says only what it owns and what to redraw.
+  const CAP = hqCapture({
+    todo: () => T,
+    rules: () => RULES,
+    cal: () => CAL || (CAL = { cats: [{ id: 'cal', name: 'Appointments', tint: '#E9EEF3' }], series: [], notes: {}, hidden: [] }),
+    fin: () => d.fin || (d.fin = { expected: 0, income: [], plan: [], cats: [], tx: [], history: [] }),
+    health: () => d.H || (d.H = { days: {}, meds: [], next: [] }),
+    saveTodo: saveT,
+    saveRules,
+    saveCal: () => store.save('calendar', CAL),
+    saveFin: () => store.save('finances.' + YM, d.fin),
+    saveHealth: () => store.save('health', d.H),
+    redraw: what => { if(what === 'todo'){ renderTodo(); d.day = renderDay(CAL); }
+      else if(what === 'calendar') d.day = renderDay(CAL);
+      else renderAffairs(d); },
+  });
+  const parseAt = CAP.parseAt;   // the one piece this page still reads for itself: giving older items their time
+  F('reps').addEventListener('click', e=>{ const b=e.target.closest('[data-stop]'); if(!b) return;
+    const id=b.dataset.stop, wasR=hqCopy(RULES.rules||[]), goneR=(RULES.rules||[]).find(r=>r.id===id);
+    RULES.rules=(RULES.rules||[]).filter(r=>r.id!==id); saveRules();
+    hqUndo(goneR?goneR.text:'the standing to-do', ()=>{ RULES.rules=wasR; saveRules(); renderTodo(); });
+    T.items=T.items.filter(i=>i.rule!==id); saveT(); renderTodo(); d.day=renderDay(CAL); });
+
+  // ---- unfinished work follows you ----
+  // An unticked to-do is copied into the next day, carrying `from` with the day it was first written, so the
+  // chain can be read back as one thing put off rather than several. This used to happen only when today had
+  // no document at all — so the moment anything else made one first (a capture typed on The List, the bell
+  // ticking something) nothing carried and yesterday's list was stranded. And the search stopped at the first
+  // previous day holding any items whatsoever, even a day whose items were every one of them done or standing,
+  // which lost everything older. It now runs once a day whatever made the document, reads a fortnight back, and
+  // leaves alone anything you dropped on purpose.
+  const CARRY = 14;
+  const askOf = (x, day) => `${x.from || day}|${x.text.trim().toLowerCase()}`;
+  async function carryForward(){
+    if(T.rolled === TODAY) return 0;
+    const back = [];
+    for(let i = CARRY; i >= 1; i--) back.push(C.iso(C.addDays(C.fromISO(TODAY), -i)));
+    const docs = await Promise.all(back.map(k => store.load('today.' + k)));
+    const dropped = new Set(T.dropped || []);
+    docs.forEach(p => (p && p.dropped || []).forEach(a => dropped.add(a)));
+    const here = new Set(T.items.map(i => i.text.trim().toLowerCase()));
+    let n = 0;
+    // the same reading The List and the digest use: a chain of copies is one asking, put off
+    for(const g of hqRecur.tally(docs, back)){
+      if(g.standing) continue;                           // a standing item is posted by its rule, never carried
+      const word = g.text.trim().toLowerCase(), latest = g.days[g.days.length - 1];
+      for(const a of g.asks){
+        if(a.done || dropped.has(`${a.made}|${word}`) || here.has(word)) continue;
+        T.items.push({ text: g.text, at: latest.at, target: g.target, due: latest.due, done: false, from: a.made });   // the deadline follows it, or tomorrow it has none
+        here.add(word); n++;                             // one line per thing, however many times it was asked
+      }
+    }
+    T.rolled = TODAY;                                    // once a day, whatever made the document
+    return n || 1;                                       // the mark itself is worth saving
+  }
+
+  window.onTodoChange = doc => { T = doc; renderTodo(); d.day = renderDay(CAL); };   // a tick in the bell shows here at once
+
+  // Ticked from the Home Screen widget, which opens today.html?tick=<the item's text>. A to-do carries no id —
+  // rollover, skipping and removal all splice the day's list, so an index would not survive the gap between the
+  // widget drawing a row and your thumb landing on it. The text is the handle, matched only against what is
+  // still open, because a tick is only ever a tick of something open. The address is cleared first so a reload
+  // cannot tick the same thing twice, and the row changing under you is the confirmation; a widget tap has no
+  // way to ask for one.
+  function tickFromAddress(){
+    const want = new URLSearchParams(location.search).get('tick');
+    if(!want) return;
+    history.replaceState(null, '', location.pathname + location.hash);
+    const k = T.items.findIndex(i => !i.done && i.text === want);
+    if(k < 0){ CAP.said(`“${want}” is not open today.`); return; }
+    const it = T.items[k]; it.done = true;
+    if(it.rule) markRule(it.rule, true);
+    saveT(); renderTodo(); d.day = renderDay(CAL);
+    CAP.said(`Ticked “${it.text}”.`);
+  }
+
+  // ---- load everything the other pages keep, then draw ----
+  (async () => {
+    const [cal, fin, H, lib, school, today, inv, study, pat, prefs] = await Promise.all([store.load('calendar'), store.load('finances.'+YM), store.load('health'), store.load('library'), store.load('school'), store.load(TKEY), store.load('investments'), store.load('study'), store.load('patterns'), store.load('prefs')]);
+    if(prefs){ PREFS = { doc: prefs, hidden: (prefs.affairs||{}).hidden || [], order: (prefs.affairs||{}).order || [] };   // how this list was last arranged
+      const t = prefs.today || {}; PAGE = { hidden: t.hidden || [], order: t.order || [], col: t.col || {} }; }           // and how the page itself was
+    paintPage();
+    RULES = (await store.load('todo.rules')) || { rules: [] }; RULES.rules ??= [];
+    if(today){ T = today; if(migrateAt()) saveT(); }
+    if(await carryForward()) saveT();   // unfinished work from the days behind comes along, marked
+    CAP.fold();                // any standing to-do that had grown a twin rule becomes one again
+    if(postRules()) saveT();   // the standing items join the day, once
+    const health = H && H.days ? Object.assign({meds:(H.meds||[]).length}, H.days[TODAY] || {pills:[]}) : null;
+    Object.assign(d, { fin, health, lib, school, H, inv, study, pat }); CAL = cal;
+    renderReport(H);
+    d.day = renderDay(cal);
+    renderAffairs(d); renderGreeting(d); renderUpNext(d.day); renderTodo(); renderWeather();
+    tickFromAddress();   // after the day has settled, so the item the widget drew is on the list to find
+    C.countIn('.affairs .v, .rep .big b, .rep .facts b');
+    // the now line, "in 40 min" and the live event move with the clock
+    setInterval(() => { const n=new Date(); if(C.iso(n)!==TODAY){ location.reload(); return; } NOW = n.getHours()+n.getMinutes()/60; d.day = renderDay(cal); renderAffairs(d); renderUpNext(d.day); }, 60000);
+    F('foot').textContent = store.signedOut ? 'Showing this browser’s copy. Sign in on the welcome page to sync.' : 'Everything here is read from the other pages; only the to-do list lives on Today.';
+  })();
+</script>
+</body>
+</html>

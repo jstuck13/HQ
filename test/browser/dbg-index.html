@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><base href="/">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1F3A2E">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>HQ — Welcome</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --band:#1F3A2E; --band-2:#274838; --band-ink:#F2ECDF; --band-muted:#B9C9BE; --band-rule:rgba(242,236,223,.28);
+    --paper:#F5F0E6; --ink:#1E1B16; --ink-2:#4D463C; --ink-3:#6A6256; --rule:#D3C9B6; --ox:#7A2E2B;
+    --serif:"Libre Caslon Text",Georgia,serif; --sans:"Figtree",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:dark}
+  body{margin:0;min-height:100vh;background:var(--band);color:var(--band-ink);font:16px/1.5 var(--sans);-webkit-font-smoothing:antialiased;font-variant-numeric:oldstyle-nums tabular-nums;display:flex;flex-direction:column}
+  ::selection{background:var(--band-ink);color:var(--band)}
+  :focus-visible{outline:2px solid var(--band-ink);outline-offset:4px}
+  a{color:inherit;text-decoration:none}
+  button,input{font:inherit;color:inherit;background:none;border:0;padding:0;border-radius:0}
+  button{cursor:pointer}
+
+  .wrap{width:100%;max-width:1180px;margin:0 auto;padding:22px 40px 40px;flex:1;display:flex;flex-direction:column}
+  /* the cover waits behind a green page with the mark until sign-in and the day's quote are known, so nothing swaps in front of you */
+  body:not(.ready) .wrap{visibility:hidden}
+  .splash{position:fixed;inset:0;background:var(--band);display:grid;place-items:center;z-index:9;transition:opacity .45s ease}
+  .splash.gone{opacity:0;pointer-events:none}
+  .splash > div{text-align:center}
+  .splash .m{display:inline-block;font-family:var(--serif);font-size:44px;letter-spacing:.14em;margin-right:-.14em;font-weight:700;animation:splash-in .7s ease-out both}   /* the trailing letter-space is pulled back so the two letters sit dead centre */
+  .splash .o{width:160px;height:12px;margin:18px auto 0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='12' viewBox='0 0 160 12'%3E%3Cpath d='M0 6.5h62M98 6.5h62' stroke='%23F2ECDF' stroke-opacity='.35'/%3E%3Cpath d='M80 1.5l5 5-5 5-5-5z' fill='%23B9C9BE'/%3E%3C/svg%3E") center/160px 12px no-repeat;animation:splash-rule .9s cubic-bezier(.2,.8,.2,1) .15s both}
+  @keyframes splash-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @keyframes splash-rule{from{transform:scaleX(0);opacity:0}to{transform:none;opacity:1}}
+  @media (prefers-reduced-motion:reduce){.splash .m,.splash .o{animation:none} .splash{transition:none}}
+  .row{display:flex;align-items:baseline;gap:26px;padding-bottom:16px;border-bottom:1px solid var(--band-rule)}
+  .mark{font-family:var(--serif);font-size:20px;letter-spacing:.14em;font-weight:700}
+  .date{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted);white-space:nowrap}
+
+  .cover{flex:1;display:grid;grid-template-columns:1.25fr 1fr;gap:80px;align-items:center;padding:48px 0 40px}
+  .greet{font-family:var(--serif);font-style:italic;font-size:22px;color:var(--band-muted);margin:0 0 22px}
+  blockquote{margin:0;font-family:var(--serif);font-size:40px;line-height:1.3;letter-spacing:-.005em;text-wrap:balance;max-width:26ch}
+  blockquote.long{font-size:30px;max-width:32ch}
+  blockquote::before{content:"“";position:absolute;margin-left:-.5em;color:var(--band-muted)}
+  blockquote::after{content:"”";color:var(--band-muted)}
+  .quote{position:relative;padding-left:.5em}
+  figcaption{margin-top:20px;font-size:15px;color:var(--band-muted)}
+  /* the masthead ornament: a lozenge between two rules, opening and closing the quote */
+  .orn{width:160px;height:12px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='12' viewBox='0 0 160 12'%3E%3Cpath d='M0 6.5h62M98 6.5h62' stroke='%23F2ECDF' stroke-opacity='.35'/%3E%3Cpath d='M80 1.5l5 5-5 5-5-5z' fill='%23B9C9BE'/%3E%3C/svg%3E") left center/160px 12px no-repeat}
+  .quote .orn{margin:0 0 26px} .quote .orn.end{margin:30px 0 0}
+  figcaption b{font-weight:500;color:var(--band-ink)}
+  figcaption .via{font-size:12.5px;opacity:.75}
+
+  .word h2{margin:0 0 18px;font-family:var(--serif);font-weight:400;font-size:22px;padding-bottom:10px;border-bottom:1px solid var(--band-rule)}
+  .word .w{font-family:var(--serif);font-size:32px;line-height:1.3;margin:0}
+  .word .pos{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted);margin:6px 0 16px}
+  .word .pos span{margin-right:12px}
+  .word .def{margin:0 0 12px;font-size:17px;line-height:1.5;max-width:44ch}
+  .word .ex{margin:0;font-family:var(--serif);font-style:italic;font-size:15px;color:var(--band-muted);max-width:44ch}
+  .word .ex b{font-weight:400;font-style:italic;color:var(--band-ink)}
+
+  .foot{display:flex;align-items:center;gap:24px;padding-top:22px;border-top:1px solid var(--band-rule)}
+  .open{display:inline-flex;align-items:center;gap:12px;font-family:var(--serif);font-size:22px;border-bottom:1px solid transparent;transition:border-color .15s}
+  .open:hover{border-color:currentColor}
+  .open svg{width:18px;height:18px;transition:transform .15s}
+  .open:hover svg{transform:translateX(3px)}
+  .gate{display:flex;align-items:baseline;gap:28px;flex-wrap:wrap}
+  .gate label{display:inline-flex;align-items:baseline;gap:12px;font-size:14px;color:var(--band-muted)}
+  .gate input{font-family:var(--serif);font-size:22px;line-height:1.2;color:var(--band-ink);border-bottom:1px solid var(--band-rule);padding:0 0 3px;width:11ch;letter-spacing:.28em;transition:border-color .15s}
+  .gate input:focus{outline:none;border-bottom-color:var(--band-ink)}
+  .gate input::placeholder{font-style:italic;letter-spacing:0;font-size:17px;color:var(--band-muted)}
+  .gate label[hidden]{display:none}
+  .foot .hint{font-size:14px;color:var(--band-muted)}
+  .foot .hint.no{color:var(--band-ink)}
+  .foot .hint kbd{font:inherit;padding:1px 6px;border:1px solid var(--band-rule);border-radius:6px}
+
+  @media (prefers-reduced-motion:reduce){.open,.open svg{transition:none}}
+  @media (max-width:900px){
+    .wrap{padding:18px 20px 28px}
+    .cover{grid-template-columns:1fr;gap:36px;padding:32px 0 28px}
+    .quote{padding-left:0} blockquote::before{position:static;margin-left:0}
+    blockquote{font-size:26px}
+    .word .w{font-size:26px}
+    .foot{flex-wrap:wrap;gap:14px} .foot .hint{display:none}
+    .row{flex-wrap:wrap;gap:10px 18px}
+  }
+</style>
+</head>
+<body>
+<div class="splash" id="splash" aria-hidden="true"><div><div class="m">HQ</div><div class="o"></div></div></div>
+<div class="wrap">
+  <header class="row">
+    <span class="mark">HQ</span>
+    <span class="date" id="date">Monday, 14 September 2026</span>
+  </header>
+
+  <main class="cover">
+    <figure class="quote">
+      <div class="orn" aria-hidden="true"></div>
+      <p class="greet" id="greet">Good morning, Jacob.</p>
+      <blockquote id="q">The impediment to action advances action. What stands in the way becomes the way.</blockquote>
+      <figcaption id="qa"><b>Marcus Aurelius</b>, Meditations</figcaption>
+      <div class="orn end" aria-hidden="true"></div>
+    </figure>
+
+    <section class="word" aria-labelledby="wotd">
+      <h2 id="wotd">Word of the day</h2>
+      <p class="w" id="w">equanimity</p>
+      <p class="pos"><span id="pr">/ˌek-wə-ˈni-mə-tē/</span><span id="pos">noun</span></p>
+      <p class="def" id="def">Calmness and evenness of mind, especially under strain.</p>
+      <p class="ex" id="ex">She took the delay with <b>equanimity</b> and read until the train came.</p>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <form class="gate" id="gate">
+      <label id="passl">Passcode<input id="pass" type="password" placeholder="type it here" autocomplete="current-password" aria-label="Passcode"></label>
+      <button class="open" type="submit"><span id="openlbl">Open today</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <span class="hint" id="hint">or press <kbd>Enter</kbd></span>
+    </form>
+  </footer>
+</div>
+
+<script src="store.js"></script>
+<script>
+  // One quote and one word per calendar day, rotating through the lists below.
+  // ponytail: hardcoded lists; swap for a fetched JSON once there's a data layer.
+  const quotes = [
+    ["The impediment to action advances action. What stands in the way becomes the way.", "Marcus Aurelius", "Meditations"],
+    ["We suffer more often in imagination than in reality.", "Seneca", "Letters"],
+    ["It is not that we have a short time to live, but that we waste a lot of it.", "Seneca", "On the Shortness of Life"],
+    ["Well begun is half done.", "Aristotle", ""],
+    ["No man steps in the same river twice.", "Heraclitus", ""],
+    ["Waste no more time arguing what a good man should be. Be one.", "Marcus Aurelius", "Meditations"],
+    ["First say to yourself what you would be; and then do what you have to do.", "Epictetus", "Discourses"],
+  ];
+  const words = [
+    ["equanimity", "/ˌek-wə-ˈni-mə-tē/", "noun", "Calmness and evenness of mind, especially under strain.", "She took the delay with <b>equanimity</b> and read until the train came."],
+    ["assiduous", "/ə-ˈsi-jə-wəs/", "adjective", "Showing great care, attention and persistence.", "An <b>assiduous</b> note-taker, he never lost a thread."],
+    ["halcyon", "/ˈhal-sē-ən/", "adjective", "Calm, peaceful; often of a happy period in the past.", "Those <b>halcyon</b> summers on the lake."],
+    ["lacuna", "/lə-ˈkü-nə/", "noun", "A gap or missing part, especially in a text or argument.", "The report has one <b>lacuna</b>: it never says who pays."],
+    ["sanguine", "/ˈsaŋ-gwən/", "adjective", "Optimistic, especially in a difficult situation.", "He stayed <b>sanguine</b> about the exam."],
+    ["perspicacious", "/ˌpər-spə-ˈkā-shəs/", "adjective", "Having a ready insight into and understanding of things.", "A <b>perspicacious</b> reader spots the flaw on page one."],
+    ["vestige", "/ˈves-tij/", "noun", "A trace of something that once existed.", "The last <b>vestige</b> of the old routine was the 7 a.m. alarm."],
+    ["ephemeral", "/ə-ˈfem-rəl/", "adjective", "Lasting a very short time.", "The <b>ephemeral</b> brightness of a match."],
+    ["laconic", "/lə-ˈkä-nik/", "adjective", "Using very few words.", "His <b>laconic</b> reply ended the argument."],
+    ["liminal", "/ˈli-mə-nəl/", "adjective", "On a threshold; between one state and the next.", "The <b>liminal</b> hour before dawn."],
+    ["alacrity", "/ə-ˈla-krə-tē/", "noun", "Brisk and cheerful readiness.", "She accepted with <b>alacrity</b>."],
+    ["quiescent", "/kwē-ˈe-sənt/", "adjective", "In a state of inactivity or rest.", "The volcano has been <b>quiescent</b> for a century."],
+    ["magnanimous", "/mag-ˈna-nə-məs/", "adjective", "Generous or forgiving, especially towards a rival.", "A <b>magnanimous</b> word from the loser."],
+    ["petrichor", "/ˈpe-tri-kȯr/", "noun", "The smell of the first rain after a long dry spell.", "The <b>petrichor</b> came up off the pavement."],
+    ["taciturn", "/ˈta-sə-ˌtərn/", "adjective", "Saying little; reserved in speech.", "A <b>taciturn</b> man, but a kind one."],
+    ["sagacious", "/sə-ˈgā-shəs/", "adjective", "Showing keen judgement and good sense.", "A <b>sagacious</b> choice, made early."],
+    ["fortitude", "/ˈfȯr-tə-ˌtüd/", "noun", "Courage in pain or adversity.", "He bore the week with <b>fortitude</b>."],
+    ["reverie", "/ˈre-və-rē/", "noun", "A state of being pleasantly lost in thought.", "An afternoon lost to <b>reverie</b>."],
+    ["obdurate", "/ˈäb-də-rət/", "adjective", "Stubbornly refusing to change one's mind.", "He stayed <b>obdurate</b> through every argument."],
+    ["serendipity", "/ˌser-ən-ˈdi-pə-tē/", "noun", "Finding something good without looking for it.", "Pure <b>serendipity</b> put the book in his hand."]
+  ];
+  const now = new Date();
+  const day = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 864e5);
+  const [qt, qa, qs] = quotes[day % quotes.length];
+  const [w, pr, pos, def, ex] = words[day % words.length];
+  document.getElementById('q').textContent = qt;
+  document.getElementById('qa').innerHTML = `<b>${qa}</b>${qs ? ', ' + qs : ''}`;
+  document.getElementById('w').textContent = w;
+  document.getElementById('pr').textContent = pr;
+  document.getElementById('pos').textContent = pos;
+  document.getElementById('def').textContent = def;
+  document.getElementById('ex').innerHTML = ex;
+  document.getElementById('date').textContent = now.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long', year:'numeric'}) + ` · No. ${day}`;   // the issue number: day of the year
+  const h = now.getHours();
+  document.getElementById('greet').textContent = (h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + ', Jacob.';
+  // The front door. With the API present, the passcode sets the session cookie; on a plain static server it just opens.
+  const gate = document.getElementById('gate'), pass = document.getElementById('pass'), hint = document.getElementById('hint');
+  const passl = document.getElementById('passl');
+  let shown = false;
+  const reveal = () => { if (shown) return; shown = true; document.body.classList.add('ready'); const sp = document.getElementById('splash'); sp.classList.add('gone'); setTimeout(() => sp.remove(), 500); };
+  const signedIn = () => { passl.hidden = true; pass.hidden = true; document.getElementById('openlbl').textContent = 'Continue'; return fetched(); };
+  fetch('/api/login').then(r => r.ok ? r.json() : { authed: true }).then(j => j.authed ? signedIn() : null).catch(signedIn).then(reveal, reveal);
+  setTimeout(reveal, 4000);
+  // today's fetched word and quote (the nightly `daily` document) replace the built-in rotation when they are there
+  async function fetched(){
+    const today = new Date(); const iso = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    const d = await store.load('daily').catch(() => null); if (!d || !d.date || Math.abs(new Date(d.date) - new Date(iso)) > 2 * 864e5) return;
+    const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    if (d.quote) { document.getElementById('q').textContent = d.quote.q; document.getElementById('q').classList.toggle('long', d.quote.q.length > 110); document.getElementById('qa').innerHTML = `<b>${esc(d.quote.a)}</b>${d.quote.w ? `, ${esc(d.quote.w)}` : ''}`; }
+    if (d.word) { document.getElementById('w').textContent = d.word.w; document.getElementById('pr').textContent = d.word.pr || ''; document.getElementById('pos').textContent = d.word.pos || ''; document.getElementById('def').textContent = d.word.def;
+      const ex = document.getElementById('ex'); if (d.word.ex) { ex.innerHTML = esc(d.word.ex).replace(new RegExp(`\\b(${d.word.w}\\w*)`, 'i'), '<b>$1</b>'); ex.hidden = false; } else ex.hidden = true; }
+  }
+  gate.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (pass.hidden) return location.href = 'today.html';
+    const ok = await store.signIn(pass.value).catch(() => true);
+    if (ok) location.href = 'today.html';
+    else { hint.textContent = 'That is not it. Try again.'; hint.classList.add('no'); pass.select(); }
+  });
+</script>
+<script>window.__errs=[];addEventListener("error",e=>window.__errs.push("error: "+e.message));addEventListener("unhandledrejection",e=>window.__errs.push("rej: "+((e.reason&&e.reason.message)||e.reason)));
+window.addEventListener('load',()=>setTimeout(()=>{const g=id=>(document.getElementById(id)||{}).textContent;
+ document.title=`ready:${document.body.classList.contains('ready')} splash:${!!document.getElementById('splash')} word:${g('w')}|${g('pr')}|${g('pos')} def:${(g('def')||'').slice(0,34)} ex:${((document.getElementById('ex')||{}).textContent||'').slice(0,30)} quote:${g('qa')} errs:${window.__errs.join('~')||'none'}`;},4600));</script></body>
+</html>

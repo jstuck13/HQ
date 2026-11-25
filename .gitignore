@@ -8,3 +8,15 @@ node_modules/
 
 .vercel
 .env*
+
+# The browser harness lives in test/browser beside the unit tests. Its inputs — the probes and the seed
+# fixtures that carry a frozen clock — are tracked, because a failing probe with no baseline to diff against
+# is the problem moving the unit tests was meant to solve. Everything it generates is not.
+test/browser/al-*.html
+test/browser/dbg2-*.html
+test/browser/host-*.html
+test/browser/ph-*.html
+test/browser/*.png
+
+# Lavish review artifacts: generated for a conversation, not part of the app.
+.lavish/

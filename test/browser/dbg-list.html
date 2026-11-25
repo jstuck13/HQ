@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><base href="/">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1F3A2E">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>HQ — The list</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Figtree:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="hq.css">
+<style>
+  h1{font-size:32px;line-height:1.3}
+  .mast .sub{font-family:var(--serif);font-style:italic;color:var(--band-muted)}
+
+  main{max-width:1180px;margin:0 auto;padding:34px 40px 44px}
+  h2{font-size:22px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:4px;display:flex;align-items:baseline;gap:12px}
+  h2 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
+
+  .sift{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:14px 0 4px}   /* a ticked box gains a ::after and with it a new baseline; centring is immune to that */
+  .sift input[type=search]{flex:1 1 240px;min-width:0;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:3px 0;background:none}
+  .sift input:focus{outline:none;border-bottom-color:var(--ink)}
+  .sift input::placeholder{color:var(--ink-3);font-style:italic}
+  .sift label{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2);cursor:pointer;white-space:nowrap}
+  .sift input[type=checkbox]{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px}
+  .sift input:checked{background:var(--band);border-color:var(--band)}
+  .sift input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+
+  /* the sheet: one line per to-do, whatever days it fell on */
+  .sheet{list-style:none;margin:16px 0 0;padding:0}
+  .sheet .head{display:grid;grid-template-columns:15px 1fr 158px 212px 112px 62px;gap:0 14px;padding:0 0 8px;border-bottom:1px solid var(--ink);font-size:12px;color:var(--ink-3);letter-spacing:.04em}
+  .sheet li.row{display:grid;grid-template-columns:15px 1fr 158px 212px 112px 62px;gap:0 14px;padding:9px 0;border-bottom:1px solid var(--rule);align-items:baseline;cursor:pointer}
+  /* only what is on today's list can be ticked; the rest of the page is record, not work */
+  .sheet li.row>input[type=checkbox]{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px;align-self:center}
+  .sheet li.row>input:checked{background:var(--band);border-color:var(--band)}
+  .sheet li.row>input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
+  .sheet li.done .t{color:var(--ink-3);background:linear-gradient(currentColor,currentColor) left 58%/100% 1px no-repeat}
+  /* always there rather than revealed on hover, because a phone has no hover to reveal it with */
+  .sheet .x{font:inherit;font-size:12px;color:var(--ink-3);background:none;border:0;padding:0;text-align:right;cursor:pointer;opacity:.5}
+  .sheet .x:hover,.sheet .x:focus-visible{opacity:1;color:var(--ox)}
+  .sheet li.row:hover{background:var(--paper-2)}
+  .sheet .t{font-family:var(--serif);font-size:15.5px;min-width:0;overflow-wrap:anywhere}
+  .sheet li.over .t{color:var(--ink-3)}
+  .sheet .f{font-family:var(--serif);font-size:13.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sheet .m{font-size:12.5px;color:var(--ink-3);display:flex;flex-wrap:wrap;gap:3px 10px}
+  .sheet .m b{font-weight:400;color:var(--ink-2)}
+  .sheet .s{font-size:12.5px;text-align:right;white-space:nowrap;color:var(--ink-3)}
+  .sheet .s.yes{color:var(--band)}
+  .sheet .s.late{color:var(--ox)}
+
+  .sheet li.more{padding:0 0 14px;border-bottom:1px solid var(--rule)}
+  .sheet .card{background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:16px 18px;margin-top:2px}
+  .sheet .card .big{font-family:var(--serif);font-size:26px;line-height:1.1}
+  .sheet .card .big small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-top:3px}
+  .sheet .card .facts{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:12px;font-size:13px;color:var(--ink-3)}
+  .sheet .card .facts b{font-weight:400;color:var(--ink-2)}
+  /* every day it was on the list, ticked or let go — a long run of these is the point, so they are kept small */
+  .sheet .card .when{margin-top:12px;font-size:11.5px;color:var(--ink-3);display:flex;flex-wrap:wrap;gap:4px 6px}
+  .sheet .card .when i{font-style:normal;padding:1px 7px;border:1px solid var(--rule);border-radius:999px;white-space:nowrap}
+  .sheet .card .when i.yes{border-color:var(--band);color:var(--band)}
+  .sheet .card .when i.no{border-color:var(--ox);color:var(--ox)}
+  .sheet .empty{padding:20px 0;text-align:center}
+
+  @media (max-width:1100px){
+    .sheet .head{display:none}
+    .sheet li.row{grid-template-columns:15px 1fr auto;gap:2px 12px;padding:11px 0}
+    .sheet li.row>input[type=checkbox],.sheet li.row>span:first-child{grid-column:1;grid-row:1}
+    .sheet .t{grid-column:2;grid-row:1} .sheet .f{grid-column:2;grid-row:2;white-space:normal}
+    .sheet .m{grid-column:2;grid-row:3}
+    .sheet .s{grid-column:3;grid-row:1;align-self:baseline}
+    .sheet .x{grid-column:3;grid-row:3;align-self:baseline}
+  }
+  @media (max-width:760px){ main{padding:24px 20px 36px} .foot{padding:0 20px 28px} }
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="in">
+    <div class="row">
+      <a class="mark" href="today.html">HQ</a>
+      <span class="date"></span>
+      <nav aria-label="Areas"><a href="today.html">Today</a><a href="calendar.html">Calendar</a><a href="finances.html">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="health.html">Health</a></nav>
+      <div class="right">
+        <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
+        <button class="ib" aria-label="Notifications"><svg class="ic"><use href="icons.svg#bell"/></svg></button>
+        <button class="ib menu" type="button" aria-label="Menu" aria-expanded="false" id="menubtn"><svg class="ic"><use href="icons.svg#menu"/></svg></button>
+      </div>
+    </div>
+    <div class="mast">
+      <h1>The list</h1>
+      <span class="sub" id="sub">every to-do and how often it comes round; open one for its record</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <h2>Every to-do<small id="count"></small></h2>
+  <div class="capbar">
+    <form class="addt" id="addt"><input id="t-text" placeholder="Anything: a to-do, 12.40 lunch, 173.2, or Dentist Thursday 3–4 pm" required disabled><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button></form>
+    <div class="propose" id="propose" role="status" aria-live="polite" hidden></div>
+    <p class="saidt" id="saidt" role="status" aria-live="polite" hidden></p>
+  </div>
+  <div class="sift">
+    <input type="search" id="q" placeholder="Find a to-do…" aria-label="Find a to-do">
+    <label><input type="checkbox" id="openonly">only what is still open</label>
+    <label><input type="checkbox" id="standing">only standing items</label>
+  </div>
+  <ul class="sheet" id="sheet"><li class="empty">Reading the days…</li></ul>
+</main>
+<p class="foot">Nothing is stored here; every day's list is read as it stands. <a class="textbtn" href="today.html">Today</a></p>
+
+<script>
+  const _D=Date, FIXED=new _D(2026,8,15,10,27); Date=class extends _D{ constructor(...a){ super(...(a.length?a:[FIXED.getTime()])); } static now(){ return FIXED.getTime(); } };
+  localStorage.clear();
+  localStorage.setItem('hq.calendar', JSON.stringify({cats:[{id:'cal',name:'Appointments',tint:'#E9EEF3'},{id:'fit',name:'Training',tint:'#F6E6DC'},{id:'study',name:'Study',tint:'#ECE6F3'}],hidden:[],notes:{},series:[{id:1,date:'2026-09-15',start:9,end:10.5,title:'Study — Networking, chapter seven',cat:'study',sub:'Routing',rep:[]},{id:2,date:'2026-09-15',start:11,end:11.5,title:'Call with advisor',cat:'cal',sub:'',rep:[]},{id:3,date:'2026-09-15',start:17,end:18,title:'Gym — pull day',cat:'fit',sub:'Rows, pull-ups, curls',rep:[]}]}));
+  localStorage.setItem('hq.health', JSON.stringify({meds:[{id:'m1',name:'Vitamin D',when:'morning'}],next:[],days:{'2026-09-13':{pills:['m1'],sleep:'7.5'},'2026-09-14':{pills:['m1'],sleep:'7.8',weight:'172.9',hr:'55',garmin:{steps:8412}},'2026-09-15':{pills:[],sleep:'6.4',bed:'11.40 pm',woke:'6.52 am',weight:'172.4',hr:'52',garmin:{score:81,deep:6000,light:13800,rem:5400,awake:720,hrv:48,hrvStatus:'BALANCED',bb:74,bbChange:58,hr7:54,resp:14.2,steps:312}}}}));
+  localStorage.setItem('hq.library', JSON.stringify({open:1,books:[{id:1,shelf:'reading',title:'Project Hail Mary',author:'Andy Weir',pages:476,page:180,started:'2026-09-10',log:{'2026-09-12':90,'2026-09-14':140,'2026-09-15':180},notes:[]}]}));
+  localStorage.setItem('hq.school', JSON.stringify({courses:[{id:'c1',name:'PHYS-1610'},{id:'c2',name:'MATH-2650'}],items:[{id:1,course:'c1',title:'Exam 1',type:'test',due:'2026-09-15',done:true},{id:2,course:'c2',title:'Quiz 4',type:'assignment',due:'2026-09-18',done:false}],sessions:[{id:1,date:'2026-09-14',course:'c1',min:50}]}));
+  localStorage.setItem('hq.finances.2026-09', JSON.stringify({expected:4200,income:[{id:1,src:'Paycheck',amt:1450,date:'2026-09-11'}],plan:[],cats:[{id:'g',name:'Groceries',limit:420},{id:'e',name:'Eating out',limit:150},{id:'r',name:'Rent',limit:1450,due:17}],tx:[{id:1,date:'2026-09-14',what:'Weekly groceries',cat:'g',amt:56.3},{id:2,date:'2026-09-15',what:'Lunch',cat:'e',amt:18.2}],history:[]}));
+  localStorage.setItem('hq.today.2026-09-15', JSON.stringify({items:[{text:'Call the dentist',at:9.5,done:false},{text:'Laundry',done:true,from:'2026-09-14'}]}));
+  localStorage.setItem('hq.investments', JSON.stringify({holdings:[{id:1,ticker:'SPAXX',shares:573.7,account:'Brokerage',yield:3.36},{id:2,ticker:'VOO',shares:0.31,account:'Brokerage'}],balances:[],prices:{SPAXX:{price:1,chg:0,name:'Fidelity Government Money Market',at:'2026-09-15T04:00:00Z'},VOO:{price:709.16,chg:1.05,name:'Vanguard S&P 500 ETF',at:'2026-09-15T04:00:00Z'}},history:{'2026-09-10':780,'2026-09-12':790},contribCats:['roth ira'],baseline:1000}));
+  localStorage.setItem('hq.study', JSON.stringify({path:'stoics',pos:6,days:{'2026-09-13':{path:'stoics',cards:['s01','s02','s03'],done:true,at:3},'2026-09-14':{path:'stoics',cards:['s04','s05','s06'],done:true,at:3}},notes:[{date:'2026-09-14',path:'stoics',card:'s06',text:'Take care of it; do not view it as your own.'}],answers:{s05:{date:'2026-09-14',text:'It crosses when I stop trying.'}}}));
+</script>
+<script src="clock.js"></script>
+<script src="hq.js"></script>
+<script src="store.js"></script>
+<script src="recur.js"></script>
+<script src="capture.js"></script>
+<script src="bell.js"></script>
+<script src="search.js"></script>
+<script>
+  const C = clock, TODAY = C.today;
+
+  // How far either way to look. A to-do lives in the document for the day it was on, so the only way to see
+  // them all is to read the days; 120 back and 45 on covers a term without making the page a download.
+  const BACK = 120, AHEAD = 45, YM = TODAY.slice(0, 7);
+  const ASKED = new URLSearchParams(location.search).get('q') || '';   // the search box sends you here with what you looked for
+  let DAYS = [], DOCS = [], ROWS = [], ITEMS = [], RULES = { rules: [] }, open = null;
+  // what the box writes into. The List is otherwise a read of the days, but the box can make anything, so the
+  // three documents the other meanings go to are read along with them.
+  let T = { items: [] }, CAL = null, FIN = null, HEALTH = null;
+
+  const dayLabel = iso => iso === TODAY ? 'today'
+    : iso === C.iso(C.addDays(C.now, -1)) ? 'yesterday'
+    : iso === C.iso(C.addDays(C.now, 1)) ? 'tomorrow'
+    : C.dayMonth(C.fromISO(iso));
+
+  // What a to-do is, across the days: its own words. Keying on the rule instead would split one practice in
+  // two wherever it had grown a twin rule, and nothing in HQ ever edits a to-do's text, so the words are the
+  // steadier name of the thing.
+  const idOf = i => i.text.trim().toLowerCase();
+
+  async function load(){
+    DAYS = [];
+    for(let i = -BACK; i <= AHEAD; i++) DAYS.push(C.iso(C.addDays(C.now, i)));
+    const [rules, cal, fin, health, ...docs] = await Promise.all([store.load('todo.rules'), store.load('calendar'),
+      store.load('finances.' + YM), store.load('health'), ...DAYS.map(d => store.load('today.' + d))]);
+    RULES = rules || { rules: [] }; RULES.rules ??= [];
+    CAL = cal; FIN = fin; HEALTH = health; DOCS = docs;
+    // today's document is the one the box writes into, so it must be the same object the sheet is read from —
+    // a separate empty one would take the capture and the sheet would never see it
+    const ti = DAYS.indexOf(TODAY);
+    DOCS[ti] ||= { items: [] };
+    T = DOCS[ti];
+    CAP.fold();   // a standing to-do that had grown a twin rule showed up twice on every day it fell on
+    rebuild();
+    F('t-text').disabled = false;   // not before the days are in, or a capture would write over today's list
+    render();
+    hqReveal();
+  }
+
+  // the days, read into lines and then into things — done again after a deletion without going back to the server
+  function rebuild(){
+    ROWS = [];
+    DAYS.forEach((d, k) => {
+      const doc = DOCS[k]; if(!doc || !doc.items) return;
+      // one line per time a thing was on a day, so the same thing twice on one day is one line: a tick on
+      // either copy is a tick, and the most logged against it stands
+      const seen = new Map();
+      doc.items.forEach(i => {
+        if(!i || !i.text) return;
+        const key = idOf(i), had = seen.get(key);
+        if(had){ if(i.done) had.done = true; if(+i.did > (+had.did || 0)) had.did = i.did; return; }
+        const row = { ...i, day: d, key }; seen.set(key, row); ROWS.push(row);
+      });
+    });
+    ROWS.sort((a, b) => a.day < b.day ? 1 : a.day > b.day ? -1 : 0);   // newest first, as a ledger reads
+    ITEMS = gather();
+  }
+
+  // ---- one line per to-do, not one per day it fell on ----
+  // The sheet answers "what is on the docket, and how often" at a glance. Everything countable — the fraction,
+  // which days were ticked and which were let go — waits inside the line until it is opened.
+  const gather = () => {
+    const by = new Map();
+    for(const r of ROWS){                                  // ROWS runs newest first, so the first seen is the latest
+      let it = by.get(r.key);
+      if(!it){ it = { key: r.key, text: r.text, days: [], at: r.at, target: r.target, rule: r.rule }; by.set(r.key, it); }
+      else if(!it.rule && r.rule) it.rule = r.rule;
+      it.days.push(r);
+    }
+    return [...by.values()].map(it => {
+      it.days.sort((a, b) => a.day < b.day ? -1 : 1);
+      const rule = it.rule ? RULES.rules.find(x => x.id === it.rule) : null;
+      if(rule){ it.rep = rule.rep; it.until = rule.until; it.at = rule.at; it.target = rule.target; }
+      else it.rep = null;
+      it.times = times(it);
+      it.past = it.times.filter(o => o.made <= TODAY);
+      it.ahead = it.times.filter(o => o.made > TODAY);
+      // An asking still inside its deadline is pending: neither kept nor let go. It is left out of the fraction
+      // and out of the run of let-go days, because counting it would read a day you still have as a day you
+      // missed — and would drag a figure down for work that is not yet owed.
+      it.pending = it.past.filter(o => o.pending);
+      it.judged = it.past.filter(o => !o.pending);
+      it.ticked = it.judged.filter(o => o.done).length;
+      it.logged = it.past.reduce((n, o) => n + (+o.did || 0), 0);
+      let run = 0; for(let i = it.judged.length - 1; i >= 0 && !it.judged[i].done; i--) run++;
+      it.run = run;                                        // times let go, ending now
+      it.today = it.days.find(d => d.day === TODAY) || null;
+      it.waiting = it.past.find(o => !o.done && o.last >= TODAY) || null;   // one still sitting there, from whenever
+      it.open = it.past.some(o => !o.done);
+      it.over = !!(it.until && TODAY > it.until);
+      return it;
+    }).sort((a, b) => rank(a) - rank(b) || (last(a) < last(b) ? 1 : -1));
+  };
+
+  // how many times it was actually asked for — the counting lives in recur.js, which the digest reads too
+  const times = it => hqRecur.askings(it.days, it.rep != null);
+  // what is on the docket, in that order: today's unfinished, today's done, what is still standing, then the rest
+  const rank = it => it.today && !it.today.done ? 0 : it.today ? 1 : (it.rep != null && !it.over) ? 2 : 3;
+  const last = it => it.days[it.days.length - 1].day;
+
+  const often = it => it.rep != null ? hqRecur.says(it.rep)
+    : it.times.length === 1 ? 'once'
+    : `${it.times.length} times, as it came up`;
+
+  // what the thing carries, which is part of what it is rather than a statistic
+  const carries = it => {
+    const out = [];
+    if(it.at != null) out.push(`<span>by ${h12(it.at)}</span>`);
+    if(it.target) out.push(`<span>${it.target.n} ${esc(it.target.unit)} a time</span>`);
+    if(it.until) out.push(`<span>${it.over ? 'ended' : 'until'} ${C.dayMonth(C.fromISO(it.until))}</span>`);
+    return out.join('');
+  };
+
+  // when it is next wanted — the one forward-looking thing the glance needs
+  const next = it => {
+    // a deadline day outranks everything: it is both what is owed and when
+    const owed = it.past.find(o => !o.done && o.due);
+    if(owed) return owed.over > 0
+      ? { cls: 'late', text: owed.over === 1 ? 'a day overdue' : `${owed.over} days overdue` }
+      : { cls: '', text: `due ${dayLabel(owed.due)}` };
+    if(it.waiting && it.waiting.made !== TODAY) return { cls: 'late', text: `since ${dayLabel(it.waiting.made)}` };
+    if(it.today) return it.today.done ? { cls: 'yes', text: 'done today' } : { cls: 'late', text: 'today' };
+    if(it.ahead.length) return { cls: '', text: dayLabel(it.ahead[0].made) };
+    if(it.rep != null && !it.over){
+      const d = hqRecur.next(it.rep, C.iso(C.addDays(C.now, 1)), 1)[0];
+      if(d) return { cls: '', text: dayLabel(d) };
+    }
+    const l = it.past[it.past.length - 1];
+    return { cls: '', text: l ? `last ${dayLabel(l.made)}` : '—' };
+  };
+
+  function render(){
+    const rows = ITEMS.filter(matches);
+    F('count').textContent = ITEMS.length ? `${rows.length} of ${ITEMS.length} to-dos` : '';
+    if(!rows.length){ F('sheet').innerHTML = '<li class="empty">Nothing matches.</li>'; return; }
+
+    F('sheet').innerHTML = '<li class="head"><span></span><span>To-do</span><span>How often</span><span>What it carries</span><span style="text-align:right">Next</span><span></span></li>'
+      + rows.map((it, k) => {
+        const n = next(it);
+        const row = `<li class="row ${it.over ? 'over' : ''} ${it.today && it.today.done ? 'done' : ''}" data-k="${k}" role="button" tabindex="0" aria-expanded="${open === it.key}">
+          ${it.today ? `<input type="checkbox" data-tick="${k}" ${it.today.done ? 'checked' : ''} aria-label="Tick ${esc(it.text)} off today">` : '<span></span>'}
+          <span class="t">${esc(it.text)}</span>
+          <span class="f">${esc(often(it))}</span>
+          <span class="m">${carries(it)}</span>
+          <span class="s ${n.cls}">${esc(n.text)}</span>
+          <button class="x" type="button" data-rm="${k}" aria-label="Delete ${esc(it.text)}">remove</button></li>`;
+        return row + (open === it.key ? expanded(it) : '');
+      }).join('');
+  }
+
+  // up close: the fraction, and every time it was asked for, with whether it was done and how long it sat
+  function expanded(it){
+    const facts = [];
+    facts.push(`<span>first asked <b>${dayLabel(it.times[0].made)}</b></span>`);
+    if(it.times.length > 1) facts.push(`<span>last asked <b>${dayLabel(it.times[it.times.length - 1].made)}</b></span>`);
+    if(it.rep != null) facts.push(`<span>comes back <b>${esc(hqRecur.says(it.rep))}</b></span>`);
+    if(it.until) facts.push(`<span>${it.over ? 'ended' : 'until'} <b>${C.dayMonth(C.fromISO(it.until))}</b></span>`);
+    if(it.at != null) facts.push(`<span>wanted <b>by ${h12(it.at)}</b></span>`);
+    if(it.target) facts.push(`<span>${it.logged ? `<b>${+it.logged.toFixed(1)}</b> ${esc(it.target.unit)} logged in all, against ${it.target.n} a time` : `nothing logged yet against ${it.target.n} ${esc(it.target.unit)}`}</span>`);
+    // how often it was put off, and by how long — the thing the old count was hiding by calling each morning a to-do
+    const put = it.past.filter(o => o.waited > 0);
+    if(put.length) facts.push(`<span>put off <b>${put.length === 1 ? 'once' : `${put.length} times`}</b>, the longest by ${Math.max(...put.map(o => o.waited))} days</span>`);
+    if(it.run >= 2) facts.push(`<span>let go <b>${it.run} times</b> running</span>`);
+    if(it.ahead.length) facts.push(`<span><b>${it.ahead.length}</b> still to come</span>`);
+    if(it.pending.length) facts.push(`<span><b>${it.pending.length}</b> still inside ${it.pending.length === 1 ? 'its' : 'their'} deadline</span>`);
+    const late = it.judged.filter(o => o.over > 0);
+    if(late.length) facts.push(`<span>late <b>${late.length === 1 ? 'once' : `${late.length} times`}</b>, the worst by ${Math.max(...late.map(o => o.over))} days</span>`);
+    const big = it.judged.length
+      ? `${it.ticked} / ${it.judged.length}<small>done, of the ${it.judged.length === 1 ? 'time' : 'times'} it was asked for · ${Math.round(it.ticked / it.judged.length * 100)}%${it.pending.length ? ` · ${it.pending.length} not yet due` : ''}</small>`
+      : `—<small>it has not come round yet${it.ahead.length ? `, and is first on ${dayLabel(it.ahead[0].made)}` : ''}</small>`;
+    const chip = o => {
+      const sat = o.waited > 0 ? ` +${o.waited}` : '';
+      const why = o.done ? (o.waited > 0 ? `done ${dayLabel(o.settled)}, ${o.waited} days after it was asked` : 'done the same day')
+        : o.last >= TODAY ? `still waiting since ${dayLabel(o.made)}` : `never done; sat ${o.waited} days`;
+      return `<i class="${o.done ? 'yes' : 'no'}" title="${esc(why)}">${C.dayMonth(C.fromISO(o.made))}${sat}</i>`;
+    };
+    return `<li class="more"><div class="card">
+      <p class="big">${big}</p>
+      <p class="facts">${facts.join('')}</p>
+      ${it.past.length ? `<p class="when">${it.past.map(chip).join('')}</p>` : ''}
+    </div></li>`;
+  }
+
+  // Ticking is only ever for the one that is live — the copy on today's list. Everything else on this page is
+  // record, and a record is not a thing you can still go and do. A standing item's rule keeps the day too, the
+  // same way Today writes it, so the two pages tell the same story about what was kept and what was let go.
+  function tick(it, on){
+    const doc = DOCS[DAYS.indexOf(TODAY)]; if(!doc || !doc.items) return;
+    let hit = false;
+    doc.items.forEach(i => { if(i && i.text && idOf(i) === it.key){ i.done = on; hit = true; } });
+    if(!hit) return;
+    store.save('today.' + TODAY, doc);
+    if(it.rule && hqRecur.mark(RULES.rules.find(r => r.id === it.rule), TODAY, on)) store.save('todo.rules', RULES);
+    // the lines keep the order they had: a row that slid away the moment you ticked it would take your place
+    // in the page with it. The tidying happens on the next load, which is when you are not mid-sentence.
+    const was = new Map(ITEMS.map((x, i) => [x.key, i]));
+    rebuild();
+    ITEMS.sort((a, b) => (was.has(a.key) ? was.get(a.key) : 1e9) - (was.has(b.key) ? was.get(b.key) : 1e9));
+    render();
+  }
+
+  // Deleting takes the to-do off every day it sits on and stops it coming back, which is what "delete" has to
+  // mean on a page that shows every day at once. All of it goes back together if you undo.
+  function remove(it){
+    const touched = [], wasRules = hqCopy(RULES.rules);
+    DAYS.forEach((d, k) => {
+      const doc = DOCS[k]; if(!doc || !doc.items) return;
+      const keep = doc.items.filter(i => !i || !i.text || idOf(i) !== it.key);
+      if(keep.length === doc.items.length) return;
+      touched.push({ key: 'today.' + d, doc, was: hqCopy(doc.items) });
+      doc.items = keep; store.save('today.' + d, doc);
+    });
+    const hadRule = RULES.rules.some(r => idOf(r) === it.key);
+    if(hadRule){ RULES.rules = RULES.rules.filter(r => idOf(r) !== it.key); store.save('todo.rules', RULES); }
+    open = null; rebuild(); render();
+    hqUndo(it.text, () => {
+      touched.forEach(t => { t.doc.items = t.was; store.save(t.key, t.doc); });
+      if(hadRule){ RULES.rules = wasRules; store.save('todo.rules', RULES); }
+      rebuild(); render();
+    });
+  }
+
+  F('sheet').addEventListener('click', e => {
+    const box = e.target.closest('[data-tick]');
+    if(box){ e.stopPropagation(); const it = ITEMS.filter(matches)[+box.dataset.tick]; if(it) tick(it, box.checked); return; }
+    const rm = e.target.closest('[data-rm]');
+    if(rm){ e.stopPropagation(); const it = ITEMS.filter(matches)[+rm.dataset.rm]; if(it) remove(it); return; }
+    const li = e.target.closest('.row'); if(!li) return;
+    const it = ITEMS.filter(matches)[+li.dataset.k]; if(!it) return;
+    open = open === it.key ? null : it.key; render();
+  });
+  F('sheet').addEventListener('keydown', e => {
+    if(e.key !== 'Enter' && e.key !== ' ') return;
+    const li = e.target.closest('.row'); if(!li) return;
+    e.preventDefault(); li.click();
+  });
+  // the one sieve, so a line's place means the same thing wherever it is read
+  const matches = it => {
+    const q = F('q').value.trim().toLowerCase();
+    return (!q || it.key.includes(q)) && (!F('openonly').checked || it.open) && (!F('standing').checked || it.rep != null);
+  };
+  ['q', 'openonly', 'standing'].forEach(id => F(id).addEventListener('input', () => { open = null; render(); }));
+  if(ASKED) F('q').value = ASKED;   // arrived from the search box: the sieve is already set to what was asked
+
+  // the same box as Today's, from capture.js. A capture can land on any day — tomorrow, next Thursday — so
+  // afterwards the days are simply read again rather than guessed at.
+  const CAP = hqCapture({
+    todo: () => T,
+    rules: () => RULES,
+    cal: () => CAL || (CAL = { cats: [{ id: 'cal', name: 'Appointments', tint: '#E9EEF3' }], series: [], notes: {}, hidden: [] }),
+    fin: () => FIN || (FIN = { expected: 0, income: [], plan: [], cats: [], tx: [], history: [] }),
+    health: () => HEALTH || (HEALTH = { days: {}, meds: [], next: [] }),
+    saveTodo: () => store.save('today.' + TODAY, T),
+    saveRules: () => store.save('todo.rules', RULES),
+    saveCal: () => store.save('calendar', CAL),
+    saveFin: () => store.save('finances.' + YM, FIN),
+    saveHealth: () => store.save('health', HEALTH),
+    // A capture mutates the document in place, so the sheet is read again from what is already in hand rather
+    // than fetching all hundred and seventy days back. The one case that needs anything from the server is a
+    // capture that landed on another day — and capture.js hands over that day's document with it, so even
+    // that costs nothing. A day outside the window can only be shown by reading the window again.
+    redraw: (what, where) => {
+      if (what !== 'todo') return;
+      if (where && where.day && where.day !== TODAY) {
+        const k = DAYS.indexOf(where.day);
+        if (k < 0) { load(); return; }
+        DOCS[k] = where.doc;
+      }
+      rebuild(); render();
+    },
+  });
+
+  load();
+</script>
+</body>
+</html>
