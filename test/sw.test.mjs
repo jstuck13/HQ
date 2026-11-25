@@ -19,14 +19,19 @@ const sandbox = {
   URL, console,
 };
 vm.createContext(sandbox);
-vm.runInContext(readFileSync('sw.js', 'utf8'), sandbox);
+const swSrc = readFileSync('sw.js', 'utf8');
+vm.runInContext(swSrc, sandbox);
 
 const run = async url => { let out; await handlers.fetch({ request: { method: 'GET', url }, respondWith: p => (out = p) }); return out ? await out : '(passed through)'; };
 const install = async () => { let p; await handlers.install({ waitUntil: x => (p = x) }); await p; };
 
 await install();
 assert.ok(store.has('/study.html') && store.has('/hq.css') && store.has('/paths/socrates.json'), 'shell precached');
-assert.equal(store.size, 36, 'every shell file cached, got ' + store.size);   // grew with restore.html, span.html, digest.js, capture.js and colophon.html
+// Counted from the SHELL list rather than written down: the number only ever changed because a file was added,
+// and a test that has to be edited every time one is does not check anything the list does not already say.
+const shellList = swSrc.slice(swSrc.indexOf('const SHELL = ['), swSrc.indexOf('];', swSrc.indexOf('const SHELL = [')));
+const listed = new Set([...shellList.matchAll(/'([^']+)'/g)].map(m => m[1]));
+assert.equal(store.size, listed.size, `every shell file cached: ${store.size} of ${listed.size}`);
 
 // A page, a script and a stylesheet come from the network when there is one, so a deploy is in your hands on
 // this open. A kept today.html goes on reading the to-do list last week's way — and writing that back.

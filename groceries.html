@@ -187,8 +187,6 @@
   // the price book is derived from the trips; the Publix ad arrives nightly (api/sync/daily) into the `publix` document.
   const C = clock, TODAY = C.today, YM = TODAY.slice(0,7), MONTH = C.monthName(C.now);
   const $ = n => (n<0?'−':'') + '$' + Math.abs(n).toLocaleString('en-US',{minimumFractionDigits: Number.isInteger(n)?0:2, maximumFractionDigits:2});
-  const num = s => { const v=parseFloat(String(s).replace(/[^0-9.\-]/g,'')); return isNaN(v)?null:v; };
-  const dmy = d => `${C.monthShort(C.fromISO(d))} ${C.fromISO(d).getDate()}`;
   const norm = s => String(s).toLowerCase().replace(/bogo\*?|†|\*/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
   const KEY='groceries', FKEY='finances.'+YM;
   let G = { zip:'', trips:[], list:[] }, AD = { weeks:{} }, FIN = null, pending = { items:[] };

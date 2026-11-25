@@ -283,6 +283,7 @@
 
 <script src="clock.js"></script>
 <script src="hq.js"></script>
+<script type="module" src="occurs.mjs"></script>
 <script src="store.js"></script>
 <script src="bell.js"></script>
 <script src="search.js"></script>
@@ -359,10 +360,10 @@
   const dur = (a,b) => { const m=Math.round((b-a)*60); return m>=60 ? (m%60 ? `${Math.floor(m/60)} h ${m%60}` : `${m/60} h`) : `${m} min`; };
   const short = t => t.length>14 ? t.split(/ — |, /)[0].slice(0,16) : t;
   const wd = d => (C.fromISO(d).getDay()+6)%7;                     // Mon=0
-  const isWeekly = s => (s.rep||[]).length > 0;                    // any ticked day means it comes back every week
-  const repDays = s => [...new Set([wd(s.date), ...(s.rep||[])])].sort();
+  const isWeekly = s => hqOccurs.isWeekly(s);                      // any ticked day means it comes back every week
+  const repDays = s => hqOccurs.repDays(s);
   const repLabel = s => { const d=repDays(s); if(d.length===7) return 'Every day'; if(d.join()==='0,1,2,3,4') return 'Weekdays'; if(d.length===1) return 'Every week'; return d.map(i=>SHORTD[i]).join(' · '); };
-  const occurs = (s,d) => isWeekly(s) ? (d>=s.date && repDays(s).includes(wd(d))) : s.date===d;
+  const occurs = (s,d) => hqOccurs.occursOn(s, d);
   const occ = d => S.series.filter(s=>occurs(s,d) && !S.hidden.includes(s.cat)).sort((a,b)=>a.start-b.start);
   const key = (s,d) => `${s.id}@${d}`;
 

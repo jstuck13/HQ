@@ -301,9 +301,7 @@
   }
   const save = () => store.save(KEY, S);
 
-  const $ = n => (n<0?'−':'') + '$' + Math.abs(n).toLocaleString('en-US',{minimumFractionDigits: Number.isInteger(n)?0:2, maximumFractionDigits:2});
-  const dmy = d => C.short(C.fromISO(d));
-  const num = s => { const v=parseFloat(String(s).replace(/[^0-9.\-]/g,'')); return isNaN(v)?null:v; };
+  const dayShort = d => C.short(C.fromISO(d));   // not the shared dmy: a different format under the same old name
   const sum = a => a.reduce((x,y)=>x+y,0);
   const dayOf = t => C.parseDay(t);
   const spentIn = c => sum(S.tx.filter(t=>t.cat===c).map(t=>t.amt));
@@ -321,11 +319,11 @@
     F('landed').textContent = $0(landed);
     F('landedn').textContent = `${S.expected?Math.round(landed/S.expected*100)+'% of expected · ':''}${S.income.length} ${S.income.length===1?'payment':'payments'}`;
     const next = S.plan.filter(p=>p.date >= C.today).sort((a,b)=>a.date<b.date?-1:1)[0];
-    F('nextv').textContent = next ? $0(next.amt) : '—'; F('nextn').textContent = next ? `${next.src}, ${dmy(next.date)}` : 'nothing planned';
+    F('nextv').textContent = next ? $0(next.amt) : '—'; F('nextn').textContent = next ? `${next.src}, ${dayShort(next.date)}` : 'nothing planned';
     const inc = [...S.income].sort((a,b)=>a.date<b.date?1:-1);
-    F('inl').innerHTML = (inc.length ? inc.map(i=>`<li data-id="${i.id}"><span class="d">${dmy(i.date)}</span><span class="w">${esc(i.src)}</span><button class="x" type="button" aria-label="Remove ${esc(i.src)}"><span>remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button><span class="a in">${$(i.amt)}</span></li>`).join('') : '<li class="empty">Nothing landed yet this month.</li>')
+    F('inl').innerHTML = (inc.length ? inc.map(i=>`<li data-id="${i.id}"><span class="d">${dayShort(i.date)}</span><span class="w">${esc(i.src)}</span><button class="x" type="button" aria-label="Remove ${esc(i.src)}"><span>remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button><span class="a in">${$n(i.amt)}</span></li>`).join('') : '<li class="empty">Nothing landed yet this month.</li>')
       ;
-    F('planl').innerHTML = (S.plan.length ? S.plan.map(p=>`<li><span class="d">${dmy(p.date)}</span><span class="w">${esc(p.src)}<small>expected</small></span><span></span><span class="a">${$(p.amt)}</span></li>`).join('') : '') + (S.expected ? `<li class="total"><span class="d"></span><span class="w">To reach the ${$0(S.expected)} plan</span><span></span><span class="a">${$(Math.max(0,S.expected-landed))}</span></li>` : (S.plan.length ? '' : '<li class="empty">Nothing planned. Set an expected amount above, or log income as it lands.</li>'));
+    F('planl').innerHTML = (S.plan.length ? S.plan.map(p=>`<li><span class="d">${dayShort(p.date)}</span><span class="w">${esc(p.src)}<small>expected</small></span><span></span><span class="a">${$n(p.amt)}</span></li>`).join('') : '') + (S.expected ? `<li class="total"><span class="d"></span><span class="w">To reach the ${$0(S.expected)} plan</span><span></span><span class="a">${$n(Math.max(0,S.expected-landed))}</span></li>` : (S.plan.length ? '' : '<li class="empty">Nothing planned. Set an expected amount above, or log income as it lands.</li>'));
     // money out
     F('outsum').textContent = `${$0(spent)} spent of ${$0(limits)}`;
     F('cats').innerHTML = S.cats.length ? S.cats.map((c,i)=>{
@@ -341,11 +339,11 @@
     F('r-cat').innerHTML = S.cats.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
     const rules=[...R.rules].map(r=>({r, next:nextOf(r)})).sort((a,b)=>(a.next||'9')<(b.next||'9')?-1:1);
     F('ruln').textContent = rules.length ? `${rules.length} · ${$0(rules.filter(x=>x.r.every==='month').reduce((n,x)=>n+x.r.amt/(x.r.n||1),0))} a month` : 'expenses that repeat';
-    F('rull').innerHTML = rules.length ? rules.map(({r,next})=>`<li data-id="${r.id}"><span class="d">${next?C.monthShort(C.fromISO(next))+' '+C.fromISO(next).getDate():'—'}</span><span class="w">${esc(r.what)}<small>${esc(cat(r.cat)?.name||'—')} · ${ruleWhen(r)}</small></span><button class="x" type="button" aria-label="Remove ${esc(r.what)}"><span>remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button><span class="a">${$(r.amt)}</span></li>`).join('') : '<li class="empty">Nothing scheduled. Rent, subscriptions, insurance — add one below and it posts itself.</li>';
+    F('rull').innerHTML = rules.length ? rules.map(({r,next})=>`<li data-id="${r.id}"><span class="d">${next?C.monthShort(C.fromISO(next))+' '+C.fromISO(next).getDate():'—'}</span><span class="w">${esc(r.what)}<small>${esc(cat(r.cat)?.name||'—')} · ${ruleWhen(r)}</small></span><button class="x" type="button" aria-label="Remove ${esc(r.what)}"><span>remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button><span class="a">${$n(r.amt)}</span></li>`).join('') : '<li class="empty">Nothing scheduled. Rent, subscriptions, insurance — add one below and it posts itself.</li>';
     const tx = [...S.tx].sort((a,b)=>a.date<b.date?1:(a.date>b.date?-1:b.id-a.id));
     F('logn').textContent = `${tx.length} entries · ${$0(spent)}`;
     const shown = showAll ? tx : tx.slice(0,6);
-    F('outl').innerHTML = tx.length ? shown.map(t=>`<li data-id="${t.id}"><span class="d">${dmy(t.date)}</span><span class="w">${esc(t.what)}${t.rule?'<span class="rule">scheduled</span>':''}<small>${esc(cat(t.cat)?.name||'—')}</small></span><button class="x" type="button" aria-label="Remove ${esc(t.what)}"><span>remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button><span class="a">${$(t.amt)}</span></li>`).join('') + (tx.length>6 ? `<li class="more"><button class="textbtn" type="button" id="more">${showAll?'Show the latest six':'Show all '+tx.length}</button></li>` : '') : '<li class="empty">Nothing spent yet. Enjoy it.</li>';
+    F('outl').innerHTML = tx.length ? shown.map(t=>`<li data-id="${t.id}"><span class="d">${dayShort(t.date)}</span><span class="w">${esc(t.what)}${t.rule?'<span class="rule">scheduled</span>':''}<small>${esc(cat(t.cat)?.name||'—')}</small></span><button class="x" type="button" aria-label="Remove ${esc(t.what)}"><span>remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button><span class="a">${$n(t.amt)}</span></li>`).join('') + (tx.length>6 ? `<li class="more"><button class="textbtn" type="button" id="more">${showAll?'Show the latest six':'Show all '+tx.length}</button></li>` : '') : '<li class="empty">Nothing spent yet. Enjoy it.</li>';
     charts(landed, spent, limits);
     save();
   }

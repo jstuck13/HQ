@@ -179,7 +179,6 @@
   let S = { path: 'stoics', pos: 0, days: {}, notes: [], answers: {} }, PATHS = [], P = null, turn = '', justKept = false;   // P = the loaded path
   const answerBox = c => `<textarea class="answer" id="answer" data-card="${c.id}" placeholder="Your answer, if you have one…">${esc((S.answers[c.id] || {}).text || '')}</textarea>`;
   const save = () => store.save(KEY, S);
-  const dmy = d => `${C.monthShort(C.fromISO(d))} ${C.fromISO(d).getDate()}`;
   const card = id => P.cards.find(c => c.id === id);
   // path emblems: line art in the ornament's manner — a column for the Stoics, an owl for Socrates, a hill for the Sermon
   const EMBLEM = {

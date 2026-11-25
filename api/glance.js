@@ -13,15 +13,10 @@
 // in the same envelope — { title, big, lines, foot } — so the widget draws them all with one renderer, and a new
 // face is a function here rather than another page of drawing code there.
 import { sql, ensureTable, isAuthed, localNow } from './_lib.js';
+import { occursOn } from '../occurs.mjs';
+import { coverURL } from '../cover.mjs';
 
-const wd = iso => new Date(iso + 'T12:00:00Z').getUTCDay();
 const daysBetween = (a, b) => Math.round((Date.parse(b + 'T12:00:00Z') - Date.parse(a + 'T12:00:00Z')) / 864e5);
-
-// ponytail: the occurrence rule is a second copy of the one today.html draws with (renderDay). recur.js is a
-// browser global rather than a module, so the server cannot import it; when it becomes ESM, both should call it.
-// Keep the two in step: a weekly entry repeats on its named days once its start date has passed.
-const repDays = s => [...new Set([wd(s.date), ...(s.rep || [])])];
-const occursOn = (s, day) => (s.rep || []).length ? (day >= s.date && repDays(s).includes(wd(day))) : s.date === day;
 
 // ---- the day: the one face with rows you can tick ----
 
@@ -77,12 +72,6 @@ export const glanceFrom = ({ todo = {}, cal = {}, daily = {} }, day, h) => {
 // ---- the faces that share one envelope ----
 // `tone` is the only styling the server decides, because what counts as alarming is a fact about the figure and
 // not about the drawing: 'over' is past a limit or a deadline, 'near' is close enough to act on.
-
-// ponytail: the same formula as coverURL in library.html, which is a browser script the server cannot import.
-// Open Library serves these by its own cover id, or by ISBN when a book was added without one. `default=false`
-// makes a missing cover a 404 rather than a grey placeholder, so the widget can tell and fall back to type.
-const coverURL = b => b.coverId ? `https://covers.openlibrary.org/b/id/${b.coverId}-L.jpg?default=false`
-  : b.isbn ? `https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg?default=false` : null;
 
 // The book on the go, how far in, and whether the week's reading says you will finish it.
 export const faceReading = (lib, day) => {

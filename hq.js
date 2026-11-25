@@ -3,14 +3,25 @@ const F = id => document.getElementById(id);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const h12 = h => { const hr=Math.floor(h), m=Math.round((h%1)*60); return `${hr%12||12}.${String(m).padStart(2,'0')} ${hr<12?'am':'pm'}`; };   // 8.5 → 8.30 am
 const hrs = m => m>=60 ? (m%60 ? `${Math.floor(m/60)} h ${m%60}` : `${m/60} h`) : `${m} min`;                                            // 95 → 1 h 35
-const $0 = n => (n<0?'−':'') + '$' + Math.round(Math.abs(n)).toLocaleString('en-US');                                                    // 2194.4 → $2,194
+const $0 = n => (n<0?'−':'') + '$' + Math.round(Math.abs(n)).toLocaleString('en-US');
+// $0 rounds. $2 always shows cents; $n shows them only when there are any — the distinction finances and
+// investments had each solved locally, under the same name, with different answers.
+const $2 = n => (n<0?'−':'') + '$' + Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2});
+const $n = n => (n<0?'−':'') + '$' + Math.abs(n).toLocaleString('en-US',{minimumFractionDigits: Number.isInteger(n)?0:2, maximumFractionDigits:2});                                                    // 2194.4 → $2,194
 // Some Canvas assignments are only a column for a mark: a quiz sat in the lab, attendance, a paper handed over
 // in person. Its due date is when the teacher enters the score, not when anything is owed — so it is never
 // something to do, wherever School's items are read.
 const toDo = i => !i.done && !i.noturn;
+// Reading a number a person typed: strip anything that is not part of one, and answer null rather than NaN so
+// a caller can tell "nothing" from "zero". Five pages had written this out, three of them identically, and one
+// of those copies quietly dropped the minus sign — a weight could not go down.
+const num = v => { const n = parseFloat(String(v ?? '').replace(/[^0-9.-]/g, '')); return isFinite(n) ? n : null; };
+// Sep 15. Four pages wrote this; two others had a `dmy` that meant something else entirely, and those keep
+// their own names now.
+const dmy = iso => { const d = window.clock.fromISO(iso); return `${window.clock.monthShort(d)} ${d.getDate()}`; };
 // The version this copy of the app was built with. version.json holds the same number and is never cached,
 // so a page that has been open — or served from the offline shell — can tell when a newer one has been deployed.
-const HQ_VERSION = '4.48.0';
+const HQ_VERSION = '4.49.0';
 
 // a newer version is not forced on you mid-sentence: it says so, and waits to be asked
 async function watchVersion(){

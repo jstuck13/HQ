@@ -222,6 +222,7 @@
 
 <script src="clock.js"></script>
 <script src="hq.js"></script>
+<script type="module" src="occurs.mjs"></script>
 <script src="store.js"></script>
 <script src="recur.js"></script>
 <script src="capture.js"></script>
@@ -238,8 +239,7 @@
   function renderDay(cal){
     const tl = F('tl'); let html='', list=[];
     if(cal && cal.series){
-      const isWeekly = s => (s.rep||[]).length>0, repDays = s => [...new Set([wd(s.date), ...(s.rep||[])])];
-      const occurs = s => isWeekly(s) ? (TODAY>=s.date && repDays(s).includes(wd(TODAY))) : s.date===TODAY;
+      const occurs = s => hqOccurs.occursOn(s, TODAY);
       list = cal.series.filter(s=>s.date && occurs(s) && !(cal.hidden||[]).includes(s.cat)).sort((a,b)=>a.start-b.start);
     }
     // 8 to 8, stretched when the day has something earlier or later
@@ -264,7 +264,7 @@
   // a streak: days in a row ending today that pass the test; today is skipped, not broken, while it is still open
   const streak = (days, ok, open = () => false) => { let n=0; for(let i=0;i<400;i++){ const d=days[C.iso(C.addDays(C.fromISO(TODAY),-i))]||{}; if(!ok(d)){ if(i===0 && open(d)) continue; break; } n++; } return n; };
   const hm = sec => { const m=Math.round(sec/60); return m>=60 ? `${Math.floor(m/60)} h${m%60?' '+(m%60):''}` : `${m} min`; };
-  const num = n => Number(n).toLocaleString('en-US');
+  const commas = n => Number(n).toLocaleString('en-US');   // a formatter, not the shared parser that shares its old name
   function renderReport(H){
     const el=F('rep'), L=H && H.days && H.days[TODAY] || {}, G=L.garmin||{}, Y=H && H.days && H.days[C.iso(C.addDays(C.fromISO(TODAY),-1))] || {};
     const had = L.sleep!=null || L.hr!=null || L.weight!=null;
@@ -282,7 +282,7 @@
     if(L.weight!=null){ const prev=Object.keys(H.days).filter(d=>d<TODAY && H.days[d].weight!=null).sort().pop(); facts.push(`<li><b>${L.weight}<i>lb</i></b><span>this morning</span>${prev?`<small>last ${H.days[prev].weight}</small>`:''}</li>`); }
     if(G.bb!=null) facts.push(`<li><b>${G.bb}</b><span>body battery</span>${G.bbChange!=null?`<small>${G.bbChange>=0?'+':''}${G.bbChange} overnight</small>`:''}</li>`);
     if(G.hrv!=null) facts.push(`<li><b>${Math.round(G.hrv)}<i>ms</i></b><span>HRV</span>${G.hrvStatus?`<small>${esc(String(G.hrvStatus).toLowerCase())}</small>`:''}</li>`);
-    if(Y.garmin && Y.garmin.steps!=null) facts.push(`<li><b>${num(Y.garmin.steps)}</b><span>steps yesterday</span></li>`);
+    if(Y.garmin && Y.garmin.steps!=null) facts.push(`<li><b>${commas(Y.garmin.steps)}</b><span>steps yesterday</span></li>`);
     if(G.resp!=null) facts.push(`<li><b>${Math.round(G.resp)}</b><span>breaths / min</span><small>overnight</small></li>`);
     if(facts.length) html += `<ul class="facts">${facts.join('')}</ul>`;
     el.innerHTML = html;

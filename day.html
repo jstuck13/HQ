@@ -122,6 +122,7 @@
 
 <script src="clock.js"></script>
 <script src="hq.js"></script>
+<script type="module" src="occurs.mjs"></script>
 <script src="store.js"></script>
 <script src="bell.js"></script>
 <script src="search.js"></script>
@@ -129,7 +130,6 @@
 (() => {
   const C = clock, TODAY = C.today;
   const wd = d => (C.fromISO(d).getDay() + 6) % 7;
-  const num = v => { const n = parseFloat(String(v ?? '').replace(/[^0-9.-]/g, '')); return isFinite(n) ? n : null; };
   const qs = new URLSearchParams(location.search);
   let day = /^\d{4}-\d{2}-\d{2}$/.test(qs.get('d') || '') ? qs.get('d') : TODAY;
   let CAL = null, H = null, T = { items: [] }, FIN = null, SCHOOL = null, LIB = null, STUDY = null;
@@ -143,8 +143,7 @@
   function renderDay(){
     const tl = F('tl'); let html = '', list = [];
     if(CAL && CAL.series){
-      const isWeekly = s => (s.rep || []).length > 0, repDays = s => [...new Set([wd(s.date), ...(s.rep || [])])];
-      const occurs = s => isWeekly(s) ? (day >= s.date && repDays(s).includes(wd(day))) : s.date === day;
+      const occurs = s => hqOccurs.occursOn(s, day);
       list = CAL.series.filter(s => s.date && occurs(s) && !(CAL.hidden || []).includes(s.cat)).sort((a, b) => a.start - b.start);
     }
     const ats = T.items.filter(i => i.at != null && !i.done).map(i => i.at);

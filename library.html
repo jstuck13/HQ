@@ -187,6 +187,7 @@
 
 <script src="clock.js"></script>
 <script src="hq.js"></script>
+<script type="module" src="cover.mjs"></script>
 <script src="store.js"></script>
 <script src="bell.js"></script>
 <script src="search.js"></script>
@@ -198,8 +199,8 @@
   let S = seed();
   const save = () => store.save('library', S);
   const book = id => S.books.find(b=>b.id===id);
-  const dmy = iso => iso ? C.full(C.fromISO(iso)) : '';
-  const coverURL = b => b.coverId ? `https://covers.openlibrary.org/b/id/${b.coverId}-L.jpg?default=false` : b.isbn ? `https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg?default=false` : '';
+  const dayFull = iso => iso ? C.full(C.fromISO(iso)) : '';   // not the shared dmy: the long form
+  const coverURL = b => hqCover.coverURL(b) || '';   // shared with the widget's reading face
   const cover = (b, plain) => `<span class="cover">${coverURL(b)?`<img src="${coverURL(b)}" alt="" loading="lazy" onload="this.classList.add('ok')" onerror="this.dataset.missing=1">`:'<img data-missing=1 alt="">'}<span class="fb">${plain?'<span class="orn"></span>':`<b>${esc(b.title)}</b><i>${esc(b.author)}</i>`}</span></span>`;
   const dots = (n, live) => `<span class="dots">${[1,2,3,4,5].map(i=>live?`<button type="button" data-rate="${i}" class="${i<=n?'on':''}" aria-label="${i} of 5"></button>`:`<i class="${i<=n?'on':''}"></i>`).join('')}</span>`;
 
@@ -210,22 +211,22 @@
     // the open book
     const o = book(S.open) || reading[0] || toread[0] || read[0];
     const cur = reading[0];
-    F('openh').innerHTML = o ? (o.shelf==='reading' ? 'Reading now' : o.shelf==='toread' ? 'On the shelf' : 'Read') + `<small>${o.shelf==='reading'&&o.started?'since '+dmy(o.started):o.shelf==='read'&&o.finished?'finished '+dmy(o.finished):o.shelf==='toread'?'not started':''}${cur&&cur.id!==o.id?` · <button class="textbtn back" type="button" data-id="${cur.id}">Back to ${esc(cur.title)}</button>`:''}</small>` : 'Library';
+    F('openh').innerHTML = o ? (o.shelf==='reading' ? 'Reading now' : o.shelf==='toread' ? 'On the shelf' : 'Read') + `<small>${o.shelf==='reading'&&o.started?'since '+dayFull(o.started):o.shelf==='read'&&o.finished?'finished '+dayFull(o.finished):o.shelf==='toread'?'not started':''}${cur&&cur.id!==o.id?` · <button class="textbtn back" type="button" data-id="${cur.id}">Back to ${esc(cur.title)}</button>`:''}</small>` : 'Library';
     if(o){
       S.open=o.id;
       const acts = o.shelf==='reading' ? `<button class="textbtn" data-act="finish">Finished it</button><button class="textbtn" data-act="shelve">Back to To read</button>` : o.shelf==='toread' ? `<button class="textbtn" data-act="start">${o.page>0?'Pick it up again':'Start reading'}</button>` : `<button class="textbtn" data-act="start">Read it again</button>`;
       F('open').classList.toggle('charted', !!pagesChart(o));
       F('open').innerHTML = `${cover(o)}<div>
         <div class="t">${esc(o.title)}</div><div class="a">${esc(o.author)}</div>
-        <div class="meta"><span>${o.year||''}</span><span>${o.pages?o.pages+' pages':''}</span><span>${esc(o.genre||'')}</span>${o.started?`<span>started ${dmy(o.started)}</span>`:''}${o.finished?`<span>finished ${dmy(o.finished)}</span>`:''}${o.shelf==='toread'&&o.page>0?`<span>page ${o.page}${o.pages?` of ${o.pages}`:''}</span>`:''}</div>
+        <div class="meta"><span>${o.year||''}</span><span>${o.pages?o.pages+' pages':''}</span><span>${esc(o.genre||'')}</span>${o.started?`<span>started ${dayFull(o.started)}</span>`:''}${o.finished?`<span>finished ${dayFull(o.finished)}</span>`:''}${o.shelf==='toread'&&o.page>0?`<span>page ${o.page}${o.pages?` of ${o.pages}`:''}</span>`:''}</div>
         ${o.shelf==='reading'?`<div class="prog">Page <input value="${o.page||0}" inputmode="numeric" aria-label="Current page"> of ${o.pages||'?'}<span class="bar"><i style="width:${o.pages?Math.min(100,(o.page||0)/o.pages*100):0}%"></i></span><span>${o.pages?Math.round((o.page||0)/o.pages*100)+'%':''}</span>${pace(o)?`<small class="pace">${pace(o)}</small>`:''}</div>`:''}
         <div class="rate">Rating ${dots(o.rating, true)}</div>
         <p class="desc">${esc(o.desc||'')}</p>
         <div class="acts">${acts}<button class="textbtn rm" data-act="remove">Remove from library</button></div>
       </div>${pagesChart(o)}
       <div class="notes"><h3>Notes<small>${o.notes.length} ${o.notes.length===1?'note':'notes'}</small></h3>
-        <ul class="scrollbox">${o.notes.length?[...o.notes].reverse().map((n,i)=>`<li data-i="${o.notes.length-1-i}"><span class="d">${dmy(n.d)}</span><span class="n">${esc(n.t)}</span><button class="x" type="button">remove</button></li>`).join(''):'<li class="empty">Nothing written yet.</li>'}</ul>
-        <form class="write" id="write"><span class="d">${dmy(TODAY)}</span><textarea id="note" placeholder="Write a note — as long as you like." required></textarea><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Keep this note</button></form>
+        <ul class="scrollbox">${o.notes.length?[...o.notes].reverse().map((n,i)=>`<li data-i="${o.notes.length-1-i}"><span class="d">${dayFull(n.d)}</span><span class="n">${esc(n.t)}</span><button class="x" type="button">remove</button></li>`).join(''):'<li class="empty">Nothing written yet.</li>'}</ul>
+        <form class="write" id="write"><span class="d">${dayFull(TODAY)}</span><textarea id="note" placeholder="Write a note — as long as you like." required></textarea><button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Keep this note</button></form>
       </div>`;
       const pg = F('open').querySelector('.pgs');
       if(pg) zoomable(pg, 'pages', `${o.title} — pages so far`, box => {
@@ -302,7 +303,7 @@
     const x1 = (W-P.r).toFixed(1), xd = (W-P.r-4).toFixed(1), room = y(last.p) - P.t >= 18;
     const when = last.d===TODAY ? 'today' : C.dayMonth(C.fromISO(last.d));
     return `<div class="pgs"><h4>Pages so far</h4>
-      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Page reached from ${dmy(day0)} to ${dmy(last.d)}: ${last.p} of ${o.pages}">
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Page reached from ${dayFull(day0)} to ${dayFull(last.d)}: ${last.p} of ${o.pages}">
         <path class="wash" d="M${P.l},${H-P.b} L${pts.join(' L')} L${xd},${H-P.b} Z"/>
         <line class="end" x1="${P.l}" x2="${x1}" y1="${y(o.pages).toFixed(1)}" y2="${y(o.pages).toFixed(1)}"/>
         ${room?`<text class="tk" x="${x1}" y="${(y(o.pages)-6).toFixed(1)}" text-anchor="end">${o.pages}</text>`:''}

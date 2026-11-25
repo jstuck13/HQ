@@ -142,6 +142,7 @@
 
 <script src="clock.js"></script>
 <script src="hq.js"></script>
+<script type="module" src="occurs.mjs"></script>
 <script src="store.js"></script>
 <script src="recur.js"></script>
 <script src="digest.js"></script>
@@ -271,7 +272,7 @@
   function portraitHTML(days, H, cal, school){
     // a night logged by hand has hours but no times: guess a window ending at the usual waking hour (the watch's median, else 7 am)
     const wokes=Object.values(H&&H.days||{}).map(x=>clockOf(x.woke)).filter(x=>x!=null).sort((a,b)=>a-b), usualWoke=wokes.length?wokes[Math.floor(wokes.length/2)]:7;
-    const cats=cal&&cal.cats||[], isWeekly=s=>(s.rep||[]).length>0, repDays=s=>[...new Set([wd(s.date),...(s.rep||[])])], occurs=(s,d)=>isWeekly(s)?(d>=s.date&&repDays(s).includes(wd(d))):s.date===d;
+    const cats=cal&&cal.cats||[], isWeekly=s=>hqOccurs.isWeekly(s), repDays=s=>hqOccurs.repDays(s), occurs=(s,d)=>isWeekly(s)?(d>=s.date&&repDays(s).includes(wd(d))):s.date===d;
     let any=false;
     const rowsHtml = days.map(d => {
       const cells = Array(24).fill('free'); const day=H&&H.days&&H.days[d]||{};
