@@ -21,7 +21,7 @@ const num = v => { const n = parseFloat(String(v ?? '').replace(/[^0-9.-]/g, '')
 const dmy = iso => { const d = window.clock.fromISO(iso); return `${window.clock.monthShort(d)} ${d.getDate()}`; };
 // The version this copy of the app was built with. version.json holds the same number and is never cached,
 // so a page that has been open — or served from the offline shell — can tell when a newer one has been deployed.
-const HQ_VERSION = '4.49.1';
+const HQ_VERSION = '4.50.0';
 
 // a newer version is not forced on you mid-sentence: it says so, and waits to be asked
 async function watchVersion(){
@@ -171,8 +171,7 @@ const HQ_PAGES = [
   { id: 'span', name: 'A month, a year', file: 'span.html' },
   { id: 'patterns', name: 'Patterns', file: 'patterns.html' },
   { id: 'day', name: 'Another day', file: 'day.html' },
-  { id: 'restore', name: 'Restore', file: 'restore.html' },
-  { id: 'colophon', name: 'Colophon', file: 'colophon.html' },
+  { id: 'colophon', name: 'Colophon', file: 'colophon.html' }   // and restoring from a backup, which lives at its foot,
 ];
 const HQ_BAND = ['today', 'calendar', 'finances', 'library', 'school', 'health'];   // what the band holds until you say otherwise
 window.HQ_PAGES = HQ_PAGES;   // the search box navigates by this list too
