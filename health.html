@@ -14,7 +14,6 @@
 <link rel="stylesheet" href="hq.css">
 <style>
 
-  .mast{margin-top:20px;padding-top:18px;border-top:1px solid rgba(242,236,223,.28);display:flex;align-items:baseline;gap:22px;flex-wrap:wrap}
   h1{font-size:32px;line-height:1.3}
   .mast .sub{font-family:var(--serif);font-style:italic;color:var(--band-muted)}
   .mast .sub b{font-weight:400;color:var(--band-ink)}
@@ -88,8 +87,7 @@
   .syncline .bad{color:var(--ox)}
   .pills .x,.next .x{color:var(--ink-3);font-size:12px;opacity:0;margin-left:10px} .pills li:hover .x,.next li:hover .x,.pills li:focus-within .x,.next li:focus-within .x{opacity:1}
   .next .x{grid-column:1;grid-row:2;justify-self:start;margin:0}
-  .pills .empty,.next .empty{padding:12px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif);border:0;display:block}
-  .pills .empty,.next .empty{display:block!important;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
+  .pills .empty,.next .empty{padding:12px 0;border:0;display:block;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
   .pills .empty::before,.next .empty::before{content:"";display:block;width:min(160px,100%);height:12px;margin:0 auto 10px;background:var(--ornament)}
   .next li{display:grid;grid-template-columns:1fr auto;gap:2px 16px;padding:11px 0;border-bottom:1px solid var(--rule)}
   .next .n{grid-column:1;grid-row:1;font-family:var(--serif);font-size:15.5px}
@@ -109,7 +107,6 @@
   .chart .avg{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:1 3;stroke-linecap:round}
   .chart .roll{fill:none;stroke:var(--ox);stroke-width:1.6;stroke-opacity:.55;stroke-linejoin:round}
   .chart .ln{fill:none;stroke:var(--ink);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
-  .chart .wash{fill:var(--ink);opacity:.06}
   .chart .dot{fill:var(--ox);stroke:var(--paper);stroke-width:2} .chart .dot.past{fill:var(--ink)}
   .chart .pt{fill:var(--ink);stroke:var(--paper);stroke-width:1.5}
   .chart .tk{font:12px var(--sans);fill:var(--ink-3)}
@@ -128,7 +125,7 @@
     .chart .tip{font-size:13.5px;padding:5px 9px}
   }
   @media (prefers-reduced-motion:reduce){.textbtn,.chart .tip{transition:none}}
-  @media (max-width:1000px){.log{grid-template-columns:1fr;gap:34px}.strip{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:1100px){.log{grid-template-columns:1fr;gap:34px}.strip{grid-template-columns:repeat(2,1fr)}}
   @media (max-width:760px){
     main{padding:24px 20px 36px} .foot{padding:0 20px 28px}
     .ledger li{grid-template-columns:1fr auto;gap:6px 12px} .ledger .head{display:none} .ledger .l,.ledger .a{grid-column:1/-1;text-align:left;display:inline}
@@ -147,7 +144,7 @@
   <div class="in">
     <div class="row">
       <a class="mark" href="today.html">HQ</a>
-      <span class="date">Monday, 14 September 2026 · 8.40 am</span>
+      <span class="date"></span>
       <nav aria-label="Areas"><a href="today.html">Today</a><a href="calendar.html">Calendar</a><a href="finances.html">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="health.html" aria-current="page">Health</a></nav>
       <div class="right">
         <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>

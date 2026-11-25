@@ -14,7 +14,6 @@
 <link rel="stylesheet" href="hq.css">
 <style>
 
-  .mast{margin-top:20px;padding-top:18px;border-top:1px solid rgba(242,236,223,.28)}
   h1{font-size:32px;line-height:1.3;text-wrap:balance;max-width:40ch}
   h1 em{font-style:italic}
 
@@ -50,7 +49,7 @@
   .card.clear small{color:var(--ink-3);font-size:13px}
   .card.clear a{border-bottom:1px solid var(--rule)} .card.clear a:hover{border-color:var(--ink)}
   .card.clear::before,.rep.empty::before{content:"";display:block;width:160px;height:12px;margin:0 auto 12px;background:var(--ornament)}
-  .todo .empty{text-align:center;padding:18px 0;max-width:34ch;margin:0 auto;color:var(--ink-3);font-style:italic;font-family:var(--serif);border:0;display:block}
+  .todo .empty{text-align:center;padding:18px 0;max-width:34ch;margin:0 auto;border:0;display:block}
   .todo .empty::before{content:"";display:block;width:min(160px,100%);height:12px;margin:0 auto 10px;background:var(--ornament)}
   .upnext{margin:10px 0 0;font-size:14px;color:var(--band-muted);display:flex;flex-wrap:wrap;gap:6px 22px}
   .upnext .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--band-ink);margin-right:8px}
@@ -93,7 +92,7 @@
   .arrange .mv[disabled]{opacity:.25;cursor:default}
   .arrn{margin:12px 0 0;font-size:12.5px;color:var(--ink-3)}
   .arrn .textbtn{margin-left:10px}
-  .affairs li.empty{display:block;font-family:var(--serif);font-style:italic;color:var(--ink-3);padding:14px 0;border:0}
+  .affairs li.empty{display:block;padding:14px 0;border:0}
   .affairs li{display:grid;grid-template-columns:1fr auto;gap:2px 20px;padding:13px 0;border-bottom:1px solid var(--rule);align-items:baseline}
   .affairs .n{grid-column:1;grid-row:1;font-family:var(--serif);font-size:17px;border-bottom:1px solid transparent}
   .affairs .n:hover{border-bottom-color:var(--ink)}
@@ -162,7 +161,7 @@
        on a phone would cover the time and the deadline note — the controls would eat the facts. Removing and
        skipping a to-do live on The List, which is built for it and reachable in one tap from the heading. */
   }
-  @media (max-width:900px){
+  @media (max-width:1100px){
     main{grid-template-columns:1fr;gap:36px;padding:24px 20px 36px} .card{padding:12px 10px 14px} .card.rep,.card.clear{padding:18px 16px 20px} .rep{grid-template-columns:1fr} .rep .big{grid-row:auto} .rep .stages{margin-top:2px} .rep .facts{grid-template-columns:repeat(2,1fr)} .foot{padding:0 20px 28px}
   }
 </style>

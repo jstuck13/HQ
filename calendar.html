@@ -15,7 +15,6 @@
 <style>
 
   /* band, as on the home */
-  .mast{margin-top:20px;padding-top:18px;border-top:1px solid rgba(242,236,223,.28);display:flex;align-items:baseline;gap:22px;flex-wrap:wrap}
   h1{font-size:32px;line-height:1.3}
   .mast .nav{display:flex;gap:16px;align-items:center;align-self:center;font-size:13.5px;letter-spacing:.04em;color:var(--band-muted)}
   .mast .nav button{color:inherit;border-bottom:1px solid transparent;display:inline-flex;align-items:center;gap:4px;line-height:1;padding:4px 0}
@@ -119,8 +118,7 @@
   .rep .ic,.meta .ic{width:12px;height:12px}
   .entry .meta span{display:inline-flex;align-items:center;gap:4px}
   .ledger .d{color:var(--ink-3);font-size:12.5px;white-space:nowrap}
-  .ledger .empty{padding:14px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif);cursor:default;display:block}
-  .ledger .empty{display:block!important;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
+  .ledger .empty{padding:14px 0;cursor:default;display:block;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
   .ledger .empty::before{content:"";display:block;width:min(160px,100%);height:12px;margin:0 auto 10px;background:var(--ornament)}
   .right h2{font-size:20px} .right h2 small{white-space:nowrap}
   .syncline{margin:0 0 14px;font-size:12.5px;color:var(--ink-3)}
@@ -164,8 +162,7 @@
   .entry .saved{font-size:12.5px;color:var(--ink-3);font-style:italic;font-family:var(--serif);min-height:1.5em;margin:4px 0 0}
   .entry .acts{margin-top:10px;display:flex;gap:18px}
   .entry .acts .textbtn{color:var(--ink);font-size:14px}
-  .entry .empty{padding:14px 0 0;color:var(--ink-3);font-style:italic;font-family:var(--serif);margin:0}
-  .entry .empty{display:block!important;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
+  .entry .empty{padding:14px 0 0;margin:0;display:block;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
   .entry .empty::before{content:"";display:block;width:min(160px,100%);height:12px;margin:0 auto 10px;background:var(--ornament)}
 
   /* categories: add one inline */
@@ -205,7 +202,7 @@
   <div class="in">
     <div class="row">
       <a class="mark" href="today.html">HQ</a>
-      <span class="date">Monday, 14 September 2026 · 8.40 am</span>
+      <span class="date"></span>
       <nav aria-label="Areas"><a href="today.html">Today</a><a href="calendar.html" aria-current="page">Calendar</a><a href="finances.html">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="health.html">Health</a></nav>
       <div class="right">
         <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>

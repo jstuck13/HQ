@@ -86,7 +86,7 @@
   .foot .hint kbd{font:inherit;padding:1px 6px;border:1px solid var(--band-rule);border-radius:6px}
 
   @media (prefers-reduced-motion:reduce){.open,.open svg{transition:none}}
-  @media (max-width:900px){
+  @media (max-width:1100px){
     .wrap{padding:18px 20px 28px}
     .cover{grid-template-columns:1fr;gap:36px;padding:32px 0 28px}
     .quote{padding-left:0} blockquote::before{position:static;margin-left:0}
@@ -185,7 +185,7 @@
   // The front door. With the API present, the passcode sets the session cookie; on a plain static server it just opens.
   // The number THIS copy was built with. version.json carries the same number and is never cached, so when the
   // two disagree the page you are looking at came from the kept copy and a newer one is on the server.
-  const PAGE_VERSION = '4.47.0';
+  const PAGE_VERSION = '4.48.0';
   const ver = document.getElementById('ver');
   ver.textContent = 'Version ' + PAGE_VERSION;
   // asked at load, on returning to the tab, and every ten minutes while it is open, so a door left ajar

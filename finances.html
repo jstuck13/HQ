@@ -15,7 +15,6 @@
 <style>
   .num{font-family:var(--serif)}
 
-  .mast{margin-top:20px;padding-top:18px;border-top:1px solid rgba(242,236,223,.28);display:flex;align-items:baseline;gap:22px;flex-wrap:wrap}
   h1{font-size:32px;line-height:1.3}
   .mast .sub{font-family:var(--serif);font-style:italic;color:var(--band-muted)}
   .mast .sub b{font-weight:400;color:var(--band-ink)}
@@ -54,8 +53,7 @@
   .ledger .x .m-,.cats .x .m-{display:none}
   .ledger li:hover .x,.ledger li:focus-within .x{opacity:1}
   .ledger .x:hover{color:var(--ox)}
-  .ledger .empty,.cats .empty{padding:14px 0;color:var(--ink-3);font-style:italic;font-family:var(--serif);grid-template-columns:1fr;display:block}
-  .ledger .empty,.cats .empty{display:block!important;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
+  .ledger .empty,.cats .empty{padding:14px 0;grid-template-columns:1fr;display:block;text-align:center;padding-top:18px;padding-bottom:18px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.5}
   .ledger .empty::before,.cats .empty::before{content:"";display:block;width:min(160px,100%);height:12px;margin:0 auto 10px;background:var(--ornament)}
   .ledger .total{font-family:var(--serif);border-bottom:0;padding-top:12px}
   .ledger .more{grid-template-columns:1fr;border-bottom:0;padding-top:12px} .ledger .more .textbtn{font-size:13.5px;color:var(--ink-2)}
@@ -141,7 +139,7 @@
     .dot{r:5.5px} .hv{r:6px} .tk{font-size:13px} .lbl{font-size:13px}
     .tip{font-size:13.5px;padding:5px 9px}
   }
-  @media (max-width:1000px){
+  @media (max-width:1100px){
     .book{grid-template-columns:1fr;gap:34px} .gutter{display:none}
     .charts{grid-template-columns:1fr 1fr}
   }
@@ -175,7 +173,7 @@
   <div class="in">
     <div class="row">
       <a class="mark" href="today.html">HQ</a>
-      <span class="date">Monday, 14 September 2026 · 8.40 am</span>
+      <span class="date"></span>
       <nav aria-label="Areas"><a href="today.html">Today</a><a href="calendar.html">Calendar</a><a href="finances.html" aria-current="page">Finances</a><a href="library.html">Library</a><a href="school.html">School</a><a href="health.html">Health</a></nav>
       <div class="right">
         <button class="ib" aria-label="Search"><svg class="ic"><use href="icons.svg#search"/></svg></button>
