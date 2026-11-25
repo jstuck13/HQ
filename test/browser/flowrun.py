@@ -15,13 +15,20 @@ PAGES = sys.argv[1].split(',')
 flows = open(f'{R}/flows.js', encoding='utf-8').read()
 width = sys.argv[2] if len(sys.argv) > 2 else '1440'
 
+def seedFor(page):
+    """The frozen clock and seeded documents a page is probed against. A seed is an input, and is tracked; the
+    dbg-<page>.html copy built from it is output, and is not — they used to be the same file, so every probe
+    run left the repository dirty, which is the opposite of what tracking the harness was for."""
+    for f in (f'{R}/seed/{page}.html', f'{R}/seed/_default.html'):
+        if os.path.exists(f):
+            return open(f, encoding='utf-8').read().strip()
+    return None
+
 def fresh(p):
     f = f'{R}/dbg-{p}.html'
-    old = open(f, encoding='utf-8').read()
-    m = re.search(r'<script>\s*const _D=Date.*?</script>\n?', old, re.S)
-    if not m:
-        raise SystemExit(f'{p}: no seed shim in dbg-{p}.html')
-    shim = m.group(0)
+    shim = seedFor(p)
+    if shim is None:
+        return open(f, encoding='utf-8').read()   # no seed of its own: take the copy as it stands
     s = (open(p + '.html', encoding='utf-8').read()
          .replace('<meta charset="utf-8">', '<meta charset="utf-8"><base href="/">')
          .replace('<script src="clock.js"></script>', shim + '<script src="clock.js"></script>'))

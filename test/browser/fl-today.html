@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><base href="/">
+<meta charset="utf-8"><base href="/"><script>window.__errs=[];addEventListener("error",e=>__errs.push("error: "+e.message));addEventListener("unhandledrejection",e=>__errs.push("rejection: "+((e.reason&&e.reason.message)||e.reason)));</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#1F3A2E">
 <link rel="manifest" href="manifest.json">
@@ -29,29 +29,29 @@
   /* hour-ruled timeline (clean's donation, in ink and paper) */
   .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:18px 20px 20px;margin-top:14px}
   .tl{position:relative;height:calc(var(--hour) * 12)}
-  .hr{position:absolute;left:0;right:0;display:flex;gap:14px;align-items:flex-start;font-family:var(--serif);font-size:13px;color:var(--ink-3)}
+  .hr{position:absolute;left:0;right:0;display:flex;gap:14px;align-items:flex-start;font-family:var(--serif);font-size:13.5px;color:var(--ink-3)}
   .hr::after{content:"";flex:1;border-top:1px solid var(--rule);transform:translateY(9px)}
   .hr span{width:42px;text-align:right}
-  .ev{position:absolute;left:60px;right:0;min-height:30px;background:var(--c);border-radius:10px;padding:6px 12px;font-size:14.5px;line-height:1.3;transition:transform .15s,box-shadow .15s}
+  .ev{position:absolute;left:60px;right:0;min-height:30px;background:var(--c);border-radius:10px;padding:6px 12px;font-size:15px;line-height:1.3;transition:transform .15s,box-shadow .15s}
   .ev:hover{transform:translateX(2px);box-shadow:var(--shadow)}
   .ev.cal{--c:var(--a-cal)} .ev.fit{--c:var(--a-fit)} .ev.health{--c:var(--a-health)} .ev.study{--c:var(--a-study)}
   .ev b{display:block;font-family:var(--serif);font-weight:400}
   .ev small{color:var(--ink-3);font-size:12.5px}
   .now{position:absolute;left:46px;right:0;height:1.5px;background:var(--ox);z-index:2;pointer-events:none}
   .now::before{content:"";position:absolute;left:-1px;top:50%;margin-top:-3.5px;width:7px;height:7px;border-radius:50%;background:var(--ox)}
-  .now::after{content:attr(data-t);position:absolute;right:0;top:-21px;font-family:var(--serif);font-size:12px;color:var(--band-ink);background:var(--ox);padding:2px 8px;border-radius:6px}
+  .now::after{content:attr(data-t);position:absolute;right:0;top:-21px;font-family:var(--serif);font-size:12.5px;color:var(--band-ink);background:var(--ox);padding:2px 8px;border-radius:6px}
   .ev.live b{color:var(--ox)}
   .td{position:absolute;left:64px;right:0;display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2);border-top:1px dashed var(--ink-3);padding-top:3px;transform:translateY(-1px);pointer-events:none}
   .td span{display:inline-flex;align-items:center;gap:8px;background:var(--card);padding:0 6px 0 0;border-radius:4px;position:relative;z-index:1} .td small{background:var(--card);padding:0 0 0 6px;position:relative;z-index:1}
   .td .ic{width:12px;height:12px;color:var(--ink-3)} .td small{color:var(--ink-3);margin-left:auto} .td.late,.td.late small,.td.late .ic{color:var(--ox)} .td.late{border-color:var(--ox)}
   .card.clear{padding:34px 28px 32px;text-align:center}
   .card.clear b{display:block;font-family:var(--serif);font-weight:400;font-style:italic;font-size:22px;margin-bottom:6px}
-  .card.clear small{color:var(--ink-3);font-size:13px}
+  .card.clear small{color:var(--ink-3);font-size:13.5px}
   .card.clear a{border-bottom:1px solid var(--rule)} .card.clear a:hover{border-color:var(--ink)}
   .card.clear::before,.rep.empty::before{content:"";display:block;width:160px;height:12px;margin:0 auto 12px;background:var(--ornament)}
   .todo .empty{text-align:center;padding:18px 0;max-width:34ch;margin:0 auto;border:0;display:block}
   .todo .empty::before{content:"";display:block;width:min(160px,100%);height:12px;margin:0 auto 10px;background:var(--ornament)}
-  .upnext{margin:10px 0 0;font-size:14px;color:var(--band-muted);display:flex;flex-wrap:wrap;gap:6px 22px}
+  .upnext{margin:10px 0 0;font-size:15px;color:var(--band-muted);display:flex;flex-wrap:wrap;gap:6px 22px}
   .upnext .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--band-ink);margin-right:8px}
   .upnext b{font-family:var(--serif);font-weight:400;color:var(--band-ink)}
   .upnext .t{white-space:nowrap}
@@ -62,21 +62,21 @@
   .rep .big{grid-row:1/3}
   .rep .big b{display:block;font-family:var(--serif);font-weight:400;font-size:44px;line-height:1;letter-spacing:-.01em}
   .rep .big b i{font-style:normal;font-size:17px;color:var(--ink-3);margin-left:4px}
-  .rep .big span{display:block;font-size:13px;color:var(--ink-2);margin-top:6px}
+  .rep .big span{display:block;font-size:13.5px;color:var(--ink-2);margin-top:6px}
   .rep .big small{display:block;font-size:12.5px;color:var(--ink-3);margin-top:2px}
   .rep .stages{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--paper-2);margin-top:8px}
   .rep .stages i{display:block;height:100%}
   .rep .stages .deep{background:var(--band)} .rep .stages .light{background:var(--sage)} .rep .stages .rem{background:var(--lilac)} .rep .stages .awake{background:var(--rule)}
-  .rep .legend{font-size:12px;color:var(--ink-3);margin-top:6px}
+  .rep .legend{font-size:12.5px;color:var(--ink-3);margin-top:6px}
   .rep .legend b{font-weight:500;color:var(--ink-2)}
   .rep .facts{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:12px 18px;margin-top:12px;padding-top:14px;border-top:1px dotted var(--rule)}
   .rep .facts li b{font-family:var(--serif);font-weight:400;font-size:22px;line-height:1.1;display:block}
-  .rep .facts li b i{font-style:normal;font-size:13px;color:var(--ink-3);margin-left:3px}
+  .rep .facts li b i{font-style:normal;font-size:13.5px;color:var(--ink-3);margin-left:3px}
   .rep .facts li span{display:block;font-size:12.5px;color:var(--ink-2)}
-  .rep .facts li small{display:block;font-size:12px;color:var(--ink-3)}
+  .rep .facts li small{display:block;font-size:12.5px;color:var(--ink-3)}
   .rep.empty{display:block;text-align:center;padding:28px 24px}
-  .rep.empty b{display:block;font-family:var(--serif);font-weight:400;font-style:italic;font-size:20px;margin-bottom:4px}
-  .rep.empty small{color:var(--ink-3);font-size:13px}
+  .rep.empty b{display:block;font-family:var(--serif);font-weight:400;font-style:italic;font-size:22px;margin-bottom:4px}
+  .rep.empty small{color:var(--ink-3);font-size:13.5px}
   .rep.empty a{border-bottom:1px solid var(--rule)} .rep.empty a:hover{border-color:var(--ink)}
 
   .affedit{margin:10px 0 4px;padding:14px 16px;background:var(--card);border-radius:12px;box-shadow:var(--shadow)}
@@ -86,8 +86,8 @@
   .arrange input{appearance:none;width:15px;height:15px;border:1px solid var(--ink-2);margin:0;display:grid;place-items:center;cursor:pointer;background:var(--paper);border-radius:2px}
   .arrange input:checked{background:var(--band);border-color:var(--band)}
   .arrange input:checked::after{content:"";width:7px;height:4px;border:1.5px solid var(--band-ink);border-top:0;border-right:0;transform:translateY(-1px) rotate(-45deg)}
-  .arrange label{font-family:var(--serif);font-size:15.5px;cursor:pointer;margin-right:auto}
-  .arrange .mv{font-size:13px;color:var(--ink-3);padding:2px 6px;border-radius:4px;background:none;border:0;cursor:pointer}
+  .arrange label{font-family:var(--serif);font-size:15px;cursor:pointer;margin-right:auto}
+  .arrange .mv{font-size:13.5px;color:var(--ink-3);padding:2px 6px;border-radius:4px;background:none;border:0;cursor:pointer}
   .arrange .mv:hover:not([disabled]){color:var(--ink);background:var(--paper-2)}
   .arrange .mv[disabled]{opacity:.25;cursor:default}
   .arrn{margin:12px 0 0;font-size:12.5px;color:var(--ink-3)}
@@ -99,7 +99,7 @@
   .affairs .over{font-weight:500;color:var(--ox)}
   .affairs .d{grid-column:1;grid-row:2;color:var(--ink-2);font-size:13.5px}
   .affairs .v{grid-column:2;grid-row:1/3;font-family:var(--serif);font-size:24px;text-align:right;line-height:1.1}
-  .affairs .v small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3);margin-top:2px}
+  .affairs .v small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-top:2px}
   .affairs .v.flag small{color:var(--ox)}
   h2 .otherday{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto;border-bottom:1px solid var(--rule)}
   h2 .otherday:hover{color:var(--ox);border-bottom-color:var(--ox)}
@@ -113,10 +113,10 @@
   .reps li.over{opacity:.55}
   .reps{list-style:none;margin:10px 0 0;padding:0}
   .reps li{display:flex;align-items:baseline;gap:12px;padding:6px 0;border-top:1px dotted var(--rule);font-size:13.5px;color:var(--ink-2)}
-  .reps li span{font-family:var(--serif);font-size:14.5px}
-  .reps li small{display:block;font-family:var(--sans);font-size:12px;color:var(--ink-3)}
+  .reps li span{font-family:var(--serif);font-size:15px}
+  .reps li small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3)}
   .reps li .textbtn{margin-left:auto;font-size:12.5px;color:var(--ink-3)}
-  .todo .rp{color:var(--ink-3);font-size:13px;margin-left:6px}
+  .todo .rp{color:var(--ink-3);font-size:13.5px;margin-left:6px}
   .todo ul{border-left:1px solid color-mix(in srgb, var(--ox) 32%, transparent);padding-left:14px}
   /* The row aligns on the words, not on the boxes. Centring each item centred it on its own height, so the
      target chip — which holds a 14px input inside 12.5px text — sat its words 2px above everything beside
@@ -151,7 +151,7 @@
     /* the greeting keeps its two lines but stops taking a third of the screen before anything is read */
     .band h1{font-size:22px;line-height:1.25}
     .mast{margin-top:12px;padding-top:12px}
-    .upnext{margin:8px 0 0;font-size:13px;gap:4px 16px}
+    .upnext{margin:8px 0 0;font-size:13.5px;gap:4px 16px}
     .mast .arr{margin-top:8px}
     .todo li{align-items:center;min-height:44px;padding:4px 0;gap:12px}
     .todo label{display:flex;align-items:center;min-height:44px;flex:1}
@@ -231,8 +231,7 @@
   localStorage.setItem('hq.today.2026-09-15', JSON.stringify({items:[{text:'Call the dentist',at:9.5,done:false},{text:'Laundry',done:true,from:'2026-09-14'}]}));
   localStorage.setItem('hq.investments', JSON.stringify({holdings:[{id:1,ticker:'SPAXX',shares:573.7,account:'Brokerage',yield:3.36},{id:2,ticker:'VOO',shares:0.31,account:'Brokerage'}],balances:[],prices:{SPAXX:{price:1,chg:0,name:'Fidelity Government Money Market',at:'2026-09-15T04:00:00Z'},VOO:{price:709.16,chg:1.05,name:'Vanguard S&P 500 ETF',at:'2026-09-15T04:00:00Z'}},history:{'2026-09-10':780,'2026-09-12':790},contribCats:['roth ira'],baseline:1000}));
   localStorage.setItem('hq.study', JSON.stringify({path:'stoics',pos:6,days:{'2026-09-13':{path:'stoics',cards:['s01','s02','s03'],done:true,at:3},'2026-09-14':{path:'stoics',cards:['s04','s05','s06'],done:true,at:3}},notes:[{date:'2026-09-14',path:'stoics',card:'s06',text:'Take care of it; do not view it as your own.'}],answers:{s05:{date:'2026-09-14',text:'It crosses when I stop trying.'}}}));
-</script>
-<script src="clock.js"></script>
+</script><script src="clock.js"></script>
 <script src="hq.js"></script>
 <script type="module" src="occurs.mjs"></script>
 <script src="store.js"></script>
@@ -731,5 +730,213 @@
     F('foot').textContent = store.signedOut ? 'Showing this browser’s copy. Sign in on the welcome page to sync.' : 'Everything here is read from the other pages; only the to-do list lives on Today.';
   })();
 </script>
-</body>
+<script>// Debug flows: do on each page what a person actually does — type into the forms, submit them,
+// move between views — and report whether the document changed the way it should have.
+// One object per page; the harness picks the one matching the page it is loaded into.
+(() => {
+  const w = ms => new Promise(r => setTimeout(r, ms));
+  const F = id => document.getElementById(id);
+  const doc = k => JSON.parse(localStorage.getItem('hq.' + k) || 'null');
+  const set = (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); };
+  const submit = f => f.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+  const ym = new Date().toISOString().slice(0, 7);
+  const today = new Date().toISOString().slice(0, 10);
+
+  const FLOWS = {
+    today: async out => {
+      const items = () => doc('today.' + today).items || [];
+      const boxes = [...document.querySelectorAll('#todo input[type=checkbox]')];
+      if (boxes.length) { const before = items().filter(i => i.done).length; boxes[0].click(); await w(400);
+        out.push(`tick a to-do: ${before} → ${items().filter(i => i.done).length} done`); }
+      else out.push('tick a to-do: NOT SAVED (no boxes on the list)');
+
+      // The box is the one every page shares now, and its ids are addt / t-text. This flow still asked for
+      // addtodo / td-text, so the guard skipped it and the step quietly tested nothing.
+      const f = F('addt');
+      if (!f) out.push('the box: NOT SAVED (no #addt)');
+      else {
+        set(F('t-text'), 'Debug plain item'); submit(f); await w(500);
+        out.push('plain to-do: ' + (items().some(i => i.text === 'Debug plain item') ? 'saved' : 'NOT SAVED')
+               + ' said "' + (F('saidt').hidden ? '(silent)' : F('saidt').textContent) + '"');
+
+        set(F('t-text'), 'Debug deadline by friday'); submit(f); await w(500);
+        const d = items().find(i => i.text === 'Debug deadline');
+        out.push('deadline to-do: ' + (d ? 'saved due ' + d.due : 'NOT SAVED')
+               + ' chips "' + ([...document.querySelectorAll('#todo .from')].map(e => e.textContent).join('/') || 'none') + '"');
+
+        set(F('t-text'), '4.75 debug coffee'); submit(f); await w(500);
+        out.push('money: ' + (((doc('finances.' + ym) || {}).tx || []).some(t => +t.amt === 4.75) ? 'saved' : 'NOT SAVED'));
+      }
+
+      // the page's own shape: hide a block, send it across, and see whether it is remembered
+      const arr = F('arrpage');
+      if (!arr) out.push('arrange: NOT SAVED (no button)');
+      else {
+        arr.click(); await w(300);
+        const rows = [...document.querySelectorAll('#pgedit .arrange li')];
+        out.push('arrange: ' + rows.length + ' blocks listed');
+        // the panel redraws itself after every change, so each row is looked up again rather than held on to
+        const row = id => document.querySelector(`#pgedit .arrange li[data-id="${id}"]`);
+        if (row('report')) {
+          row('report').querySelector('input').click(); await w(400);
+          out.push('hide the report: ' + ((((doc('prefs') || {}).today || {}).hidden || []).includes('report') ? 'remembered' : 'NOT SAVED')
+                 + ' gone from the page: ' + (document.querySelector('[data-block=report]').hidden ? 'yes' : 'NO'));
+          row('report').querySelector('input').click(); await w(400);   // back on, so the move is visible
+          const side = row('report').querySelector('[data-side]');
+          out.push('side button says "' + side.textContent + '"');
+          side.click(); await w(400);
+          out.push('send it across: ' + JSON.stringify(((doc('prefs') || {}).today || {}).col || {})
+                 + ' now in ' + (document.querySelector('#colb [data-block=report]') ? 'the right column' : document.querySelector('#cola [data-block=report]') ? 'the left column' : 'NEITHER'));
+          row('report').querySelector('[data-up]')?.click(); await w(400);
+          out.push('move it up: order ' + JSON.stringify(((doc('prefs') || {}).today || {}).order || []));
+        }
+      }
+      out.push('finances row: ' + (([...document.querySelectorAll('#affairs li')].find(l => /Finances/.test(l.textContent)) || {}).innerText || 'none').replace(/\s+/g, ' '));
+    },
+
+    list: async out => {
+      const rows = () => [...document.querySelectorAll('#sheet li.row')];
+      out.push('sheet: ' + rows().length + ' things, count "' + F('count').textContent + '"');
+      if (!rows().length) { out.push('sheet: NOT SAVED (nothing read)'); return; }
+
+      rows()[0].click(); await w(400);
+      const card = document.querySelector('#sheet li.more');
+      out.push('open a line: ' + (card ? card.querySelector('.big').textContent.replace(/\s+/g, ' ').slice(0, 54) : 'NO CARD'));
+      rows()[0].click(); await w(300);
+
+      const box = document.querySelector('#sheet li.row input[type=checkbox]');
+      if (!box) out.push('tick here: nothing is on today’s list to tick');
+      else { const was = (doc('today.' + today).items || []).filter(i => i.done).length;
+        box.click(); await w(500);
+        out.push('tick here: ' + was + ' → ' + (doc('today.' + today).items || []).filter(i => i.done).length + ' done in today’s document'); }
+
+      const f = F('addt');
+      if (!f) out.push('the box: NOT SAVED (no #addt)');
+      else if (F('t-text').disabled) out.push('the box: NOT SAVED (still disabled after load)');
+      else { set(F('t-text'), 'Debug list item by sunday'); submit(f); await w(800);
+        const it = (doc('today.' + today).items || []).find(i => i.text === 'Debug list item');
+        out.push('capture here: ' + (it ? 'saved due ' + it.due : 'NOT SAVED') + ', sheet now ' + rows().length); }
+
+      const n = rows().length, x = document.querySelector('#sheet li.row .x');
+      if (x) { x.click(); await w(600);
+        out.push('delete: ' + n + ' → ' + rows().length);
+        const undo = document.querySelector('.hq-undo button');
+        if (undo) { undo.click(); await w(600); out.push('undo: back to ' + rows().length); }
+        else out.push('undo: no button offered'); }
+
+      set(F('q'), 'zzzznothing'); await w(300);
+      out.push('search for nothing: "' + ((document.querySelector('#sheet .empty') || {}).textContent || 'NO EMPTY LINE') + '"');
+      set(F('q'), ''); await w(300);
+      F('standing').click(); await w(300);
+      out.push('only standing: ' + rows().length + ' things');
+      F('standing').click(); await w(200);
+    },
+    calendar: async out => {
+      F('monthh').click(); await w(300);
+      out.push('month view: ' + document.querySelectorAll('#mgrid .mday').length + ' days, arrive:' + F('mgrid').classList.contains('arrive'));
+      F('monthh').click(); await w(300);
+      out.push('back to week: ' + (!F('weekview').hidden));
+      const before = (doc('calendar').series || []).length;
+      if (F('addopen')) { F('addopen').click(); await w(150); }
+      set(F('a-title'), 'Debug entry'); set(F('a-day'), '25 Sep'); set(F('a-start'), '3.00 pm'); set(F('a-end'), '4.00 pm');
+      submit(F('add')); await w(400);
+      out.push(`add an entry: ${before} → ${(doc('calendar').series || []).length}`);
+      if (F('planbtn')) { F('planbtn').click(); await w(400); out.push('plan the week: ' + document.querySelectorAll('.gap').length + ' free stretches'); }
+    },
+    finances: async out => {
+      const n0 = (doc('finances.' + ym).tx || []).length;
+      set(F('x-what'), 'Debug purchase'); set(F('x-amt'), '12.34'); submit(F('addout')); await w(400);
+      const d = doc('finances.' + ym);
+      out.push(`log an expense: ${n0} → ${(d.tx || []).length}` + ((d.tx || []).some(t => t.what === 'Debug purchase') ? '' : ' NOT SAVED'));
+      const more = F('more'); if (more) { more.click(); await w(300); out.push('show every one: ' + document.querySelectorAll('#outl li').length + ' rows, box ' + Math.round(F('outl').getBoundingClientRect().height) + '/' + F('outl').scrollHeight); }
+      const bar = document.querySelector('#ive path[data-t]');
+      if (bar) { const r = bar.getBoundingClientRect(); bar.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, pointerType: 'mouse', clientX: r.left + r.width / 2, clientY: r.top + 3 })); await w(150);
+        const tp = document.querySelector('#ive .tip');
+        out.push('bar hover: ' + (tp.textContent ? '"' + tp.textContent + '" opacity ' + tp.style.opacity : 'NOT SAVED (tip stayed empty)')); }
+      const i0 = (doc('finances.' + ym).income || []).length;
+      set(F('in-src'), 'Debug pay'); set(F('in-amt'), '100'); submit(F('addin')); await w(400);
+      out.push(`log income: ${i0} → ${(doc('finances.' + ym).income || []).length}`);
+    },
+    library: async out => {
+      const b = doc('library').books.find(x => x.shelf === 'reading');
+      const pin = document.querySelector('.prog input');
+      if (b && pin) { set(pin, String((b.page || 0) + 7)); await w(600);
+        out.push(`page moved: ${b.page} → ${doc('library').books.find(x => x.id === b.id).page}`); }
+      const n0 = (b && b.notes || []).length;
+      if (F('note')) { set(F('note'), 'A debug note'); submit(F('write')); await w(400);
+        out.push(`keep a note: ${n0} → ${(doc('library').books.find(x => x.id === b.id).notes || []).length}`); }
+      out.push('shelves: ' + [...document.querySelectorAll('.wall')].map(el => el.id + ':' + el.children.length).join(', '));
+    },
+    school: async out => {
+      const boxes = [...document.querySelectorAll('#due input[type=checkbox]')];
+      if (boxes.length) { const d0 = doc('school').items.filter(i => i.done).length; boxes[0].click(); await w(400);
+        out.push(`tick an assignment: ${d0} → ${doc('school').items.filter(i => i.done).length} done`); }
+      const s0 = (doc('school').sessions || []).length;
+      set(F('s-min'), '35'); submit(F('addsess')); await w(400);
+      out.push(`log a session: ${s0} → ${(doc('school').sessions || []).length}`);
+      out.push('due box: ' + Math.round(F('due').getBoundingClientRect().height) + '/' + F('due').scrollHeight + ' · study next: ' + (document.querySelector('.next h3, .next .t, #nextn') || {}).textContent);
+    },
+    health: async out => {
+      set(F('weight'), '173.4'); await w(500);
+      out.push('log weight: ' + ((doc('health').days[today] || {}).weight || 'NOT SAVED'));
+      const pills = [...document.querySelectorAll('#pills input[type=checkbox]')];
+      if (pills.length) { pills[0].click(); await w(400); out.push('tick a supplement: ' + ((doc('health').days[today] || {}).pills || []).length + ' ticked'); }
+      const r = document.querySelector('.range button:not(.on)'); if (r) { r.click(); await w(400); out.push('range toggle: clicked "' + r.textContent + '", stored ' + (localStorage.getItem('hq.health.range') || 'NOTHING')); }
+      out.push('heading: ' + (document.querySelector('h2 + ul.pills') ? 'pills list present' : '') + ' ' + [...document.querySelectorAll('h2')].map(h => h.firstChild.textContent.trim()).join('/'));
+    },
+    review: async out => {
+      out.push('portrait this week: ' + document.querySelectorAll('.prow').length + ' rows · from the watch: ' + document.querySelectorAll('.prow .ph i.sleep:not(.est)').length + ' · guessed: ' + document.querySelectorAll('.prow .ph i.est').length + ' · busy: ' + document.querySelectorAll('.prow .ph i.busy').length);
+      const first = F('wk').textContent.slice(0, 40);
+      document.querySelector('.wknav button, .nav button')?.click(); await w(900);
+      out.push('paged a week: ' + (F('wk').textContent.slice(0, 40) !== first ? 'changed' : 'SAME') + ' · portrait redrew: ' + document.querySelectorAll('.prow').length + ' rows');
+    },
+    groceries: async out => {
+      const n0 = (doc('groceries').list || []).length;
+      set(F('l-text'), 'Debug bananas'); submit(F('addl')); await w(400);
+      out.push(`add to the list: ${n0} → ${(doc('groceries').list || []).length}`);
+      const box = [...document.querySelectorAll('#list input[type=checkbox]')][0];
+      if (box) { box.click(); await w(400); out.push('tick it: ' + (doc('groceries').list || []).filter(l => l.done).length + ' ticked'); }
+      const seg = document.querySelector('.seg button:not(.on)'); if (seg) { seg.click(); await w(300); out.push('deal filter: ' + seg.textContent + ' → ' + document.querySelectorAll('.bogo').length + ' items'); }
+      out.push('price book: ' + document.querySelectorAll('#book li').length + ' rows, box ' + Math.round(F('book').getBoundingClientRect().height) + '/' + F('book').scrollHeight);
+    },
+    investments: async out => {
+      F('pastewrap').open = true;
+      F('pastebox').value = ['Account Number\tAccount Name\tSymbol\tDescription\tQuantity\tLast Price\tCurrent Value\tType',
+                             'Z1\tIndividual\tSPAXX**\tHELD IN MONEY MARKET\t\t\t$514.49\tCash',
+                             'Z1\tIndividual\tVOO\tVANGUARD S&P 500 ETF\t1.075\t$709.16\t$762.35\tCash'].join('\n');
+      F('readpaste').click(); await w(200);
+      out.push('paste read: ' + F('pastenote').textContent + ' · rows ' + document.querySelectorAll('#preview .pv li').length);
+      F('applypaste').click(); await w(400);
+      const h = doc('investments').holdings;
+      out.push('applied: ' + h.map(x => x.ticker + ' ' + x.shares).join(', '));
+      const cat = document.querySelector('#cats input[type=checkbox]'); if (cat) { cat.click(); await w(300); out.push('contribution category: ' + (doc('investments').contribCats || []).length + ' ticked'); }
+      set(F('baseline'), '1200'); await w(400);
+      out.push('baseline: ' + doc('investments').baseline + ' · ring segments: ' + document.querySelectorAll('#ring circle').length);
+    },
+    study: async out => {
+      const first = document.querySelector('.stage .text').textContent.slice(0, 30);
+      F('next').click(); await w(350);
+      out.push('turn: ' + (document.querySelector('.stage .text').textContent.slice(0, 30) !== first ? 'moved on' : 'STUCK') + ' · class ' + F('stage').className);
+      const a = F('answer'); if (a) { set(a, 'A debug answer'); await w(500); }
+      F('back').click(); await w(350); F('next').click(); await w(350);
+      out.push('answer survives the turn: ' + (F('answer') && F('answer').value === 'A debug answer' ? 'yes' : 'NO'));
+      F('next').click(); await w(350); F('next').click(); await w(350);
+      if (F('line')) { set(F('line'), 'A debug line'); F('keep').click(); await w(500);
+        out.push('kept: ' + (doc('study').notes || []).length + ' lines · day done: ' + !!(doc('study').days[today] || {}).done); }
+      out.push('look back: ' + document.querySelectorAll('#lbcards li').length + ' cards, tabs ' + document.querySelectorAll('#lbtabs button').length);
+    },
+  };
+
+  const page = (location.pathname.split('/').pop() || '').replace(/^[a-z0-9]{1,6}-/, '').replace('.html', '');
+  const flow = FLOWS[page];
+  window.addEventListener('load', async () => {
+    await w(2400);
+    const out = [];
+    try { if (flow) await flow(out); else out.push('no flow for ' + page); }
+    catch (e) { out.push('THREW: ' + e.message); }
+    if (window.__errs && window.__errs.length) out.push('ERRS: ' + window.__errs.join(' ~ '));
+    document.title = out.join(' | ');
+  });
+})();
+</script></body>
 </html>

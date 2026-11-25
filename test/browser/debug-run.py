@@ -28,14 +28,20 @@ REPORT = """<script>window.addEventListener('load',()=>setTimeout(()=>{
 # The dbg-<page>.html copy exists only to carry a seed shim. alignrun and flowrun were taught to rebuild it
 # from the live page on every run after the alignment probe spent days measuring week-old markup; this one was
 # not, so the click sweep went on loading whatever the last run happened to leave behind. It rebuilds too now.
+def seedFor(page):
+    """The frozen clock and seeded documents a page is probed against. A seed is an input, and is tracked; the
+    dbg-<page>.html copy built from it is output, and is not — they used to be the same file, so every probe
+    run left the repository dirty, which is the opposite of what tracking the harness was for."""
+    for f in (f'{R}/seed/{page}.html', f'{R}/seed/_default.html'):
+        if os.path.exists(f):
+            return open(f, encoding='utf-8').read().strip()
+    return None
+
 def fresh(page):
     f = f'{R}/dbg-{page}.html'
-    try:
-        old = open(f, encoding='utf-8').read()
-        shim = re.search(r'<script>\s*const _D=Date.*?</script>
-?', old, re.S).group(0)
-    except Exception:
-        return open(f, encoding='utf-8').read()          # no shim to keep: take the copy as it stands
+    shim = seedFor(page)
+    if shim is None:
+        return open(f, encoding='utf-8').read()   # no seed of its own: take the copy as it stands
     s = (open(page + '.html', encoding='utf-8').read()
          .replace('<meta charset="utf-8">', '<meta charset="utf-8"><base href="/">')
          .replace('<script src="clock.js"></script>', shim + '<script src="clock.js"></script>'))

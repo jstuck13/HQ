@@ -12,6 +12,8 @@ node_modules/
 # The browser harness lives in test/browser beside the unit tests. Its inputs — the probes and the seed
 # fixtures that carry a frozen clock — are tracked, because a failing probe with no baseline to diff against
 # is the problem moving the unit tests was meant to solve. Everything it generates is not.
+# dbg-<page>.html is built from test/browser/seed/ on every probe run; the seed is the input that is kept.
+test/browser/dbg-*.html
 test/browser/al-*.html
 test/browser/dbg2-*.html
 test/browser/host-*.html
