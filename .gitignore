@@ -15,6 +15,8 @@ node_modules/
 # dbg-<page>.html is built from test/browser/seed/ on every probe run; the seed is the input that is kept.
 test/browser/dbg-*.html
 test/browser/al-*.html
+test/browser/fl-*.html
+test/browser/fl2-*.html
 test/browser/dbg2-*.html
 test/browser/host-*.html
 test/browser/ph-*.html
