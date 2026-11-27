@@ -24,3 +24,9 @@ test/browser/*.png
 
 # Lavish review artifacts: generated for a conversation, not part of the app.
 .lavish/
+
+# Agent skills, not app. These are generic tooling — Lavish, gh, a task backlog, a quota reporter — that
+# happen to be checked out here because .claude/skills is the only place a project-local skill can live.
+# None of them is about HQ, and a tracked dot-directory is served: .impeccable/brief-body.md answers 200 on
+# the live site. They keep working untracked.
+.claude/
