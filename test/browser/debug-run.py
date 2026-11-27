@@ -67,9 +67,9 @@ def run(path, width=1440, height=1700, budget=14000, shot=None, reduced=True):
     m = re.search(r'<title>(.*?)</title>', r.stdout.decode('utf-8', 'ignore'), re.S)
     return m.group(1) if m else '(no title)'
 
-# rebuild every copy from the live sources first
-sub = subprocess.run([sys.executable, r'C:\Users\jpstu\AppData\Local\Temp\claude\C--Users-jpstu-dev\35b18e34-398e-493e-a68c-515926b2c7a2\scratchpad\rebuild.py', ','.join(only), 'dbg'], capture_output=True, timeout=1200)
-print('rebuilt:', sub.returncode == 0)
+# fresh() below rebuilds each copy from the live source, so there is nothing to rebuild up here. There
+# used to be a call to a rebuild script living in a session temp directory; the directory went away and
+# the call failed silently from then on, which was harmless only because it was never doing anything.
 
 probe = open(f'{R}/shift-probe.js', encoding='utf-8').read()
 for p in only:

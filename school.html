@@ -70,7 +70,8 @@
   .tile .lk .h{color:var(--ink-3);font-size:12.5px;white-space:nowrap}
   .tile .lk .rm{margin-left:auto;color:var(--ink-3);font-size:12.5px;opacity:0}
   .tile .lk li:hover .rm,.tile .lk li:focus-within .rm{opacity:1}
-  .tile .addlk{display:grid;grid-template-columns:1fr 1.2fr auto;gap:10px;padding-top:6px;align-items:baseline}
+  .tile .lk li.add{display:block}   /* the row holds a disclosure, not a line of link */
+  .tile .addlk{display:grid;grid-template-columns:1fr 1.2fr auto;gap:10px;align-items:baseline}
   .tile .addlk input{width:100%;font-family:var(--serif);font-size:15px;border-bottom:1px dotted var(--ink-2);padding:2px 0}
   .tile .addlk input:focus{outline:none;border-bottom-color:var(--ink)}
   .tile .addlk input::placeholder{color:var(--ink-3);font-style:italic}
@@ -160,10 +161,12 @@
     <section class="courses">
       <h2>Courses<small id="coursesn"></small></h2>
       <div class="tiles" id="tiles"></div>
-      <form class="addc" id="addc">
-        <input id="c-name" placeholder="New course" required>
-        <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button>
-      </form>
+      <details class="fold"><summary>Add a course</summary>
+        <form class="addc" id="addc">
+          <input id="c-name" placeholder="New course" required>
+          <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button>
+        </form>
+      </details>
     </section>
 
   <aside>
@@ -180,12 +183,14 @@
 
     <div class="sessions">
       <h2>Sessions<small id="sessn"></small></h2>
-      <form class="addl s" id="addsess">
-        <select id="s-course"></select>
-        <input id="s-min" inputmode="numeric" placeholder="min" aria-label="Minutes" required>
-        <input id="s-date" aria-label="Day" required>
-        <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Log a session</button>
-      </form>
+      <details class="fold"><summary>Log a session by hand</summary>
+        <form class="addl s" id="addsess">
+          <select id="s-course"></select>
+          <input id="s-min" inputmode="numeric" placeholder="min" aria-label="Minutes" required>
+          <input id="s-date" aria-label="Day" required>
+          <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Log a session</button>
+        </form>
+      </details>
       <ul class="ledger sess scrollbox" id="sess"></ul>
     </div>
   </aside>
@@ -284,7 +289,7 @@
       F('start')?.addEventListener('click', ()=>startTimer(c.id));
       F('stop')?.addEventListener('click', stopTimer);
     } else {
-      F('nextn').textContent=''; F('next').innerHTML=`<p class="empty" style="grid-column:1/-1">${S.courses.length?'Nothing open. Add an item on the right, or enjoy the evening.':'Add a course below to get started.'}</p>`;
+      F('nextn').textContent=''; F('next').innerHTML=`<p class="empty" style="grid-column:1/-1">${S.courses.length?'Nothing open. Add an item on the right, or enjoy the evening.':'Add a course to get started.'}</p>`;
     }
 
     // The running mark: Canvas's own where it publishes one, otherwise what the scored work here adds up to.
@@ -309,9 +314,9 @@
         <div class="due ${nd && days(nd.due)<=0?'ox':''}">${nd?`Next: ${esc(nd.title)}, ${dueSays(nd)}`:'Nothing due'}</div>
         <div class="conf">Confidence<span class="dots">${[1,2,3,4,5].map(n=>`<button type="button" class="${n<=c.conf?'on':''}" data-conf="${n}" aria-label="${n} of 5"></button>`).join('')}</span></div>
         <ul class="lk">${c.links.map((l,i)=>`<li><a href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.t)}</a><span class="h">${esc(host(l.u))}</span><button class="rm" type="button" data-lk="${i}" aria-label="Remove link">remove</button></li>`).join('')}
-          <li class="addlk"><input placeholder="Link title" aria-label="Link title"><input placeholder="https://…" aria-label="Link URL"><button class="textbtn" type="button" data-addlk><svg class="ic" style="width:14px;height:14px"><use href="icons.svg#plus"/></svg>Add a link</button></li></ul>
+          <li class="add"><details class="fold"><summary>Add a link</summary><div class="addlk"><input placeholder="Link title" aria-label="Link title"><input placeholder="https://…" aria-label="Link URL"><button class="textbtn" type="button" data-addlk><svg class="ic" style="width:14px;height:14px"><use href="icons.svg#plus"/></svg>Add</button></div></details></li></ul>
       </div>`;
-    }).join('') : '<p class="empty" style="grid-column:1/-1">No courses yet. Add one below; then its assignments, tests and links.</p>';
+    }).join('') : '<p class="empty" style="grid-column:1/-1">No courses yet. Add one, then its assignments, tests and links.</p>';
 
     // due ledger
     const dueList = [...S.items].sort((a,b)=>a.done!==b.done ? (a.done?1:-1) : (a.due<b.due?-1:1));

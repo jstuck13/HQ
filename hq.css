@@ -167,6 +167,21 @@ nav a[aria-current]{color:var(--band-ink);border-bottom:1px solid var(--band-ink
 /* What a page says when it has nothing to show. The serif italic is the constant; the measure and the centring
    belong to whichever list is empty. */
 .empty{font-family:var(--serif);font-style:italic;color:var(--ink-3);padding:14px 0}
+/* Setting a thing up and using it are different days. Finances kept a seven-control form for a repeating
+   expense permanently on the page you open to see what you spent; Health kept three such forms, School five.
+   .fold puts the once-a-term furniture behind a line of text, so what a page shows by default is what it is
+   for. The summary is a textbtn with no box, because a disclosure is a sentence, not a button. */
+details.fold{margin-top:10px}
+details.fold > summary{list-style:none;cursor:pointer;font-size:12.5px;color:var(--ink-3);letter-spacing:.04em;
+  display:inline-flex;align-items:center;gap:7px;padding:2px 0;border-bottom:1px solid transparent;
+  transition:color .15s,border-color .15s}
+details.fold > summary::-webkit-details-marker{display:none}
+details.fold > summary::after{content:"";width:6px;height:6px;border-right:1px solid currentColor;
+  border-bottom:1px solid currentColor;transform:rotate(45deg) translate(-1px,-1px);transition:transform var(--t) ease}
+details.fold[open] > summary::after{transform:rotate(-135deg) translate(-2px,-2px)}
+details.fold > summary:hover{color:var(--ink);border-bottom-color:var(--ink-3)}
+details.fold > :not(summary){margin-top:10px}
+@media (prefers-reduced-motion:reduce){details.fold > summary,details.fold > summary::after{transition:none}}
 h2{font-size:22px;padding-bottom:10px;border-bottom:1px solid var(--ink);margin-bottom:4px;display:flex;align-items:baseline;gap:12px}
 h2 small{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto}
 ul{list-style:none;margin:0;padding:0}

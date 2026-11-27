@@ -216,21 +216,25 @@
     <section class="page r">
       <h2>Money out<small id="outsum"></small></h2>
       <ul class="cats" id="cats"></ul>
-      <form class="addc" id="addcat">
-        <input id="c-name" placeholder="New category">
-        <input id="c-limit" class="amt" inputmode="numeric" placeholder="limit $">
-        <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button>
-      </form>
+      <details class="fold"><summary>A category of its own</summary>
+        <form class="addc" id="addcat">
+          <input id="c-name" placeholder="New category">
+          <input id="c-limit" class="amt" inputmode="numeric" placeholder="limit $">
+          <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Add</button>
+        </form>
+      </details>
 
       <h3>Scheduled<small id="ruln">expenses that repeat</small></h3>
       <ul class="ledger" id="rull"></ul>
-      <form class="addl rule" id="addrule">
-        <input id="r-what" placeholder="Rent, Spotify, insurance…" required>
-        <input id="r-amt" class="amt" inputmode="decimal" placeholder="$0" required>
-        <select id="r-cat"></select>
-        <span class="freq"><span>every</span><input id="r-n" value="1" inputmode="numeric" aria-label="Every how many"><select id="r-every" aria-label="Period"><option value="month">month</option><option value="week">week</option><option value="year">year</option></select><span>on</span><input id="r-day" placeholder="the 1st" aria-label="Which day"></span>
-        <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Schedule</button>
-      </form>
+      <details class="fold"><summary>Something that repeats</summary>
+        <form class="addl rule" id="addrule">
+          <input id="r-what" placeholder="Rent, Spotify, insurance…" required>
+          <input id="r-amt" class="amt" inputmode="decimal" placeholder="$0" required>
+          <select id="r-cat"></select>
+          <span class="freq"><span>every</span><input id="r-n" value="1" inputmode="numeric" aria-label="Every how many"><select id="r-every" aria-label="Period"><option value="month">month</option><option value="week">week</option><option value="year">year</option></select><span>on</span><input id="r-day" placeholder="the 1st" aria-label="Which day"></span>
+          <button class="textbtn" type="submit"><svg class="ic"><use href="icons.svg#plus"/></svg>Schedule</button>
+        </form>
+      </details>
 
       <h3>This month<small id="logn"></small></h3>
       <form class="addl out" id="addout">
@@ -333,13 +337,13 @@
         <span class="s">${$0(sp)} <small>of</small> $<input value="${c.limit.toLocaleString('en-US')}" inputmode="numeric" aria-label="${esc(c.name)} limit"></span>
         <span class="bar"><i class="${over?'over':''}" style="width:${pct}%"></i></span>
         <span class="l ${over?'over':''} ${/due today|overdue/.test(due)?'due':''}">${over ? $0(-lft)+' over' : due ? (c.bill ? due+' · '+$0(lft)+' left' : due) : $0(lft)+' left'}</span></li>`;
-    }).join('') : '<li class="empty">No categories yet. Add one below with a monthly limit.</li>';
+    }).join('') : '<li class="empty">No categories yet. One with a monthly limit is a start.</li>';
     const lastCat = F('x-cat').value || (S.tx.length ? [...S.tx].sort((a,b)=>b.id-a.id)[0].cat : S.cats[1]?.id);
     F('x-cat').innerHTML = S.cats.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join(''); if(lastCat && cat(lastCat)) F('x-cat').value = lastCat;
     F('r-cat').innerHTML = S.cats.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
     const rules=[...R.rules].map(r=>({r, next:nextOf(r)})).sort((a,b)=>(a.next||'9')<(b.next||'9')?-1:1);
     F('ruln').textContent = rules.length ? `${rules.length} · ${$0(rules.filter(x=>x.r.every==='month').reduce((n,x)=>n+x.r.amt/(x.r.n||1),0))} a month` : 'expenses that repeat';
-    F('rull').innerHTML = rules.length ? rules.map(({r,next})=>`<li data-id="${r.id}"><span class="d">${next?C.monthShort(C.fromISO(next))+' '+C.fromISO(next).getDate():'—'}</span><span class="w">${esc(r.what)}<small>${esc(cat(r.cat)?.name||'—')} · ${ruleWhen(r)}</small></span><button class="x" type="button" aria-label="Remove ${esc(r.what)}"><span>remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button><span class="a">${$n(r.amt)}</span></li>`).join('') : '<li class="empty">Nothing scheduled. Rent, subscriptions, insurance — add one below and it posts itself.</li>';
+    F('rull').innerHTML = rules.length ? rules.map(({r,next})=>`<li data-id="${r.id}"><span class="d">${next?C.monthShort(C.fromISO(next))+' '+C.fromISO(next).getDate():'—'}</span><span class="w">${esc(r.what)}<small>${esc(cat(r.cat)?.name||'—')} · ${ruleWhen(r)}</small></span><button class="x" type="button" aria-label="Remove ${esc(r.what)}"><span>remove</span><svg class="ic m-"><use href="icons.svg?v=3#minus"/></svg></button><span class="a">${$n(r.amt)}</span></li>`).join('') : '<li class="empty">Nothing scheduled. Rent, subscriptions, insurance — once added, they post themselves.</li>';
     const tx = [...S.tx].sort((a,b)=>a.date<b.date?1:(a.date>b.date?-1:b.id-a.id));
     F('logn').textContent = `${tx.length} entries · ${$0(spent)}`;
     const shown = showAll ? tx : tx.slice(0,6);
