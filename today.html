@@ -117,7 +117,16 @@
   .affairs .d{grid-column:1;grid-row:2;color:var(--ink-2);font-size:13.5px}
   .affairs .v{grid-column:2;grid-row:1/3;font-family:var(--serif);font-size:24px;text-align:right;line-height:1.1}
   .affairs .v small{display:block;font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-top:2px}
-  .affairs .v.flag small{color:var(--ox)}
+  /* Eight rows at one weight meant a bill falling due today looked exactly like a reading streak, and the
+     eye had nowhere to land — which is most of what information overload actually is. A row that wants
+     acting on takes oxblood, the colour this app already uses for now and for overdue. Nothing else changes:
+     no tint, no rule, no badge. One row speaking slightly louder is enough when the other five do not. */
+  .affairs .v .q{font-size:17px;color:var(--ink-3)}
+  .affairs li.urgent .v .q{color:var(--ox);opacity:.72}
+  .affairs li.urgent .v{color:var(--ox)}
+  .affairs li.urgent .v small{color:var(--ox)}
+  .affairs li.urgent .d{color:var(--ink-2)}
+  .affairs li.urgent .n{color:var(--ox)}
   h2 .otherday{font-family:var(--sans);font-size:12.5px;color:var(--ink-3);margin-left:auto;border-bottom:1px solid var(--rule)}
   h2 .otherday:hover{color:var(--ox);border-bottom-color:var(--ox)}
   .todo .tg{font-size:12.5px;color:var(--ink-3);white-space:nowrap}
@@ -372,8 +381,15 @@
   const RESTING = [];
   function rest(name, href){ RESTING.push(`<a href="${href}">${name}</a>`); return null; }
 
+  // A figure is a quantity and the words saying what kind it is, and those are not the same thing. "3 of 4"
+  // is a three; "p. 180" is a hundred and eighty. Set at one weight the whole string reads as one lump and
+  // you go back over it to find the number — eight times down the column. The scaffolding steps back.
+  const figure = v => String(v)
+    .replace(/^p\.\s*/, '<span class="q">p.</span>&#8201;')
+    .replace(/\s+of\s+(\S+)$/, ' <span class="q">of $1</span>');
+
   function row(name, href, note, value, unit, flag){
-    return `<li><a class="n" href="${href}">${name}</a><span class="d">${note}</span><span class="v ${flag?'flag':''}">${value}<small>${unit}</small></span></li>`;
+    return `<li class="${flag?'urgent':''}"><a class="n" href="${href}">${name}</a><span class="d">${note}</span><span class="v">${figure(value)}<small>${unit}</small></span></li>`;
   }
 
   const AREAS = [
