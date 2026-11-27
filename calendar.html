@@ -627,7 +627,10 @@
     F('syncnow')?.addEventListener('click', async ()=>{ F('syncnow').textContent='Syncing…'; const r=await store.sync('google'); if(r && r.ok){ const doc=await store.load('calendar'); if(doc){ S=doc; migrate(); renderAll(); reset(); } } history.replaceState(null,'',location.pathname); renderSync(); });
   }
   function renderAll(){ renderCats(); renderMini(); renderGrid(); renderMonth(); renderLedger(); renderEntry(); }
-  renderAll(); reset();
+  // occurs.mjs is a module, and a module is deferred — it runs after this script is parsed but before
+  // DOMContentLoaded. The first paint has to wait for it, or the occurrence rule is not there yet. The other
+  // three pages that read it happen to call it inside an async load, which is luck rather than design.
+  addEventListener('DOMContentLoaded', () => { renderAll(); reset(); });
   store.load('school').then(doc => { SCHOOL = doc; if(S.cats.length) renderAll(); });   // due dates sit under the week alongside the entries
   store.load('calendar').then(doc => { if (doc) { S = doc; migrate(); renderAll(); reset(); } else save(); if(!store.signedOut) renderSync();
     const q = new URLSearchParams(location.search); if(q.get('d')){ const e=q.get('e'); if(e && S.series.some(s=>String(s.id)===e)) openEntry(idOf(e), q.get('d')); else goto(q.get('d'));

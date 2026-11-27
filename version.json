@@ -1,5 +1,5 @@
 {
-  "v": "4.53.1",
-  "at": "2026-11-25",
-  "said": "A probe run no longer leaves the repository dirty"
+  "v": "4.53.2",
+  "at": "2026-11-27",
+  "said": "The calendar draws again, and a probe that crashes stops passing"
 }

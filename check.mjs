@@ -20,6 +20,10 @@ const PAGES = 'today,calendar,finances,library,school,health,review,groceries,in
 const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const quick = process.argv.includes('--quick');
 
+// the last thing a crashed probe managed to say, which is the part worth printing
+const lastLine = (err, status) =>
+  String(err || '').trim().split(/\r?\n/).filter(Boolean).pop() || `exit ${status}`;
+
 const run = (cmd, args, opts = {}) => spawnSync(cmd, args, { encoding: 'utf8', timeout: 900000, ...opts });
 const results = [];
 const step = (name, blocking, fn) => {
@@ -70,11 +74,18 @@ if (!quick) {
     if (why) return { skipped: true, note: why };
     const r = run('python', [`${R}/debug-run.py`, PAGES]);
     const out = (r.stdout || '') + (r.stderr || '');
+    // A probe that did not run is not a probe that found nothing. This one sat broken with a syntax error
+    // while the gate said "no errors, nothing moved" — it was reading output that was never produced, and a
+    // real regression on the calendar shipped underneath it. The exit code and the number of pages actually
+    // examined both have to agree before a pass means anything.
+    if (r.status !== 0) return { ok: false, note: 'the probe did not run — ' + lastLine(r.stderr, r.status) };
+    const looked = [...out.matchAll(/^ {2}load /gm)].length, asked = PAGES.split(',').length;
+    if (looked < asked) return { ok: false, note: `only ${looked} of ${asked} pages were examined` };
     const errs = [...out.matchAll(/ERRS\[(?!none)([^\]]*)\]/g)].map(m => m[1]);
     const shifts = [...out.matchAll(/SHIFT (?!none)([^|]*)/g)].map(m => m[1].trim());
     const over = [...out.matchAll(/xOverflow:true/g)];
     const bad = [...errs, ...shifts, ...over.map(() => 'a page scrolls sideways')];
-    return bad.length ? { ok: false, note: bad.slice(0, 3).join(' · ') } : { ok: true, note: 'no errors, nothing moved' };
+    return bad.length ? { ok: false, note: bad.slice(0, 3).join(' · ') } : { ok: true, note: `no errors, nothing moved · ${looked} pages` };
   });
 
   // 4 · the edges: columns, baselines, and words rather than boxes — at both widths
@@ -82,8 +93,11 @@ if (!quick) {
     if (why) return { skipped: true, note: why };
     const r = run('python', [`${R}/alignrun.py`, PAGES, w]);
     const out = (r.stdout || '') + (r.stderr || '');
+    if (r.status !== 0) return { ok: false, note: 'the probe did not run — ' + lastLine(r.stderr, r.status) };
+    const looked = [...out.matchAll(/^=== /gm)].length, asked = PAGES.split(',').length;
+    if (looked < asked) return { ok: false, note: `only ${looked} of ${asked} pages were measured` };
     const found = [...out.matchAll(/\((\d+) found\)/g)].reduce((n, m) => n + +m[1], 0);
-    return found ? { ok: false, note: `${found} to look at` } : { ok: true, note: 'edges agree' };
+    return found ? { ok: false, note: `${found} to look at` } : { ok: true, note: `edges agree · ${looked} pages` };
   });
 }
 

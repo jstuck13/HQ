@@ -47,8 +47,7 @@ def fresh(page):
          .replace('<script src="clock.js"></script>', shim + '<script src="clock.js"></script>'))
     if shim not in s:
         raise SystemExit(f'{page}: the seed shim no longer attaches - rebuild dbg-{page}.html by hand')
-    open(f, 'w', encoding='utf-8', newline='
-').write(s)
+    open(f, 'w', encoding='utf-8', newline='\n').write(s)
     return s
 
 def build(page, tail):
