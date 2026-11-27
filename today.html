@@ -72,6 +72,20 @@
   .rep .stages .deep{background:var(--band)} .rep .stages .light{background:var(--sage)} .rep .stages .rem{background:var(--lilac)} .rep .stages .awake{background:var(--rule)}
   .rep .legend{font-size:12.5px;color:var(--ink-3);margin-top:6px}
   .rep .legend b{font-weight:500;color:var(--ink-2)}
+  /* the disclosure: a quiet line you can open, not a widget */
+  /* the areas with nothing to report, named once instead of a row each */
+  .affairs .resting{display:block;padding:14px 0 0;font-family:var(--serif);font-style:italic;font-size:13.5px;color:var(--ink-3);border-bottom:0}
+  .affairs .resting a{border-bottom:1px solid var(--rule)}
+  .affairs .resting a:hover{color:var(--ink);border-color:var(--ink-3)}
+  .rep .more{grid-column:1/-1;margin-top:4px}
+  .rep .more summary{list-style:none;cursor:pointer;font-size:12.5px;color:var(--ink-3);letter-spacing:.03em;
+    padding:8px 0 0;border-top:1px solid var(--rule);display:flex;align-items:center;gap:7px}
+  .rep .more summary::-webkit-details-marker{display:none}
+  .rep .more summary::after{content:"";width:6px;height:6px;border-right:1px solid currentColor;
+    border-bottom:1px solid currentColor;transform:rotate(45deg) translate(-1px,-1px);transition:transform var(--t) ease}
+  .rep .more[open] summary::after{transform:rotate(-135deg) translate(-2px,-2px)}
+  .rep .more summary:hover{color:var(--ink)}
+  .rep .more > :not(summary){margin-top:12px}
   .rep .facts{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:12px 18px;margin-top:12px;padding-top:14px;border-top:1px dotted var(--rule)}
   .rep .facts li b{font-family:var(--serif);font-weight:400;font-size:22px;line-height:1.1;display:block}
   .rep .facts li b i{font-style:normal;font-size:13.5px;color:var(--ink-3);margin-left:3px}
@@ -270,7 +284,14 @@
     const card = tl.parentElement; card.classList.toggle('clear', !list.length); card.querySelector('.clearmsg')?.remove();
     tl.hidden = !list.length; tl.innerHTML = html;
     if(!list.length) card.insertAdjacentHTML('beforeend', `<div class="clearmsg"><b>A clear day.</b><small>Nothing on the calendar · <a href="calendar.html">plan it</a></small></div>`);
-    F('dayn').textContent = cal ? (list.length ? `${list.length} ${list.length===1?'item':'items'} · ${C.hourLabel(H0)} to ${C.hourLabel(H1)}` : C.time(new Date())) : 'open Calendar to plan the day';
+    // The span used to be spelled out here — "8 am to 8 pm" — beside a drawing of exactly those hours. What
+    // the drawing cannot tell you at a glance is when the day lets go, so that is what the header says now.
+    // It is also what the Calendar row in State of affairs used to say, which is why that row has gone.
+    const lastEnd = list.length ? Math.max(...list.map(s=>s.end)) : null;
+    const free = lastEnd == null ? '' : lastEnd <= NOW ? 'nothing more today' : `free after ${h12(lastEnd)}`;
+    F('dayn').textContent = cal
+      ? (list.length ? `${list.length} ${list.length===1?'item':'items'}${free?' · '+free:''}` : C.time(new Date()))
+      : 'open Calendar to plan the day';
     return list;
   }
 
@@ -284,12 +305,20 @@
     const had = L.sleep!=null || L.hr!=null || L.weight!=null;
     if(!had){ el.className='card rep empty'; el.innerHTML = `<b>Nothing from last night yet.</b><small>${H ? 'Sync Garmin or log it on <a href="health.html">Health</a>.' : 'Open <a href="health.html">Health</a> to start logging.'}</small>`; F('repn').textContent=''; return; }
     el.className='card rep'; let html='';
+    // Last night, in one line, with the rest behind a disclosure. The report held twenty-one numbers — sleep
+    // stages, two pulses, two weights, body battery and its overnight change, HRV, steps, breaths — on the
+    // page whose first principle is that the next hour outranks the quarter. Health draws every one of them
+    // again. The figure that changes how the day feels stays; the rest is a tap away, and <details> is the
+    // platform's own way to say so.
+    const rest = [];
     if(L.sleep!=null){
       const sum=(G.deep||0)+(G.light||0)+(G.rem||0)+(G.awake||0);
       const ss=streak(H.days, d=>+d.sleep>=7, d=>d.sleep==null);
-      html += `<div class="big"><b>${L.sleep}<i>h</i></b><span>asleep${G.nap?` · ${hm(G.nap)} nap`:''}${ss>=3?` · ${ss} days of 7 h+`:''}</span><small>${[L.bed&&L.woke?`${L.bed} to ${L.woke}`:'', G.score!=null?`score ${G.score}`:''].filter(Boolean).join(' · ')}</small></div>`;
-      if(sum){ const seg=(k,v)=>v?`<i class="${k}" style="flex:${v}"></i>`:''; html += `<div><div class="stages">${seg('deep',G.deep)}${seg('light',G.light)}${seg('rem',G.rem)}${seg('awake',G.awake)}</div><p class="legend">${[G.deep&&`<b>${hm(G.deep)}</b> deep`,G.light&&`<b>${hm(G.light)}</b> light`,G.rem&&`<b>${hm(G.rem)}</b> REM`,G.awake&&`<b>${hm(G.awake)}</b> awake`].filter(Boolean).join(' · ')}</p></div>`; }
-      else html += `<div><p class="legend" style="margin-top:14px">${G.feedback ? esc(String(G.feedback).replace(/_/g,' ').toLowerCase()) : 'Logged by hand'}</p></div>`;
+      html += `<div class="big"><b>${L.sleep}<i>h</i></b><span>asleep${ss>=3?` · ${ss} days of 7 h+`:''}</span></div>`;
+      const when = [L.bed&&L.woke?`${L.bed} to ${L.woke}`:'', G.score!=null?`score ${G.score}`:'', G.nap?`${hm(G.nap)} nap`:''].filter(Boolean).join(' · ');
+      if(when) rest.push(`<p class="legend">${when}</p>`);
+      if(sum){ const seg=(k,v)=>v?`<i class="${k}" style="flex:${v}"></i>`:''; rest.push(`<div class="stages">${seg('deep',G.deep)}${seg('light',G.light)}${seg('rem',G.rem)}${seg('awake',G.awake)}</div><p class="legend">${[G.deep&&`<b>${hm(G.deep)}</b> deep`,G.light&&`<b>${hm(G.light)}</b> light`,G.rem&&`<b>${hm(G.rem)}</b> REM`,G.awake&&`<b>${hm(G.awake)}</b> awake`].filter(Boolean).join(' · ')}</p>`); }
+      else rest.push(`<p class="legend">${G.feedback ? esc(String(G.feedback).replace(/_/g,' ').toLowerCase()) : 'Logged by hand'}</p>`);
     } else html += `<div class="big"><b>—</b><span>no sleep logged</span></div><div></div>`;
     const facts=[];
     if(L.hr!=null) facts.push(`<li><b>${L.hr}<i>bpm</i></b><span>resting</span>${G.hr7?`<small>7-day ${Math.round(G.hr7)}</small>`:''}</li>`);
@@ -298,7 +327,8 @@
     if(G.hrv!=null) facts.push(`<li><b>${Math.round(G.hrv)}<i>ms</i></b><span>HRV</span>${G.hrvStatus?`<small>${esc(String(G.hrvStatus).toLowerCase())}</small>`:''}</li>`);
     if(Y.garmin && Y.garmin.steps!=null) facts.push(`<li><b>${commas(Y.garmin.steps)}</b><span>steps yesterday</span></li>`);
     if(G.resp!=null) facts.push(`<li><b>${Math.round(G.resp)}</b><span>breaths / min</span><small>overnight</small></li>`);
-    if(facts.length) html += `<ul class="facts">${facts.join('')}</ul>`;
+    if(facts.length) rest.push(`<ul class="facts">${facts.join('')}</ul>`);
+    if(rest.length) html += `<details class="more"><summary>The rest of last night</summary>${rest.join('')}</details>`;
     el.innerHTML = html;
     F('repn').textContent = Object.keys(G).length ? 'last night · from Garmin' : 'last night · from Health';
   }
@@ -336,6 +366,12 @@
   // each — a headline, a second figure in the sentence, and a third in the caption under it — which is
   // twenty-five numbers down a column of eight. The second and third facts live on the area's own page,
   // which is one tap away and already draws them.
+  // An area with nothing to report should not spend a row saying so. It rests instead: named in one quiet
+  // line under the list, still a link, still reachable — and also in the More menu, which is why the old
+  // "always here or the page cannot be reached" note no longer holds.
+  const RESTING = [];
+  function rest(name, href){ RESTING.push(`<a href="${href}">${name}</a>`); return null; }
+
   function row(name, href, note, value, unit, flag){
     return `<li><a class="n" href="${href}">${name}</a><span class="d">${note}</span><span class="v ${flag?'flag':''}">${value}<small>${unit}</small></span></li>`;
   }
@@ -343,7 +379,7 @@
   const AREAS = [
     { id:'finances', name:'Finances', build(d){
       if(d.fin && !(d.fin.cats||[]).length && !(d.fin.tx||[]).length && !(d.fin.income||[]).length) d.fin = null;   // a month nobody has touched reads as not started
-      if(!d.fin) return row('Finances','finances.html','Open Finances to set this month’s budget','','not started');
+      if(!d.fin) return rest('Finances','finances.html');
       const spent=d.fin.tx.reduce((n,t)=>n+t.amt,0), limits=d.fin.cats.reduce((n,c)=>n+c.limit,0), left=limits-spent;
       const landed=(d.fin.income||[]).reduce((n,i)=>n+i.amt,0), cash=landed-spent;   // what is actually left, as the Finances page counts it
       const due=d.fin.cats.find(c=>c.due && (c.bill || !d.fin.tx.some(t=>t.cat===c.id)) && c.due>=C.now.getDate()), next=(d.fin.plan||[]).filter(p=>p.date>=TODAY).sort()[0];
@@ -373,14 +409,14 @@
     } },
 
     { id:'library', name:'Library', build(d){
-      if(!d.lib) return row('Library','library.html','Open Library to shelve your books','','no books yet');
+      if(!d.lib) return rest('Library','library.html');
       const b=(d.lib.books||[]).find(x=>x.shelf==='reading'), toread=(d.lib.books||[]).filter(x=>x.shelf==='toread').length;
       return b ? row('Library','library.html',`${esc(b.title)}, ${esc(b.author)}`, b.pages?`p. ${b.page||0}`:'reading', b.pages?`of ${b.pages}`:'', false)
-               : row('Library','library.html',`${toread} waiting on the shelf`,'','nothing open');
+               : toread ? row('Library','library.html',`${toread} waiting on the shelf`,String(toread),'on the shelf',false) : rest('Library','library.html');
     } },
 
     { id:'school', name:'School', build(d){
-      if(!d.school) return row('School','school.html','Open School to add your courses','','no courses yet');
+      if(!d.school) return rest('School','school.html');
       const items=(d.school.items||[]).filter(toDo).sort((a,b)=>a.due<b.due?-1:1), nx=items[0], cn=id=>(d.school.courses||[]).find(c=>c.id===id);
       const dd = nx ? C.daysBetween(TODAY, nx.due) : null;
       const note = nx ? `${esc(cn(nx.course)?.name||'')} — ${esc(nx.title)}, ${dd<0?'overdue':dd===0?'due today':dd===1?'due tomorrow':'due '+C.monthShort(C.fromISO(nx.due))+' '+C.fromISO(nx.due).getDate()}` : 'Nothing due';
@@ -389,24 +425,23 @@
 
     { id:'patterns', name:'Patterns', build(d){
       // always here, even before the first finding, or the page it links to cannot be reached at all
-      const n=(d.pat && d.pat.shown || []).length, tested=d.pat && d.pat.tested;
-      return row('Patterns','patterns.html', n ? 'Things that moved together, worked out overnight' : tested ? 'Nothing has held yet; it looks again every night' : 'Starts once there are thirty days of something',
-        n ? String(n) : '—', n ? 'worth a look' : 'nothing yet', false);
+      const n=(d.pat && d.pat.shown || []).length;
+      if(!n) return rest('Patterns','patterns.html');
+      return row('Patterns','patterns.html', 'Things that moved together, worked out overnight', String(n), 'worth a look', false);
     } },
 
     { id:'study', name:'The Study', build(d){
       const st=d.study, day=st && st.days && st.days[TODAY], titles={stoics:'The Stoics', socrates:'Socrates', sermon:'The Sermon on the Mount'};
-      if(!(st && (st.pos>0 || day))) return row('The Study','study.html','Three cards a day, from the Stoics to start','','not begun');
+      if(!(st && (st.pos>0 || day))) return rest('The Study','study.html');
       const done=day && day.done, n=day ? (day.recall?1:0)+day.cards.length : 3, at=day ? Math.min(day.at, n) : 0;
       let run=0; for(let i=0;i<400;i++){ const k=C.iso(C.addDays(C.fromISO(TODAY),-i)); if(st.days[k] && st.days[k].done) run++; else if(i===0) continue; else break; }
       return row('The Study','study.html', `${titles[st.path]||st.path} · card ${Math.min(st.pos+1, st.len||42)} of ${st.len||42}`, done ? 'done' : `${at} of ${n}`, done ? 'today’s cards' : 'cards read today', false);
     } },
 
-    { id:'calendar', name:'Calendar', build(d){
-      const list=d.day||[], lastEnd = list.length ? Math.max(...list.map(s=>s.end)) : null;
-      const note = !list.length ? 'A clear day' : lastEnd<=NOW ? 'Nothing more today' : `Free after ${h12(lastEnd)}`;
-      return row('Calendar','calendar.html',note, `${list.length}`, `${list.length===1?'item':'items'} today`, false);
-    } },
+    // The day is drawn in full at the top of this page and counted in its own heading, and the band says what
+    // is on now and next. A fourth telling in a row of its own was the same answer again, so Calendar rests
+    // here and keeps its link.
+    { id:'calendar', name:'Calendar', build(){ return rest('Calendar','calendar.html'); } },
   ];
 
   // what shows and in what order. Kept with the other documents so the arrangement follows you between
@@ -422,8 +457,10 @@
   let LAST = null;
   function renderAffairs(d){
     LAST = d;
+    RESTING.length = 0;
     const rows = shown().map(a => { try { return a.build(d); } catch { return null; } }).filter(Boolean);
-    F('affairs').innerHTML = rows.join('') || '<li class="empty">Every area is turned off. Arrange the list to bring some back.</li>';
+    const resting = RESTING.length ? `<li class="resting">Resting: ${RESTING.join(', ')}</li>` : '';
+    F('affairs').innerHTML = (rows.join('') + resting) || '<li class="empty">Every area is turned off. Arrange the list to bring some back.</li>';
     F('affn').innerHTML = `${C.now.getHours()<12 ? 'this morning' : C.now.getHours()<18 ? 'this afternoon' : 'this evening'} · <a href="review.html">the week</a> · <button class="textbtn" type="button" id="arrange">Arrange</button>`;
     F('arrange').addEventListener('click', openArrange);
   }
